@@ -1,0 +1,17 @@
+[unit]
+name = "command"
+title = "Command Center"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["pos", "inventory", "payments", "finance", "crm", "purchasing", "people"]
+
+[provides]
+api_prefix = "/api/v1/command"
+publishes = []
+subscribes = []
+
+[permissions]
+"command.view" = "View the Command Center"
+"briefs.manage" = "Manage brief schedules"

@@ -1,0 +1,20 @@
+[unit]
+name = "inventory"
+title = "Inventory and Branches"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products"]
+optional = ["purchasing", "pos"]
+
+[provides]
+api_prefix = "/api/v1/inventory"
+publishes = ["stock.moved", "stock.adjusted", "transfer.dispatched", "transfer.received", "count.posted", "stock.below_reorder"]
+subscribes = ["sale.posted", "sale.returned", "goods.received"]
+
+[permissions]
+"stock.view" = "View stock"
+"stock.adjust" = "Create stock adjustments"
+"stock.transfer" = "Transfer stock"
+"stock.count" = "Run stock counts"
+"stock.approve" = "Approve adjustments and count variances"

@@ -1,0 +1,18 @@
+[unit]
+name = "products"
+title = "Products and Pricing"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["inventory"]
+
+[provides]
+api_prefix = "/api/v1/products"
+publishes = ["product.created", "price.changed"]
+subscribes = []
+
+[permissions]
+"products.view" = "View products and prices"
+"products.manage" = "Create and edit products"
+"prices.manage" = "Change prices"

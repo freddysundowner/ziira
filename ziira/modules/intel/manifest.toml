@@ -1,0 +1,17 @@
+[unit]
+name = "intel"
+title = "Ziira Intelligence store"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = []
+
+[provides]
+api_prefix = "/api/v1/intel"
+publishes = ["finding.created"]
+subscribes = []
+
+[permissions]
+"findings.view" = "View findings"
+"findings.manage" = "Acknowledge and resolve findings"

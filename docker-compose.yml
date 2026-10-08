@@ -1,0 +1,23 @@
+# Local development services. Production hosting is configured separately.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ziira          # owner: migrations and admin commands
+      POSTGRES_PASSWORD: ziira
+      POSTGRES_DB: ziira
+    ports:
+      - "5432:5432"
+    volumes:
+      - ziira_db:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ziira"]
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+volumes:
+  ziira_db:

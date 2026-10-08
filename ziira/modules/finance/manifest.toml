@@ -1,0 +1,22 @@
+[unit]
+name = "finance"
+title = "Finance and Accounting"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["pos", "payments", "purchasing", "inventory", "people"]
+
+[provides]
+api_prefix = "/api/v1/finance"
+publishes = ["journal.posted", "period.closed", "expense.approved"]
+subscribes = ["sale.posted", "sale.returned", "payment.received", "goods.received", "bill.posted", "stock.adjusted", "payroll.approved"]
+
+[permissions]
+"accounts.manage" = "Manage chart of accounts"
+"journal.post_manual" = "Post manual journals"
+"journal.approve" = "Approve manual journals"
+"expenses.submit" = "Submit expenses"
+"expenses.approve" = "Approve expenses"
+"period.close" = "Close accounting periods"
+"reports.view" = "View financial reports"

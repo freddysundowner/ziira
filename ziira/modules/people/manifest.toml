@@ -1,0 +1,22 @@
+[unit]
+name = "people"
+title = "People, HR and Payroll"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["finance", "payments", "pos"]
+
+[provides]
+api_prefix = "/api/v1/people"
+publishes = ["employee.pay_changed", "employee.bank_changed", "payroll.approved", "payroll.paid"]
+subscribes = ["till.opened", "till.closed"]
+
+[permissions]
+"employees.view" = "View employees"
+"employees.manage" = "Manage employees"
+"employee.pay_edit" = "Change pay and bank details"
+"attendance.manage" = "Manage attendance"
+"leave.approve" = "Approve leave"
+"payroll.prepare" = "Prepare payroll"
+"payroll.approve" = "Approve payroll"

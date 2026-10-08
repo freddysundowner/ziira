@@ -1,0 +1,9 @@
+"""Permission codes of the Finance and Accounting module (declared in manifest.toml)."""
+
+ACCOUNTS_MANAGE = "accounts.manage"
+JOURNAL_POST_MANUAL = "journal.post_manual"
+JOURNAL_APPROVE = "journal.approve"
+EXPENSES_SUBMIT = "expenses.submit"
+EXPENSES_APPROVE = "expenses.approve"
+PERIOD_CLOSE = "period.close"
+REPORTS_VIEW = "reports.view"

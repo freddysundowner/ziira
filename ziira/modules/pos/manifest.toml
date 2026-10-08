@@ -1,0 +1,21 @@
+[unit]
+name = "pos"
+title = "Point of Sale and Sales"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products", "inventory", "payments"]
+optional = ["crm", "finance"]
+
+[provides]
+api_prefix = "/api/v1/pos"
+publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued"]
+subscribes = []
+
+[permissions]
+"sales.sell" = "Make sales"
+"sales.void" = "Void sales"
+"sales.refund" = "Process returns"
+"price.override" = "Override prices and discounts"
+"invoices.manage" = "Issue invoices"
+"till.manage" = "Open and close tills"

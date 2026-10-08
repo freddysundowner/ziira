@@ -1,0 +1,14 @@
+[unit]
+name = "catalog_stats"
+title = "Catalog statistics (example plugin)"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products"]
+
+[provides]
+api_prefix = "/api/v1/plugins/catalog-stats"
+subscribes = ["product.created"]
+
+[permissions]
+"catalog_stats.view" = "View catalog statistics"

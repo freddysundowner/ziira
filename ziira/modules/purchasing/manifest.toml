@@ -1,0 +1,21 @@
+[unit]
+name = "purchasing"
+title = "Purchasing and Suppliers"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products"]
+optional = ["inventory", "finance"]
+
+[provides]
+api_prefix = "/api/v1/purchasing"
+publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed"]
+subscribes = []
+
+[permissions]
+"suppliers.manage" = "Manage suppliers"
+"supplier.bank_edit" = "Change supplier bank details"
+"po.create" = "Create purchase orders"
+"po.approve" = "Approve purchase orders"
+"goods.receive" = "Receive goods"
+"bills.manage" = "Enter supplier bills"

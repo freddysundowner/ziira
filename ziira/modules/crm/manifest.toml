@@ -1,0 +1,19 @@
+[unit]
+name = "crm"
+title = "CRM and Customers"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["pos", "payments"]
+
+[provides]
+api_prefix = "/api/v1/crm"
+publishes = ["lead.created", "lead.converted", "customer.credit_limit_changed"]
+subscribes = []
+
+[permissions]
+"customers.view" = "View customers"
+"customers.manage" = "Create and edit customers"
+"credit.approve" = "Approve credit limit changes"
+"leads.manage" = "Manage leads and follow-ups"

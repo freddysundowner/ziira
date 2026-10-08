@@ -1,0 +1,16 @@
+[unit]
+name = "kernel"
+title = "Kernel"
+kind = "module"
+core = true
+version = "1.0.0"
+
+[provides]
+publishes = []
+
+[permissions]
+"users.manage" = "Create users and assign roles"
+"roles.manage" = "Create and edit roles"
+"units.manage" = "Enable and disable modules and plugins"
+"audit.view" = "View the audit trail"
+"approvals.decide" = "Approve or reject requests"

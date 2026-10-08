@@ -1,0 +1,20 @@
+[unit]
+name = "payments"
+title = "Payments and Reconciliation"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["pos", "crm", "finance"]
+
+[provides]
+api_prefix = "/api/v1/payments"
+publishes = ["payment.received", "payment.matched", "payment.unmatched", "close.completed", "close.variance"]
+subscribes = []
+
+[permissions]
+"payments.view" = "View payments"
+"payments.record" = "Record payments"
+"recon.match" = "Match transactions manually"
+"close.submit" = "Submit daily close"
+"close.reopen" = "Reopen a locked day"
