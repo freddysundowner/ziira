@@ -9,6 +9,13 @@
 | Optional | purchasing, pos |
 | Publishes | stock.moved, stock.adjusted, transfer.dispatched, transfer.received, count.posted, stock.below_reorder |
 | Subscribes | sale.posted, sale.returned, goods.received |
+| Permissions | stock.view, stock.adjust, stock.transfer, stock.count, stock.approve |
+| Default roles | Branch Manager: all five · Storekeeper: view, adjust, transfer, count · Cashier, Sales Rep, Accountant: view |
+| Reason codes seeded | stock_adjustment, write_off, transfer_variance, count_variance (see `manifest.toml`) |
+
+Next to build (phase 2): see `docs/PROGRESS.md`. Use the kernel services through `ziira.sdk`:
+`next_document_number` (ADJ/TRF/CNT numbers), `check_reason`, `submit_for_approval` +
+`@subscribe("approval.decided")`, `check_company`, and scope checks with `current_context().require(...)`.
 
 ## Layout
 

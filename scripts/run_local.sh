@@ -78,4 +78,5 @@ echo "Demo tenant: $TENANT"
 PORT=8000
 if lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then PORT=8010; fi
 say "Ziira Core is running:  http://localhost:$PORT/docs     (Ctrl+C to stop)"
+echo "Sign in: workspace demo-hardware · owner@demo-hardware.test · demo-pass-123"
 exec .venv/bin/uvicorn ziira.kernel.app:app --port "$PORT" --reload

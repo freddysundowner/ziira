@@ -1,6 +1,7 @@
 # CLAUDE.md · Ziira Core
 
-Read this first in every session, then read `docs/PROGRESS.md` to see where work stands.
+Read this first in every session, then read `docs/PROGRESS.md`: "Current state" and the
+"Start here" checklist say exactly where work stands and what to do next.
 
 **At the end of every session (always, without being asked):**
 1. Run `make lint` and `make test`; record the result.
@@ -30,7 +31,7 @@ eTIMS integrates directly with KRA systems.
 ## Commands
 
 ```bash
-bash scripts/run_local.sh     # one step: venv, database, tables, demo data, API on :8000
+bash scripts/run_local.sh     # one step: venv, master DB + template, demo business, API on :8000
 make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT in .env)
 make test                     # all tests (creates/drops ziira_test_master, _template, _t_* databases)
 make lint                     # ruff + mypy + import-linter
@@ -44,6 +45,9 @@ make lint                     # ruff + mypy + import-linter
 
 On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything at Docker on 5433.
 `make test` loads `.env`; running pytest directly needs `set -a; . ./.env; set +a` first.
+Demo business: workspace `demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`.
+Key settings (`ZIIRA_*`): `MASTER_DATABASE_URL`, `TENANT_SERVER_URL`, `CREDENTIALS_KEY` (encrypts tenant
+connection strings; losing it locks out every tenant), `SECRET_KEY` (signs tokens), `ENV`.
 
 ## Architecture rules (do not break)
 
@@ -69,13 +73,15 @@ On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything
 8. **Money is Decimal**, never float (`ziira.sdk.money`).
 9. **Every endpoint checks access.** Routes declare `require_permission(...)`; services check scope with
    `current_context().require(perm, company_id=..., branch_id=...)` and filter lists with `companies_with`.
-10. **Check tenant ownership of ids.** Foreign keys ignore row-level security, so call
-   `check_company(session, company_id, branch_id)` before saving records that name a company or branch.
+10. **Check ids before saving.** Call `check_company(session, company_id, branch_id)` before saving
+   records that name a company or branch, so a wrong id gives a clear error (and foreign keys,
+   which ignore row-level security, are never the only check).
 
 ## Module layout (copy `ziira/modules/products`)
 
 ```
-manifest.toml      name, version, requires, optional, permissions, events, api_prefix
+manifest.toml      name, version, requires, optional, permissions, events, api_prefix,
+                   [roles] (default role grants), [reason_codes] (seeded per tenant)
 migrations/        0001_init.up.sql / .down.sql; new changes = new numbered pair, never edit applied ones
 api/               routes.py (HTTP only) + schemas.py
 services/          one file per use case: validate (domain) → repository → audit_record → publish
@@ -98,6 +104,11 @@ tests/             unit tests for domain rules
 - Auth: sign-in with workspace code + email/phone + password; bearer tokens; API keys (`X-API-Key`).
   Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
 - Permission tests sign in as real users (`tests/conftest.py`: `make_tenant`, `sign_in`), never the dev header.
+
+## Where things are
+
+`docs/PROGRESS.md` (state, checklist, log) · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` ·
+`docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project
 

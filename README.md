@@ -14,10 +14,11 @@ ziira_t_pevma                Pevma's own database: kernel + the modules Pevma en
 ziira_t_mamamboga            another business, its own database and login
 ```
 
-> **Status: foundation (build plan phase 1) complete.** The kernel (tenancy, sign-in, roles and scopes,
-> audit, numbering, reason codes, approvals, events and outbox), the module and plugin system, all
-> database tables and the Products module work and are tested. The other modules have their manifests,
-> migrations and folders in place, and are built next using Products as the template.
+> **Status: build plan phase 1 (foundation) complete; phase 2 (Inventory) is next.** The kernel
+> (database per tenant, sign-in, roles and scopes, audit, numbering, reason codes, approvals, events
+> and outbox), the module and plugin system and the Products module work and are tested. The other
+> modules have their manifests, migrations and folders in place, and are built next using Products
+> as the template. Where work stands and what comes next: `docs/PROGRESS.md`.
 
 ## What works today
 
@@ -30,7 +31,7 @@ ziira_t_mamamboga            another business, its own database and login
 | Document numbering, reason codes, approval matrix with separation of duties | Working, tested |
 | Module and plugin registry: install, enable (creates tables in the tenant's database), disable, remove, uninstall | Working, tested |
 | CLI (`ziira ...`) | Working |
-| Database: 11 schemas, 110 tables, migrations per unit | Working, tested |
+| Schema: 110 tables in 11 schemas, created per tenant database as units are enabled | Working, tested |
 | Products module (API, services, domain rules, repository) | Working, tested |
 | Example plugin `catalog_stats` (own schema, event subscriber, API) | Working, tested |
 | Inventory, POS, Payments, CRM, Purchasing, Finance, People, Command Center | Tables, manifests and folders only |
@@ -45,8 +46,8 @@ bash scripts/run_local.sh
 
 The script finds Python 3.12+, starts PostgreSQL (Docker Desktop if it is running, otherwise a
 PostgreSQL installed on the Mac), sets up the master database and template, creates a demo
-business in its own database with sample products,
-and starts the API. Open **http://localhost:8000/docs**. In development, requests without credentials
+business in its own database with sample products, and starts the API.
+Open **http://localhost:8000/docs**. In development, requests without credentials
 act as the demo tenant with every permission, so you can try endpoints straight from that page.
 To sign in for real: workspace `demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`.
 
@@ -122,8 +123,10 @@ Set `ZIIRA_ENV=production` to refuse that header and the development secret key.
 
 ```
 ziira/
-  kernel/        tenancy, auth, users and roles, registry, events, outbox, audit, numbering,
-                 reason codes, approvals, app, CLI   (modules never import this)
+  kernel/        tenants (database per tenant), auth, users and roles, registry, events, outbox,
+                 audit, numbering, reason codes, approvals, app, CLI   (modules never import this)
+    master_migrations/   schema of the master database
+    migrations/          kernel schema, applied to the template and every tenant database
   sdk/           the only kernel interface modules and plugins may use
   modules/       one folder per module: manifest.toml, migrations/, api/, services/,
                  domain/, repository/, events.py, public.py, tests/
@@ -134,7 +137,7 @@ docs/            how to add a module or plugin, decisions, specifications
 
 ## Rules that keep it modular
 
-1. A unit's tables live in its own PostgreSQL schema.
+1. A unit's tables live in its own PostgreSQL schema, inside each tenant database that enabled it.
 2. Foreign keys point only to the kernel and to required units. Optional links are plain IDs.
 3. Units import the kernel only through `ziira.sdk`, and other units only through their `public.py`.
    `tests/test_architecture.py` fails the build if this is broken.
@@ -153,7 +156,14 @@ See `docs/adding-a-module.md` and `docs/writing-a-plugin.md`.
 - Unbalanced journal entries are rejected at commit.
 - Stock adjustments, write-offs and voided sales require a reason code.
 
-## Specifications
+## Documentation
 
-`docs/specs/` holds the Ziira Core 1.0 product document, the Ziira Intelligence document and the
-technical specification (with the full database schema in Appendix A), each as PDF and as plain text.
+| Document | Read it for |
+|---|---|
+| `docs/PROGRESS.md` | Where work stands, the next steps (checklist), deferred items, session log |
+| `CLAUDE.md` | Rules and commands for anyone (or any AI session) changing the code |
+| `docs/adding-a-module.md` | Building a module: layout, permissions, scope, numbering, reasons, approvals |
+| `docs/writing-a-plugin.md` | Building a plugin |
+| `docs/decisions/` | Why things are built this way (0001 units · 0002 row-level security · 0003 auth · 0004 database per tenant) |
+| `docs/specs/` | Product, Intelligence and technical specifications, as PDF and plain text (Appendix A: full schema) |
+| `ziira/modules/*/README.md` | Each module's tables, events, permissions and status |

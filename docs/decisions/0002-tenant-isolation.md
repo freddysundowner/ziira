@@ -1,6 +1,6 @@
 # 0002 · Tenant isolation with row-level security
 
-**Status:** accepted · October 2026 · the shared database is replaced by one database per tenant (0004); row-level security stays inside each tenant database
+**Status:** accepted · October 2026 · partly replaced by 0004 (see Update below)
 
 ## Decision
 
@@ -17,3 +17,9 @@ hides and blocks other tenants' rows.
 
 - Admin and migration work uses the owner connection; code running there filters tenants explicitly.
 - Tests check that a second tenant can neither read nor write the first tenant's rows.
+
+## Update (2026-10-13, decision 0004)
+
+Tenants no longer share one database: each has its own database and login, listed in a master
+database. Row-level security stays inside every tenant database as a second layer. The app now
+connects with the tenant's own login (not `ziira_app`), which still does not own the tables.

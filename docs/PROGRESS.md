@@ -1,106 +1,134 @@
 # Progress
 
-Update this file at the end of every working session.
+The handover between sessions. **Start of a session:** read "Current state" and "Start here".
+**End of a session:** update this file, `CLAUDE.md` if commands or rules changed, then commit and
+push (see the end-of-session steps in `CLAUDE.md`).
 
 ## Current state
 
-**Phase:** 1 (Foundation) done, with MFA and CD deferred (see below) · next: Inventory (phase 2)
-**Architecture:** one database per tenant + master database (decision 0004, changed 2026-10-13)
-**Tests:** 80 passing on PostgreSQL 16 (Docker, port 5433) · lint clean (ruff, mypy strict, import-linter)
-**Repository:** https://github.com/freddysundowner/ziira.git (branch `main`)
-**CI:** GitHub Actions (`.github/workflows/ci.yml`) runs lint + tests on every push
-**Last updated:** 2026-10-13
+| | |
+|---|---|
+| Phase | **1 (Foundation) done**, MFA and CD deferred · **next: phase 2, Inventory** |
+| Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
+| Tests | 80 passing on PostgreSQL 16 · lint clean (ruff, mypy strict, import-linter) |
+| CI | GitHub Actions runs lint + tests on every push (green on `191549e`) |
+| Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
+| Last updated | 2026-10-13 |
 
-## Build plan (from the technical specification, section 21)
+## Start here (next session)
+
+Phase 2 · Catalogue and inventory. **Exit criterion (spec section 21): stock and costing
+invariants pass.** Engine rules are in spec section 08 (`docs/specs/Ziira_Core_1.0_Technical_Specification.txt`).
+Tables already exist in `ziira/modules/inventory/migrations/0001_init.up.sql`; the manifest already
+has default role grants and reason codes. Follow `ziira/modules/products` and `docs/adding-a-module.md`.
+
+- [ ] **2.0 Small kernel items first**
+  - [ ] Fill `audit_log.device_id` and `ip_address` (session device, request IP) — gap from phase 1.
+  - [ ] Company settings in `kernel.company.settings`: `negative_stock_allowed`, `count_variance_threshold`;
+        an SDK function to read them; a settings endpoint (`settings.manage`).
+- [ ] **2.1 Domain rules** (`inventory/domain/`, pure, unit-tested)
+  - [ ] Weighted average cost per company: new average = (existing value + receipt value) ÷ (existing qty + receipt qty).
+  - [ ] Outbound movements take the current average; value goes to cost of goods sold.
+  - [ ] Movement validation: quantity ≠ 0; reason required for adjustment, count_variance, write_off.
+  - [ ] Negative-stock policy (block, or allow and raise an exception for review).
+  - [ ] Batches: first-expiry-first-out picking.
+- [ ] **2.2 Locations**: create/list per branch (store, warehouse, transit, virtual).
+- [ ] **2.3 Stock ledger service**: post movements, lock balance rows per product and location,
+      update `stock_balance` and `product_cost` in the same transaction, publish `stock.moved`
+      and `stock.below_reorder`.
+- [ ] **2.4 Opening stock** (movement type `opening`).
+- [ ] **2.5 Adjustments**: draft → submit (reason + `submit_for_approval`, number `ADJ`) →
+      `@subscribe("approval.decided")` posts or rejects.
+- [ ] **2.6 Transfers**: dispatch to in-transit → receive at destination; differences need a reason
+      and approval (number `TRF`).
+- [ ] **2.7 Stock counts**: snapshot at start, count lines, variance against the right expected figure,
+      approval above the threshold, post `count_variance` movements (number `CNT`).
+- [ ] **2.8 Subscribers** for `sale.posted`, `sale.returned`, `goods.received`, tested with fake events
+      (POS and Purchasing do not exist yet).
+- [ ] **2.9 `public.py`**: stock on hand, average cost (for POS and Purchasing later).
+- [ ] **2.10 API and tests**: endpoints with permissions; permission tests per role; property tests
+      (add Hypothesis): balance always equals the sum of movements; costing stays correct across
+      receipts, returns, transfers and negative stock.
+- [ ] **2.11** `ziira stock-verify`: rebuild balances from movements and compare (the nightly check).
+
+## What exists, and where
+
+| Area | What it does | Code |
+|---|---|---|
+| Tenants | Each business has its own database + login; master database lists them; template copy; drop | `kernel/tenants.py`, `kernel/db.py`, `kernel/master_migrations/` |
+| Registry | Install on platform; enable/disable/remove per tenant database; upgrades; SDK check | `kernel/registry.py`, `kernel/manifest.py` |
+| Sign-in | Workspace code + email/phone + password; access/refresh tokens; sessions; API keys | `kernel/auth.py`, `kernel/security.py` |
+| Access | Roles, scopes (tenant/company/branch/own), permission checks, no escalation | `kernel/context.py`, `kernel/users.py` |
+| Approvals | Matrix by company, document type, amount, steps; creator ≠ approver | `kernel/approvals.py` |
+| Numbering | ADJ-THK-000001 style numbers per type and branch | `kernel/numbering.py` |
+| Reason codes | Managed lists; seeded from manifests | `kernel/reasons.py` |
+| Events | In-transaction subscribers; outbox; after-commit delivery with retries | `kernel/events.py`, `kernel/outbox.py` |
+| Audit | Append-only, hash-chained log per tenant | `kernel/audit.py` |
+| HTTP API | Auth, users, roles, API keys, settings, approvals; every unit's routes | `kernel/api/`, `kernel/app.py` |
+| SDK | The only kernel interface for modules and plugins | `sdk/__init__.py` |
+| CLI | `ziira units / install / tenants / create-tenant / enable / disable / remove / drop-tenant / outbox-run` | `kernel/cli.py` |
+| Products | Reference module: UoMs, tax codes, products with permissions and scope | `modules/products/` |
+| Other modules | Tables, manifests and folders only | `modules/*/` |
+
+Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
+`demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`. Commands in `README.md`.
+
+## Build plan (technical specification, section 21)
 
 | # | Phase | Status | Notes |
 |---|---|---|---|
-| 1 | Foundation: tenancy, auth, users, roles, scopes, audit, numbering, events and outbox, registry, SDK, CI/CD. Exit: isolation, permission and lifecycle tests pass | ✅ Done | All exit tests pass. Products module is the template (with permissions); example plugin `catalog_stats`. Deferred items listed below |
-| 2 | Catalogue and inventory: costing, stock ledger, transfers, counts | ⏳ Next | Tables exist; manifest has default role grants and reason codes |
+| 1 | Foundation: tenancy, auth, users, roles, scopes, audit, numbering, events and outbox, registry, SDK, CI/CD. Exit: isolation, permission and lifecycle tests pass | ✅ Done | MFA and CD deferred (below) |
+| 2 | Catalogue and inventory: costing, stock ledger, transfers, counts. Exit: stock and costing invariants pass | ⏳ Next | Plan above |
 | 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ⬜ | Tables exist; balance trigger works |
-| 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ⬜ | |
-| 5 | eTIMS: direct KRA integration, credit notes, retry | ⬜ | KRA integrator certification required before live |
+| 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ⬜ | Needs idempotency keys, background jobs |
+| 5 | eTIMS: direct KRA integration, credit notes, retry | ⬜ | KRA integrator certification before live |
 | 6 | Customers and sales: CRM, credit, invoices, receivables | ⬜ | |
 | 7 | Purchasing: orders, receipts, bills, three-way match | ⬜ | |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, VAT | ⬜ | |
 | 9 | People and payroll: HR, attendance, payroll, payslips | ⬜ | Rates verified by an accountant before launch |
 | 10 | Command Center, Intelligence, WhatsApp | ⬜ | |
-| 11 | Hardening: performance, security test, backups, monitoring | ⬜ | |
+| 11 | Hardening: performance, security test, backups, monitoring | ⬜ | Includes MFA, rate limiting, PgBouncer |
 
-## Phase 1: what was built (2026-10-13)
+## Deferred items
 
-- Sign-in by workspace code + email/phone + password; 15-minute access tokens checked against the
-  session; device-bound rotating refresh tokens; sign-out and remote sign-out; API keys. See
-  `docs/decisions/0003-authentication-and-access.md`.
-- Users, roles, scoped grants (tenant/company/branch/own); default roles per tenant; units grant
-  permissions to default roles through `[roles]` in their manifest; no privilege escalation.
-- Permission checks on every endpoint (kernel and Products); scope checks in services.
-- Kernel services in the SDK: `next_document_number`, `check_reason` (+ `[reason_codes]` seeding),
-  `submit_for_approval` (multi-step matrix by amount, creator ≠ approver, `approval.decided` event),
-  `check_company`, `@subscribe_after` with the outbox processor (`ziira outbox-run`).
-- Registry: re-install applies new migrations (upgrades); SDK version check; enable seeds defaults.
-- Fixed: third-party plugin handlers were matched to the wrong unit name.
-- Fixed (found by the new tests): a tenant could save a record pointing at another tenant's company,
-  because foreign keys ignore row-level security. Services now call `check_company`.
-- Kernel migration `0002_auth_numbering_approvals` (hand-written).
+| Item | Why it waits | Target |
+|---|---|---|
+| Audit device and IP | Small gap found after phase 1 | Phase 2 (step 2.0) |
+| Company settings (negative stock, limits) | First needed by Inventory | Phase 2 (step 2.0) |
+| MFA and one-time codes (spec 18) | Need an SMS/email gateway; **required before real customer data** | Phase 11 |
+| Rate limiting / lockout on sign-in | Failed sign-ins are audited meanwhile | Phase 11 |
+| Idempotency keys on create requests | Needed for POS offline sync | Phase 4 |
+| Background worker (Celery/Redis) | `ziira outbox-run` loop is enough for now | Phase 4 or 5 |
+| CD (deployment pipeline) | No server yet; CI exists | When hosting is set up |
+| OAuth 2.0 for third-party apps; webhooks | No third-party apps yet | Phase 10 at the latest |
+| Workflow rules engine, notifications, file storage | Kernel features with no phase in the spec | Phase 10 |
+| Plugin signature check on install | With the third-party plugin policy | Open |
+| Year in document numbers | Prefix can be changed per series; no automatic yearly reset | When asked |
+| Operations for many databases | PgBouncer, per-tenant backups and monitoring | Phase 11 |
 
-## Database per tenant (2026-10-13, owner's decision)
+## Decisions
 
-- Master database `ziira_master`: tenants, status, encrypted connection strings (own login + owner
-  login), units offered. Template `ziira_template` (kernel only) is copied for each new tenant.
-- Tenant database `ziira_t_<code>` with its own login `zt_<code>`; holds the kernel plus enabled units.
-  Row-level security kept inside as a second layer.
-- `ziira install` upgrades every tenant database that has the unit; `ziira remove` drops a unit from
-  one tenant; `ziira drop-tenant` deletes a tenant; failed provisioning cleans up after itself.
-- New setting `ZIIRA_CREDENTIALS_KEY` (must be set and backed up in production).
-- Old shared databases `ziira` and `ziira_test` in the Docker volume are unused now and can be dropped.
+Made (records in `docs/decisions/`):
+- Kernel + pluggable modules and plugins, one schema per unit (0001).
+- Row-level security on every tenant table (0002), kept as a second layer.
+- Sign-in by workspace code; tokens, sessions, API keys, scoped roles; MFA deferred (0003).
+- One database per tenant with a master database (0004; departs from spec section 04).
+- Hosting on a VPS (not documented in specs) · stack Python/FastAPI/SQLAlchemy/PostgreSQL ·
+  eTIMS integrated directly with KRA · 1.0 = 12 modules (projects and support tickets in 1.x) ·
+  go to market with Ziira Intelligence first.
 
-## Deferred from phase 1 (decide when to do each)
-
-- **Audit device and IP**: `kernel.audit_log.device_id` / `ip_address` exist but are not filled yet (spec section 14). Small; do early in phase 2.
-- **CD (deployment pipeline)**: CI exists; automated deployment waits until there is a server.
-- **Kernel features with no phase in the spec**: settings (negative stock, discount limits: phase 2),
-  background jobs (phase 4/5), notifications and the workflow rules engine (phase 10), file storage.
-- **Operations for many databases**: PgBouncer, per-tenant backups and monitoring (phase 11).
-
-- **MFA and one-time codes** (spec section 18): phase 11; needed before real customer data. Needs an SMS/email gateway.
-- **Idempotency keys** on create requests: phase 4, with POS offline sync.
-- **OAuth 2.0** for third-party apps; **webhooks** for tenants: when needed (phase 10 at the latest).
-- **Rate limiting / lockout** on sign-in: phase 11 (failed sign-ins are audited now).
-- **Plugin signature check** on install (spec section 02): with the third-party plugin policy.
-- **Background worker** (Celery/Redis per spec) instead of the `ziira outbox-run` loop: phase 4 or 10.
-- **Year in document numbers** (INV-THK-2026-...): prefixes can be changed per series now; no automatic yearly reset.
-
-## Then phase 2: Inventory
-
-1. `inventory` domain rules: weighted average cost, movement validation, negative-stock policy.
-2. Services: receive opening stock, post adjustment (with reason + approval), transfer dispatch/receive, stock count.
-3. Subscriber for `sale.posted` (stock out at average cost) once POS exists; test with a fake event now.
-4. API + tests, including costing property tests (balance always equals sum of movements).
-
-## Decisions made
-
-- Hosting on a VPS (not documented in specs).
-- Stack: Python/FastAPI/SQLAlchemy/PostgreSQL.
-- eTIMS: integrate directly with KRA.
-- 1.0 includes general ledger, CRM, HR and payroll (12 modules); projects and support tickets deferred to 1.x.
-- Go to market with Ziira Intelligence on existing systems; Ziira Core as the deeper option.
-- One database per tenant with a master database (decision 0004; departs from spec section 04).
-- Sign-in by workspace code; MFA deferred to phase 11 (decision 0003).
-
-## Open decisions
-
-Spec deviations to confirm or fix: **migrations** are plain SQL (`docs/decisions/0001`) but the spec says
-Alembic · **primary keys** use `gen_random_uuid()` (v4) but the spec says UUID v7 (time-ordered).
-
-AI provider · WhatsApp number model · POS packaging (apps vs web) · payroll compliance sign-off ·
-third-party plugin policy · pricing model.
+Open:
+- Spec deviations: **migrations** are plain SQL (spec says Alembic) · **primary keys** are UUID v4
+  (spec says UUID v7, time-ordered).
+- From the spec: AI provider · WhatsApp number model · POS packaging (apps vs web) · payroll
+  compliance sign-off · third-party plugin policy · pricing model.
 
 ## Session log
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (d) | Clean-up: test runs now drop their databases; removed old shared databases (`ziira`, `ziira_test`) and the `ziira_app` login; updated decisions 0001/0002, module READMEs, guides; restructured this file with a phase 2 checklist. |
 | 2026-10-13 (c) | Switched to one database per tenant: master database, template, per-tenant logins with encrypted connection strings, provisioning with cleanup, per-tenant enable/remove, upgrades across tenant databases, CLI (`tenants`, `remove`, `drop-tenant`). Unknown tenants in credentials now give 401, not 404. Tests 75 → 80. |
-| 2026-10-13 (b) | Completed phase 1: auth, users/roles/scopes, permission checks, numbering, reason codes, approvals, outbox processor, SDK check, CI workflow, docs. Docker PostgreSQL 16 on port 5433 (`.env`). Tests 27 → 75. First push to GitHub. |
-| 2026-10-13 (a) | Studied the codebase and specs (no code changes). Created local dev roles from `scripts/setup_local_db.sql`; local PostgreSQL is 14, so 13 database tests error (schema needs 15+, spec says 16+). Saved text copies of the spec PDFs (`docs/specs/*.txt`). Checked phase 1 against spec section 21: not complete (auth/users/roles/scopes, numbering, CI/CD, outbox processing and permission tests missing); status corrected and next steps rewritten. |
-| 2026-10-08 | Specs finalised (Core 1.0, Intelligence, Technical Specification with schema). Project created: kernel, registry, SDK, 110-table schema, Products module, example plugin, tests, run script, demo data. |
+| 2026-10-13 (b) | Completed phase 1: auth, users/roles/scopes, permission checks, numbering, reason codes, approvals, outbox processor, SDK check, CI workflow, docs. Fixed cross-tenant company references and third-party plugin event matching. Tests 27 → 75. First push to GitHub. |
+| 2026-10-13 (a) | Studied the codebase and specs. Saved text copies of the spec PDFs (`docs/specs/*.txt`). Checked phase 1 against spec section 21: it was incomplete; status corrected. |
+| 2026-10-08 | Specs finalised. Project created: kernel, registry, SDK, 110-table schema, Products module, example plugin, tests, run script, demo data. |

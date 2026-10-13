@@ -1,7 +1,8 @@
 """Test setup: a fresh master database and template, all units installed, two tenants.
 
 Every tenant gets its own database (ziira_test_t_<code>) and login (ztest_<code>), as in
-production. Leftovers from earlier runs are dropped first.
+production. All test databases and logins are dropped when the run ends (and before it starts,
+in case an earlier run was interrupted).
 
 Point the tests at your server with ZIIRA_TEST_ADMIN_URL (a superuser URL for any existing
 database, e.g. the `postgres` database). Default matches docker-compose.
@@ -23,8 +24,8 @@ TENANT_DB_PREFIX, TENANT_ROLE_PREFIX = "ziira_test_t_", "ztest_"
 OWNER_PASSWORD = "owner-pass-123"   # test-only password for every tenant's owner
 
 
-def _prepare_server() -> None:
-    """Drop what earlier runs left, create an empty master database, point settings at them."""
+def _drop_test_databases() -> None:
+    """Drop every test database and test login on the server."""
     engine = create_engine(ADMIN_URL, isolation_level="AUTOCOMMIT")
     with engine.connect() as c:
         old = c.execute(text("select datname from pg_database where datname like :p or datname in (:m, :t)"),
@@ -34,6 +35,14 @@ def _prepare_server() -> None:
         for role in c.execute(text("select rolname from pg_roles where rolname like :p"),
                               {"p": TENANT_ROLE_PREFIX + "%"}).scalars().all():
             c.execute(text(f'drop role "{role}"'))
+    engine.dispose()
+
+
+def _prepare_server() -> None:
+    """Start clean, create an empty master database, and point the settings at the test names."""
+    _drop_test_databases()
+    engine = create_engine(ADMIN_URL, isolation_level="AUTOCOMMIT")
+    with engine.connect() as c:
         c.execute(text(f"create database {MASTER_DB}"))
     engine.dispose()
     os.environ.update({
@@ -58,6 +67,7 @@ def registry() -> Iterator[object]:
     reg.install_all()
     yield reg
     forget_all()
+    _drop_test_databases()
 
 
 def make_tenant(name: str) -> dict[str, UUID]:
