@@ -1,7 +1,8 @@
 """Events published and handled by the Finance and Accounting module.
 
 Publishes: journal.posted, period.closed
-Subscribes: stock.moved, sale.posted, sale.returned, approval.decided (kernel)
+Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed,
+approval.decided (kernel)
 """
 
 from ziira.modules.finance.services import event_postings, manual_journals
@@ -24,6 +25,24 @@ def on_sale_posted(session: Session, event: Event) -> None:
 def on_sale_returned(session: Session, event: Event) -> None:
     """Post a customer return."""
     event_postings.post_sale_return(session, event)
+
+
+@subscribe("payment.settled")
+def on_payment_settled(session: Session, event: Event) -> None:
+    """Post an M-Pesa settlement to the bank."""
+    event_postings.post_settlement(session, event)
+
+
+@subscribe("payment.banked")
+def on_cash_banked(session: Session, event: Event) -> None:
+    """Post cash deposited in the bank."""
+    event_postings.post_cash_deposit(session, event)
+
+
+@subscribe("till.closed")
+def on_till_closed(session: Session, event: Event) -> None:
+    """Post a till shortage or overage."""
+    event_postings.post_till_variance(session, event)
 
 
 @subscribe("approval.decided")

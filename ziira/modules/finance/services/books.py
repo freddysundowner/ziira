@@ -18,6 +18,7 @@ def ensure_books(session: Session, company_id: UUID) -> None:
     check_company(session, company_id)
     finance_repo.lock_books(session, company_id)                    # two postings at once: one sets up, one waits
     if finance_repo.has_accounts(session, company_id):
+        add_missing_default_rules(session, company_id)
         return
     ctx = current_context()
     by_code: dict[str, Account] = {}
@@ -53,3 +54,26 @@ def get_or_create_period(session: Session, company_id: UUID, day: date) -> Perio
                     end_date=end)
     finance_repo.add(session, period)
     return period
+
+
+def add_missing_default_rules(session: Session, company_id: UUID) -> int:
+    """Give a company the default posting rules for kinds of document added since its books were set up. A document
+    type the company already has rules for is left alone, so a rule it removed or changed stays that way. Returns how
+    many were added."""
+    known_types = {r.doc_type for r in finance_repo.list_rules(session, company_id)}
+    missing = [r for r in chart.DEFAULT_RULES if r[0] not in known_types]
+    if not missing:
+        return 0
+    ctx = current_context()
+    added = 0
+    for doc_type, role, account_code, side in missing:
+        account = finance_repo.account_by_code(session, company_id, account_code)
+        if account is None:                                  # the company removed that account: they must choose one
+            continue
+        finance_repo.add(session, PostingRule(
+            tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, doc_type=doc_type, line_role=role,
+            account_id=account.id, side=side, conditions={}, priority=100))
+        added += 1
+    if added:
+        audit_record(session, "add_default_rules", "finance.books", company_id, {"rules": added})
+    return added

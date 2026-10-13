@@ -26,6 +26,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     s = make_stock_shop(client, registry, "Fuzz Co")
     registry.enable(s["tenant_id"], "catalog_stats")
     registry.enable(s["tenant_id"], "finance")
+    registry.enable(s["tenant_id"], "payments")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
     s["reason"] = next(x["id"] for x in reasons if x["category"] == "stock_adjustment")
@@ -50,7 +51,21 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     posted = client.post(f"/api/v1/finance/manual-journals/{manual['id']}/submit", headers=owner).json()
     period = client.post("/api/v1/finance/periods", headers=owner, json={"company_id": co, "day": "2026-10-13"}).json()
     rules = client.get("/api/v1/finance/posting-rules", headers=owner, params={"company_id": co}).json()
+    pay = "/api/v1/payments"
+    till = client.post(f"{pay}/accounts", headers=owner, json={
+        "company_id": co, "branch_id": str(s["branch_id"]), "kind": "mpesa_till", "name": "Fuzz till",
+        "shortcode": "600638", "provider": "fake"}).json()
+    client.put(f"{pay}/accounts/{till['id']}/credentials", headers=owner, json={
+        "consumer_key": "a", "consumer_secret": "b", "passkey": "c"})
+    bank = client.post(f"{pay}/accounts", headers=owner, json={"company_id": co, "kind": "bank", "name": "Fuzz bank"}).json()
+    payment = client.post(f"{pay}/payments", headers=owner, json={
+        "company_id": co, "branch_id": str(s["branch_id"]), "method": "mpesa", "amount": "10",
+        "payment_account_id": till["id"], "external_ref": "FUZZREF1"}).json()
+    intent = client.post(f"{pay}/intents", headers=owner, json={
+        "payment_account_id": till["id"], "amount": "10", "phone": "0712345678"}).json()
+    s["pay_ids"] = {"till": till["id"], "bank": bank["id"]}
     s["ids"] = {
+        "payment_id": payment["id"], "intent_id": intent["id"],
         "account_id": s["acc"]["6000"], "manual_id": manual["id"], "entry_id": posted["entry_id"],
         "period_id": period["id"], "posting_rule_id": rules[0]["id"],
         "company_id": co, "location_id": s["main"], "product_id": s["cement"], "from_location_id": s["main"],
@@ -100,6 +115,20 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
                     "account_id": shop["acc"]["5000"], "side": "debit", "conditions": {"movement_type": "sale"}}
         if path.endswith("/finance/periods") and method == "POST":
             return {"company_id": co, "day": "2026-10-13"}
+        if path.endswith("/payments/payments") and method == "POST":
+            return {"company_id": co, "branch_id": str(shop["branch_id"]), "method": "mpesa", "amount": "5",
+                    "payment_account_id": shop["pay_ids"]["till"], "external_ref": f"FZ{n}"}
+        if path.endswith("/payments/intents") and method == "POST":
+            return {"payment_account_id": shop["pay_ids"]["till"], "amount": "5", "phone": "0712345678"}
+        if path.endswith("/payments/settlements"):
+            return {"from_account_id": shop["pay_ids"]["till"], "to_account_id": shop["pay_ids"]["bank"],
+                    "amount": "1", "reference": f"FZS{n}"}
+        if path.endswith("/payments/cash-deposits"):
+            return {"company_id": co, "branch_id": str(shop["branch_id"]), "bank_account_id": shop["pay_ids"]["bank"],
+                    "amount": "1", "reference": f"FZD{n}"}
+        if path.endswith("/payments/closes") and method == "POST":
+            return {"company_id": co, "branch_id": str(shop["branch_id"]), "business_date": "2026-01-01",
+                    "cash_banked": "0"}
         if path.endswith("/reverse"):
             return {"reason": "Fuzz"}
         if path.endswith("/products/uoms"):

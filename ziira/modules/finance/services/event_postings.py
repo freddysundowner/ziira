@@ -105,3 +105,36 @@ def post_sale_return(session: Session, event: Event) -> JournalEntry | None:
         entry_date=_date(p.get("business_date")), recipe=recipes.sale_return(net, tax, money, party=customer),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="sale_return",
         source_id=event.aggregate_id, description=f"Sales return {number}" if number else "Sales return")
+
+
+def post_settlement(session: Session, event: Event) -> JournalEntry | None:
+    """`payment.settled`: M-Pesa takings reached the bank (less Safaricom's charges)."""
+    p = event.payload
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="settlement", journal_code="CSH",
+        entry_date=_date(p.get("business_date")),
+        recipe=recipes.settlement(_amount(p.get("amount"), "amount"), _amount(p.get("fee", 0), "fee"),
+                                  description=f"M-Pesa settlement {p.get('reference') or ''}".strip()),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="settlement",
+        source_id=event.aggregate_id, description=f"M-Pesa settlement {p.get('reference') or ''}".strip())
+
+
+def post_cash_deposit(session: Session, event: Event) -> JournalEntry | None:
+    """`payment.banked`: a branch's cash was deposited in the bank."""
+    p = event.payload
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="cash_deposit", journal_code="CSH",
+        entry_date=_date(p.get("business_date")), recipe=recipes.cash_deposit(_amount(p.get("amount"), "amount")),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="cash_deposit",
+        source_id=event.aggregate_id, description=f"Cash deposit {p.get('reference') or ''}".strip())
+
+
+def post_till_variance(session: Session, event: Event) -> JournalEntry | None:
+    """`till.closed`: a till was counted short or over."""
+    p = event.payload
+    variance = _amount(p.get("variance", 0), "variance")
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="till_variance", journal_code="CSH",
+        entry_date=_date(p.get("business_date")), recipe=recipes.till_variance(variance), context={},
+        branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="till_variance",
+        source_id=event.aggregate_id, description="Till shortage" if variance < 0 else "Till overage")

@@ -83,7 +83,7 @@ def test_rules_are_data_and_a_specific_rule_overrides_the_general_one(client, sh
 
     owner, co = shop["owner"], str(shop["company_id"])
     rules = client.get(f"{FIN}/posting-rules", headers=owner, params={"company_id": co}).json()
-    assert len(rules) > 15 and {r["doc_type"] for r in rules} == {"stock_movement", "sale", "sale_return"}
+    assert len(rules) > 15 and {r["doc_type"] for r in rules} >= {"stock_movement", "sale", "sale_return"}
     damage = client.post(f"{FIN}/accounts", headers=owner, json={
         "company_id": co, "code": "5200", "name": "Damaged goods", "type": "expense"}).json()
     r = client.post(f"{FIN}/posting-rules", headers=owner, json={
@@ -317,3 +317,22 @@ def test_the_check_finds_a_company_whose_books_were_tampered_with(shop) -> None:
             s.execute(text("alter table finance.journal_line enable trigger journal_line_immutable"))
             s.execute(text("alter table finance.journal_line enable trigger journal_line_balanced"))
     assert [p for r in run_integrity_checks(shop["tenant_id"], unit="finance") for p in r.problems] == []
+
+
+def test_default_rules_for_a_new_kind_of_document_are_added_but_removed_rules_stay_removed(client, shop) -> None:  # type: ignore[no-untyped-def]
+    from sqlalchemy import text
+
+    from ziira.kernel.db import tenant_session
+    from ziira.modules.finance.services.books import ensure_books
+
+    count = "select count(*) from finance.posting_rule where doc_type = :d"
+    with tenant_session(shop["tenant_id"], admin=True) as s:
+        s.execute(text("delete from finance.posting_rule where doc_type = 'cash_deposit'"))       # as if never seeded
+        s.execute(text("delete from finance.posting_rule where doc_type = 'sale' and line_role = 'card'"))
+    with system(shop) as s:
+        ensure_books(s, shop["company_id"])
+        assert s.execute(text(count), {"d": "cash_deposit"}).scalar_one() == 2
+        assert s.execute(text(count + " and line_role = 'card'"), {"d": "sale"}).scalar_one() == 0   # a removal stays
+        s.execute(text("insert into finance.posting_rule (tenant_id, company_id, doc_type, line_role, account_id, side) "
+                       "select tenant_id, company_id, 'sale', 'card', account_id, side from finance.posting_rule "
+                       "where doc_type = 'sale' and line_role = 'mpesa' limit 1"))

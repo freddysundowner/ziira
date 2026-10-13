@@ -97,6 +97,17 @@ def read_token(token: str) -> dict[str, Any]:
     return payload
 
 
+# --------------------------------------------------------------------------- signed values
+def sign_value(value: str) -> str:
+    """A signature only this platform can make for `value` (for callback URLs, so a guessed id is useless)."""
+    return hmac.new(get_settings().secret_key.encode(), f"value:{value}".encode(), hashlib.sha256).hexdigest()[:40]
+
+
+def verify_value(value: str, signature: str) -> bool:
+    """True if `signature` is the signature of `value`."""
+    return hmac.compare_digest(sign_value(value), signature)
+
+
 # --------------------------------------------------------------------------- credential encryption
 @lru_cache
 def _fernet(key: str) -> Fernet:

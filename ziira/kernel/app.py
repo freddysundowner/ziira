@@ -57,6 +57,10 @@ def create_app() -> FastAPI:
             continue
         app.include_router(routes.router, prefix=m.api_prefix, tags=[m.title],
                            dependencies=[Depends(require_unit(m.name))])
+        # Endpoints other systems call without a user login (payment callbacks): each authenticates itself.
+        public = getattr(routes, "public_router", None)
+        if public is not None:
+            app.include_router(public, prefix=m.api_prefix, tags=[f"{m.title} (public callbacks)"])
 
     @app.get("/", include_in_schema=False)
     def home() -> RedirectResponse:

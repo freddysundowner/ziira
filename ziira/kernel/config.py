@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # allows a limited number in total, so the least recently used pools are closed beyond this (they reopen on demand).
     max_cached_tenant_engines: int = 25
 
+    # The address other systems (Safaricom) use to reach this API, for callback URLs. Must be https in production.
+    public_base_url: str = "http://localhost:8000"
+
     # Encrypts tenant database credentials stored in the master database.
     credentials_key: str = DEV_CREDENTIALS_KEY
 

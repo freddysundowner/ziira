@@ -9,8 +9,13 @@ optional = ["pos", "crm", "finance"]
 
 [provides]
 api_prefix = "/api/v1/payments"
-publishes = ["payment.received", "payment.matched", "payment.unmatched", "close.completed", "close.variance"]
-subscribes = []
+publishes = ["payment.received", "payment.made", "payment.matched", "payment.unmatched", "payment.settled", "payment.banked", "stk.completed", "close.completed", "close.variance"]
+subscribes = ["approval.decided"]
+extension_points = ["payments.provider"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["payments.provider"]
 
 [permissions]
 "payments.view" = "View payments"
@@ -18,3 +23,12 @@ subscribes = []
 "recon.match" = "Match transactions manually"
 "close.submit" = "Submit daily close"
 "close.reopen" = "Reopen a locked day"
+"payments.manage" = "Manage payment accounts and M-Pesa credentials"
+"payments.collect" = "Ask customers to pay by M-Pesa"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["payments.view", "payments.record", "recon.match", "close.submit", "close.reopen", "payments.manage", "payments.collect"]
+"Accountant" = ["payments.view", "payments.record", "recon.match"]
+"Branch Manager" = ["payments.view", "payments.record", "recon.match", "close.submit", "payments.collect"]
+"Cashier" = ["payments.view", "payments.collect"]

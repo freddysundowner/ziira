@@ -1,0 +1,17 @@
+alter table payments.daily_close drop column if exists reopened_by;
+alter table payments.daily_close drop column if exists cash_banked;
+alter table payments.daily_close drop column if exists explanation;
+drop index if exists payments.match_one_live;
+alter table payments.payment_intent drop column if exists branch_id;
+alter table payments.payment_intent drop column if exists company_id;
+alter table payments.payment_intent drop column if exists expires_at;
+alter table payments.payment_intent drop column if exists account_reference;
+alter table payments.payment_intent drop column if exists phone_hash;
+drop index if exists payments.payment_ix3;
+alter table payments.payment drop column if exists till_session_id;
+alter table payments.payment drop column if exists phone_hash;
+alter table payments.external_transaction drop column if exists phone_hash;
+drop index if exists payments.payment_account_callback;
+alter table payments.payment_account drop column if exists config;
+alter table payments.payment_account drop column if exists callback_token_hash;
+alter table payments.payment_account drop column if exists provider;

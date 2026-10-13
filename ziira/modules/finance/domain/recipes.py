@@ -17,8 +17,12 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
                        "transfer_clearing"),
     "sale": ("cash", "mpesa", "card", "credit", "other", "sales", "vat_output"),
     "sale_return": ("cash", "mpesa", "card", "credit", "other", "sales_returns", "vat_output"),
+    "settlement": ("bank", "bank_charges", "mpesa_clearing"),
+    "cash_deposit": ("bank", "cash"),
+    "till_variance": ("cash", "till_variance"),
 }
-RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": ()}
+RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
+                                               "settlement": (), "cash_deposit": (), "till_variance": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -101,3 +105,38 @@ def _sale_lines(net: Decimal, tax: Decimal, money: list[tuple[str, Decimal]], pa
     if tax:
         lines.append(RecipeLine("vat_output", sides[1], tax, description=description))
     return [line for line in lines if line.amount > 0]
+
+
+def settlement(amount: Decimal, fee: Decimal, *, description: str | None = None) -> list[RecipeLine]:
+    """M-Pesa paid its takings into the bank, keeping a fee.
+
+    Dr bank (what arrived)   Dr bank and M-Pesa charges (the fee)   Cr M-Pesa clearing (both)
+    """
+    if amount <= 0 or fee < 0:
+        raise ValidationFailed("A settlement needs a positive amount and a fee of zero or more")
+    lines = [RecipeLine("bank", "debit", amount, description=description)]
+    if fee:
+        lines.append(RecipeLine("bank_charges", "debit", fee, description=description))
+    lines.append(RecipeLine("mpesa_clearing", "credit", amount + fee, description=description))
+    return lines
+
+
+def cash_deposit(amount: Decimal, *, description: str | None = None) -> list[RecipeLine]:
+    """Cash from a till was taken to the bank. Dr bank  Cr till cash."""
+    if amount <= 0:
+        raise ValidationFailed("A deposit needs a positive amount")
+    return [RecipeLine("bank", "debit", amount, description=description),
+            RecipeLine("cash", "credit", amount, description=description)]
+
+
+def till_variance(variance: Decimal, *, description: str | None = None) -> list[RecipeLine]:
+    """A till was counted at `variance` more (+) or less (-) than expected. A shortage is an expense, an overage
+    income: shortage Dr cash shortages and overages, Cr till cash (the reverse for an overage). Nothing when zero."""
+    amount = abs(variance).quantize(MONEY)
+    if amount == 0:
+        return []
+    if variance < 0:                                    # short: the cash is gone, the loss is recognised
+        return [RecipeLine("till_variance", "debit", amount, description=description),
+                RecipeLine("cash", "credit", amount, description=description)]
+    return [RecipeLine("cash", "debit", amount, description=description),
+            RecipeLine("till_variance", "credit", amount, description=description)]

@@ -133,11 +133,13 @@ def _purge_idempotency_keys(reg: Registry) -> None:
     from ziira.kernel.context import system_context
     from ziira.kernel.db import tenant_session
     from ziira.kernel.idempotency import purge_old_keys
+    from ziira.kernel.jobs import purge_finished
 
     for tenant_id in reg.tenant_ids():
         system_context(tenant_id)
         with tenant_session(tenant_id) as s:
             purge_old_keys(s)
+            purge_finished(s)
 
 
 def cmd_enable(reg: Registry, a: argparse.Namespace) -> None:

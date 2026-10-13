@@ -117,3 +117,10 @@ def run_all(batch_size: int = 50) -> int:
 
 def current_tenant_id() -> UUID:
     return get_context().tenant_id
+
+
+def purge_finished(s: Session, days: int = 7) -> int:
+    """Forget jobs that finished (or gave up) more than `days` ago."""
+    return len(s.execute(text(
+        "delete from kernel.job where status in ('done', 'failed') and coalesce(finished_at, run_at) < "
+        "now() - make_interval(days => :d) returning id"), {"d": days}).all())

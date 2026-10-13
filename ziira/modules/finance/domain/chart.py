@@ -73,4 +73,11 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("sale_return", "other", "1020", "credit"),
     ("sale_return", "sales_returns", "4100", "debit"),
     ("sale_return", "vat_output", "2200", "debit"),
+    ("settlement", "bank", "1020", "debit"),
+    ("settlement", "bank_charges", "6400", "debit"),
+    ("settlement", "mpesa_clearing", "1030", "credit"),
+    ("cash_deposit", "bank", "1020", "debit"),
+    ("cash_deposit", "cash", "1010", "credit"),
+    ("till_variance", "cash", "1010", "debit"),
+    ("till_variance", "till_variance", "6500", "credit"),
 )

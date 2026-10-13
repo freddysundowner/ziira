@@ -5,6 +5,7 @@ Modules and plugins must import from `ziira.sdk`, never from `ziira.kernel`
 """
 
 from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import replace
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
@@ -15,11 +16,20 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import approvals, audit, company_settings, exceptions_inbox, idempotency, numbering, reasons
+from ziira.kernel import (
+    approvals,
+    audit,
+    company_settings,
+    credentials,
+    exceptions_inbox,
+    idempotency,
+    numbering,
+    reasons,
+)
 from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
 from ziira.kernel.checks import IntegrityCheck
 from ziira.kernel.config import get_settings
-from ziira.kernel.context import RequestContext, get_context, set_context
+from ziira.kernel.context import RequestContext, get_context, set_context, system_context
 from ziira.kernel.db import tenant_session
 from ziira.kernel.errors import (
     Conflict,
@@ -41,14 +51,17 @@ from ziira.kernel.extensions import (
 from ziira.kernel.jobs import enqueue, job
 from ziira.kernel.manifest import SDK_VERSION
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
+from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
 __all__ = [
     "SDK_VERSION", "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "Quantity", "Rate",
     "RequestContext", "Session", "Unauthorized", "UnitCost", "ValidationFailed", "ZiiraError", "audit_record",
-    "check_company", "check_reason", "company_setting", "current_context", "db_session", "define_extension_point",
-    "define_validation_hook", "enqueue", "flag_for_review", "idempotency_key_header", "idempotent", "implementations",
-    "job", "money", "next_document_number", "page_limit", "page_offset", "provides", "publish", "request_context",
-    "require_permission", "run_validators", "submit_for_approval", "subscribe", "subscribe_after", "validate",
+    "check_company", "check_reason", "company_setting", "current_context", "db_session", "decrypt_text",
+    "define_extension_point", "define_validation_hook", "encrypt_text", "enqueue", "flag_for_review", "hash_secret",
+    "idempotency_key_header", "idempotent", "implementations", "is_production", "job", "money", "new_secret",
+    "next_document_number", "page_limit", "page_offset", "provides", "publish", "read_credential", "request_context",
+    "require_permission", "run_validators", "settings_public_base_url", "sign_value", "store_credential",
+    "submit_for_approval", "subscribe", "subscribe_after", "system_session", "validate", "verify_value",
 ]
 
 
@@ -81,6 +94,49 @@ def flag_for_review(session: Session, *, unit: str, kind: str, message: str, sev
     return exceptions_inbox.flag(session, unit=unit, kind=kind, message=message, severity=severity,
                                  company_id=company_id, branch_id=branch_id, ref_type=ref_type, ref_id=ref_id,
                                  amount=amount, dedupe_key=dedupe_key)
+
+
+def store_credential(session: Session, *, company_id: UUID, provider: str, label: str, secret: dict[str, Any],
+                     config: dict[str, Any] | None = None, branch_id: UUID | None = None,
+                     replace: UUID | None = None) -> UUID:
+    """Save an integration secret (Daraja keys, bank keys) encrypted; returns the credential's id. See
+    kernel/credentials.py."""
+    return credentials.store_secret(session, company_id=company_id, provider=provider, label=label, secret=secret,
+                                    config=config, branch_id=branch_id, replace=replace)
+
+
+def read_credential(session: Session, credential_id: UUID) -> dict[str, Any]:
+    """The decrypted secret of a credential. Call it only where the secret is about to be used."""
+    return credentials.read_secret(session, credential_id)
+
+
+def encrypt_text(plain: str) -> str:
+    """Encrypt a small secret (a phone number waiting in a job) with the platform's credentials key."""
+    return encrypt(plain)
+
+
+def decrypt_text(token: str) -> str:
+    """Decrypt something made by `encrypt_text`."""
+    return decrypt(token)
+
+
+def is_production() -> bool:
+    """True when running in production (development shortcuts such as the fake payment provider are refused)."""
+    return get_settings().env == "production"
+
+
+def settings_public_base_url() -> str:
+    """The address other systems use to reach this API (for callback URLs)."""
+    return get_settings().public_base_url
+
+
+@contextmanager
+def system_session(tenant_id: UUID) -> Iterator[Session]:
+    """A transaction in a tenant's database acting as the system: for work nobody signed in for (a payment
+    callback from Safaricom, a worker job). The caller must have authenticated the request some other way."""
+    system_context(tenant_id)
+    with tenant_session(tenant_id) as session:
+        yield session
 
 
 def idempotent(session: Session, key: str | None, request: Any, operation: Callable[[], Any]) -> tuple[Any, bool]:
