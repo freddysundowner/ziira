@@ -3,10 +3,10 @@
 Publishes: po.approved, goods.received, bill.posted, bill.match_exception, supplier.bank_changed,
 supplier.price_changed, supplier.paid
 Subscribes: approval.decided (kernel): decides purchase requests, orders, bills and supplier bank changes;
-payment.reversed: a bill whose payment was reversed is owed again
+payment.reversed: a bill whose payment was reversed is owed again; a refund that was reversed is owed again
 """
 
-from ziira.modules.purchasing.services import bills, orders, suppliers
+from ziira.modules.purchasing.services import bills, orders, refunds, suppliers
 from ziira.sdk import Event, Session, subscribe
 
 
@@ -14,6 +14,7 @@ from ziira.sdk import Event, Session, subscribe
 def on_payment_reversed(session: Session, event: Event) -> None:
     """Make a supplier bill owed again when a payment made against it is reversed in Payments."""
     bills.apply_payment_reversal(session, event)
+    refunds.apply_payment_reversal(session, event)
 
 
 @subscribe("approval.decided")

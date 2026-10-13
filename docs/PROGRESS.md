@@ -8,30 +8,25 @@ push (see the end-of-session steps in `CLAUDE.md`).
 
 | | |
 |---|---|
-| Phase | **1 (Foundation), 2 (Catalogue and inventory), 3 (Ledger) and 4 (POS and payments) done**, MFA and CD deferred · **next: phase 5, eTIMS** |
+| Phase | **Phases 1, 2, 3, 4, 6 and 7 done**, MFA and CD deferred · **next: phase 8, Finance reports** · eTIMS is parked (below) |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 912 backend (PostgreSQL 16; incl. fuzzing, security, Hypothesis properties, concurrency, offline sync) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
+| Tests | 1090 backend (PostgreSQL 16; incl. fuzzing, security, Hypothesis properties, concurrency, offline sync) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
 | CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-13 |
 
 ## Start here (next session)
 
-**Order changed (decided with the owner):** eTIMS is deferred and will be built last as a **plugin** (`ziira/plugins/etims`,
-installable and removable per business). Until then taxes are entered by hand: each product's tax code and VAT rate.
-Order now: **7 Purchasing -> 6 Customers and sales -> 8 Finance reports -> 9 People and payroll -> 10 Intelligence ->
-11 Hardening -> 5 eTIMS plugin.** Pull MFA and sign-in rate limiting forward if a customer goes live before phase 11.
+**Order (decided with the owner):** 7 Purchasing -> 6 Customers and sales -> **8 Finance reports** -> 9 People and payroll ->
+10 Intelligence -> 11 Hardening. Pull MFA and sign-in rate limiting forward if a customer goes live before phase 11.
+**eTIMS is parked**, not planned: taxes are entered by hand (each product's tax code and VAT rate) until it is settled with
+KRA, and it will then be an installable plugin. Everything about it is in `docs/parked/etims.md`.
 
-When the eTIMS plugin is built it needs these sockets added first: a receipt/invoice output hook (KRA signature and QR
-code), optionally a validation hook on sale posting (sign before completing), and read access to the products' eTIMS
-fields through `products/public.py`. It listens to `sale.posted` / `sale.returned`, keeps its own `plg_etims` table of
-status per document (so POS stays unchanged), and signs with jobs and retry.
+Phases 4, 7 and 6 are done, including their loose ends. Next: **phase 8, Finance reports** (expenses, bank reconciliation,
+P&L, balance sheet, VAT summary, exports). VAT output comes from sales (`2200`), VAT input from purchases (`1300`), both
+booked from the manual tax codes.
 
-Phases 4, 7 and 6 are done, including their loose ends. Next in the agreed order: **phase 8, Finance reports** (expenses, bank
-reconciliation, P&L, balance sheet, VAT summary, exports). VAT output comes from sales (`2200`), VAT input from purchases
-(`1300`); both are booked from the manual tax codes until the eTIMS plugin exists. Still open from earlier phases: supplier
-invoices from eTIMS (the eTIMS plugin), supplier statement reconciliation, supplier refunds of overpaid bills, receipt
-printing, running the Daraja, Africa's Talking and WhatsApp calls against their sandboxes.
+To do before real use (they need credentials and accounts, not code): the go-live checklist in `docs/go-live-checklist.md`.
 
 Phase 4 left open (small, do when convenient):
 - [ ] **Run the Daraja flows in Safaricom's sandbox.** Request formats in `payments/providers.py` are from the public
@@ -82,9 +77,9 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 2 | Catalogue and inventory: costing, stock ledger, transfers, counts. Exit: stock and costing invariants pass | ✅ Done | Property tests + concurrency tests; web screens later |
 | 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ✅ Done | Hypothesis and concurrency tests; reports beyond TB/GL are phase 8 |
 | 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ✅ Done | Daraja untested live (sandbox run pending); web POS shell later |
-| 5 | eTIMS **plugin**: direct KRA integration, credit notes, retry | ⬜ Last | Deferred by decision; manual tax entry meanwhile. KRA integrator certification before live |
+| 5 | eTIMS **plugin**: direct KRA integration, credit notes, retry | ⏸ Parked | Not planned; manual tax entry meanwhile. See `docs/parked/etims.md` |
 | 6 | Customers and sales: CRM, credit, invoices, receivables, advances, statements, reminders (sent) | ✅ Done | Messaging gateways untested live |
-| 7 | Purchasing: orders, receipts, bills, three-way match, returns, credit notes, reversals | ✅ Done | eTIMS purchase pull and statement reconciliation later |
+| 7 | Purchasing: orders, receipts, bills, three-way match, returns, credit notes, reversals | ✅ Done | Includes supplier refunds and statement reconciliation |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, VAT | ⬜ | |
 | 9 | People and payroll: HR, attendance, payroll, payslips | ⬜ | Rates verified by an accountant before launch |
 | 10 | Command Center, Intelligence, WhatsApp | ⬜ | |
@@ -132,6 +127,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (n) | **Open items of phases 6 and 7 closed; eTIMS archived.** Supplier refunds of overpaid bills (`purchasing/0004_refunds`, `supplier.refunded`/`refund_reversed` posted by Finance), supplier statement reconciliation (JSON or CSV; matched / amount differs / missing here / missing there, balance difference explained), printable sale receipts, invoices and payment receipts (text 32/40/48 wide, HTML escaped, JSON; company settings `receipt_footer`, `invoice_footer`; extension point `pos.receipt_extras` for a future eTIMS plugin). eTIMS moved out of every to-do list into `docs/parked/etims.md`; sandbox runs and security items are in `docs/go-live-checklist.md`. `make lint` clean; `make test` 1090 passed. |
 | 2026-10-13 (m) | **Loose ends of phase 6 closed.** Recurring tasks (`@periodic`, claimed per business per interval) running the expiry of old quotations; advance payments (`hold_balance`, `apply-credit`, refunds, reversal in either place, credit counted against the limit, ledger check updated); messaging: kernel notification queue with opt-outs, retries and the exceptions inbox, channel set-up API, the `messaging` plugin (SMTP, Africa's Talking, WhatsApp Cloud, fake), reminders sent on request, in a batch and daily by company setting, CRM do-not-contact. Fixed: the settings API did not expose `bill_match_tolerance_percent`. Migrations `kernel/0005`, `pos/0004`. |
 | 2026-10-13 (l) | **Phase 6 done (Customers and sales).** CRM: customers, contacts, credit limits and terms with history (raises approved by someone else), leads with sources and conversion, follow-ups. POS: credit sales (limit and terms enforced, serialised per customer; offline credit accepted and raised), invoices to business customers, quotations and sales orders delivered by invoice, customer receipts (oldest first or named, via Payments, cash through the till), reversal of customer payments, credit notes for goods taken back (sales and invoices), voids, statements, ageing, reminders, `receivables.*` permissions, customer ledger integrity check. Finance: customer payment recipes. Products: customer-group price lists. Migrations `crm/0002`, `pos/0003`. |
 | 2026-10-13 (k) | **Purchasing completed.** Reversing a payment updates the bill and the books (`payment.reversed` from Payments, `supplier.payment_reversed`); reversing a posted bill (mirror entry, quantities back, invoice number reusable); returning goods to a supplier (`goods.returned`, stock out, order reopened, flagged until credited); supplier credit notes (goods at stock value, variance, expense credits); landed-cost lines on bills. Finance: mirrored recipes, `credit_note.posted`. Migration `purchasing/0003`. Tests 953 -> 976. |

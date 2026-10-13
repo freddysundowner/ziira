@@ -96,6 +96,8 @@ class CompanySettingsOut(Out):
     reminder_channel: Literal["off", "sms", "whatsapp", "email"]
     reminder_min_days_overdue: int
     reminder_repeat_days: int
+    receipt_footer: str
+    invoice_footer: str
 
 
 class CompanySettingsIn(BaseModel):
@@ -109,6 +111,8 @@ class CompanySettingsIn(BaseModel):
     reminder_channel: Literal["off", "sms", "whatsapp", "email"] | None = None
     reminder_min_days_overdue: Annotated[int, Field(ge=0, le=365)] | None = None
     reminder_repeat_days: Annotated[int, Field(ge=0, le=365)] | None = None
+    receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
+    invoice_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles

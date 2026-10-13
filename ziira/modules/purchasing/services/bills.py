@@ -422,8 +422,8 @@ def reverse_bill(session: Session, bill_id: UUID, *, reason: str) -> BillView:
         raise ValidationFailed("A reason is required")
     if bill.amount_paid > 0:
         raise ValidationFailed("This bill has payments: reverse them first")
-    if bill.credited > 0:
-        raise ValidationFailed("This bill has supplier credit notes against it and cannot be reversed")
+    if bill.credited > 0 or bill.refunded > 0:
+        raise ValidationFailed("This bill has supplier credit notes or refunds against it and cannot be reversed")
     lines = repo.bill_lines(session, bill.id)
     for line in lines:
         if line.receipt_line_id is not None and line.order_line_id is not None:
@@ -533,6 +533,8 @@ def apply_payment_reversal(session: Session, event: Event) -> None:
         if bill is None:
             continue
         amount = Decimal(str(allocation["amount"]))
+        if bill.refunded > rules.refundable(bill.total, bill.amount_paid - amount, bill.credited, Decimal(0)):
+            raise ValidationFailed("The supplier has refunded part of this payment: reverse the refund first")
         bill.amount_paid = max(bill.amount_paid - amount, Decimal(0))
         if bill.status in ("part_paid", "paid"):
             bill.status = "paid" if bill.amount_paid + bill.credited >= bill.total else (

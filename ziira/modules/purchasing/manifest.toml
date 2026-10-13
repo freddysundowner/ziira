@@ -9,7 +9,7 @@ optional = ["inventory", "finance", "payments"]
 
 [provides]
 api_prefix = "/api/v1/purchasing"
-publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid", "goods.returned", "bill.reversed", "supplier.payment_reversed", "credit_note.posted"]
+publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid", "goods.returned", "bill.reversed", "supplier.payment_reversed", "supplier.refunded", "supplier.refund_reversed", "credit_note.posted"]
 subscribes = ["approval.decided", "payment.reversed"]
 
 [permissions]

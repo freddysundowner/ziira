@@ -11,10 +11,11 @@ from ziira.sdk import Session
 
 
 def supplier_balance(session: Session, supplier_id: UUID) -> Decimal:
-    """What the business still owes a supplier on posted bills."""
+    """What the business owes a supplier on posted bills (negative: the supplier owes the business, for example a refund
+    that is due)."""
     total = Decimal(0)
     for bill in purchasing_repo.list_bills(session, None, supplier_id=supplier_id, status=None, due_before=None,
                                            limit=500, offset=0):
-        if bill.status in ("posted", "part_paid"):
-            total += bill.total - bill.amount_paid - bill.credited
+        if bill.status in ("posted", "part_paid", "paid"):
+            total += bill.total - bill.amount_paid - bill.credited + bill.refunded
     return total

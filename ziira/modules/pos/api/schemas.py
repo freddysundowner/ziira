@@ -641,3 +641,38 @@ class RemindersSentOut(BaseModel):
     skipped: int
     no_contact: int
     failed: int
+
+
+# --------------------------------------------------------------------------- printing
+class PrintLineOut(BaseModel):
+    description: str
+    quantity: Decimal
+    unit_price: Decimal
+    amount: Decimal
+
+
+class PrintVatOut(BaseModel):
+    rate: Decimal
+    net: Decimal
+    tax: Decimal
+
+
+class PrintLabelOut(BaseModel):
+    label: str
+    amount: Decimal
+
+
+class PrintOut(BaseModel):
+    """A document ready to print. `format=text` or `html` returns the same thing as ready-made text."""
+
+    title: str
+    number: str
+    header: list[str]
+    meta: list[list[str]]
+    lines: list[PrintLineOut]
+    vat: list[PrintVatOut]
+    totals: list[PrintLabelOut]
+    payments: list[PrintLabelOut]
+    notes: list[str]
+    footer: list[str]
+    is_copy: bool

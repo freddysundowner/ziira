@@ -138,6 +138,7 @@ class DocumentPayment:
     status: str
     business_date: date
     amount: Decimal              # what was allocated to the document
+    reference: str | None = None  # the M-Pesa code, bank reference or cheque number
 
 
 def payments_for_document(session: Session, doc_type: str, doc_id: UUID) -> list[DocumentPayment]:
@@ -147,5 +148,5 @@ def payments_for_document(session: Session, doc_type: str, doc_id: UUID) -> list
     found = []
     for allocation, payment in payments_repo.payments_for_document(session, doc_type, doc_id):
         found.append(DocumentPayment(payment.id, payment.number, payment.method, payment.direction, payment.status,
-                                     payment.business_date, allocation.amount))
+                                     payment.business_date, allocation.amount, payment.external_ref))
     return found

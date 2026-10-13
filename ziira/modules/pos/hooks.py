@@ -5,7 +5,11 @@ from uuid import UUID
 
 from sqlalchemy import text
 
-from ziira.sdk import IntegrityCheck, Session, provides
+from ziira.modules.pos.public import RECEIPT_EXTRAS, ReceiptExtra
+from ziira.sdk import IntegrityCheck, Session, define_extension_point, provides
+
+define_extension_point(RECEIPT_EXTRAS, ReceiptExtra,
+                       "Adds lines to the foot of printed receipts and invoices (e.g. a tax-authority control code).")
 
 
 @provides("kernel.integrity_check")

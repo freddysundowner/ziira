@@ -157,3 +157,8 @@ def check_account_number(method: str, number: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9]{5,30}", value):
         raise ValidationFailed("A bank account number is 5-30 letters or digits")
     return value
+
+
+def refundable(total: Decimal, paid: Decimal, credited: Decimal, refunded: Decimal) -> Decimal:
+    """What the supplier still owes back on a bill: paid and credited beyond its worth, less what has come back."""
+    return max(paid + credited - total - refunded, Decimal(0))

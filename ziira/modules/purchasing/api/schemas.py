@@ -296,6 +296,7 @@ class BillSummaryOut(BaseModel):
     total: Decimal
     amount_paid: Decimal
     credited: Decimal
+    refunded: Decimal
     match_status: str
     status: str
 
@@ -329,6 +330,7 @@ class BillPaymentOut(BaseModel):
     status: str
     business_date: date
     amount: Decimal
+    reference: str | None = None
 
 
 # --------------------------------------------------------------------------- returns and credit notes
@@ -416,3 +418,87 @@ class CreditNoteSummaryOut(BaseModel):
 
 class CreditNoteOut(CreditNoteSummaryOut):
     lines: list[CreditLineOut]
+
+
+class RefundIn(BaseModel):
+    amount: Money
+    method: Literal["cash", "mpesa", "bank", "cheque", "other"]
+    payment_account_id: UUID | None = None
+    external_ref: str | None = Field(default=None, max_length=60)
+    received_on: date | None = None
+
+
+class RefundOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    bill_id: UUID
+    supplier_id: UUID
+    payment_id: UUID | None
+    method: str
+    amount: Decimal
+    received_on: date
+    reference: str | None
+    status: str
+
+
+class RefundDueOut(BaseModel):
+    bill_id: UUID
+    number: str
+    supplier_id: UUID
+    supplier_invoice_no: str
+    total: Decimal
+    amount_paid: Decimal
+    credited: Decimal
+    refunded: Decimal
+    owed_back: Decimal
+
+
+class StatementLineIn(BaseModel):
+    date: date
+    reference: str = Field(min_length=1, max_length=60,
+                           description="Their invoice or credit note number, or our payment's")
+    kind: Literal["invoice", "credit", "payment"]
+    amount: Money
+
+
+class StatementIn(BaseModel):
+    lines: Annotated[list[StatementLineIn], Field(min_length=1, max_length=2000)] | None = None
+    csv: str | None = Field(default=None, max_length=2_000_000,
+                            description="Or the statement as text: date,reference,kind,amount")
+    their_balance: Amount | None = Field(default=None, description="The closing balance on their statement")
+    as_of: date | None = Field(default=None, description="Default: the date of the last line")
+
+
+class StatementItemOut(BaseModel):
+    date: date
+    kind: str
+    reference: str
+    their_amount: Decimal
+    our_amount: Decimal | None
+    status: str
+    note: str
+
+
+class StatementGapOut(BaseModel):
+    kind: str
+    reference: str
+    date: date
+    amount: Decimal
+    note: str
+
+
+class StatementReconOut(BaseModel):
+    supplier_id: UUID
+    supplier: str
+    as_of: date
+    their_balance: Decimal
+    our_balance: Decimal
+    difference: Decimal
+    explained_by_lines: Decimal
+    unexplained: Decimal
+    summary: dict[str, int]
+    items: list[StatementItemOut]
+    missing_there: list[StatementGapOut]

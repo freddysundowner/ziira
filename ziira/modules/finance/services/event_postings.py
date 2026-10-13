@@ -162,18 +162,22 @@ def post_supplier_bill(session: Session, event: Event, *, reverse: bool = False)
         description=f"{label} {p.get('number') or ''}".strip())
 
 
-def post_supplier_payment(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
-    """`supplier.paid`: money left the business to pay a supplier's bill (`supplier.payment_reversed`: it came back)."""
+def post_supplier_payment(session: Session, event: Event, *, kind: str = "payment") -> JournalEntry | None:
+    """Money moving between the business and a supplier: `supplier.paid` (we paid), `supplier.payment_reversed`,
+    `supplier.refunded` (the supplier paid us back) and `supplier.refund_reversed`. `kind` is payment,
+    payment_reversal, refund or refund_reversal."""
     p = event.payload
-    label = "Reversal of payment of supplier bill" if reverse else "Payment of supplier bill"
+    reverse = kind in ("payment_reversal", "refund")
+    label = {"payment": "Payment of supplier bill", "payment_reversal": "Reversal of payment of supplier bill",
+             "refund": "Refund from supplier for bill", "refund_reversal": "Reversal of refund from supplier for bill"
+             }[kind]
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_payment",
         journal_code="CSH", entry_date=_date(p.get("business_date")),
         recipe=recipes.supplier_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
                                         party=_optional_uuid(p.get("supplier_id"), "supplier_id"), reverse=reverse),
-        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
-        source_type="supplier_payment_reversal" if reverse else "supplier_payment", source_id=event.aggregate_id,
-        description=f"{label} {p.get('number') or ''}".strip())
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type=f"supplier_{kind}",
+        source_id=event.aggregate_id, description=f"{label} {p.get('number') or ''}".strip())
 
 
 def post_supplier_credit_note(session: Session, event: Event) -> JournalEntry | None:

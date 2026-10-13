@@ -2,12 +2,12 @@
 
 **Status:** working for phase 7: suppliers (with guarded bank details), purchase requests and orders, goods receipts,
 supplier bills with the three-way match, payment of bills, returns to suppliers, supplier credit notes, reversal of bills
-and of payments, landed-cost invoices, and what is owed to suppliers by age. Not built yet: pulling supplier invoices
-from eTIMS (the eTIMS plugin), reconciling a supplier's statement, supplier refunds of overpaid bills.
+and of payments, landed-cost invoices, supplier refunds of overpaid bills, reconciliation of a supplier's statement against our books, and what is owed to
+suppliers by age.
 
 | | |
 |---|---|
-| Schema | `purchasing` (migrations `0001_init`, `0002_phase7`) |
+| Schema | `purchasing` (migrations `0001_init`, `0002_phase7`, `0003_landed_cost`, `0004_refunds`) |
 | Requires | products |
 | Optional | inventory (receiving goods), finance (expense accounts and the books), payments (paying bills) |
 | Publishes | `po.approved`, `goods.received`, `goods.returned`, `bill.posted`, `bill.reversed`, `bill.match_exception`, `credit_note.posted`, `supplier.bank_changed`, `supplier.price_changed`, `supplier.paid`, `supplier.payment_reversed` |
@@ -62,6 +62,15 @@ bill    draft -> submit -> three-way match -> posted -> part_paid -> paid
 - **Landed cost** (transport, duty): a bill line with `landed_receipt_id` (quantity 1) clears the landed part of that
   receipt's "goods received not invoiced"; billing more than the receipt recorded is a match exception. The charge usually
   comes from a different supplier than the goods.
+- **Overpaid bills** (paid, then credited or returned): `GET /refunds-due` lists them; the supplier gives the money back and
+  `POST /bills/{id}/refund` records it (never more than is due back; `bills.pay`). Finance debits the bank and credits
+  accounts payable (`supplier.refunded`). `POST /refunds/{id}/reverse` undoes a refund that bounced. A payment cannot be
+  reversed while a refund depends on it, and a bill with credits or refunds cannot be reversed.
+- **Supplier statements** (`POST /suppliers/{id}/statement-reconciliation`, `bills.manage`): send the lines of the
+  supplier's statement (JSON, or `csv` text with `date,reference,kind,amount`; kinds invoice, credit, payment) and get each
+  line marked matched, amount differs, or missing here (they have it, we do not), the things we have that their statement
+  does not show, and how much of the balance difference those explain. Payments with different references are matched by
+  amount and date (within a few days). Nothing is changed; it is a report.
 - Because outgoing stock is always costed at the average, a returned item can differ slightly from the cost it arrived at;
   the credit note books that difference to purchase price variance.
 

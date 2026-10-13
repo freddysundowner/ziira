@@ -76,6 +76,12 @@ def _days(maximum: int) -> Callable[[Any], int]:
     return parse
 
 
+def _footer(value: Any) -> str:
+    if not isinstance(value, str) or len(value) > 200 or "\n" in value:
+        raise ValidationFailed("Expected one line of text, up to 200 characters")
+    return value.strip()
+
+
 def _late_posting(value: Any) -> str:
     if value not in ("redirect", "reject"):
         raise ValidationFailed("Expected 'redirect' or 'reject'")
@@ -99,6 +105,10 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "An invoice is chased once it is this many days past its due date"),
     Setting("reminder_repeat_days", 7, _days(365),
             "A customer is not chased about the same invoice more often than this"),
+    Setting("receipt_footer", "Thank you for shopping with us", _footer,
+            "The line printed at the bottom of till receipts and payment receipts"),
+    Setting("invoice_footer", "", _footer,
+            "The line printed at the bottom of invoices (bank details, payment terms)"),
 )}
 
 

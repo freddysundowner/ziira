@@ -3,6 +3,7 @@
 Other units use these; they normally talk to POS through events (`sale.posted`, `sale.returned`, `till.closed`).
 """
 
+from abc import ABC, abstractmethod
 from datetime import date
 from decimal import Decimal
 from uuid import UUID
@@ -10,6 +11,17 @@ from uuid import UUID
 from sqlalchemy import text
 
 from ziira.sdk import Session
+
+RECEIPT_EXTRAS = "pos.receipt_extras"
+
+
+class ReceiptExtra(ABC):
+    """Contract of the "pos.receipt_extras" extension point: lines a plugin adds to the foot of a printed document
+    (a tax-authority control code, a QR code's text, ...). `kind` is "sale", "invoice" or "receipt"."""
+
+    @abstractmethod
+    def lines(self, session: Session, kind: str, document_id: UUID) -> list[str]:
+        """Extra lines for the document, or none."""
 
 
 def open_till_sessions(session: Session, branch_id: UUID, day: date) -> int:

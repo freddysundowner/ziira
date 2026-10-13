@@ -171,6 +171,7 @@ class SupplierBill(Audited, Base):
     posted_at: Mapped[datetime | None]
     submitted_by: Mapped[UUID | None]
     credited: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    refunded: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     reversed_at: Mapped[datetime | None]
     reversed_by: Mapped[UUID | None]
     reverse_reason: Mapped[str | None]
@@ -264,3 +265,21 @@ class SupplierCreditNoteLine(TenantColumns, Base):
     tax_code_id: Mapped[UUID | None]
     tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+
+
+class SupplierRefund(TenantColumns, Base):
+    __tablename__ = "supplier_refund"
+    __table_args__ = {"schema": "purchasing"}
+
+    created_by: Mapped[UUID | None]
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    bill_id: Mapped[UUID]
+    supplier_id: Mapped[UUID]
+    payment_id: Mapped[UUID | None]
+    method: Mapped[str]
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    received_on: Mapped[date]
+    reference: Mapped[str | None]
+    status: Mapped[str] = mapped_column(server_default=text("'posted'"))

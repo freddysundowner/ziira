@@ -14,7 +14,7 @@ ziira_t_pevma                Pevma's own database: kernel + the modules Pevma en
 ziira_t_mamamboga            another business, its own database and login
 ```
 
-> **Status: build plan phases 1 (foundation), 2 (catalogue and inventory), 3 (ledger) and 4 (POS and payments) complete; phase 5 (eTIMS) is next.** The kernel
+> **Status: build plan phases 1 (foundation), 2 (catalogue and inventory), 3 (ledger), 4 (POS and payments), 6 (customers and sales) and 7 (purchasing) complete; phase 8 (finance reports) is next. eTIMS is parked (`docs/parked/etims.md`).** The kernel
 > (database per tenant, sign-in, roles and scopes, audit, numbering, reason codes, approvals, events
 > and outbox, retry-safe requests, background jobs, the exceptions inbox), the module and plugin system and the Products,
 > Inventory, Finance, Payments and POS modules work and are tested (the Daraja/M-Pesa calls still need their sandbox run). The other

@@ -5,6 +5,7 @@ from datetime import UTC, date, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Response, status
+from fastapi.responses import PlainTextResponse
 
 from ziira.modules.pos.api import schemas as sc
 from ziira.modules.pos.permissions import (
@@ -24,6 +25,7 @@ from ziira.modules.pos.services import (
     devices,
     documents,
     invoices,
+    printing,
     receivables,
     returns,
     sales,
@@ -34,6 +36,7 @@ from ziira.sdk import (
     Forbidden,
     RequestContext,
     Session,
+    ValidationFailed,
     current_context,
     db_session,
     idempotency_key_header,
@@ -535,3 +538,41 @@ def get_refund(refund_id: UUID, session: Session = Depends(db_session)) -> objec
 def post_reverse_refund(refund_id: UUID, body: sc.ReasonIn, session: Session = Depends(db_session)) -> object:
     """Cancel a refund: the customer holds that money on account again."""
     return customer_receipts.reverse_refund(session, refund_id, body.reason).refund
+
+
+# --------------------------------------------------------------------------- printing
+Format = Query(default="json", pattern="^(json|text|html)$", description="json, text (thermal printer) or html")
+Width = Query(default=40, description="Characters across for text: 32, 40 or 48")
+PRINTED: dict[int | str, dict[str, object]] = {200: {"model": sc.PrintOut}}
+
+
+def _printed(doc, fmt: str, width: int) -> Response:  # type: ignore[no-untyped-def]
+    if fmt == "json":
+        return Response(sc.PrintOut(
+            title=doc.title, number=doc.number, header=doc.header, meta=[[a, b] for a, b in doc.meta],
+            lines=[sc.PrintLineOut(**vars(x)) for x in doc.lines], vat=[sc.PrintVatOut(**vars(x)) for x in doc.vat],
+            totals=[sc.PrintLabelOut(label=a, amount=b) for a, b in doc.totals],
+            payments=[sc.PrintLabelOut(label=a, amount=b) for a, b in doc.payments], notes=doc.notes,
+            footer=doc.footer, is_copy=doc.copy).model_dump_json(), media_type="application/json")
+    if width not in (32, 40, 48):
+        raise ValidationFailed("width must be 32, 40 or 48")
+    body = printing.render(doc, fmt, width)
+    return PlainTextResponse(body) if fmt == "text" else Response(body, media_type="text/html; charset=utf-8")
+
+
+@router.get("/sales/{sale_id}/receipt", response_model=None, responses=PRINTED, dependencies=LOOK)
+def print_sale(sale_id: UUID, format: str = Format, width: int = Width, copy: bool = False,
+               session: Session = Depends(db_session)) -> Response:
+    return _printed(printing.sale_document(session, sale_id, copy=copy), format, width)
+
+
+@router.get("/invoices/{invoice_id}/print", response_model=None, responses=PRINTED, dependencies=RECEIVABLES)
+def print_invoice(invoice_id: UUID, format: str = Format, width: int = Width, copy: bool = False,
+                  session: Session = Depends(db_session)) -> Response:
+    return _printed(printing.invoice_document(session, invoice_id, copy=copy), format, width)
+
+
+@router.get("/receipts/{receipt_id}/print", response_model=None, responses=PRINTED, dependencies=RECEIVABLES)
+def print_receipt(receipt_id: UUID, format: str = Format, width: int = Width, copy: bool = False,
+                  session: Session = Depends(db_session)) -> Response:
+    return _printed(printing.receipt_document(session, receipt_id, copy=copy), format, width)

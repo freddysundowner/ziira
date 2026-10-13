@@ -24,6 +24,7 @@ from ziira.modules.purchasing.repository.models import (
     SupplierCreditNote,
     SupplierCreditNoteLine,
     SupplierPrice,
+    SupplierRefund,
 )
 
 Scopes = list[tuple[UUID | None, UUID | None]] | None
@@ -323,3 +324,32 @@ def landed_billed_for_receipt(session: Session, receipt_id: UUID, *, exclude_bil
     if exclude_bill is not None:
         query = query.where(SupplierBill.id != exclude_bill)
     return Decimal(session.scalar(query) or 0)
+
+
+# --------------------------------------------------------------------------- refunds from suppliers
+def get_refund(session: Session, refund_id: UUID) -> SupplierRefund | None:
+    return session.get(SupplierRefund, refund_id)
+
+
+def refund_by_payment(session: Session, payment_id: UUID, *, lock: bool = False) -> SupplierRefund | None:
+    query = select(SupplierRefund).where(SupplierRefund.payment_id == payment_id)
+    return session.scalars(_locked(query) if lock else query).first()
+
+
+def list_refunds(session: Session, scopes: Scopes, *, supplier_id: UUID | None, limit: int,
+                 offset: int) -> list[SupplierRefund]:
+    query = select(SupplierRefund).where(in_scope(scopes, SupplierRefund.company_id, SupplierRefund.branch_id)
+                                         ).order_by(SupplierRefund.received_on.desc(), SupplierRefund.number.desc()
+                                                    ).limit(limit).offset(offset)
+    if supplier_id:
+        query = query.where(SupplierRefund.supplier_id == supplier_id)
+    return list(session.scalars(query))
+
+
+def overpaid_bills(session: Session, scopes: Scopes) -> list[SupplierBill]:
+    """Bills paid and credited for more than they were worth, whose excess has not all come back."""
+    return list(session.scalars(select(SupplierBill).where(
+        in_scope(scopes, SupplierBill.company_id, SupplierBill.branch_id),
+        SupplierBill.status.in_(["posted", "part_paid", "paid"]),
+        SupplierBill.amount_paid + SupplierBill.credited - SupplierBill.total - SupplierBill.refunded > 0
+    ).order_by(SupplierBill.bill_date, SupplierBill.number)))

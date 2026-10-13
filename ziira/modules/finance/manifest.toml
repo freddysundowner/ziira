@@ -10,7 +10,7 @@ optional = ["pos", "payments", "purchasing", "inventory", "people"]
 [provides]
 api_prefix = "/api/v1/finance"
 publishes = ["journal.posted", "period.closed", "expense.approved"]
-subscribes = ["stock.moved", "sale.posted", "sale.returned", "payment.settled", "payment.banked", "till.closed", "bill.posted", "bill.reversed", "supplier.paid", "supplier.payment_reversed", "credit_note.posted", "customer.paid", "customer.payment_reversed", "customer.advance_refunded", "customer.refund_reversed", "approval.decided"]
+subscribes = ["stock.moved", "sale.posted", "sale.returned", "payment.settled", "payment.banked", "till.closed", "bill.posted", "bill.reversed", "supplier.paid", "supplier.payment_reversed", "supplier.refunded", "supplier.refund_reversed", "credit_note.posted", "customer.paid", "customer.payment_reversed", "customer.advance_refunded", "customer.refund_reversed", "approval.decided"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]

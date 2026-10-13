@@ -2,7 +2,8 @@
 
 Publishes: journal.posted, period.closed
 Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed, bill.posted,
-bill.reversed, supplier.paid, supplier.payment_reversed, credit_note.posted, customer.paid, customer.payment_reversed,
+bill.reversed, supplier.paid, supplier.payment_reversed, supplier.refunded, supplier.refund_reversed,
+credit_note.posted, customer.paid, customer.payment_reversed,
 customer.advance_refunded, customer.refund_reversed, approval.decided (kernel)
 """
 
@@ -75,7 +76,7 @@ def on_bill_reversed(session: Session, event: Event) -> None:
 @subscribe("supplier.payment_reversed")
 def on_supplier_payment_reversed(session: Session, event: Event) -> None:
     """Put back what was owed to the supplier when its payment is reversed."""
-    event_postings.post_supplier_payment(session, event, reverse=True)
+    event_postings.post_supplier_payment(session, event, kind="payment_reversal")
 
 
 @subscribe("credit_note.posted")
@@ -106,3 +107,15 @@ def on_customer_advance_refunded(session: Session, event: Event) -> None:
 def on_customer_refund_reversed(session: Session, event: Event) -> None:
     """A refund was cancelled: the customer is in credit again."""
     event_postings.post_customer_payment(session, event, kind="refund_reversal")
+
+
+@subscribe("supplier.refunded")
+def on_supplier_refunded(session: Session, event: Event) -> None:
+    """A supplier paid back an overpaid bill: the amount the supplier owed the business is cleared."""
+    event_postings.post_supplier_payment(session, event, kind="refund")
+
+
+@subscribe("supplier.refund_reversed")
+def on_supplier_refund_reversed(session: Session, event: Event) -> None:
+    """A refund from a supplier was cancelled: the supplier owes the business again."""
+    event_postings.post_supplier_payment(session, event, kind="refund_reversal")

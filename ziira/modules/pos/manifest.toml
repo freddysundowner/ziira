@@ -11,6 +11,7 @@ optional = ["crm", "finance"]
 api_prefix = "/api/v1/pos"
 publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued", "invoice.cancelled", "pos.synced", "customer.paid", "customer.payment_reversed", "customer.over_limit_attempt", "customer.advance_refunded", "customer.refund_reversed", "customer.credit_applied"]
 subscribes = ["approval.decided", "payment.reversed"]
+extension_points = ["pos.receipt_extras"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]

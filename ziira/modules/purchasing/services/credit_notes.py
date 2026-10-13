@@ -31,7 +31,7 @@ from ziira.sdk import (
     publish,
 )
 
-PAYABLE = ("posted", "part_paid")
+CREDITABLE = ("posted", "part_paid", "paid")
 
 
 @dataclass(frozen=True)
@@ -65,16 +65,16 @@ def list_credit_notes(session: Session, *, supplier_id: UUID | None = None, bill
 
 def create_credit_note(session: Session, bill_id: UUID, *, supplier_credit_no: str, credit_date: date,
                        lines: list[CreditLineIn]) -> CreditNoteView:
-    """Record a credit note from the supplier against one of its posted bills. It cannot be for more than is still owed
-    on the bill. Needs 'bills.approve'."""
+    """Record a credit note from the supplier against one of its posted bills. All the credit notes of a bill together
+    cannot be for more than the bill. A bill that was already paid is credited too: the supplier then owes a refund
+    (see `refunds`). Needs 'bills.approve'."""
     ctx = current_context()
     bill = repo.get_bill(session, bill_id, lock=True)
     if bill is None or not access.can_view(bill.company_id, bill.branch_id):
         raise NotFound("Bill not found")
     ctx.require(BILLS_APPROVE, company_id=bill.company_id)
-    if bill.status not in PAYABLE:
-        raise Conflict(f"A credit note goes against a bill that is posted and not yet paid; this one is "
-                       f"{bill.status.replace('_', ' ')}")
+    if bill.status not in CREDITABLE:
+        raise Conflict(f"A credit note goes against a posted bill; this one is {bill.status.replace('_', ' ')}")
     credit_no = rules.check_invoice_no(supplier_credit_no)
     if repo.credit_note_by_supplier_no(session, bill.supplier_id, credit_no) is not None:
         raise Conflict(f"The supplier's credit note {credit_no} has already been entered")
@@ -131,12 +131,12 @@ def create_credit_note(session: Session, bill_id: UUID, *, supplier_credit_no: s
     subtotal = sum((a.net for *_, a in prepared), Decimal(0))
     tax_total = sum((a.tax for *_, a in prepared), Decimal(0))
     total = subtotal + tax_total
-    owed = bill.total - bill.amount_paid - bill.credited
+    room = bill.total - bill.credited
     if total <= 0:
         raise ValidationFailed("A credit note must be worth more than nothing")
-    if total > owed:
-        raise ValidationFailed(f"This credit note ({rules.plain(total)}) is more than is still owed on the bill "
-                               f"({rules.plain(owed)}): ask the supplier to refund the difference")
+    if total > room:
+        raise ValidationFailed(f"This credit note ({rules.plain(total)}) is more than is left to credit on the bill "
+                               f"({rules.plain(room)})")
 
     note = SupplierCreditNote(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=bill.company_id, branch_id=bill.branch_id,

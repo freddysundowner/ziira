@@ -2,8 +2,7 @@
 
 **Status:** working for phases 4 and 6: devices, tills with X and Z reports, sales, voids, returns, price overrides and
 offline sync (phase 4); and, with CRM, **credit sales, invoices, quotations and sales orders, customer payments, credit
-notes, advance payments, statements, ageing and reminders sent by SMS, WhatsApp or email** (phase 6). Not built yet:
-receipt printing, eTIMS (the eTIMS plugin).
+notes, advance payments, statements, ageing and reminders sent by SMS, WhatsApp or email** (phase 6), and **printable receipts, invoices and payment receipts** (text for thermal printers, HTML, or data).
 
 | | |
 |---|---|
@@ -89,6 +88,12 @@ fix the cause and the device sends it again.
   invoice and channel, nothing to someone on the do-not-contact list. With the company setting `reminder_channel` turned on,
   a daily recurring task (`pos.send_reminders`) chases invoices `reminder_min_days_overdue` days late, no more often than
   every `reminder_repeat_days`. Old quotations are expired by another recurring task.
+- **Printing.** `GET /sales/{id}/receipt`, `/invoices/{id}/print` and `/receipts/{id}/print` return the document as data
+  (`format=json`, default), as text for a thermal printer (`format=text`, `width` 32, 40 or 48) or as HTML for A4
+  (`format=html`); `copy=true` marks a reprint. The header is the company and branch, with a VAT breakdown by rate and
+  footers from the company settings `receipt_footer` and `invoice_footer`. User text is escaped in HTML. Other units add
+  lines to the foot through the extension point `pos.receipt_extras` (contract `ReceiptExtra` in `public.py`); a plugin
+  that fails there never stops a document being printed.
 - **Checked every night** (`ziira verify`, "customer ledger"): what the invoices say each customer owes equals what the books
   say, and every invoice's paid amount equals its live receipts.
 

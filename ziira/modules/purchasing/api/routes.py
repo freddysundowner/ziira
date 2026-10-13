@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 
 from ziira.modules.purchasing.api import schemas as sc
+from ziira.modules.purchasing.domain import statements as statement_rules
 from ziira.modules.purchasing.permissions import (
     ALL,
     BILLS_APPROVE,
@@ -19,11 +20,21 @@ from ziira.modules.purchasing.permissions import (
     SUPPLIERS_MANAGE,
 )
 from ziira.modules.purchasing.repository import purchasing_repo
-from ziira.modules.purchasing.services import bills, credit_notes, orders, receipts, returns, suppliers
+from ziira.modules.purchasing.services import (
+    bills,
+    credit_notes,
+    orders,
+    receipts,
+    refunds,
+    returns,
+    statement_recon,
+    suppliers,
+)
 from ziira.sdk import (
     Forbidden,
     RequestContext,
     Session,
+    ValidationFailed,
     db_session,
     page_limit,
     page_offset,
@@ -377,3 +388,52 @@ def get_credit_notes(supplier_id: UUID | None = None, bill_id: UUID | None = Non
 @router.get("/credit-notes/{note_id}", response_model=sc.CreditNoteOut, dependencies=VIEW)
 def get_credit_note(note_id: UUID, session: Session = Depends(db_session)) -> object:
     return _credit_out(credit_notes.get_credit_note(session, note_id))
+
+
+# --------------------------------------------------------------------------- refunds from suppliers
+@router.get("/refunds-due", response_model=list[sc.RefundDueOut], dependencies=VIEW)
+def get_refunds_due(session: Session = Depends(db_session)) -> object:
+    """Bills paid and credited for more than they were worth: what suppliers owe the business back."""
+    return [sc.RefundDueOut(bill_id=b.id, number=b.number, supplier_id=b.supplier_id,
+                            supplier_invoice_no=b.supplier_invoice_no, total=b.total, amount_paid=b.amount_paid,
+                            credited=b.credited, refunded=b.refunded, owed_back=owed)
+            for b, owed in refunds.refunds_due(session)]
+
+
+@router.post("/bills/{bill_id}/refund", response_model=sc.RefundOut, status_code=CREATED, dependencies=PAY)
+def post_refund(bill_id: UUID, body: sc.RefundIn, session: Session = Depends(db_session)) -> object:
+    """Record money the supplier paid back on an overpaid bill."""
+    return refunds.record_refund(session, bill_id, amount=body.amount, method=body.method,
+                                 payment_account_id=body.payment_account_id, external_ref=body.external_ref,
+                                 received_on=body.received_on).refund
+
+
+@router.get("/refunds", response_model=list[sc.RefundOut], dependencies=VIEW)
+def get_refunds(supplier_id: UUID | None = None, limit: int = page_limit(50), offset: int = page_offset(),
+                session: Session = Depends(db_session)) -> object:
+    return refunds.list_refunds(session, supplier_id=supplier_id, limit=limit, offset=offset)
+
+
+@router.get("/refunds/{refund_id}", response_model=sc.RefundOut, dependencies=VIEW)
+def get_refund(refund_id: UUID, session: Session = Depends(db_session)) -> object:
+    return refunds.get_refund(session, refund_id).refund
+
+
+@router.post("/refunds/{refund_id}/reverse", response_model=sc.RefundOut, dependencies=PAY)
+def post_reverse_refund(refund_id: UUID, body: sc.ReverseIn, session: Session = Depends(db_session)) -> object:
+    """Cancel a refund that did not arrive: the supplier owes it again."""
+    return refunds.reverse_refund(session, refund_id, body.reason).refund
+
+
+# --------------------------------------------------------------------------- the supplier's statement
+@router.post("/suppliers/{supplier_id}/statement-reconciliation", response_model=sc.StatementReconOut,
+             dependencies=BILLS)
+def post_statement_reconciliation(supplier_id: UUID, body: sc.StatementIn,
+                                  session: Session = Depends(db_session)) -> object:
+    """Check a supplier's statement (as lines, or as text) against our bills, credit notes and payments."""
+    if (body.lines is None) == (body.csv is None):
+        raise ValidationFailed("Send the statement either as lines or as csv text")
+    lines = [statement_rules.line(x.date, x.reference, x.kind, x.amount) for x in body.lines] if body.lines \
+        else statement_rules.parse_csv(body.csv or "")
+    return statement_recon.reconcile(session, supplier_id, lines, their_balance=body.their_balance,
+                                     as_of=body.as_of)
