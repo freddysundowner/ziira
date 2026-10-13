@@ -7,15 +7,15 @@ Administration here is tenant-wide, so it needs the permission with a tenant-wid
 from collections.abc import Callable
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Query, Request, Response, status
 from sqlalchemy import text
 
-from ziira.kernel import approvals, audit, auth, company_settings, numbering, reasons, users
+from ziira.kernel import approvals, audit, auth, company_settings, exceptions_inbox, numbering, reasons, users
 from ziira.kernel.api import schemas as sc
 from ziira.kernel.context import RequestContext
-from ziira.kernel.errors import NotFound, Unauthorized
+from ziira.kernel.errors import Forbidden, NotFound, Unauthorized
 from ziira.kernel.security import verify_password
-from ziira.sdk import Session, db_session, request_context
+from ziira.sdk import Session, db_session, page_limit, page_offset, request_context
 
 router = APIRouter(prefix="/api/v1")
 NO_CONTENT = status.HTTP_204_NO_CONTENT
@@ -331,3 +331,43 @@ def decide(request_id: UUID, body: sc.DecisionIn, _: RequestContext = Depends(si
            s: Session = Depends(db_session)) -> object:
     """Approve or reject. You must hold the approver role; you cannot approve your own request."""
     return approvals.decide(s, request_id, approve=body.approve, note=body.note)
+
+
+# --------------------------------------------------------------------------- exceptions inbox
+def exceptions_manager(ctx: RequestContext = Depends(request_context)) -> RequestContext:
+    """Dependency: the actor may work the exceptions inbox somewhere (the service limits it to their branches)."""
+    if not ctx.has_anywhere("exceptions.manage"):
+        raise Forbidden("You do not have permission 'exceptions.manage'")
+    return ctx
+
+
+MANAGE_EXCEPTIONS = [Depends(exceptions_manager)]
+
+
+@router.get("/exceptions", response_model=list[sc.ExceptionItemOut], tags=["Exceptions"],
+            dependencies=MANAGE_EXCEPTIONS)
+def list_exceptions(status_: str | None = Query(default=None, alias="status"), unit: str | None = None,
+                    kind: str | None = None, branch_id: UUID | None = None, limit: int = page_limit(),
+                    offset: int = page_offset(), s: Session = Depends(db_session)) -> object:
+    """Things that need a person's attention, newest first, for the branches the user manages."""
+    return exceptions_inbox.list_items(s, status=status_, unit=unit, kind=kind, branch_id=branch_id, limit=limit,
+                                       offset=offset)
+
+
+@router.get("/exceptions/{item_id}", response_model=sc.ExceptionItemOut, tags=["Exceptions"],
+            dependencies=MANAGE_EXCEPTIONS)
+def get_exception(item_id: UUID, s: Session = Depends(db_session)) -> object:
+    return exceptions_inbox.get_item(s, item_id)
+
+
+@router.post("/exceptions/{item_id}/status", response_model=sc.ExceptionItemOut, tags=["Exceptions"],
+             dependencies=MANAGE_EXCEPTIONS)
+def set_exception_status(item_id: UUID, body: sc.ExceptionStatusIn, s: Session = Depends(db_session)) -> object:
+    """Explain, resolve or dismiss an item (a note is required)."""
+    return exceptions_inbox.change_status(s, item_id, body.status, body.note)
+
+
+@router.post("/exceptions/{item_id}/assign", response_model=sc.ExceptionItemOut, tags=["Exceptions"],
+             dependencies=MANAGE_EXCEPTIONS)
+def assign_exception(item_id: UUID, body: sc.ExceptionAssignIn, s: Session = Depends(db_session)) -> object:
+    return exceptions_inbox.assign(s, item_id, body.user_id)

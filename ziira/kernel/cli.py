@@ -14,6 +14,7 @@ Every business (tenant) has its own database; the master database lists them.
     ziira remove <tenant> <unit>        drop a disabled unit's tables from the tenant's database
     ziira drop-tenant <code> --confirm <code>   delete a tenant's database and login (cannot be undone)
     ziira outbox-run [--once]           deliver committed events to after-commit subscribers
+    ziira worker [--once]               deliver events and run background jobs (replaces outbox-run)
     ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
     ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
 """
@@ -108,6 +109,37 @@ def cmd_verify(reg: Registry, a: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
+    from ziira.kernel import jobs
+
+    logging.basicConfig(level=logging.INFO)
+    load_event_handlers(reg.units)
+    if a.once:
+        print(f"Delivered {outbox.process_all()} event(s), ran {jobs.run_all()} job(s)")
+        return
+    import time
+
+    purged_at = 0.0
+    while True:
+        busy = outbox.process_all() + jobs.run_all()
+        if time.monotonic() - purged_at > 3600:
+            purged_at = time.monotonic()
+            _purge_idempotency_keys(reg)
+        if busy == 0:
+            time.sleep(2.0)
+
+
+def _purge_idempotency_keys(reg: Registry) -> None:
+    from ziira.kernel.context import system_context
+    from ziira.kernel.db import tenant_session
+    from ziira.kernel.idempotency import purge_old_keys
+
+    for tenant_id in reg.tenant_ids():
+        system_context(tenant_id)
+        with tenant_session(tenant_id) as s:
+            purge_old_keys(s)
+
+
 def cmd_enable(reg: Registry, a: argparse.Namespace) -> None:
     done = reg.enable(_tenant(a.tenant), a.unit)
     print("Enabled: " + (", ".join(done) if done else "already enabled"))
@@ -148,6 +180,9 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("outbox-run")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_outbox_run)
+    s = sub.add_parser("worker")
+    s.add_argument("--once", action="store_true", help="one pass, then stop")
+    s.set_defaults(fn=cmd_worker)
     for name in ("verify", "stock-verify"):
         s = sub.add_parser(name)
         s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")

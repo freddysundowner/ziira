@@ -68,7 +68,8 @@ def test_default_roles_receive_unit_permissions_on_enable(setup) -> None:  # typ
     roles = setup["roles"]
     assert {"products.view", "products.manage", "users.manage"} <= set(roles["Owner"]["permissions"])
     assert roles["Cashier"]["permissions"] == ["products.view"]
-    assert set(roles["Branch Manager"]["permissions"]) == {"approvals.decide", "products.view", "products.manage"}
+    assert set(roles["Branch Manager"]["permissions"]) == {"approvals.decide", "exceptions.manage", "products.view",
+                                                           "products.manage"}
     assert roles["HR"]["permissions"] == []
 
 

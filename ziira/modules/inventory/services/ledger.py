@@ -27,6 +27,7 @@ from ziira.sdk import (
     ValidationFailed,
     company_setting,
     current_context,
+    flag_for_review,
     publish,
 )
 
@@ -137,6 +138,11 @@ def post_movement(session: Session, request: MovementRequest) -> StockMovement:
     if went_negative:
         publish(session, Event("stock.negative", "inventory.stock_movement", movement.id,
                                {**payload, "balance_after": balance.quantity}))
+        flag_for_review(session, unit="inventory", kind="negative_stock", severity="medium",
+                        company_id=request.company_id, branch_id=location.branch_id, ref_type="stock_movement",
+                        ref_id=movement.id, dedupe_key=f"negative_stock:{movement.id}",
+                        message=f"{product.sku} was sold below zero at {location.code}: {balance.quantity} on hand "
+                                f"after {request.source_type.replace('_', ' ')}")
     level = product.reorder_level
     if level is not None and before.quantity >= level > costed.state.quantity:
         publish(session, Event("stock.below_reorder", "products.product", product.id,

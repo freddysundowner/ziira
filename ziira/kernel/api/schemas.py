@@ -220,6 +220,35 @@ class ActiveIn(BaseModel):
     active: bool
 
 
+# --------------------------------------------------------------------------- exceptions inbox
+class ExceptionItemOut(Out):
+    id: UUID
+    created_at: datetime
+    unit_name: str
+    kind: str
+    severity: str
+    company_id: UUID | None
+    branch_id: UUID | None
+    ref_type: str | None
+    ref_id: UUID | None
+    amount: Decimal | None
+    message: str
+    status: str
+    assigned_to: UUID | None
+    resolution_note: str | None
+    resolved_by: UUID | None
+    resolved_at: datetime | None
+
+
+class ExceptionStatusIn(BaseModel):
+    status: Literal["explained", "resolved", "dismissed"]
+    note: str = Field(min_length=1, max_length=2000)
+
+
+class ExceptionAssignIn(BaseModel):
+    user_id: UUID | None = None
+
+
 # --------------------------------------------------------------------------- approvals
 class RuleIn(BaseModel):
     company_id: UUID

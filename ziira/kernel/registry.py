@@ -86,7 +86,7 @@ def discover() -> dict[str, Manifest]:
 
 
 def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
-    """Import every unit's hooks.py and events.py, registering its sockets (extension points,
+    """Import every unit's hooks.py, events.py and jobs.py, registering its sockets (extension points,
     validation hooks) and what it plugs in (@provides, @validate, @subscribe, @subscribe_after).
 
     Must run in any process that publishes events or runs services: the API, the CLI and scripts.
@@ -105,7 +105,7 @@ def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
     for m in found.values():
         if m.core:
             continue
-        for part in ("hooks", "events"):
+        for part in ("hooks", "events", "jobs"):
             # Import only files that exist, so a real error inside one is never hidden.
             try:
                 exists = importlib.util.find_spec(f"{m.package}.{part}") is not None

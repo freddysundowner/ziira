@@ -15,7 +15,7 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import approvals, audit, company_settings, numbering, reasons
+from ziira.kernel import approvals, audit, company_settings, exceptions_inbox, idempotency, numbering, reasons
 from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
 from ziira.kernel.checks import IntegrityCheck
 from ziira.kernel.config import get_settings
@@ -38,6 +38,7 @@ from ziira.kernel.extensions import (
     run_validators,
     validate,
 )
+from ziira.kernel.jobs import enqueue, job
 from ziira.kernel.manifest import SDK_VERSION
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
 
@@ -45,9 +46,9 @@ __all__ = [
     "SDK_VERSION", "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "Quantity", "Rate",
     "RequestContext", "Session", "Unauthorized", "UnitCost", "ValidationFailed", "ZiiraError", "audit_record",
     "check_company", "check_reason", "company_setting", "current_context", "db_session", "define_extension_point",
-    "define_validation_hook", "implementations", "money", "next_document_number", "page_limit", "page_offset",
-    "provides", "publish", "request_context", "require_permission", "run_validators", "submit_for_approval",
-    "subscribe", "subscribe_after", "validate",
+    "define_validation_hook", "enqueue", "flag_for_review", "idempotency_key_header", "idempotent", "implementations",
+    "job", "money", "next_document_number", "page_limit", "page_offset", "provides", "publish", "request_context",
+    "require_permission", "run_validators", "submit_for_approval", "subscribe", "subscribe_after", "validate",
 ]
 
 
@@ -71,6 +72,31 @@ def audit_record(session: Session, action: str, entity_type: str, entity_id: UUI
 
 
 # --------------------------------------------------------------------------- kernel services
+def flag_for_review(session: Session, *, unit: str, kind: str, message: str, severity: str = "medium",
+                    company_id: UUID | None = None, branch_id: UUID | None = None, ref_type: str | None = None,
+                    ref_id: UUID | None = None, amount: Decimal | None = None,
+                    dedupe_key: str | None = None) -> UUID | None:
+    """Put something in the exceptions inbox for a person to review (negative stock, a till shortage, an unmatched
+    payment). With a `dedupe_key` the same problem raised twice is one item. See kernel/exceptions_inbox.py."""
+    return exceptions_inbox.flag(session, unit=unit, kind=kind, message=message, severity=severity,
+                                 company_id=company_id, branch_id=branch_id, ref_type=ref_type, ref_id=ref_id,
+                                 amount=amount, dedupe_key=dedupe_key)
+
+
+def idempotent(session: Session, key: str | None, request: Any, operation: Callable[[], Any]) -> tuple[Any, bool]:
+    """Run `operation` once per Idempotency-Key; a retry gets the stored response. Returns (response, replayed).
+    `operation` must return something JSON-able. See kernel/idempotency.py."""
+    return idempotency.run_once(session, key, request, operation)
+
+
+async def idempotency_key_header(
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key",
+                                         description="Makes a retry safe: the same key does the work once"),
+) -> str | None:
+    """FastAPI dependency: the Idempotency-Key header, if the client sent one."""
+    return idempotency.check_key(idempotency_key) if idempotency_key is not None else None
+
+
 def company_setting(session: Session, company_id: UUID, key: str) -> Any:
     """A company policy such as 'negative_stock_allowed' (default if never changed). See kernel/company_settings.py."""
     return company_settings.get_setting(session, company_id, key)
