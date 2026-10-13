@@ -64,3 +64,11 @@ def movements_after(session: Session, after_seq: int = 0, limit: int = 500) -> l
     """Stock movements after a movement number, oldest first."""
     return [MovementView(m.id, m.seq, m.company_id, m.branch_id, kind, m.movement_type, m.value, m.business_date)
             for m, kind in inventory_repo.movements_after(session, after_seq, limit)]
+
+
+def stock_at_location(session: Session, location_id: UUID, product_ids: set[UUID]) -> dict[UUID, Decimal]:
+    """Quantity on hand at a location for each of the products (all batches added up; products with none are absent)."""
+    totals: dict[UUID, Decimal] = {}
+    for balance in inventory_repo.balances_at(session, location_id, product_ids):
+        totals[balance.product_id] = totals.get(balance.product_id, Decimal(0)) + balance.quantity
+    return totals

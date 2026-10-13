@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import ColumnElement, and_, false, func, or_, select, true
+from sqlalchemy import ColumnElement, and_, case, false, func, or_, select, true
 from sqlalchemy.orm import Session
 
 from ziira.modules.payments.repository.models import (
@@ -273,3 +273,21 @@ def list_closes(session: Session, scopes: Scopes, *, branch_id: UUID | None = No
     if status:
         query = query.where(DailyClose.status == status)
     return list(session.scalars(query))
+
+
+def find_account_by_kinds(session: Session, company_id: UUID, branch_id: UUID | None,
+                          kinds: tuple[str, ...]) -> PaymentAccount | None:
+    """The active account of one of the kinds that serves the branch: the branch's own first, then the company's."""
+    rows = list(session.scalars(select(PaymentAccount).where(
+        PaymentAccount.company_id == company_id, PaymentAccount.kind.in_(kinds), PaymentAccount.is_active,
+        (PaymentAccount.branch_id == branch_id) | PaymentAccount.branch_id.is_(None)).order_by(PaymentAccount.name)))
+    rows.sort(key=lambda a: a.branch_id is None)
+    return rows[0] if rows else None
+
+
+def cash_in_session(session: Session, till_session_id: UUID) -> Decimal:
+    """Cash taken (in) less cash paid out in a till session, from its posted payments."""
+    value = session.scalar(select(func.coalesce(func.sum(
+        case((Payment.direction == "in", Payment.amount), else_=-Payment.amount)), 0)).where(
+        Payment.till_session_id == till_session_id, Payment.method == "cash", Payment.status == "posted"))
+    return Decimal(value or 0)

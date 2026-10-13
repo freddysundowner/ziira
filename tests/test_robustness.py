@@ -27,6 +27,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(s["tenant_id"], "catalog_stats")
     registry.enable(s["tenant_id"], "finance")
     registry.enable(s["tenant_id"], "payments")
+    registry.enable(s["tenant_id"], "pos")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
     s["reason"] = next(x["id"] for x in reasons if x["category"] == "stock_adjustment")
@@ -64,7 +65,27 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     intent = client.post(f"{pay}/intents", headers=owner, json={
         "payment_account_id": till["id"], "amount": "10", "phone": "0712345678"}).json()
     s["pay_ids"] = {"till": till["id"], "bank": bank["id"]}
+    pos = "/api/v1/pos"
+    plist = client.post("/api/v1/products/price-lists", headers=owner, json={
+        "company_id": co, "name": "Fuzz prices", "is_default": True}).json()
+    client.put(f"/api/v1/products/price-lists/{plist['id']}/prices", headers=owner, json={
+        "product_id": s["delivery"], "price": "116.00", "valid_from": "2026-01-01"})
+    device = client.post(f"{pos}/devices", headers=owner, json={
+        "branch_id": str(s["branch_id"]), "code": "FZ1", "name": "Fuzz device", "location_id": s["main"]}).json()
+    client.post(f"{pos}/devices", headers=owner, json={
+        "branch_id": str(s["branch_id"]), "code": "FZ2", "name": "Fuzz device 2", "location_id": s["main"]})
+    opened = client.post(f"{pos}/tills", headers=owner, json={"device_id": device["id"], "opening_float": "0"})
+    assert opened.status_code == 201, opened.text
+    till_session = opened.json()
+    made = client.post(f"{pos}/sales", headers=owner, json={
+        "till_session_id": till_session["id"], "lines": [{"product_id": s["delivery"], "quantity": "1"}],
+        "payments": [{"method": "cash", "amount": "116"}]})
+    assert made.status_code == 201, made.text
+    sale = made.json()
+    s["pos_ids"] = {"device": device["id"], "key": device["key"], "till": till_session["id"], "price_list": plist["id"]}
     s["ids"] = {
+        "device_id": device["id"], "till_id": till_session["id"], "sale_id": sale["id"], "price_list_id": plist["id"],
+        "return_id": str(uuid4()),
         "payment_id": payment["id"], "intent_id": intent["id"],
         "account_id": s["acc"]["6000"], "manual_id": manual["id"], "entry_id": posted["entry_id"],
         "period_id": period["id"], "posting_rule_id": rules[0]["id"],
@@ -129,6 +150,28 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
         if path.endswith("/payments/closes") and method == "POST":
             return {"company_id": co, "branch_id": str(shop["branch_id"]), "business_date": "2026-01-01",
                     "cash_banked": "0"}
+        if path.endswith("/pos/devices") and method == "POST":
+            return {"branch_id": str(shop["branch_id"]), "code": f"F{n}"[:8], "name": "Fuzz device",
+                    "location_id": shop["main"]}
+        if path.endswith("/pos/tills") and method == "POST":
+            return {"device_id": shop["pos_ids"]["device"], "opening_float": "0"}
+        if path.endswith("/pos/sales") and method == "POST":
+            return {"till_session_id": shop["pos_ids"]["till"], "lines": [{"product_id": shop["delivery"],
+                                                                           "quantity": "1"}],
+                    "payments": [{"method": "cash", "amount": "116"}]}
+        if path.endswith("/returns") and method == "POST":
+            return {"lines": [{"sale_line_id": str(uuid4()), "quantity": "1"}], "reason_code_id": str(uuid4()),
+                    "refund_method": "cash"}
+        if path.endswith("/void"):
+            return {"reason_code_id": str(uuid4())}
+        if path.endswith("/close") and "/pos/" in path:
+            return {"counted_cash": "0"}
+        if path.endswith("/sync/upload"):
+            return {"ops": []}
+        if path.endswith("/price-lists") and method == "POST":
+            return {"company_id": co, "name": f"Fuzz list {n}"}
+        if path.endswith("/prices") and method == "PUT":
+            return {"product_id": shop["cement"], "price": "116.00", "valid_from": f"2027-01-{(n % 28) + 1:02d}"}
         if path.endswith("/reverse"):
             return {"reason": "Fuzz"}
         if path.endswith("/products/uoms"):

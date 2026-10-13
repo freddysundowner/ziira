@@ -1,11 +1,12 @@
 """Database access for the products schema. Row-level security scopes every query to the tenant."""
 
+from datetime import date
 from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ziira.modules.products.repository.models import Product, TaxCode, Uom
+from ziira.modules.products.repository.models import PriceList, PriceListItem, Product, TaxCode, Uom
 
 
 def add(session: Session, record: Uom | TaxCode | Product) -> None:
@@ -62,9 +63,11 @@ def get_product(session: Session, product_id: UUID) -> Product | None:
 
 
 def list_products(session: Session, search: str | None, limit: int, offset: int,
-                  company_ids: set[UUID] | None = None) -> list[Product]:
+                  company_ids: set[UUID] | None = None, only_active: bool = False) -> list[Product]:
     """Products by name; `company_ids` limits the companies (None = all)."""
-    query = select(Product).order_by(Product.name).limit(limit).offset(offset)
+    query = select(Product).order_by(Product.name, Product.id).limit(limit).offset(offset)
+    if only_active:
+        query = query.where(Product.is_active)
     if company_ids is not None:
         query = query.where(Product.company_id.in_(company_ids))
     if search:
@@ -73,3 +76,64 @@ def list_products(session: Session, search: str | None, limit: int, offset: int,
         pattern = f"%{escaped}%"
         query = query.where(Product.name.ilike(pattern, escape="\\") | Product.sku.ilike(pattern, escape="\\"))
     return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- price lists
+def add_price(session: Session, record: PriceList | PriceListItem) -> None:
+    session.add(record)
+    session.flush()
+    session.refresh(record)
+
+
+def get_price_list(session: Session, price_list_id: UUID, *, lock: bool = False) -> PriceList | None:
+    if lock:
+        return session.scalars(select(PriceList).where(PriceList.id == price_list_id).with_for_update()).first()
+    return session.get(PriceList, price_list_id)
+
+
+def list_price_lists(session: Session, company_ids: set[UUID] | None) -> list[PriceList]:
+    query = select(PriceList).order_by(PriceList.name)
+    if company_ids is not None:
+        query = query.where(PriceList.company_id.in_(company_ids))
+    return list(session.scalars(query))
+
+
+def lists_for_branch(session: Session, company_id: UUID, branch_id: UUID | None) -> list[PriceList]:
+    """The lists that price a sale at a branch, most specific first: the branch's own, then the company's default."""
+    query = select(PriceList).where(PriceList.company_id == company_id, PriceList.is_default.is_(True))
+    if branch_id is not None:
+        query = query.where(PriceList.branch_id.in_([branch_id]) | PriceList.branch_id.is_(None))
+    else:
+        query = query.where(PriceList.branch_id.is_(None))
+    lists = list(session.scalars(query))
+    return sorted(lists, key=lambda x: x.branch_id is None)
+
+
+def prices_on(session: Session, price_list_id: UUID, product_ids: set[UUID], day: date) -> dict[UUID, PriceListItem]:
+    """The price in force on `day` for each product (the latest start date wins)."""
+    if not product_ids:
+        return {}
+    rows = session.scalars(select(PriceListItem).where(
+        PriceListItem.price_list_id == price_list_id, PriceListItem.product_id.in_(product_ids),
+        PriceListItem.valid_from <= day, (PriceListItem.valid_to.is_(None)) | (PriceListItem.valid_to >= day))
+        .order_by(PriceListItem.valid_from))
+    found: dict[UUID, PriceListItem] = {}
+    for row in rows:
+        found[row.product_id] = row                                  # later start dates overwrite earlier ones
+    return found
+
+
+def price_items(session: Session, price_list_id: UUID, product_id: UUID | None, limit: int,
+                offset: int) -> list[PriceListItem]:
+    query = select(PriceListItem).where(PriceListItem.price_list_id == price_list_id).order_by(
+        PriceListItem.product_id, PriceListItem.valid_from.desc()).limit(limit).offset(offset)
+    if product_id is not None:
+        query = query.where(PriceListItem.product_id == product_id)
+    return list(session.scalars(query))
+
+
+def open_price_item(session: Session, price_list_id: UUID, product_id: UUID) -> PriceListItem | None:
+    """The price with no end date (the current one), if any."""
+    return session.scalars(select(PriceListItem).where(
+        PriceListItem.price_list_id == price_list_id, PriceListItem.product_id == product_id,
+        PriceListItem.valid_to.is_(None)).order_by(PriceListItem.valid_from.desc())).first()

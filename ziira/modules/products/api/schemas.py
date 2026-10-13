@@ -1,5 +1,6 @@
 """Request and response shapes for the products API."""
 
+from datetime import date
 from decimal import Decimal
 from typing import Annotated, Literal
 from uuid import UUID
@@ -55,3 +56,36 @@ class ProductOut(BaseModel):
     is_batch_tracked: bool
     reorder_level: Decimal | None
     is_active: bool
+
+
+class PriceListIn(BaseModel):
+    company_id: UUID
+    name: str = Field(min_length=1, max_length=200, examples=["Retail prices"])
+    branch_id: UUID | None = None
+    is_default: bool = False
+
+
+class PriceListOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    name: str
+    branch_id: UUID | None
+    currency: str
+    is_default: bool
+
+
+class PriceIn(BaseModel):
+    product_id: UUID
+    price: Annotated[Decimal, Field(ge=0, le=Decimal("100000000"), decimal_places=2, examples=["1160.00"])]
+    valid_from: date | None = None
+
+
+class PriceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    price_list_id: UUID
+    product_id: UUID
+    price: Decimal
+    valid_from: date
+    valid_to: date | None

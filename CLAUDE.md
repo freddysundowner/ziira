@@ -43,6 +43,7 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira create-tenant NAME --code CODE --company ... --branch-code ... --branch-name ... \
     --owner-name ... --owner-email ...      # owner password from prompt or ZIIRA_OWNER_PASSWORD
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
+.venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + purge of old keys/jobs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
 ```
 
@@ -119,7 +120,15 @@ tests/             unit tests for domain rules
 - Record creator and approver separately; enforce separation of duties where configured.
 - Statutory payroll rates live in `people.statutory_rate_table` (effective-dated data), never in code.
 - Kernel services for modules (via `ziira.sdk`): `next_document_number`, `check_reason`, `submit_for_approval`
-  (+ `@subscribe("approval.decided")`), `@subscribe_after`. See `docs/adding-a-module.md`.
+  (+ `@subscribe("approval.decided")`), `@subscribe_after`, `idempotent` / `idempotency_key_header` (retry-safe creates),
+  `flag_for_review` (exceptions inbox: anything a person must look at), `@job` / `enqueue` (background jobs with retry and
+  backoff, run by `ziira worker`), `store_credential` / `read_credential` (encrypted integration secrets),
+  `system_session` (work nobody signed in for, such as a Safaricom callback). See `docs/adding-a-module.md`.
+- Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
+  (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
+- A business event that already happened (an offline sale) is accepted and its problems are flagged, not refused.
+- Daraja (M-Pesa) request formats in `payments/providers.py` are written from the public documentation and have not been
+  run against Safaricom: test in their sandbox before any live use.
 - Auth: sign-in with workspace code + email/phone + password; bearer tokens; API keys (`X-API-Key`).
   Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
 - New endpoints are covered by the fuzzer automatically (`tests/test_robustness.py`: add a valid baseline body to its

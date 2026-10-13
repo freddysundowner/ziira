@@ -14,9 +14,10 @@ ziira_t_pevma                Pevma's own database: kernel + the modules Pevma en
 ziira_t_mamamboga            another business, its own database and login
 ```
 
-> **Status: build plan phases 1 (foundation), 2 (catalogue and inventory) and 3 (ledger) complete; phase 4 (POS and payments) is next.** The kernel
+> **Status: build plan phases 1 (foundation), 2 (catalogue and inventory), 3 (ledger) and 4 (POS and payments) complete; phase 5 (eTIMS) is next.** The kernel
 > (database per tenant, sign-in, roles and scopes, audit, numbering, reason codes, approvals, events
-> and outbox), the module and plugin system and the Products, Inventory and Finance modules work and are tested. The other
+> and outbox, retry-safe requests, background jobs, the exceptions inbox), the module and plugin system and the Products,
+> Inventory, Finance, Payments and POS modules work and are tested (the Daraja/M-Pesa calls still need their sandbox run). The other
 > modules have their manifests, migrations and folders in place, and are built next using Products
 > as the template. Where work stands and what comes next: `docs/PROGRESS.md`.
 
@@ -122,6 +123,7 @@ Set `ZIIRA_ENV=production` to refuse that header and the development secret key.
 | `ziira remove <tenant> <unit>` | Drop a disabled unit's tables from that tenant's database |
 | `ziira drop-tenant <code> --confirm <code>` | Delete a tenant's database, login and record (cannot be undone) |
 | `ziira outbox-run [--once]` | Deliver committed events to after-commit subscribers |
+| `ziira worker [--once]` | Run the outbox and background jobs (M-Pesa prompts, matching) and purge old keys and jobs |
 | `ziira verify [tenant] [--unit U] [--fix]` | Run units' integrity checks (exit 1 while problems remain); `ziira stock-verify` checks the stock ledger |
 
 ## Layout

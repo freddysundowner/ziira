@@ -89,3 +89,39 @@ def cash_account_for_branch(session: Session, company_id: UUID, branch_id: UUID)
 
     account_id: UUID = cash_account(session, company_id, branch_id).id
     return account_id
+
+
+_KINDS = {"cash": ("cash",), "mpesa": ("mpesa_till", "mpesa_paybill"), "card": ("card",), "bank": ("bank",)}
+
+
+def account_for_method(session: Session, company_id: UUID, branch_id: UUID | None, method: str) -> UUID | None:
+    """The payment account a branch takes this method through (its own first, then the company's), or None."""
+    from ziira.modules.payments.repository import payments_repo
+
+    if method == "cash" and branch_id is not None:
+        return cash_account_for_branch(session, company_id, branch_id)
+    kinds = _KINDS.get(method)
+    account = payments_repo.find_account_by_kinds(session, company_id, branch_id, kinds) if kinds else None
+    return account.id if account else None
+
+
+def reverse_payment(session: Session, payment_id: UUID, reason: str) -> None:
+    """Cancel a payment because the document it belonged to was voided. The caller has checked the user may void."""
+    from ziira.modules.payments.services.payments import reverse_payment as reverse
+
+    reverse(session, payment_id, reason, authorised=True)
+
+
+def day_is_locked(session: Session, branch_id: UUID, day: date) -> bool:
+    """True when the branch's daily close for the date is locked (its payments can no longer change)."""
+    from ziira.modules.payments.repository import payments_repo
+
+    close = payments_repo.get_close(session, branch_id, day)
+    return close is not None and close.status == "locked"
+
+
+def cash_in_till_session(session: Session, till_session_id: UUID) -> Decimal:
+    """Cash taken less cash paid out through a till session (what the drawer should hold above its float)."""
+    from ziira.modules.payments.repository import payments_repo
+
+    return payments_repo.cash_in_session(session, till_session_id)

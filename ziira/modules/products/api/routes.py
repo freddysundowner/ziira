@@ -9,6 +9,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 
 from ziira.modules.products.api.schemas import (
+    PriceIn,
+    PriceListIn,
+    PriceListOut,
+    PriceOut,
     ProductIn,
     ProductOut,
     TaxCodeIn,
@@ -16,7 +20,8 @@ from ziira.modules.products.api.schemas import (
     UomIn,
     UomOut,
 )
-from ziira.modules.products.permissions import PRODUCTS_MANAGE, PRODUCTS_VIEW
+from ziira.modules.products.permissions import PRICES_MANAGE, PRODUCTS_MANAGE, PRODUCTS_VIEW
+from ziira.modules.products.services import pricing
 from ziira.modules.products.services.create_product import create_product
 from ziira.modules.products.services.create_tax_code import create_tax_code
 from ziira.modules.products.services.create_uom import create_uom
@@ -27,6 +32,7 @@ from ziira.sdk import Session, db_session, page_limit, page_offset, require_perm
 router = APIRouter()
 VIEW = [Depends(require_permission(PRODUCTS_VIEW))]
 MANAGE = [Depends(require_permission(PRODUCTS_MANAGE))]
+PRICES = [Depends(require_permission(PRICES_MANAGE))]
 
 
 @router.post("/uoms", response_model=UomOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE)
@@ -69,3 +75,28 @@ def get_sku_suggestions(company_id: UUID, name: str, session: Session = Depends(
 @router.get("/products/{product_id}", response_model=ProductOut, dependencies=VIEW)
 def get_one_product(product_id: UUID, session: Session = Depends(db_session)) -> object:
     return get_product(session, product_id)
+
+
+# --------------------------------------------------------------------------- price lists
+@router.post("/price-lists", response_model=PriceListOut, status_code=status.HTTP_201_CREATED, dependencies=PRICES)
+def post_price_list(body: PriceListIn, session: Session = Depends(db_session)) -> object:
+    return pricing.create_price_list(session, company_id=body.company_id, name=body.name, branch_id=body.branch_id,
+                                     is_default=body.is_default)
+
+
+@router.get("/price-lists", response_model=list[PriceListOut], dependencies=VIEW)
+def get_price_lists(session: Session = Depends(db_session)) -> object:
+    return pricing.list_price_lists(session)
+
+
+@router.put("/price-lists/{price_list_id}/prices", response_model=PriceOut, dependencies=PRICES)
+def put_price(price_list_id: UUID, body: PriceIn, session: Session = Depends(db_session)) -> object:
+    """Set a product's tax-inclusive price from a date; the price before it ends the day before."""
+    return pricing.set_price(session, price_list_id, product_id=body.product_id, price=body.price,
+                             valid_from=body.valid_from)
+
+
+@router.get("/price-lists/{price_list_id}/prices", response_model=list[PriceOut], dependencies=VIEW)
+def get_prices(price_list_id: UUID, product_id: UUID | None = None, limit: int = page_limit(100),
+               offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+    return pricing.list_prices(session, price_list_id, product_id, limit, offset)

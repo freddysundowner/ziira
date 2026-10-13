@@ -1696,6 +1696,339 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pos/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Devices */
+        get: operations["get_devices_api_v1_pos_devices_get"];
+        put?: never;
+        /**
+         * Post Device
+         * @description Register a till, tablet or phone. The key in the answer is shown once.
+         */
+        post: operations["post_device_api_v1_pos_devices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/devices/{device_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Device Status
+         * @description Block a lost device or let it work again.
+         */
+        patch: operations["patch_device_status_api_v1_pos_devices__device_id__status_patch"];
+        trace?: never;
+    };
+    "/api/v1/pos/devices/{device_id}/rotate-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Rotate Key
+         * @description Give a device a new key; the old one stops working.
+         */
+        post: operations["post_rotate_key_api_v1_pos_devices__device_id__rotate_key_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/tills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Tills */
+        get: operations["get_tills_api_v1_pos_tills_get"];
+        put?: never;
+        /**
+         * Post Till
+         * @description Open your till on a device with a cash float.
+         */
+        post: operations["post_till_api_v1_pos_tills_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/tills/{till_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Till */
+        get: operations["get_till_api_v1_pos_tills__till_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/tills/{till_id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Till Report
+         * @description The till's figures so far (the X report; after closing, the Z report).
+         */
+        get: operations["get_till_report_api_v1_pos_tills__till_id__report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/tills/{till_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Close Till
+         * @description Count the drawer and close the till. A difference needs a reason.
+         */
+        post: operations["post_close_till_api_v1_pos_tills__till_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Catalog
+         * @description Products a till can sell, with today's price and (given a location) the stock.
+         */
+        get: operations["get_catalog_api_v1_pos_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sales */
+        get: operations["get_sales_api_v1_pos_sales_get"];
+        put?: never;
+        /**
+         * Post Sale
+         * @description Ring up a sale on your open till. A retry with the same `local_id` (or Idempotency-Key) returns the sale that
+         *     was recorded the first time.
+         */
+        post: operations["post_sale_api_v1_pos_sales_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales/{sale_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sale */
+        get: operations["get_sale_api_v1_pos_sales__sale_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales/{sale_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Void
+         * @description Cancel a sale while its till is open: payments, stock and books are reversed.
+         */
+        post: operations["post_void_api_v1_pos_sales__sale_id__void_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sales/{sale_id}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Return
+         * @description Take goods back and refund them. Large refunds wait for approval (status 'pending_approval').
+         */
+        post: operations["post_return_api_v1_pos_sales__sale_id__returns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Returns */
+        get: operations["get_returns_api_v1_pos_returns_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/returns/{return_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Return */
+        get: operations["get_return_api_v1_pos_returns__return_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sync/snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Snapshot
+         * @description Products, prices and stock for a device to sell from while offline. Page through with offset until
+         *     `has_more` is false.
+         */
+        get: operations["get_snapshot_api_v1_pos_sync_snapshot_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sync/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Upload
+         * @description Send what happened offline, in order. Safe to repeat: operations already accepted are answered, not redone.
+         */
+        post: operations["post_upload_api_v1_pos_sync_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/sync/rejections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rejections
+         * @description Offline operations the server could not accept (kept whole, so nothing is lost).
+         */
+        get: operations["get_rejections_api_v1_pos_sync_rejections_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/products/uoms": {
         parameters: {
             query?: never;
@@ -1780,6 +2113,45 @@ export interface paths {
         /** Get One Product */
         get: operations["get_one_product_api_v1_products_products__product_id__get"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/price-lists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Price Lists */
+        get: operations["get_price_lists_api_v1_products_price_lists_get"];
+        put?: never;
+        /** Post Price List */
+        post: operations["post_price_list_api_v1_products_price_lists_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/price-lists/{price_list_id}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Prices */
+        get: operations["get_prices_api_v1_products_price_lists__price_list_id__prices_get"];
+        /**
+         * Put Price
+         * @description Set a product's tax-inclusive price from a date; the price before it ends the day before.
+         */
+        put: operations["put_price_api_v1_products_price_lists__price_list_id__prices_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2105,6 +2477,33 @@ export interface components {
             /** Reference */
             reference: string;
         };
+        /** CatalogItemOut */
+        CatalogItemOut: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Sku */
+            sku: string;
+            /** Name */
+            name: string;
+            /** Product Type */
+            product_type: string;
+            /** Vat Rate */
+            vat_rate: string;
+            /** Is Batch Tracked */
+            is_batch_tracked: boolean;
+            /**
+             * Uom Id
+             * Format: uuid
+             */
+            uom_id: string;
+            /** Price */
+            price: string | null;
+            /** Stock */
+            stock: string | null;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
@@ -2409,6 +2808,82 @@ export interface components {
             approve: boolean;
             /** Note */
             note?: string | null;
+        };
+        /** DeviceIn */
+        DeviceIn: {
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Location Id
+             * @description The store this device's sales take stock from
+             */
+            location_id?: string | null;
+        };
+        /** DeviceKeyOut */
+        DeviceKeyOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Location Id */
+            location_id: string | null;
+            /** Status */
+            status: string;
+            /** Last Sync At */
+            last_sync_at: string | null;
+            /**
+             * Key
+             * @description Shown once: the device keeps it and sends it as X-Device-Key when syncing
+             */
+            key: string;
+        };
+        /** DeviceOut */
+        DeviceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Location Id */
+            location_id: string | null;
+            /** Status */
+            status: string;
+            /** Last Sync At */
+            last_sync_at: string | null;
+        };
+        /** DeviceStatusIn */
+        DeviceStatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "blocked";
         };
         /** EntryLineOut */
         EntryLineOut: {
@@ -3068,6 +3543,32 @@ export interface components {
              */
             created_at: string;
         };
+        /** OpResultOut */
+        OpResultOut: {
+            /**
+             * Local Id
+             * Format: uuid
+             */
+            local_id: string;
+            /** Type */
+            type: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "duplicate" | "rejected";
+            /** Id */
+            id?: string | null;
+            /** Number */
+            number?: string | null;
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: string[];
+            /** Error */
+            error?: string | null;
+        };
         /** OpeningLineIn */
         OpeningLineIn: {
             /**
@@ -3247,6 +3748,83 @@ export interface components {
             /** Description */
             description: string;
         };
+        /** PriceIn */
+        PriceIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Price */
+            price: number | string;
+            /** Valid From */
+            valid_from?: string | null;
+        };
+        /** PriceListIn */
+        PriceListIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /**
+             * Is Default
+             * @default false
+             */
+            is_default: boolean;
+        };
+        /** PriceListOut */
+        PriceListOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Currency */
+            currency: string;
+            /** Is Default */
+            is_default: boolean;
+        };
+        /** PriceOut */
+        PriceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Price List Id
+             * Format: uuid
+             */
+            price_list_id: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Price */
+            price: string;
+            /**
+             * Valid From
+             * Format: date
+             */
+            valid_from: string;
+            /** Valid To */
+            valid_to: string | null;
+        };
         /** ProductIn */
         ProductIn: {
             /**
@@ -3392,6 +3970,41 @@ export interface components {
             /** Device Id */
             device_id: string;
         };
+        /** RejectionOut */
+        RejectionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Device Id
+             * Format: uuid
+             */
+            device_id: string;
+            /**
+             * Local Id
+             * Format: uuid
+             */
+            local_id: string;
+            /** Op Type */
+            op_type: string;
+            /** Error */
+            error: string;
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Resolved At */
+            resolved_at: string | null;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+        };
         /** RequestOut */
         RequestOut: {
             /**
@@ -3420,6 +4033,112 @@ export interface components {
             decided_by: string | null;
             /** Note */
             note: string | null;
+        };
+        /** ReturnIn */
+        ReturnIn: {
+            /** Lines */
+            lines: components["schemas"]["ReturnLineIn"][];
+            /**
+             * Reason Code Id
+             * Format: uuid
+             */
+            reason_code_id: string;
+            /**
+             * Refund Method
+             * @enum {string}
+             */
+            refund_method: "cash" | "mpesa" | "exchange";
+            /** Note */
+            note?: string | null;
+            /** Restock Location Id */
+            restock_location_id?: string | null;
+        };
+        /** ReturnLineIn */
+        ReturnLineIn: {
+            /**
+             * Sale Line Id
+             * Format: uuid
+             */
+            sale_line_id: string;
+            /** Quantity */
+            quantity: number | string;
+        };
+        /** ReturnLineOut */
+        ReturnLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Sale Line Id */
+            sale_line_id: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: string;
+            /** Line Total */
+            line_total: string;
+            /** Tax Amount */
+            tax_amount: string;
+        };
+        /** ReturnOut */
+        ReturnOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Original Sale Id */
+            original_sale_id: string | null;
+            /** Refund Method */
+            refund_method: string;
+            /** Total */
+            total: string;
+            /** Status */
+            status: string;
+            /** Business Date */
+            business_date: string | null;
+            /** Lines */
+            lines: components["schemas"]["ReturnLineOut"][];
+        };
+        /** ReturnSummaryOut */
+        ReturnSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Original Sale Id */
+            original_sale_id: string | null;
+            /** Refund Method */
+            refund_method: string;
+            /** Total */
+            total: string;
+            /** Status */
+            status: string;
+            /** Business Date */
+            business_date: string | null;
         };
         /** ReverseIn */
         ReverseIn: {
@@ -3464,6 +4183,270 @@ export interface components {
              * Format: uuid
              */
             account_id: string;
+        };
+        /** SaleIn */
+        SaleIn: {
+            /**
+             * Till Session Id
+             * Format: uuid
+             */
+            till_session_id: string;
+            /** Lines */
+            lines: components["schemas"]["SaleLineIn"][];
+            /** Payments */
+            payments: components["schemas"]["SalePaymentIn"][];
+            /** Customer Id */
+            customer_id?: string | null;
+            /**
+             * Local Id
+             * @description Makes a retry safe: the same id records the sale once
+             */
+            local_id?: string | null;
+        };
+        /** SaleLineIn */
+        SaleLineIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: number | string;
+            /**
+             * Unit Price
+             * @description Tax-inclusive. Leave out to use the list price
+             */
+            unit_price?: number | string | null;
+            /**
+             * Discount
+             * @default 0
+             */
+            discount: number | string;
+            /**
+             * Reason Code Id
+             * @description From the 'price_override' list
+             */
+            reason_code_id?: string | null;
+            /** Batch Id */
+            batch_id?: string | null;
+        };
+        /** SaleLineOut */
+        SaleLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Line No */
+            line_no: number;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: string;
+            /** List Price */
+            list_price: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Discount Amount */
+            discount_amount: string;
+            /** Tax Amount */
+            tax_amount: string;
+            /** Line Total */
+            line_total: string;
+            /** Cost Amount */
+            cost_amount: string | null;
+        };
+        /** SaleOp */
+        SaleOp: {
+            /** Till Session Id */
+            till_session_id?: string | null;
+            /**
+             * Till Local Id
+             * @description The id the device made when it opened the till
+             */
+            till_local_id?: string | null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "sale";
+            /**
+             * Local Id
+             * Format: uuid
+             */
+            local_id: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Number
+             * @description The device's own number: POS-<branch>-<device>-L000123
+             */
+            number?: string | null;
+            /** Lines */
+            lines: components["schemas"]["SaleLineIn"][];
+            /** Payments */
+            payments: components["schemas"]["SalePaymentIn"][];
+            /** Customer Id */
+            customer_id?: string | null;
+        };
+        /** SaleOut */
+        SaleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Till Session Id */
+            till_session_id: string | null;
+            /**
+             * Cashier Id
+             * Format: uuid
+             */
+            cashier_id: string;
+            /**
+             * Business Date
+             * Format: date
+             */
+            business_date: string;
+            /**
+             * Sold At
+             * Format: date-time
+             */
+            sold_at: string;
+            /** Total */
+            total: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Discount Total */
+            discount_total: string;
+            /** Status */
+            status: string;
+            /** Synced Offline */
+            synced_offline: boolean;
+            /** Subtotal */
+            subtotal: string;
+            /** Customer Id */
+            customer_id: string | null;
+            /** Lines */
+            lines: components["schemas"]["SaleLineOut"][];
+            /** Payments */
+            payments: components["schemas"]["SalePaymentOut"][];
+            /**
+             * Change
+             * @default 0
+             */
+            change: string;
+            /**
+             * Warnings
+             * @default []
+             */
+            warnings: string[];
+            /**
+             * Replayed
+             * @default false
+             */
+            replayed: boolean;
+        };
+        /** SalePaymentIn */
+        SalePaymentIn: {
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "cash" | "mpesa" | "card" | "other";
+            /**
+             * Amount
+             * @description What was handed over. Cash may be more than is due: the rest is change
+             */
+            amount: number | string;
+            /**
+             * External Ref
+             * @description M-Pesa code or card slip number
+             */
+            external_ref?: string | null;
+            /** Payment Account Id */
+            payment_account_id?: string | null;
+        };
+        /** SalePaymentOut */
+        SalePaymentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Method */
+            method: string;
+            /** Amount */
+            amount: string;
+            /** External Ref */
+            external_ref: string | null;
+            /** Payment Id */
+            payment_id: string | null;
+        };
+        /** SaleSummaryOut */
+        SaleSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Till Session Id */
+            till_session_id: string | null;
+            /**
+             * Cashier Id
+             * Format: uuid
+             */
+            cashier_id: string;
+            /**
+             * Business Date
+             * Format: date
+             */
+            business_date: string;
+            /**
+             * Sold At
+             * Format: date-time
+             */
+            sold_at: string;
+            /** Total */
+            total: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Discount Total */
+            discount_total: string;
+            /** Status */
+            status: string;
+            /** Synced Offline */
+            synced_offline: boolean;
         };
         /** SeriesOut */
         SeriesOut: {
@@ -3575,6 +4558,30 @@ export interface components {
              */
             channel: "web" | "pos" | "api" | "whatsapp";
         };
+        /** SnapshotOut */
+        SnapshotOut: {
+            /**
+             * Device Id
+             * Format: uuid
+             */
+            device_id: string;
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Location Id */
+            location_id: string | null;
+            /**
+             * Server Time
+             * Format: date-time
+             */
+            server_time: string;
+            /** Items */
+            items: components["schemas"]["CatalogItemOut"][];
+            /** Has More */
+            has_more: boolean;
+        };
         /** StatementIn */
         StatementIn: {
             /**
@@ -3630,6 +4637,183 @@ export interface components {
              * Format: uuid
              */
             id: string;
+        };
+        /** TillCloseIn */
+        TillCloseIn: {
+            /** Counted Cash */
+            counted_cash: number | string;
+            /**
+             * Reason Code Id
+             * @description From the 'till_variance' list; needed if short/over
+             */
+            reason_code_id?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** TillCloseOp */
+        TillCloseOp: {
+            /** Till Session Id */
+            till_session_id?: string | null;
+            /**
+             * Till Local Id
+             * @description The id the device made when it opened the till
+             */
+            till_local_id?: string | null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "till_close";
+            /**
+             * Local Id
+             * Format: uuid
+             */
+            local_id: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Counted Cash */
+            counted_cash: number | string;
+            /** Reason Code Id */
+            reason_code_id?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** TillOpenIn */
+        TillOpenIn: {
+            /**
+             * Device Id
+             * Format: uuid
+             */
+            device_id: string;
+            /**
+             * Opening Float
+             * @default 0
+             */
+            opening_float: number | string;
+            /**
+             * Local Id
+             * @description Makes a retry safe: the same id opens the till once
+             */
+            local_id?: string | null;
+        };
+        /** TillOpenOp */
+        TillOpenOp: {
+            /** Till Session Id */
+            till_session_id?: string | null;
+            /**
+             * Till Local Id
+             * @description The id the device made when it opened the till
+             */
+            till_local_id?: string | null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "till_open";
+            /**
+             * Local Id
+             * Format: uuid
+             */
+            local_id: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Opening Float
+             * @default 0
+             */
+            opening_float: number | string;
+        };
+        /** TillOut */
+        TillOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /**
+             * Device Id
+             * Format: uuid
+             */
+            device_id: string;
+            /**
+             * Cashier Id
+             * Format: uuid
+             */
+            cashier_id: string;
+            /**
+             * Business Date
+             * Format: date
+             */
+            business_date: string;
+            /**
+             * Opened At
+             * Format: date-time
+             */
+            opened_at: string;
+            /** Opening Float */
+            opening_float: string;
+            /** Closed At */
+            closed_at: string | null;
+            /** Expected Cash */
+            expected_cash: string | null;
+            /** Counted Cash */
+            counted_cash: string | null;
+            /** Variance */
+            variance: string | null;
+            /** Status */
+            status: string;
+        };
+        /** TillReportOut */
+        TillReportOut: {
+            /**
+             * Till Session Id
+             * Format: uuid
+             */
+            till_session_id: string;
+            /**
+             * Business Date
+             * Format: date
+             */
+            business_date: string;
+            /** Status */
+            status: string;
+            /** Opening Float */
+            opening_float: string;
+            /** Sales Count */
+            sales_count: number;
+            /** Sales Total */
+            sales_total: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Discount Total */
+            discount_total: string;
+            /** Voided Count */
+            voided_count: number;
+            /** Voided Total */
+            voided_total: string;
+            /** Takings By Method */
+            takings_by_method: {
+                [key: string]: string;
+            };
+            /** Cash Refunded */
+            cash_refunded: string;
+            /** Expected Cash */
+            expected_cash: string;
+            /** Counted Cash */
+            counted_cash: string | null;
+            /** Variance */
+            variance: string | null;
         };
         /** TokensOut */
         TokensOut: {
@@ -3848,6 +5032,21 @@ export interface components {
              */
             id: string;
         };
+        /** UploadIn */
+        UploadIn: {
+            /** Ops */
+            ops: (components["schemas"]["TillOpenOp"] | components["schemas"]["SaleOp"] | components["schemas"]["TillCloseOp"])[];
+        };
+        /** UploadOut */
+        UploadOut: {
+            /** Results */
+            results: components["schemas"]["OpResultOut"][];
+            /**
+             * Server Time
+             * Format: date-time
+             */
+            server_time: string;
+        };
         /** UserIn */
         UserIn: {
             /** Full Name */
@@ -3895,6 +5094,16 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** VoidIn */
+        VoidIn: {
+            /**
+             * Reason Code Id
+             * Format: uuid
+             */
+            reason_code_id: string;
+            /** Note */
+            note?: string | null;
         };
         /** ReasonIn */
         ziira__kernel__api__schemas__ReasonIn: {
@@ -8538,6 +9747,816 @@ export interface operations {
             };
         };
     };
+    get_devices_api_v1_pos_devices_get: {
+        parameters: {
+            query?: {
+                branch_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_device_api_v1_pos_devices_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceKeyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_device_status_api_v1_pos_devices__device_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_rotate_key_api_v1_pos_devices__device_id__rotate_key_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceKeyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tills_api_v1_pos_tills_get: {
+        parameters: {
+            query?: {
+                branch_id?: string | null;
+                status?: string | null;
+                business_date?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TillOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_till_api_v1_pos_tills_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TillOpenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TillOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_till_api_v1_pos_tills__till_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                till_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TillOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_till_report_api_v1_pos_tills__till_id__report_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                till_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TillReportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_close_till_api_v1_pos_tills__till_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                till_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TillCloseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TillReportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_catalog_api_v1_pos_catalog_get: {
+        parameters: {
+            query: {
+                branch_id: string;
+                location_id?: string | null;
+                search?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogItemOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sales_api_v1_pos_sales_get: {
+        parameters: {
+            query?: {
+                branch_id?: string | null;
+                business_date?: string | null;
+                status?: string | null;
+                till_session_id?: string | null;
+                number?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_sale_api_v1_pos_sales_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+                /** @description Makes a retry safe: the same key does the work once */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sale_api_v1_pos_sales__sale_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                sale_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_void_api_v1_pos_sales__sale_id__void_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                sale_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_return_api_v1_pos_sales__sale_id__returns_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                sale_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReturnIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_returns_api_v1_pos_returns_get: {
+        parameters: {
+            query?: {
+                branch_id?: string | null;
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_return_api_v1_pos_returns__return_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                return_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReturnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_snapshot_api_v1_pos_sync_snapshot_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description The device's key; the cashier also signs in */
+                "X-Device-Key"?: string | null;
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SnapshotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_upload_api_v1_pos_sync_upload_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description The device's key; the cashier also signs in */
+                "X-Device-Key"?: string | null;
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rejections_api_v1_pos_sync_rejections_get: {
+        parameters: {
+            query?: {
+                include_resolved?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_uoms_api_v1_products_uoms_get: {
         parameters: {
             query?: never;
@@ -8834,6 +10853,166 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_price_lists_api_v1_products_price_lists_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceListOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_price_list_api_v1_products_price_lists_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceListIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceListOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_prices_api_v1_products_price_lists__price_list_id__prices_get: {
+        parameters: {
+            query?: {
+                product_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                price_list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_price_api_v1_products_price_lists__price_list_id__prices_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                price_list_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceOut"];
                 };
             };
             /** @description Validation Error */

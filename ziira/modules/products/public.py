@@ -10,6 +10,7 @@ sockets Products offers (declared in hooks.py and in manifest.toml):
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
@@ -78,3 +79,24 @@ def find_product(session: Session, product_id: UUID) -> ProductView | None:
 def product_labels(session: Session, product_ids: set[UUID]) -> dict[UUID, tuple[str, str]]:
     """(sku, name) for each existing product id: for screens that list other units' records."""
     return {p.id: (p.sku, p.name) for p in products_repo.get_products(session, product_ids)}
+
+
+def selling_prices(session: Session, company_id: UUID, branch_id: UUID | None, product_ids: set[UUID],
+                   day: date | None = None) -> dict[UUID, Decimal]:
+    """The tax-inclusive selling price of each product that has one on `day` (default today) at the branch. Products
+    without a price are absent."""
+    from ziira.modules.products.services.pricing import current_prices
+
+    return current_prices(session, company_id, branch_id, product_ids, day)
+
+
+def sellable_products(session: Session, company_id: UUID, search: str | None = None, limit: int = 100,
+                      offset: int = 0) -> list[ProductView]:
+    """The company's active products by name (a till's catalog), with their VAT rates."""
+    rates = {t.id: t.vat_rate for t in products_repo.list_tax_codes(session)}
+    return [ProductView(
+        id=p.id, company_id=p.company_id, sku=p.sku, name=p.name, product_type=p.product_type,
+        base_uom_id=p.base_uom_id, tax_code_id=p.tax_code_id, vat_rate=rates.get(p.tax_code_id, Decimal(0)),
+        is_batch_tracked=p.is_batch_tracked, is_active=p.is_active, reorder_level=p.reorder_level)
+        for p in products_repo.list_products(session, search, min(limit, 1000), offset, {company_id},
+                                             only_active=True)]

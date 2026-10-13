@@ -134,12 +134,14 @@ def list_payments(session: Session, *, branch_id: UUID | None = None, method: st
                                        doc_id=doc_id, limit=min(limit, 500), offset=offset)
 
 
-def reverse_payment(session: Session, payment_id: UUID, reason: str) -> Payment:
-    """Cancel a payment that was recorded by mistake (it stays on record as reversed). Needs 'payments.record'."""
+def reverse_payment(session: Session, payment_id: UUID, reason: str, *, authorised: bool = False) -> Payment:
+    """Cancel a payment that was recorded by mistake (it stays on record as reversed). Needs 'payments.record', unless
+    another unit has already checked the user's right to undo the document the payment belongs to (a voided sale)."""
     payment = payments_repo.get_payment(session, payment_id, lock=True)
     if payment is None:
         raise NotFound("Payment not found")
-    current_context().require(PAYMENTS_RECORD, company_id=payment.company_id, branch_id=payment.branch_id)
+    if not authorised:
+        current_context().require(PAYMENTS_RECORD, company_id=payment.company_id, branch_id=payment.branch_id)
     if payment.status != "posted":
         raise Conflict(f"This payment is already {payment.status}")
     if not reason.strip():

@@ -1,6 +1,6 @@
 """SQLAlchemy mappings for tables in the `products` schema."""
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -57,3 +57,28 @@ class Product(TenantColumns, Base):
     is_batch_tracked: Mapped[bool]
     reorder_level: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
+
+
+class PriceList(TenantColumns, Base):
+    __tablename__ = "price_list"
+    __table_args__ = {"schema": "products"}
+
+    company_id: Mapped[UUID]
+    name: Mapped[str]
+    branch_id: Mapped[UUID | None]
+    customer_group: Mapped[str | None]
+    currency: Mapped[str] = mapped_column(server_default=text("'KES'"))
+    is_default: Mapped[bool] = mapped_column(server_default=text("false"))
+
+
+class PriceListItem(TenantColumns, Base):
+    __tablename__ = "price_list_item"
+    __table_args__ = {"schema": "products"}
+
+    price_list_id: Mapped[UUID]
+    product_id: Mapped[UUID]
+    uom_id: Mapped[UUID]
+    price: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    valid_from: Mapped[date]
+    valid_to: Mapped[date | None]
+    approved_by: Mapped[UUID | None]

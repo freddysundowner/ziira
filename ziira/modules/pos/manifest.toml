@@ -9,8 +9,8 @@ optional = ["crm", "finance"]
 
 [provides]
 api_prefix = "/api/v1/pos"
-publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued"]
-subscribes = []
+publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued", "pos.synced"]
+subscribes = ["approval.decided"]
 
 [permissions]
 "sales.sell" = "Make sales"
@@ -18,4 +18,37 @@ subscribes = []
 "sales.refund" = "Process returns"
 "price.override" = "Override prices and discounts"
 "invoices.manage" = "Issue invoices"
-"till.manage" = "Open and close tills"
+"till.manage" = "Open and close your own till"
+"till.review" = "See and close any till at a branch"
+"devices.manage" = "Register and block POS devices"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Branch Manager" = ["sales.sell", "sales.void", "sales.refund", "price.override", "invoices.manage", "till.manage", "till.review", "devices.manage"]
+"Finance Manager" = ["till.review"]
+"Accountant" = ["till.review"]
+"Cashier" = ["sales.sell", "till.manage"]
+"Sales Rep" = ["sales.sell"]
+
+# Reason codes seeded for the tenant when the module is enabled; tenants can add their own.
+[reason_codes.void]
+WRONG_ITEM = "Wrong item rung up"
+CUSTOMER_LEFT = "Customer changed their mind"
+CASHIER_ERROR = "Cashier error"
+
+[reason_codes.sale_return]
+FAULTY = "Faulty goods"
+WRONG_ITEM = "Wrong item supplied"
+NOT_WANTED = "Customer changed their mind"
+
+[reason_codes.price_override]
+MANAGER_APPROVED = "Manager approved price"
+DAMAGED = "Damaged or shop-soiled"
+BULK = "Bulk or regular customer discount"
+MATCH_COMPETITOR = "Matching a competitor's price"
+
+[reason_codes.till_variance]
+CHANGE_ERROR = "Change given incorrectly"
+UNRECORDED_SALE = "Sale not recorded"
+UNRECORDED_PAYOUT = "Cash paid out and not recorded"
+UNKNOWN = "Not yet explained"
