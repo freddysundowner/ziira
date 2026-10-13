@@ -22,7 +22,7 @@ from ziira.modules.products.services.create_tax_code import create_tax_code
 from ziira.modules.products.services.create_uom import create_uom
 from ziira.modules.products.services.find_products import get_product, list_products, list_tax_codes, list_uoms
 from ziira.modules.products.services.suggest_skus import suggest_skus
-from ziira.sdk import Session, db_session, require_permission
+from ziira.sdk import Session, db_session, page_limit, page_offset, require_permission
 
 router = APIRouter()
 VIEW = [Depends(require_permission(PRODUCTS_VIEW))]
@@ -55,7 +55,7 @@ def post_product(body: ProductIn, session: Session = Depends(db_session)) -> obj
 
 
 @router.get("/products", response_model=list[ProductOut], dependencies=VIEW)
-def get_products(search: str | None = None, limit: int = 50, offset: int = 0,
+def get_products(search: str | None = None, limit: int = page_limit(50), offset: int = page_offset(),
                  session: Session = Depends(db_session)) -> object:
     return list_products(session, search, limit, offset)
 

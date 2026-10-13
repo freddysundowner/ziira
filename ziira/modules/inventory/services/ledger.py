@@ -108,6 +108,8 @@ def post_movement(session: Session, request: MovementRequest) -> StockMovement:
         request.allow_negative if request.allow_negative is not None
         else bool(company_setting(session, request.company_id, "negative_stock_allowed")))
     went_negative = movements.check_negative_stock(balance.quantity, request.quantity, allowed=allowed)
+    if abs(balance.quantity + request.quantity) > movements.MAX_QUANTITY:
+        raise ValidationFailed("The quantity held would be too large to record")
 
     before = CostState(cost.quantity, cost.value, cost.average_cost)
     costed = cost_movement(before, request.movement_type, request.quantity, request.unit_cost)

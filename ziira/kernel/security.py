@@ -21,6 +21,7 @@ from ziira.kernel.config import get_settings
 from ziira.kernel.errors import Unauthorized, ValidationFailed
 
 _SCRYPT_N, _SCRYPT_R, _SCRYPT_P = 2**14, 8, 1
+MAX_PASSWORD_LENGTH = 1024        # longer ones are refused rather than hashed (no use as a way to burn CPU)
 
 
 def _b64(data: bytes) -> str:
@@ -36,6 +37,8 @@ def hash_password(password: str) -> str:
     """Return a salted scrypt hash, e.g. `scrypt$16384$8$1$<salt>$<hash>`."""
     if len(password) < 8:
         raise ValidationFailed("Password must be at least 8 characters")
+    if len(password) > MAX_PASSWORD_LENGTH:
+        raise ValidationFailed(f"Password can be at most {MAX_PASSWORD_LENGTH} characters")
     salt = secrets.token_bytes(16)
     digest = hashlib.scrypt(password.encode(), salt=salt, n=_SCRYPT_N, r=_SCRYPT_R, p=_SCRYPT_P)
     return f"scrypt${_SCRYPT_N}${_SCRYPT_R}${_SCRYPT_P}${_b64(salt)}${_b64(digest)}"
@@ -43,6 +46,8 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, stored: str | None) -> bool:
     """True if the password matches the stored hash. Takes similar time when there is no hash."""
+    if len(password) > MAX_PASSWORD_LENGTH:
+        return False                  # cannot be a real password (see hash_password); do not spend time hashing it
     if not stored:
         # Spend the same effort so response time does not reveal whether the user exists.
         hashlib.scrypt(password.encode(), salt=b"0" * 16, n=_SCRYPT_N, r=_SCRYPT_R, p=_SCRYPT_P)

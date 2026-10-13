@@ -5,6 +5,7 @@ requires the actor to hold each of those permissions over the same scope. This s
 manager from making themselves Owner.
 """
 
+import re
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -18,6 +19,8 @@ from ziira.kernel.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from ziira.kernel.security import hash_password
 
 SCOPES = ("tenant", "company", "branch", "own")
+EMAIL_PATTERN = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,189}\.[^@\s.]{2,}$")
+PHONE_PATTERN = re.compile(r"^\+?[0-9][0-9 ()-]{5,18}[0-9]$")
 
 
 @dataclass(frozen=True)
@@ -69,6 +72,10 @@ def create_user(s: Session, *, full_name: str, email: str | None = None, phone: 
         raise ValidationFailed("Give an email or a phone number")
     email = email.strip().lower() if email else None
     phone = phone.strip() if phone else None
+    if email is not None and not EMAIL_PATTERN.match(email):
+        raise ValidationFailed("Email address is not valid")
+    if phone is not None and not PHONE_PATTERN.match(phone):
+        raise ValidationFailed("Phone number is not valid (digits, optionally starting with +)")
     taken = s.execute(text("select 1 from kernel.app_user where lower(email) = :e or phone = :p"),
                       {"e": email, "p": phone}).first()
     if taken:
@@ -261,8 +268,9 @@ def revoke_role(s: Session, grant_id: UUID) -> None:
         owners = s.execute(text(
             "select count(*) from kernel.user_role ur join kernel.role r on r.id = ur.role_id "
             "join kernel.app_user u on u.id = ur.user_id "
-            "where r.is_system and r.name = 'Owner' and ur.scope = 'tenant' and u.status = 'active'")).scalar_one()
-        if owners <= 1:
+            "where r.is_system and r.name = 'Owner' and ur.scope = 'tenant' and u.status = 'active' "
+            "and ur.id <> :i"), {"i": str(grant_id)}).scalar_one()
+        if owners < 1:
             raise ValidationFailed("The business must keep at least one owner")
     s.execute(text("delete from kernel.user_role where id = :i"), {"i": str(grant_id)})
     audit.record(s, "revoke_role", "kernel.app_user", row.user_id, {"role": row.name, "scope": row.scope})

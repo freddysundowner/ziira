@@ -234,6 +234,11 @@ def lock_for_snapshot(session: Session) -> int:
     return int(session.scalar(select(func.coalesce(func.max(StockMovement.seq), 0))) or 0)
 
 
+def lock_location_counts(session: Session, location_id: UUID) -> None:
+    """Serialise the starting of counts at one location until the transaction ends."""
+    session.execute(text("select pg_advisory_xact_lock(hashtext(:key))"), {"key": f"count:{location_id}"})
+
+
 def last_movement_seq(session: Session) -> int:
     return int(session.scalar(select(func.coalesce(func.max(StockMovement.seq), 0))) or 0)
 

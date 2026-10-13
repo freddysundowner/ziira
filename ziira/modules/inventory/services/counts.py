@@ -79,6 +79,7 @@ def start_count(session: Session, *, company_id: UUID, location_id: UUID,
         raise ValidationFailed("The in-transit location cannot be counted")
     for product_id in product_ids or ():
         load_stock_product(session, company_id, product_id)
+    inventory_repo.lock_location_counts(session, location_id)       # two people starting at once: one waits
     open_count = inventory_repo.list_counts(session, None, location_id=location_id, limit=500)
     if any(c.status in OPEN for c in open_count):
         raise Conflict("This location already has a count in progress")

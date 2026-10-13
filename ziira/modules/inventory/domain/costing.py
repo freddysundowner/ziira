@@ -16,23 +16,36 @@ quantity until the next receipt; the invariant "value = sum of movement values" 
 """
 
 from dataclasses import dataclass
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
-from ziira.modules.inventory.domain.movements import INTERNAL_TRANSFER
+from ziira.modules.inventory.domain.movements import (
+    INTERNAL_TRANSFER,
+    MAX_COST,
+    MAX_QUANTITY,
+    MAX_VALUE,
+)
+from ziira.sdk import ValidationFailed
 
 ZERO = Decimal("0")
 COST_PLACES = Decimal("0.000001")
 MONEY_PLACES = Decimal("0.01")
 
 
+def _quantize(value: Decimal, places: Decimal) -> Decimal:
+    try:
+        return value.quantize(places, rounding=ROUND_HALF_UP)
+    except InvalidOperation:                         # too many digits to represent at that precision
+        raise ValidationFailed("The amount is too large to record") from None
+
+
 def round_cost(value: Decimal) -> Decimal:
     """Unit costs keep 6 decimal places (the database precision)."""
-    return value.quantize(COST_PLACES, rounding=ROUND_HALF_UP)
+    return _quantize(value, COST_PLACES)
 
 
 def round_value(value: Decimal) -> Decimal:
     """Values are money: 2 decimal places, half up."""
-    return value.quantize(MONEY_PLACES, rounding=ROUND_HALF_UP)
+    return _quantize(value, MONEY_PLACES)
 
 
 @dataclass(frozen=True)
@@ -72,12 +85,16 @@ def cost_movement(state: CostState, movement_type: str, quantity: Decimal,
         # Taking out everything there is takes out all the value, so no rounding crumbs remain.
         value = -state.value if state.quantity + quantity == 0 else round_value(quantity * cost)
 
+    if abs(value) > MAX_VALUE or cost > MAX_COST:
+        raise ValidationFailed("The amount is too large to record")
     if movement_type in INTERNAL_TRANSFER:
         return CostedMovement(cost, value, state)          # same company: its figure is unchanged
 
     new_quantity = state.quantity + quantity
     new_value = state.value + value
     average = round_cost(new_value / new_quantity) if quantity > 0 and new_quantity > 0 else state.average_cost
+    if abs(new_quantity) > MAX_QUANTITY or abs(new_value) > MAX_VALUE or average > MAX_COST:
+        raise ValidationFailed("The amount is too large to record")
     return CostedMovement(cost, value, CostState(new_quantity, new_value, average))
 
 

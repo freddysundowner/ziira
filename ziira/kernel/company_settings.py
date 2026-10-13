@@ -8,6 +8,7 @@ Adding a setting: add a `Setting` to SETTINGS below with a parser that raises Va
 """
 
 import json
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
@@ -20,6 +21,8 @@ from sqlalchemy.orm import Session
 from ziira.kernel import audit
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import NotFound, ValidationFailed
+
+log = logging.getLogger("ziira.settings")
 
 
 @dataclass(frozen=True)
@@ -64,10 +67,21 @@ def _stored(session: Session, company_id: UUID) -> dict[str, Any]:
 
 
 def get_settings(session: Session, company_id: UUID) -> dict[str, Any]:
-    """Every setting of the company, defaults filled in. Decimals come back as Decimal."""
+    """Every setting of the company, defaults filled in. Decimals come back as Decimal.
+
+    A stored value that cannot be read (edited by hand, or from an older version) falls back to the default
+    and is logged: a bad setting must never stop sales or stock postings.
+    """
     stored = _stored(session, company_id)
-    return {key: (setting.parse(stored[key]) if key in stored else setting.default)
-            for key, setting in SETTINGS.items()}
+    result: dict[str, Any] = {}
+    for key, setting in SETTINGS.items():
+        try:
+            result[key] = setting.parse(stored[key]) if key in stored else setting.default
+        except ValidationFailed:
+            log.warning("Company %s: setting %s has an unreadable value %r; using the default", company_id, key,
+                        stored[key])
+            result[key] = setting.default
+    return result
 
 
 def get_setting(session: Session, company_id: UUID, key: str) -> Any:

@@ -118,11 +118,14 @@ tests/             unit tests for domain rules
   (+ `@subscribe("approval.decided")`), `@subscribe_after`. See `docs/adding-a-module.md`.
 - Auth: sign-in with workspace code + email/phone + password; bearer tokens; API keys (`X-API-Key`).
   Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
+- New endpoints are covered by the fuzzer automatically (`tests/test_robustness.py`: add a valid baseline body to its
+  `valid_body` if the generic sample cannot pass your rules). Request numbers use `ziira.sdk` `Quantity`, `UnitCost`,
+  `Amount`, `Rate`; list endpoints use `page_limit()` / `page_offset()`. See `docs/testing.md`.
 - Permission tests sign in as real users (`tests/conftest.py`: `make_tenant`, `sign_in`), never the dev header.
 
 ## Where things are
 
-`docs/PROGRESS.md` (state, checklist, log) · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

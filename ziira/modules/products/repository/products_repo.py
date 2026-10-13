@@ -68,6 +68,8 @@ def list_products(session: Session, search: str | None, limit: int, offset: int,
     if company_ids is not None:
         query = query.where(Product.company_id.in_(company_ids))
     if search:
-        pattern = f"%{search}%"
-        query = query.where(Product.name.ilike(pattern) | Product.sku.ilike(pattern))
+        # % and _ in what the user typed are ordinary characters, not wildcards
+        escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{escaped}%"
+        query = query.where(Product.name.ilike(pattern, escape="\\") | Product.sku.ilike(pattern, escape="\\"))
     return list(session.scalars(query))

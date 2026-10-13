@@ -1,5 +1,6 @@
 """Rules shared by stock documents (adjustments, transfers, counts). Pure Python: no database, no HTTP."""
 
+from collections.abc import Sequence
 from decimal import Decimal
 
 from ziira.modules.inventory.domain.costing import round_value
@@ -13,7 +14,7 @@ def check_status(document: str, current: str, allowed: tuple[str, ...], action: 
         raise Conflict(f"This {document} is {current.replace('_', ' ')}, so it cannot be {action}")
 
 
-def check_adjustment_lines(lines: list[tuple[object, object | None, Decimal]]) -> None:
+def check_adjustment_lines(lines: Sequence[tuple[object, object | None, Decimal]]) -> None:
     """Lines are (product, batch, quantity change): at least one, each non-zero, none repeated."""
     if not lines:
         raise ValidationFailed("Add at least one line")

@@ -1,5 +1,6 @@
 """Rules for transfers between locations. Pure Python: no database, no HTTP."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 from uuid import UUID
@@ -17,13 +18,13 @@ def check_transfer_locations(from_id: UUID, to_id: UUID, from_kind: str, to_kind
         raise ValidationFailed("The in-transit location is used by the system; choose stores or warehouses")
 
 
-def check_transfer_lines(lines: list[tuple[UUID, UUID | None, Decimal]]) -> None:
+def check_transfer_lines(lines: Sequence[tuple[UUID, UUID | None, Decimal]]) -> None:
     """Lines are (product, batch, quantity): at least one, each positive, none repeated."""
     if not lines:
         raise ValidationFailed("Add at least one line")
     seen: set[tuple[UUID, UUID | None]] = set()
     for product, batch, quantity in lines:
-        check_quantity(quantity)
+        check_quantity(quantity)                # also refuses NaN and infinity, so the comparison below is safe
         if quantity < 0:
             raise ValidationFailed("Quantities to transfer must be positive")
         if (product, batch) in seen:
@@ -46,6 +47,8 @@ class Receipt:
 
 def check_received_quantity(qty_received: Decimal) -> None:
     """Received quantities are zero (nothing arrived) or positive, with at most 4 decimal places."""
+    if not qty_received.is_finite():
+        raise ValidationFailed("Quantity must be a number")
     if qty_received < 0:
         raise ValidationFailed("Received quantity cannot be negative")
     if qty_received != 0:

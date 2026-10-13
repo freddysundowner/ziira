@@ -10,6 +10,10 @@ from decimal import Decimal
 from ziira.sdk import ValidationFailed
 
 QUANTITY_PLACES = Decimal("0.0001")
+# The most the database columns can hold: numeric(18,4) quantities, numeric(18,6) costs, numeric(18,2) values.
+MAX_QUANTITY = Decimal("99999999999999.9999")
+MAX_COST = Decimal("999999999999.999999")
+MAX_VALUE = Decimal("9999999999999999.99")
 
 # Movement types and the direction they allow. "any" = either, e.g. a count finds more or less.
 DIRECTION: dict[str, str] = {
@@ -38,6 +42,8 @@ def check_quantity(quantity: Decimal) -> Decimal:
     """A quantity has at most 4 decimal places (the database precision) and is not zero."""
     if not quantity.is_finite():
         raise ValidationFailed("Quantity must be a number")
+    if abs(quantity) > MAX_QUANTITY:
+        raise ValidationFailed("Quantity is too large")
     if quantity != quantity.quantize(QUANTITY_PLACES):
         raise ValidationFailed("Quantity can have at most 4 decimal places")
     if quantity == 0:
@@ -60,6 +66,8 @@ def check_movement(movement_type: str, quantity: Decimal, *, reason_code_id: obj
         raise ValidationFailed(f"A reason is required for a {movement_type.replace('_', ' ')}")
     if unit_cost is not None and (not unit_cost.is_finite() or unit_cost < 0):
         raise ValidationFailed("Unit cost cannot be negative")
+    if unit_cost is not None and unit_cost > MAX_COST:
+        raise ValidationFailed("Unit cost is too large")
     if movement_type in COST_REQUIRED and unit_cost is None:
         raise ValidationFailed(f"A unit cost is required for a {movement_type.replace('_', ' ')}")
 

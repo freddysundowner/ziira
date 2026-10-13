@@ -2,17 +2,19 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from ziira.sdk import Quantity, UnitCost
 
 
 class LocationIn(BaseModel):
     company_id: UUID
     branch_id: UUID | None = Field(default=None, description="Required for a store or warehouse")
-    code: str = Field(examples=["MAIN"])
-    name: str = Field(examples=["Main shop floor"])
+    code: str = Field(max_length=20, examples=["MAIN"])
+    name: str = Field(max_length=200, examples=["Main shop floor"])
     kind: Literal["store", "warehouse", "transit", "virtual"] = "store"
 
 
@@ -29,8 +31,8 @@ class LocationOut(BaseModel):
 
 class OpeningLineIn(BaseModel):
     product_id: UUID
-    quantity: Decimal = Field(gt=0, examples=["100"])
-    unit_cost: Decimal = Field(ge=0, examples=["650.00"])
+    quantity: Annotated[Quantity, Field(gt=0, examples=["100"])]
+    unit_cost: Annotated[UnitCost, Field(ge=0, examples=["650.00"])]
     batch_no: str | None = None
     expiry_date: date | None = None
 
@@ -83,7 +85,7 @@ class ProductStockOut(BaseModel):
 
 class AdjustmentLineIn(BaseModel):
     product_id: UUID
-    qty_change: Decimal = Field(description="+ adds stock, - removes it (base unit)", examples=["-3"])
+    qty_change: Annotated[Quantity, Field(description="+ adds stock, - removes it (base unit)", examples=["-3"])]
     batch_id: UUID | None = Field(default=None, description="Needed to add to a batch-tracked product")
 
 
@@ -91,7 +93,7 @@ class AdjustmentIn(BaseModel):
     company_id: UUID
     location_id: UUID
     reason_code_id: UUID = Field(description="A reason of category 'stock_adjustment'")
-    note: str | None = None
+    note: str | None = Field(default=None, max_length=2000)
     lines: list[AdjustmentLineIn] = Field(min_length=1)
 
 
@@ -131,7 +133,7 @@ class AdjustmentSummaryOut(BaseModel):
 
 class TransferLineIn(BaseModel):
     product_id: UUID
-    quantity: Decimal = Field(gt=0, examples=["10"])
+    quantity: Annotated[Quantity, Field(gt=0, examples=["10"])]
     batch_id: UUID | None = Field(default=None, description="Required for a batch-tracked product")
 
 
@@ -144,7 +146,7 @@ class TransferIn(BaseModel):
 
 class ReceivedLineIn(BaseModel):
     line_id: UUID
-    qty_received: Decimal = Field(ge=0, description="What actually arrived, in the base unit")
+    qty_received: Annotated[Quantity, Field(ge=0, description="What actually arrived, in the base unit")]
     reason_code_id: UUID | None = Field(
         default=None, description="Required when it differs from what was sent (category 'transfer_variance')")
 
@@ -198,7 +200,7 @@ class CountStartIn(BaseModel):
 
 class CountEntryIn(BaseModel):
     product_id: UUID
-    counted_qty: Decimal = Field(ge=0, description="What is on the shelf, in the base unit")
+    counted_qty: Annotated[Quantity, Field(ge=0, description="What is on the shelf, in the base unit")]
     batch_id: UUID | None = Field(default=None, description="Required for a batch-tracked product")
     reason_code_id: UUID | None = Field(default=None, description="Why it differs (category 'count_variance')")
 

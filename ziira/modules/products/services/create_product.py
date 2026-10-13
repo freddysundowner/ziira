@@ -32,6 +32,7 @@ def create_product(session: Session, *, company_id: UUID, sku: str, name: str,
     current_context().require(PRODUCTS_MANAGE, company_id=company_id)
     check_company(session, company_id)
     sku = rules.normalise_sku(sku)
+    name = rules.check_name(name)
     rules.check_product_type(product_type, is_batch_tracked)
     rules.check_reorder_level(reorder_level, product_type)
     if products_repo.get_uom(session, base_uom_id) is None:
@@ -41,13 +42,13 @@ def create_product(session: Session, *, company_id: UUID, sku: str, name: str,
     if products_repo.sku_exists(session, company_id, sku):
         raise Conflict(f"SKU '{sku}' already exists in this company")
     run_validators(session, PRODUCT_BEFORE_CREATE, ProductDraft(
-        company_id=company_id, sku=sku, name=name.strip(), product_type=product_type,
+        company_id=company_id, sku=sku, name=name, product_type=product_type,
         base_uom_id=base_uom_id, tax_code_id=tax_code_id))
 
     ctx = current_context()
     product = Product(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, sku=sku,
-        name=name.strip(), product_type=product_type, base_uom_id=base_uom_id,
+        name=name, product_type=product_type, base_uom_id=base_uom_id,
         tax_code_id=tax_code_id, is_batch_tracked=is_batch_tracked,
         reorder_level=reorder_level, etims_item_class=etims_item_class)
     products_repo.add(session, product)

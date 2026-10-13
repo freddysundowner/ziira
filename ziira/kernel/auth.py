@@ -217,7 +217,10 @@ def load_assignments(s: Session, user_id: UUID) -> tuple[Assignment, ...]:
 def context_from_access_token(token: str) -> RequestContext:
     """Verify an access token and its session, and load the user's roles."""
     payload = read_token(token)
-    tenant_id, user_id, session_id = UUID(payload["t"]), UUID(payload["u"]), UUID(payload["s"])
+    try:
+        tenant_id, user_id, session_id = UUID(payload["t"]), UUID(payload["u"]), UUID(payload["s"])
+    except (KeyError, ValueError, TypeError, AttributeError):
+        raise Unauthorized("Invalid token") from None
     _require_active_tenant(tenant_id)
     with tenant_session(tenant_id) as s:
         row = s.execute(text(

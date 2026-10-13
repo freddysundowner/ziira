@@ -10,7 +10,7 @@ push (see the end-of-session steps in `CLAUDE.md`).
 |---|---|
 | Phase | **1 (Foundation) and 2 (Catalogue and inventory) done**, MFA and CD deferred · **next: phase 3, Ledger** |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 270 backend (PostgreSQL 16, incl. Hypothesis properties and concurrency) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) |
+| Tests | 554 backend (PostgreSQL 16; branch coverage 98%; incl. fuzzing, security, Hypothesis properties, concurrency) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
 | CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-13 |
@@ -93,6 +93,8 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 
 | Item | Why it waits | Target |
 |---|---|---|
+| Platform reference tables (`people.statutory_rate_table`, `intel.check_definition`) are copied into every tenant database | Rate changes must be pushed to all tenant databases | Phase 9 / 11 (operations) |
+| Faster test suite (fuzz and unit-alone tests dominate) | Correctness first | Phase 11 |
 | Web app: product edit, Inventory screens, offline POS shell | Phase 2+ follows the backend | Per module |
 | Exceptions inbox (review of `stock.negative`, count/transfer variances, offline sales) | Events are published; no inbox yet | Phase 4 (offline POS) or 10 |
 | Expiry warnings from batch dates | Needs the notification layer | Phase 10 |
@@ -131,6 +133,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (g) | **Hardening pass on phases 1 and 2** (`docs/testing.md`). Added schema-driven fuzzing of every endpoint, adversarial security tests, concurrency tests, kernel and Products unit tests, every unit enabled alone, domain and service edge cases. Fixed 12 real defects: unstorable numbers (500s), bad paging, NUL text, malformed signed tokens, two races (simultaneous counts, simultaneous opening stock), `%`/`_` search wildcards, blank names, unknown eTIMS types, email/phone/password validation, corrupt settings, last-owner check, expired approvals listed, DB wording in 409s, NaN quantities. New migration `0003_one_open_count`. Tests 270 -> 554. Note: the full suite now takes ~6 minutes (the fuzz test is slower when many test databases exist). |
 | 2026-10-13 (f) | **Phase 2 done.** Audit log records device and IP (`trust_forwarded_for` for proxies); company settings with API and `company_setting`. Inventory: pure domain rules (weighted average costing with negative stock, movement validation, FEFO, landed cost, transfers, counts), the immutable ledger (`post_movement`: locked cost and balance rows, events `stock.moved/negative/below_reorder`), locations, opening stock, adjustments with approval, transfers through in-transit with differences and approval, counts that compare against the system's figure at counting time (movement sequence numbers, share lock for the snapshot), cost visibility (`stock.cost`), subscribers for `sale.posted/returned`, `goods.received` (fake-event tests), `ziira verify` / `stock-verify` (new `kernel.integrity_check` extension point), demo opening stock. Tests 90 -> 270 (Hypothesis properties; a race test proven to fail without row locks). |
 | 2026-10-13 (e) | Finished and committed the work left uncommitted after (d): extension points and validation hooks (`kernel/extensions.py`, Products sockets, `catalog_stats` plugs in), `GET /companies`, UoM/tax-code lists, SKU suggestions; the `frontend/` web app. Verified in the browser (sign-in, widget, SKU suggestions, duplicate-name block, plugin tab). Fixed stale suggestions in the new-product form; added `make web*`/`api-types` and a CI web job; wrote `docs/extending-units.md` and `docs/frontend.md`. Tests 80 → 90 backend, 13 web. |
 | 2026-10-13 (d) | Clean-up: test runs now drop their databases; removed old shared databases (`ziira`, `ziira_test`) and the `ziira_app` login; updated decisions 0001/0002, module READMEs, guides; restructured this file with a phase 2 checklist. |

@@ -173,7 +173,8 @@ def pending_for_me(s: Session) -> list[ApprovalRequest]:
     ctx = get_context()
     rows = s.execute(text(
         "select r.id, r.company_id, ru.approver_role_id from kernel.approval_request r "
-        "join kernel.approval_rule ru on ru.id = r.rule_id where r.status = 'pending' order by r.created_at"))
+        "join kernel.approval_rule ru on ru.id = r.rule_id where r.status = 'pending' "
+        "and (r.expires_at is null or r.expires_at > now()) order by r.created_at"))
     return [get_request(s, r.id) for r in rows if ctx.has_role(r.approver_role_id, company_id=r.company_id)]
 
 

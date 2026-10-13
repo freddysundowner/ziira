@@ -10,6 +10,8 @@ from ziira.sdk import ValidationFailed
 
 def check_counted_quantity(counted: Decimal) -> Decimal:
     """A counted quantity is zero or positive, with at most 4 decimal places."""
+    if not counted.is_finite():
+        raise ValidationFailed("Quantity must be a number")
     if counted < 0:
         raise ValidationFailed("Counted quantity cannot be negative")
     if counted != 0:

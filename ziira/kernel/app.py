@@ -6,12 +6,12 @@ only for tenants that have the unit enabled.
 
 import importlib
 import logging
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
 from ziira.kernel.api.routes import router as kernel_router
@@ -21,6 +21,7 @@ from ziira.kernel.registry import discover, load_event_handlers
 from ziira.sdk import db_session
 
 log = logging.getLogger("ziira")
+MAX_BODY_BYTES = 2_000_000          # no request of ours needs more; bigger ones are refused before they are read
 
 
 def require_unit(name: str) -> Callable[[Session], None]:
@@ -80,8 +81,26 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(IntegrityError)
     def integrity_error(_: Request, exc: IntegrityError) -> JSONResponse:
-        detail = str(exc.orig).splitlines()[0] if exc.orig else "Constraint violated"
-        return JSONResponse(status_code=409, content={"error": "conflict", "message": detail})
+        # The database's own wording names tables and constraints; keep that in the log, not in the reply.
+        log.info("Constraint violated: %s", str(exc.orig).splitlines()[0] if exc.orig else "")
+        return JSONResponse(status_code=409, content={
+            "error": "conflict", "message": "This conflicts with something that already exists or changed meanwhile"})
+
+    @app.exception_handler(DataError)
+    def data_error(_: Request, exc: DataError) -> JSONResponse:
+        # A value the database cannot store (too large, wrong shape, NUL characters). The usual cases are caught
+        # earlier by the request types; this keeps the rest from becoming a server error.
+        log.warning("Rejected a value the database cannot store: %s", str(exc.orig).splitlines()[0] if exc.orig else "")
+        return JSONResponse(status_code=422, content={
+            "error": "validation_failed", "message": "A value is too large, too long or contains characters "
+                                                     "that are not allowed"})
+
+    @app.middleware("http")
+    async def limit_body_size(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+        declared = request.headers.get("content-length", "0")
+        if declared.isdigit() and int(declared) > MAX_BODY_BYTES:
+            return JSONResponse(status_code=413, content={"error": "too_large", "message": "The request is too large"})
+        return await call_next(request)
 
     return app
 

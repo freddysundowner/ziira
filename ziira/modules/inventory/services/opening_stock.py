@@ -44,10 +44,12 @@ def post_opening_stock(session: Session, *, company_id: UUID, location_id: UUID,
 
     for line in lines:
         movements.check_movement("opening", line.quantity, unit_cost=line.unit_cost)
-    for product_id in {line.product_id for line in lines}:
+    for product_id in sorted({line.product_id for line in lines}, key=str):     # same lock order everywhere
         product = find_product(session, product_id)
         if product is None or product.company_id != company_id:
             raise ValidationFailed("Product not found in this company")
+        # Hold the product's lock while checking its history, so two requests cannot both see "none"
+        inventory_repo.lock_cost(session, company_id, product_id, current_context().tenant_id)
         if inventory_repo.has_movements(session, location_id, product_id):
             raise Conflict(f"{product.sku} already has stock history at {location.code}; use an adjustment")
 

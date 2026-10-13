@@ -73,7 +73,7 @@ from ziira.modules.inventory.services.transfers import (
     list_transfers,
     receive_transfer,
 )
-from ziira.sdk import Session, db_session, require_permission
+from ziira.sdk import Session, db_session, page_limit, page_offset, require_permission
 
 router = APIRouter()
 VIEW = [Depends(require_permission(STOCK_VIEW))]
@@ -115,7 +115,8 @@ def post_adjustment(body: AdjustmentIn, session: Session = Depends(db_session)) 
 
 @router.get("/adjustments", response_model=list[AdjustmentSummaryOut], dependencies=VIEW)
 def get_adjustments(location_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
-                    limit: int = 100, offset: int = 0, session: Session = Depends(db_session)) -> object:
+                    limit: int = page_limit(), offset: int = page_offset(),
+                    session: Session = Depends(db_session)) -> object:
     return list_adjustments(session, location_id=location_id, status=status_, limit=limit, offset=offset)
 
 
@@ -146,7 +147,8 @@ def post_transfer(body: TransferIn, session: Session = Depends(db_session)) -> o
 
 @router.get("/transfers", response_model=list[TransferSummaryOut], dependencies=VIEW)
 def get_transfers(location_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
-                  limit: int = 100, offset: int = 0, session: Session = Depends(db_session)) -> object:
+                  limit: int = page_limit(), offset: int = page_offset(),
+                    session: Session = Depends(db_session)) -> object:
     return list_transfers(session, location_id=location_id, status=status_, limit=limit, offset=offset)
 
 
@@ -187,7 +189,8 @@ def post_count(body: CountStartIn, session: Session = Depends(db_session)) -> ob
 
 @router.get("/counts", response_model=list[CountSummaryOut], dependencies=VIEW)
 def get_counts(location_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
-               limit: int = 100, offset: int = 0, session: Session = Depends(db_session)) -> object:
+               limit: int = page_limit(), offset: int = page_offset(),
+                    session: Session = Depends(db_session)) -> object:
     return list_counts(session, location_id=location_id, status=status_, limit=limit, offset=offset)
 
 
@@ -226,7 +229,7 @@ def post_cancel_count(count_id: UUID, session: Session = Depends(db_session)) ->
 
 @router.get("/balances", response_model=list[BalanceOut], dependencies=VIEW)
 def get_balances(location_id: UUID | None = None, product_id: UUID | None = None, branch_id: UUID | None = None,
-                 include_zero: bool = False, limit: int = 100, offset: int = 0,
+                 include_zero: bool = False, limit: int = page_limit(), offset: int = page_offset(),
                  session: Session = Depends(db_session)) -> object:
     """Current stock per location, product and batch."""
     return [BalanceOut(location_id=b.location_id, location_code=loc.code, product_id=b.product_id, sku=sku,
@@ -238,7 +241,8 @@ def get_balances(location_id: UUID | None = None, product_id: UUID | None = None
 
 @router.get("/movements", response_model=list[MovementOut], dependencies=VIEW)
 def get_movements(location_id: UUID | None = None, product_id: UUID | None = None, source_id: UUID | None = None,
-                  limit: int = 100, offset: int = 0, session: Session = Depends(db_session)) -> object:
+                  limit: int = page_limit(), offset: int = page_offset(),
+                    session: Session = Depends(db_session)) -> object:
     """The stock ledger, newest first. Costs and values need 'stock.cost'."""
     return [_movement_out(m) for m in list_movements(session, location_id=location_id, product_id=product_id,
                                                      source_id=source_id, limit=limit, offset=offset)]

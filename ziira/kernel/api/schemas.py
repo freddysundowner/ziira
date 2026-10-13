@@ -2,10 +2,12 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from ziira.kernel.numbers import Amount
 
 
 class Out(BaseModel):
@@ -14,17 +16,17 @@ class Out(BaseModel):
 
 # --------------------------------------------------------------------------- auth
 class SignInIn(BaseModel):
-    workspace: str = Field(examples=["demo-hardware"])
-    login: str = Field(description="Email or phone", examples=["owner@demo.co.ke"])
+    workspace: str = Field(max_length=100, examples=["demo-hardware"])
+    login: str = Field(max_length=254, description="Email or phone", examples=["owner@demo.co.ke"])
     password: str
-    device_id: str = Field(min_length=1, description="Stable id of this browser or device")
-    device_name: str | None = Field(default=None, examples=["Thika till 2"])
+    device_id: str = Field(min_length=1, max_length=200, description="Stable id of this browser or device")
+    device_name: str | None = Field(default=None, max_length=200, examples=["Thika till 2"])
     channel: Literal["web", "pos", "api", "whatsapp"] = "web"
 
 
 class RefreshIn(BaseModel):
-    refresh_token: str
-    device_id: str
+    refresh_token: str = Field(max_length=500)
+    device_id: str = Field(max_length=200)
 
 
 class TokensOut(Out):
@@ -65,12 +67,12 @@ class SessionOut(Out):
 
 
 class PasswordIn(BaseModel):
-    password: str = Field(min_length=8)
+    password: str = Field(min_length=8, max_length=1024)
 
 
 class ChangePasswordIn(BaseModel):
     current_password: str
-    new_password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8, max_length=1024)
 
 
 # --------------------------------------------------------------------------- organisation
@@ -96,15 +98,16 @@ class CompanySettingsIn(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
     negative_stock_allowed: bool | None = None
-    count_variance_threshold: Decimal | None = Field(default=None, ge=0)
+    count_variance_threshold: Annotated[Amount, Field(ge=0)] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles
 class UserIn(BaseModel):
-    full_name: str
-    email: str | None = None
-    phone: str | None = None
-    password: str | None = Field(default=None, description="Leave empty to invite without a password")
+    full_name: str = Field(max_length=200)
+    email: str | None = Field(default=None, max_length=254)
+    phone: str | None = Field(default=None, max_length=30)
+    password: str | None = Field(default=None, max_length=1024,
+                                 description="Leave empty to invite without a password")
 
 
 class UserOut(Out):
@@ -120,12 +123,12 @@ class UserStatusIn(BaseModel):
 
 
 class RoleIn(BaseModel):
-    name: str
-    permissions: list[str]
+    name: str = Field(max_length=100)
+    permissions: list[str] = Field(max_length=500)
 
 
 class RolePermissionsIn(BaseModel):
-    permissions: list[str]
+    permissions: list[str] = Field(max_length=500)
 
 
 class RoleOut(Out):
@@ -197,8 +200,8 @@ class SeriesUpdateIn(BaseModel):
 
 class ReasonIn(BaseModel):
     category: str = Field(examples=["stock_adjustment"])
-    code: str = Field(examples=["DAMAGED"])
-    label: str = Field(examples=["Damaged in store"])
+    code: str = Field(max_length=30, examples=["DAMAGED"])
+    label: str = Field(max_length=200, examples=["Damaged in store"])
     requires_note: bool = False
 
 
@@ -221,8 +224,8 @@ class RuleIn(BaseModel):
     doc_type: str = Field(examples=["stock_adjustment"])
     approver_role_id: UUID
     step: int = 1
-    min_amount: Decimal = Decimal("0")
-    max_amount: Decimal | None = None
+    min_amount: Annotated[Amount, Field(ge=0)] = Decimal("0")
+    max_amount: Annotated[Amount, Field(ge=0)] | None = None
     forbid_creator: bool = True
 
 
@@ -253,4 +256,4 @@ class RequestOut(Out):
 
 class DecisionIn(BaseModel):
     approve: bool
-    note: str | None = None
+    note: str | None = Field(default=None, max_length=2000)

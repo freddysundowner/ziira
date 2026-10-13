@@ -50,3 +50,33 @@ def check_reorder_level(level: Decimal | None, product_type: str) -> None:
         raise ValidationFailed("Reorder level applies only to stock products")
     if level < 0:
         raise ValidationFailed("Reorder level cannot be negative")
+
+
+ETIMS_TAX_TYPES = ("A", "B", "C", "D", "E")      # KRA eTIMS: A exempt, B 16%, C zero-rated, D non-VAT, E 8%
+MAX_NAME_LENGTH = 200
+
+
+def check_name(name: str, what: str = "Name") -> str:
+    """A name is required (not just spaces) and at most 200 characters. Returns it trimmed."""
+    value = name.strip()
+    if not value:
+        raise ValidationFailed(f"{what} is required")
+    if len(value) > MAX_NAME_LENGTH:
+        raise ValidationFailed(f"{what} can be at most {MAX_NAME_LENGTH} characters")
+    return value
+
+
+def check_etims_tax_type(tax_type: str) -> str:
+    """eTIMS tax types are the letters A to E."""
+    value = tax_type.strip().upper()
+    if value not in ETIMS_TAX_TYPES:
+        raise ValidationFailed(f"eTIMS tax type must be one of: {', '.join(ETIMS_TAX_TYPES)}")
+    return value
+
+
+def check_tax_code(code: str) -> str:
+    """Tax codes are 1-20 capital letters, digits, '-' or '_', e.g. VAT16."""
+    value = code.strip().upper()
+    if not re.match(r"^[A-Z0-9][A-Z0-9_-]{0,19}$", value):
+        raise ValidationFailed("Tax code must be 1-20 characters: letters, digits, '-' or '_'")
+    return value
