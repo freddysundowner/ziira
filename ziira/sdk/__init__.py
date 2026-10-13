@@ -23,6 +23,7 @@ from ziira.kernel import (
     credentials,
     exceptions_inbox,
     idempotency,
+    notifications,
     numbering,
     reasons,
 )
@@ -48,20 +49,23 @@ from ziira.kernel.extensions import (
     run_validators,
     validate,
 )
-from ziira.kernel.jobs import enqueue, job
+from ziira.kernel.jobs import enqueue, job, periodic
 from ziira.kernel.manifest import SDK_VERSION
+from ziira.kernel.notifications import NotificationChannel, Outgoing, SendResult
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
 from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
 __all__ = [
-    "SDK_VERSION", "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "Quantity", "Rate",
-    "RequestContext", "Session", "Unauthorized", "UnitCost", "ValidationFailed", "ZiiraError", "audit_record",
-    "check_company", "check_reason", "company_setting", "current_context", "db_session", "decrypt_text",
-    "define_extension_point", "define_validation_hook", "encrypt_text", "enqueue", "flag_for_review", "hash_secret",
-    "idempotency_key_header", "idempotent", "implementations", "is_production", "job", "money", "new_secret",
-    "next_document_number", "page_limit", "page_offset", "provides", "publish", "read_credential", "request_context",
-    "require_permission", "run_validators", "settings_public_base_url", "sign_value", "store_credential",
-    "submit_for_approval", "subscribe", "subscribe_after", "system_session", "validate", "verify_value",
+    "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
+    "Quantity", "Rate", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized", "UnitCost",
+    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_setting",
+    "current_context", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
+    "encrypt_text", "enqueue", "flag_for_review", "hash_secret", "idempotency_key_header", "idempotent",
+    "implementations", "is_production", "job", "money", "new_secret", "next_document_number", "opt_out_contact",
+    "page_limit", "page_offset", "periodic", "provides", "publish", "read_credential", "request_context",
+    "require_permission", "run_validators", "send_notification", "settings_public_base_url", "sign_value",
+    "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session", "validate",
+    "verify_value",
 ]
 
 
@@ -151,6 +155,21 @@ async def idempotency_key_header(
 ) -> str | None:
     """FastAPI dependency: the Idempotency-Key header, if the client sent one."""
     return idempotency.check_key(idempotency_key) if idempotency_key is not None else None
+
+
+def send_notification(session: Session, *, company_id: UUID, channel: str, recipient: str, body: str,
+                      subject: str | None = None, ref_type: str | None = None, ref_id: UUID | None = None,
+                      dedupe_key: str | None = None) -> UUID | None:
+    """Queue an email, SMS or WhatsApp message to someone outside the system; it is sent in the background through the
+    business's channel. Returns its id (None if `dedupe_key` was already used). See kernel/notifications.py."""
+    return notifications.queue(session, company_id=company_id, channel=channel, recipient=recipient, body=body,
+                               subject=subject, ref_type=ref_type, ref_id=ref_id, dedupe_key=dedupe_key)
+
+
+def opt_out_contact(session: Session, *, company_id: UUID, recipient: str, channel: str | None = None,
+                    reason: str | None = None) -> UUID:
+    """Record that a person asked not to be messaged (on one channel, or on all). See kernel/notifications.py."""
+    return notifications.opt_out(session, company_id=company_id, recipient=recipient, channel=channel, reason=reason)
 
 
 def company_setting(session: Session, company_id: UUID, key: str) -> Any:

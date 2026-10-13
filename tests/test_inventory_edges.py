@@ -284,8 +284,9 @@ def test_a_corrupt_company_setting_does_not_stop_sales(client, shop) -> None:  #
     settings('{"negative_stock_allowed": "maybe", "count_variance_threshold": "lots"}')
     try:
         r = client.get(f"/api/v1/companies/{shop['company_id']}/settings", headers=shop["owner"])
-        assert r.status_code == 200 and r.json() == {"negative_stock_allowed": False, "count_variance_threshold": "0",
-                                                     "late_posting": "redirect"}
+        assert r.status_code == 200 and {k: r.json()[k] for k in (
+            "negative_stock_allowed", "count_variance_threshold", "late_posting")} == {
+            "negative_stock_allowed": False, "count_variance_threshold": "0", "late_posting": "redirect"}
         with system(shop) as s:                          # a sale still posts: bad values fall back to the defaults
             sale = post_movement(s, MovementRequest(
                 company_id=shop["company_id"], location_id=UUID(shop["main"]), product_id=UUID(shop["cement"]),

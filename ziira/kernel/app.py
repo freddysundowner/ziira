@@ -14,6 +14,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
+from ziira.kernel import notifications  # noqa: F401 - registers the send job and the channel socket
+from ziira.kernel.api.notification_routes import router as notification_router
 from ziira.kernel.api.routes import router as kernel_router
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
@@ -42,6 +44,7 @@ def create_app() -> FastAPI:
     get_settings().check_safe_for_production()
     app = FastAPI(title="Ziira Core", version="1.0.0.dev0")
     app.include_router(kernel_router)
+    app.include_router(notification_router)
     units = discover()
     load_event_handlers(units)
 

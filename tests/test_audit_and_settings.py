@@ -53,16 +53,19 @@ def test_forwarded_header_is_ignored_unless_trusted(client, t) -> None:  # type:
 def test_settings_default_then_change(client, t) -> None:  # type: ignore[no-untyped-def]
     owner = sign_in(client, WS, OWNER).headers
     url = f"/api/v1/companies/{t['company_id']}/settings"
-    assert client.get(url, headers=owner).json() == {"negative_stock_allowed": False,
-                                                     "count_variance_threshold": "0",
-                                                     "late_posting": "redirect"}
+    core = lambda body: {k: body[k] for k in ("negative_stock_allowed", "count_variance_threshold", "late_posting")}  # noqa: E731
+    first = client.get(url, headers=owner).json()
+    assert core(first) == {"negative_stock_allowed": False, "count_variance_threshold": "0",
+                           "late_posting": "redirect"}
+    assert first["reminder_channel"] == "off" and first["reminder_repeat_days"] == 7             # the later settings too
+    assert float(first["bill_match_tolerance_percent"]) == 2
     r = client.patch(url, headers=owner, json={"count_variance_threshold": "5000.50"})
     assert r.status_code == 200
-    assert r.json() == {"negative_stock_allowed": False, "count_variance_threshold": "5000.50",
-                        "late_posting": "redirect"}
-    assert client.patch(url, headers=owner, json={"negative_stock_allowed": True}).json() == {
-        "negative_stock_allowed": True, "count_variance_threshold": "5000.50",
-        "late_posting": "redirect"}                                                    # the other values are kept
+    assert core(r.json()) == {"negative_stock_allowed": False, "count_variance_threshold": "5000.50",
+                              "late_posting": "redirect"}
+    kept = client.patch(url, headers=owner, json={"negative_stock_allowed": True}).json()
+    assert core(kept) == {"negative_stock_allowed": True, "count_variance_threshold": "5000.50",
+                          "late_posting": "redirect"}                                      # the other values are kept
 
 
 def test_settings_validation(client, t) -> None:  # type: ignore[no-untyped-def]

@@ -75,6 +75,13 @@ def delete_contact(customer_id: UUID, contact_id: UUID, session: Session = Depen
     return Response(status_code=NO_CONTENT)
 
 
+@router.post("/customers/{customer_id}/do-not-contact", response_model=sc.DoNotContactOut, dependencies=MANAGE)
+def post_do_not_contact(customer_id: UUID, body: sc.DoNotContactIn, session: Session = Depends(db_session)) -> object:
+    """The customer asked not to be messaged: reminders and statements will skip them."""
+    return sc.DoNotContactOut(recorded=customers.do_not_contact(session, customer_id, channel=body.channel,
+                                                               reason=body.reason))
+
+
 @router.get("/customers/{customer_id}/credit", response_model=list[sc.CreditVersionOut], dependencies=VIEW)
 def get_credit_history(customer_id: UUID, session: Session = Depends(db_session)) -> object:
     """Every credit limit and terms the customer has had, newest first."""

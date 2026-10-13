@@ -110,7 +110,7 @@ def cmd_verify(reg: Registry, a: argparse.Namespace) -> int:
 
 
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
-    from ziira.kernel import jobs
+    from ziira.kernel import jobs, notifications  # noqa: F401 - notifications registers its send job
 
     logging.basicConfig(level=logging.INFO)
     load_event_handlers(reg.units)

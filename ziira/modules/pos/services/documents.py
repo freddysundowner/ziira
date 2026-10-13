@@ -13,6 +13,8 @@ from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
 
+from sqlalchemy import text
+
 from ziira.modules.crm.public import CustomerView
 from ziira.modules.inventory.public import location_scope
 from ziira.modules.pos.domain import sales as rules
@@ -71,6 +73,16 @@ def _expire(session: Session, document: SalesDocument) -> None:
             and document.valid_until < tills.today():
         document.status = "expired"
         session.flush()
+
+
+def expire_all(session: Session) -> int:
+    """Expire every open quotation whose date has passed (the recurring task). Returns how many."""
+    rows = session.execute(text(
+        "update pos.sales_document set status = 'expired', updated_at = now() where doc_kind = 'quotation' "
+        "and status in ('draft', 'sent') and valid_until < :today returning id"), {"today": tills.today()}).all()
+    for row in rows:
+        audit_record(session, "expire", "pos.sales_quotation", row.id, None)
+    return len(rows)
 
 
 def get_document(session: Session, document_id: UUID, kind: str | None = None) -> DocView:

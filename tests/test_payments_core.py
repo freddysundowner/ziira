@@ -330,7 +330,9 @@ def test_what_nobody_claims_becomes_an_exception(client, shop) -> None:  # type:
     items = client.get("/api/v1/exceptions", headers=shop["owner"], params={"kind": "unmatched_transaction"}).json()
     assert any(ref in i["message"] and i["amount"] is not None for i in items)
     with system(shop) as s:                                                           # raised once, not every run
-        assert matching.run_matching(s, now=datetime.now(UTC) + timedelta(hours=4)).flagged == 0
+        matching.run_matching(s, now=datetime.now(UTC) + timedelta(hours=4))
+    again = client.get("/api/v1/exceptions", headers=shop["owner"], params={"kind": "unmatched_transaction"}).json()
+    assert len([i for i in again if ref in i["message"]]) == 1
     assert one(shop, "select count(*) from kernel.event_outbox where event_type = 'payment.unmatched'") >= 1
 
 

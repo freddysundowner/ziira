@@ -173,3 +173,12 @@ class ActivityOut(BaseModel):
     done_at: datetime | None
     owner_user_id: UUID | None
     note: str | None
+
+
+class DoNotContactIn(BaseModel):
+    channel: Literal["email", "sms", "whatsapp"] | None = Field(default=None, description="Default: every channel")
+    reason: str | None = Field(default=None, max_length=300)
+
+
+class DoNotContactOut(BaseModel):
+    recorded: list[str]

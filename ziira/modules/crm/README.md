@@ -2,7 +2,7 @@
 
 **Status:** working for phase 6: customers and contacts, credit limits and terms with history and approval, leads with
 sources and conversion, and follow-up activities. Statements, ageing and reminders about what customers owe live in POS
-(which owns the invoices); reminders are recorded, and sending them by WhatsApp, SMS or email arrives with notifications.
+(which owns the invoices); reminders are sent through the kernel's messaging (see `docs/notifications.md`).
 
 | | |
 |---|---|
@@ -30,6 +30,8 @@ sources and conversion, and follow-up activities. Statements, ageing and reminde
   customer (and, for a business, its contact) and records the link. A lead needs a phone number or an email address.
 - **Activities** (call, visit, message, meeting, task) are follow-ups about a lead or customer, with an owner and a due date;
   `GET /activities?mine=true&open_only=true` is a person's to-do list.
+- **Do not contact.** `POST /customers/{id}/do-not-contact` (one channel, or all) puts the customer's phone and email on the
+  business's do-not-contact list; no message of any kind is sent to them afterwards.
 - POS reads customers and their credit through `public.find_customer(s)`; it never reads CRM's tables.
 
 ## Layout

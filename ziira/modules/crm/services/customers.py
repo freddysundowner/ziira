@@ -28,6 +28,7 @@ from ziira.sdk import (
     check_company,
     current_context,
     next_document_number,
+    opt_out_contact,
     publish,
     submit_for_approval,
 )
@@ -234,3 +235,28 @@ def _apply(session: Session, customer: Customer, version: CreditVersion, *, appr
     publish(session, Event("customer.credit_limit_changed", "crm.customer", customer.id, {
         "company_id": customer.company_id, "code": customer.code, "previous": before, "new": version.credit_limit,
         "terms_days": version.payment_terms_days, "approved_by": approved_by, "reason": version.reason}))
+
+
+def do_not_contact(session: Session, customer_id: UUID, *, channel: str | None = None,
+                   reason: str | None = None) -> list[str]:
+    """The customer asked not to be messaged (on one channel, or all of them): their phone and email are added to
+    the business's do-not-contact list, which every message respects. Returns what was recorded. Needs
+    'customers.manage'."""
+    customer = repo.get_customer(session, customer_id)
+    if customer is None:
+        raise NotFound("Customer not found")
+    access.check_visible(customer.company_id, "Customer")
+    access.require(CUSTOMERS_MANAGE, customer.company_id)
+    if channel not in (None, "email", "sms", "whatsapp"):
+        raise ValidationFailed("Channel must be email, sms or whatsapp")
+    wanted = []
+    if customer.phone and channel != "email":
+        wanted.append(customer.phone)
+    if customer.email and channel in (None, "email"):
+        wanted.append(customer.email)
+    if not wanted:
+        raise ValidationFailed("The customer has no phone number or email address on record for that")
+    for recipient in wanted:
+        opt_out_contact(session, company_id=customer.company_id, recipient=recipient, channel=channel, reason=reason)
+    audit_record(session, "do_not_contact", "crm.customer", customer.id, {"channel": channel})
+    return ["email" if "@" in r else "phone" for r in wanted]

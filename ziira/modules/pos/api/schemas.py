@@ -377,6 +377,8 @@ class ReceiptIn(BaseModel):
     received_on: date | None = None
     allocations: list[AllocationIn] | None = Field(default=None, description="Default: the oldest invoices first")
     till_session_id: UUID | None = Field(default=None, description="Cash taken at your till")
+    hold_balance: bool = Field(default=False, description="Keep what is not needed for invoices on the customer's "
+                                                          "account as an advance")
 
 
 class AllocationOut(BaseModel):
@@ -398,6 +400,8 @@ class ReceiptSummaryOut(BaseModel):
     received_on: date
     reference: str | None
     status: str
+    unallocated: Decimal
+    refunded: Decimal
 
 
 class ReceiptOut(ReceiptSummaryOut):
@@ -545,7 +549,9 @@ class StatementOut(BaseModel):
 class BalanceOut(BaseModel):
     customer_id: UUID
     customer: str
-    owes: Decimal
+    owes: Decimal = Field(description="Owed on invoices less money held on account (negative: in credit)")
+    invoices_owed: Decimal
+    credit_on_account: Decimal
     credit_limit: Decimal
     available: Decimal
     terms_days: int
@@ -576,3 +582,62 @@ class ReminderOut(BaseModel):
     channel: str
     note: str | None
     created_at: datetime
+
+
+class ApplyCreditIn(BaseModel):
+    allocations: list[AllocationIn] | None = Field(default=None, description="Default: the oldest invoices first")
+
+
+class AppliedOut(BaseModel):
+    receipt: str
+    invoice: str
+    amount: Decimal
+
+
+class RefundIn(BaseModel):
+    amount: Money
+    method: Literal["cash", "mpesa", "bank"]
+    reason: str = Field(min_length=1, max_length=300)
+    payment_account_id: UUID | None = None
+    external_ref: str | None = Field(default=None, max_length=60)
+
+
+class RefundOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    receipt_id: UUID
+    customer_id: UUID
+    payment_id: UUID | None
+    method: str
+    amount: Decimal
+    refunded_on: date
+    reason: str
+    status: str
+
+
+class SendReminderIn(BaseModel):
+    channel: Literal["sms", "whatsapp", "email"] | None = Field(default=None, description="Default: the company's")
+
+
+class ReminderSentOut(BaseModel):
+    invoice_id: UUID
+    notification_id: UUID
+    channel: str
+    status: str
+
+
+class SendRemindersIn(BaseModel):
+    channel: Literal["sms", "whatsapp", "email"] | None = None
+    min_days_overdue: int = Field(default=1, ge=0, le=3650)
+    repeat_days: int = Field(default=7, ge=0, le=365)
+    limit: int = Field(default=200, ge=1, le=500)
+
+
+class RemindersSentOut(BaseModel):
+    sent: int
+    skipped: int
+    no_contact: int
+    failed: int

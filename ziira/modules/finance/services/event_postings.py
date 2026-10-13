@@ -195,15 +195,18 @@ def post_supplier_credit_note(session: Session, event: Event) -> JournalEntry | 
         source_id=event.aggregate_id, description=f"Supplier credit note {p.get('number') or ''}".strip())
 
 
-def post_customer_payment(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
-    """`customer.paid`: a customer paid what they owe (`customer.payment_reversed`: the payment was cancelled)."""
+def post_customer_payment(session: Session, event: Event, *, kind: str = "payment") -> JournalEntry | None:
+    """A customer's money moving: `customer.paid` (they paid), `customer.payment_reversed`, `customer.advance_refunded`
+    (we gave an advance back) and `customer.refund_reversed`. `kind` is payment, payment_reversal, refund or
+    refund_reversal."""
     p = event.payload
-    label = "Reversal of customer payment" if reverse else "Customer payment"
+    reverse = kind in ("payment_reversal", "refund")
+    label = {"payment": "Customer payment", "payment_reversal": "Reversal of customer payment",
+             "refund": "Refund to customer", "refund_reversal": "Reversal of refund to customer"}[kind]
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="customer_payment",
         journal_code="CSH", entry_date=_date(p.get("business_date")),
         recipe=recipes.customer_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
                                         party=_optional_uuid(p.get("customer_id"), "customer_id"), reverse=reverse),
-        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
-        source_type="customer_payment_reversal" if reverse else "customer_payment", source_id=event.aggregate_id,
-        description=f"{label} {p.get('number') or ''}".strip())
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type=f"customer_{kind}",
+        source_id=event.aggregate_id, description=f"{label} {p.get('number') or ''}".strip())

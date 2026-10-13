@@ -10,6 +10,11 @@ A unit registers a handler in its `jobs.py`:
     def check_stk(session: Session, payload: dict) -> None: ...
 
 Handlers must be safe to run twice. Run the queue with `ziira worker`.
+
+Recurring work is registered with `@periodic`; the worker runs it for each business at most once per interval:
+
+    @periodic("pos.expire_quotations", every_seconds=3600)
+    def expire(session: Session) -> None: ...
 """
 
 import json
@@ -29,7 +34,9 @@ from ziira.kernel.events import unit_of
 
 log = logging.getLogger("ziira.jobs")
 Handler = Callable[[Session, dict[str, Any]], None]
+PeriodicHandler = Callable[[Session], None]
 _handlers: dict[str, list[tuple[str, Handler]]] = defaultdict(list)
+_periodic: dict[str, tuple[str, int, PeriodicHandler]] = {}
 MAX_BACKOFF_SECONDS = 3600
 
 
@@ -38,6 +45,18 @@ def job(job_type: str) -> Callable[[Handler], Handler]:
 
     def register(handler: Handler) -> Handler:
         _handlers[job_type].append((unit_of(handler.__module__), handler))
+        return handler
+
+    return register
+
+
+def periodic(name: str, *, every_seconds: int) -> Callable[[PeriodicHandler], PeriodicHandler]:
+    """Decorator: run this function for each business at most once every `every_seconds`, while its unit is enabled."""
+    if every_seconds < 60:
+        raise ValueError("A recurring task runs at most once a minute")
+
+    def register(handler: PeriodicHandler) -> PeriodicHandler:
+        _periodic[name] = (unit_of(handler.__module__), every_seconds, handler)
         return handler
 
     return register
@@ -108,11 +127,47 @@ def run_due(tenant_id: UUID, batch_size: int = 50) -> int:
     return finished
 
 
+def run_periodic(tenant_id: UUID) -> int:
+    """Run the recurring tasks of one tenant that are due. Returns how many ran. A task is claimed before it runs, so
+    two workers never run it at once; one that fails is recorded, put in the exceptions inbox, and tried again at its
+    next interval."""
+    system_context(tenant_id)
+    ran = 0
+    with tenant_session(tenant_id) as s:
+        enabled = _enabled(s)
+        for name, (unit, every, handler) in sorted(_periodic.items()):
+            if unit not in enabled:
+                continue
+            claimed = s.execute(text(
+                "insert into kernel.periodic_run (tenant_id, name, last_run_at) "
+                "values (kernel.current_tenant(), :n, now()) "
+                "on conflict (tenant_id, name) do update set last_run_at = now() "
+                "where kernel.periodic_run.last_run_at < now() - make_interval(secs => :e) returning name"),
+                {"n": name, "e": every}).first()
+            if claimed is None:
+                continue
+            savepoint = s.begin_nested()
+            try:
+                handler(s)
+                savepoint.commit()
+                s.execute(text("update kernel.periodic_run set last_error = null where name = :n"), {"n": name})
+            except Exception as exc:  # noqa: BLE001 - recorded, flagged and tried again next interval
+                savepoint.rollback()
+                log.warning("Recurring task %s failed: %s", name, exc)
+                s.execute(text("update kernel.periodic_run set last_error = :e where name = :n"),
+                          {"n": name, "e": f"{type(exc).__name__}: {exc}"[:2000]})
+                exceptions_inbox.flag(s, unit=unit, kind="periodic_failed", severity="medium",
+                                      message=f"A recurring task ({name}) failed: {exc}"[:500],
+                                      dedupe_key=f"periodic:{name}:{type(exc).__name__}")
+            ran += 1
+    return ran
+
+
 def run_all(batch_size: int = 50) -> int:
-    """One pass over every active tenant."""
+    """One pass over every active tenant: the jobs that are due, then the recurring tasks."""
     from ziira.kernel.outbox import _active_tenants
 
-    return sum(run_due(t, batch_size) for t in _active_tenants())
+    return sum(run_due(t, batch_size) + run_periodic(t) for t in _active_tenants())
 
 
 def current_tenant_id() -> UUID:

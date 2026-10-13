@@ -321,7 +321,7 @@ def post_receipt(body: sc.ReceiptIn, session: Session = Depends(db_session)) -> 
         session, customer_id=body.customer_id, amount=body.amount, method=body.method, branch_id=body.branch_id,
         payment_account_id=body.payment_account_id, external_ref=body.external_ref, received_on=body.received_on,
         allocations=[(x.invoice_id, x.amount) for x in body.allocations] if body.allocations is not None else None,
-        till_session_id=body.till_session_id))
+        till_session_id=body.till_session_id, hold_balance=body.hold_balance))
 
 
 @router.get("/receipts", response_model=list[sc.ReceiptSummaryOut], dependencies=RECEIVABLES)
@@ -474,6 +474,20 @@ def post_reminder(invoice_id: UUID, body: sc.ReminderIn, session: Session = Depe
     return receivables.record_reminder(session, invoice_id, channel=body.channel, note=body.note)
 
 
+@router.post("/invoices/{invoice_id}/send-reminder", response_model=sc.ReminderSentOut,
+             status_code=status.HTTP_201_CREATED, dependencies=BALANCE)
+def post_send_reminder(invoice_id: UUID, body: sc.SendReminderIn, session: Session = Depends(db_session)) -> object:
+    """Message the customer about this invoice now (SMS, WhatsApp or email)."""
+    return receivables.send_reminder(session, invoice_id, channel=body.channel)
+
+
+@router.post("/receivables/send-reminders", response_model=sc.RemindersSentOut, dependencies=RECEIVABLES)
+def post_send_reminders(body: sc.SendRemindersIn, session: Session = Depends(db_session)) -> object:
+    """Chase every overdue invoice that has not been chased lately."""
+    return receivables.send_due_reminders(session, channel=body.channel, min_days_overdue=body.min_days_overdue,
+                                          repeat_days=body.repeat_days, limit=body.limit)
+
+
 @router.get("/customers/{customer_id}/statement", response_model=sc.StatementOut, dependencies=RECEIVABLES)
 def get_statement(customer_id: UUID, date_from: date | None = None, date_to: date | None = None,
                   session: Session = Depends(db_session)) -> object:
@@ -485,3 +499,39 @@ def get_statement(customer_id: UUID, date_from: date | None = None, date_to: dat
 def get_balance(customer_id: UUID, session: Session = Depends(db_session)) -> object:
     """What the customer owes, their credit limit and what they can still take on account."""
     return receivables.balance(session, customer_id)
+
+
+# --------------------------------------------------------------------------- money held on account
+@router.post("/customers/{customer_id}/apply-credit", response_model=list[sc.AppliedOut], dependencies=RECEIVE)
+def post_apply_credit(customer_id: UUID, body: sc.ApplyCreditIn, session: Session = Depends(db_session)) -> object:
+    """Use money the customer paid in advance to pay their invoices (the oldest first unless you name them)."""
+    done = customer_receipts.apply_credit(
+        session, customer_id,
+        allocations=[(x.invoice_id, x.amount) for x in body.allocations] if body.allocations is not None else None)
+    return [sc.AppliedOut(**x) for x in done]  # type: ignore[arg-type]
+
+
+@router.post("/receipts/{receipt_id}/refund", response_model=sc.RefundOut, status_code=status.HTTP_201_CREATED,
+             dependencies=RECEIVE)
+def post_refund_advance(receipt_id: UUID, body: sc.RefundIn, session: Session = Depends(db_session)) -> object:
+    """Give back money the customer paid in advance and has not used."""
+    return customer_receipts.refund_advance(
+        session, receipt_id, amount=body.amount, method=body.method, reason=body.reason,
+        payment_account_id=body.payment_account_id, external_ref=body.external_ref).refund
+
+
+@router.get("/refunds", response_model=list[sc.RefundOut], dependencies=RECEIVABLES)
+def get_refunds(customer_id: UUID | None = None, limit: int = page_limit(50), offset: int = page_offset(),
+                session: Session = Depends(db_session)) -> object:
+    return customer_receipts.list_refunds(session, customer_id=customer_id, limit=limit, offset=offset)
+
+
+@router.get("/refunds/{refund_id}", response_model=sc.RefundOut, dependencies=RECEIVABLES)
+def get_refund(refund_id: UUID, session: Session = Depends(db_session)) -> object:
+    return customer_receipts.get_refund(session, refund_id).refund
+
+
+@router.post("/refunds/{refund_id}/reverse", response_model=sc.RefundOut, dependencies=RECEIVE)
+def post_reverse_refund(refund_id: UUID, body: sc.ReasonIn, session: Session = Depends(db_session)) -> object:
+    """Cancel a refund: the customer holds that money on account again."""
+    return customer_receipts.reverse_refund(session, refund_id, body.reason).refund

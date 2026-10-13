@@ -2,8 +2,8 @@
 
 **Status:** working for phases 4 and 6: devices, tills with X and Z reports, sales, voids, returns, price overrides and
 offline sync (phase 4); and, with CRM, **credit sales, invoices, quotations and sales orders, customer payments, credit
-notes, statements, ageing and reminders** (phase 6). Not built yet: advance payments from customers, receipt printing,
-sending reminders (needs notifications), eTIMS (the eTIMS plugin).
+notes, advance payments, statements, ageing and reminders sent by SMS, WhatsApp or email** (phase 6). Not built yet:
+receipt printing, eTIMS (the eTIMS plugin).
 
 | | |
 |---|---|
@@ -11,7 +11,7 @@ sending reminders (needs notifications), eTIMS (the eTIMS plugin).
 | Requires | products, inventory, payments |
 | Optional | crm (customers, credit), finance |
 | Publishes | `sale.posted`, `sale.voided`, `sale.returned`, `discount.override`, `till.opened`, `till.closed`, `pos.synced`, `invoice.issued`, `invoice.cancelled`, `customer.paid`, `customer.payment_reversed`, `customer.over_limit_attempt` |
-| Subscribes | `approval.decided` (kernel): a return or a sales order that waited for approval · `payment.reversed` (Payments): the invoices a reversed customer payment paid are owed again |
+| Subscribes | `approval.decided` (kernel): a return or a sales order that waited for approval · `payment.reversed` (Payments): the invoices a reversed customer payment paid are owed again, a refund goes back on account |
 | API | `/api/v1/pos` |
 | Permissions | `sales.sell`, `sales.void`, `sales.refund`, `price.override`, `till.manage` (own till), `till.review` (any till at a branch), `devices.manage`, `invoices.manage`, `receivables.view`, `receivables.manage` |
 | Default roles | Cashier: sell, own till, take customer payments · Branch Manager: everything · Finance Manager: invoices, receivables, tills · Accountant: receivables, tills · Sales Rep: sell, invoices, receivables view |
@@ -70,6 +70,12 @@ fix the cause and the device sends it again.
   if a rule exists) -> delivery, which is an invoice for the quantities on it at the prices agreed (each delivery takes stock
   out). The customer's group price list applies; changing a price needs `price.override` and a reason. Invoices are never
   edited: cancel (nothing paid, credited or returned) and issue again.
+- **Advance payments.** A payment may be more than is owed if the payer says to *hold the balance* (`hold_balance`): what is
+  left stays on the customer's account, which is then in credit (negative `owes`, `credit_on_account`). It is applied to
+  invoices later (`POST /customers/{id}/apply-credit`: no money moves, no entry is made) or given back
+  (`POST /receipts/{id}/refund`: cash out of the till, M-Pesa or bank; reversible). Credit on account counts against what
+  the customer owes when their limit is checked. A payment that has been partly refunded cannot be reversed until the
+  refund is.
 - **Customers paying.** `POST /receipts` shares a payment over the customer's invoices (the oldest first, or those named),
   never more than is owed; it is recorded through Payments (so M-Pesa and bank money match as usual) and cash can go
   through the cashier's till. Reversing it (here or in Payments) makes the invoices owed again.
@@ -78,6 +84,11 @@ fix the cause and the device sends it again.
 - **Statements and ageing.** `GET /customers/{id}/statement` (invoices, credit notes and payments with a running balance),
   `/receivables/ageing` (by due date), `/receivables/reminders` (who to chase) and `POST /invoices/{id}/reminders` to record
   a chase. A cashier can see a customer's balance but not browse debtors.
+- **Reminders are sent.** `POST /invoices/{id}/send-reminder` and `POST /receivables/send-reminders` message the customer
+  (SMS, WhatsApp or email; their phone or email from CRM) through the kernel's messaging and note the reminder; one a day per
+  invoice and channel, nothing to someone on the do-not-contact list. With the company setting `reminder_channel` turned on,
+  a daily recurring task (`pos.send_reminders`) chases invoices `reminder_min_days_overdue` days late, no more often than
+  every `reminder_repeat_days`. Old quotations are expired by another recurring task.
 - **Checked every night** (`ziira verify`, "customer ledger"): what the invoices say each customer owes equals what the books
   say, and every invoice's paid amount equals its live receipts.
 

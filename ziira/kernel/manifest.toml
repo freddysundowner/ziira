@@ -7,7 +7,7 @@ version = "1.0.0"
 
 [provides]
 publishes = ["approval.decided", "exception.raised"]
-extension_points = ["kernel.integrity_check"]
+extension_points = ["kernel.integrity_check", "kernel.notification_channel"]
 
 [permissions]
 "users.manage" = "Create users and assign roles"

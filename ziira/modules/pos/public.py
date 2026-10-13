@@ -20,7 +20,12 @@ def open_till_sessions(session: Session, branch_id: UUID, day: date) -> int:
 
 
 def customer_balance(session: Session, customer_id: UUID) -> Decimal:
-    """What a customer owes on invoices that are not paid or cancelled (for statements and credit decisions)."""
-    return Decimal(session.execute(text(
+    """What a customer owes on invoices that are not paid or cancelled, less money they hold on account in advance
+    (negative: they are in credit). For statements and credit decisions."""
+    owed = Decimal(session.execute(text(
         "select coalesce(sum(total - amount_paid - credited), 0) from pos.sales_invoice where customer_id = :c "
         "and status in ('issued', 'part_paid')"), {"c": str(customer_id)}).scalar_one())
+    held = Decimal(session.execute(text(
+        "select coalesce(sum(unallocated), 0) from pos.customer_receipt where customer_id = :c and status = 'posted'"),
+        {"c": str(customer_id)}).scalar_one())
+    return owed - held

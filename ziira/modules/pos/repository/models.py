@@ -281,6 +281,8 @@ class CustomerReceipt(Audited, Base):
     status: Mapped[str] = mapped_column(server_default=text("'posted'"))
     reversed_at: Mapped[datetime | None]
     reverse_reason: Mapped[str | None]
+    unallocated: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    refunded: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
 
 
 class CustomerReceiptAllocation(TenantColumns, Base):
@@ -300,3 +302,22 @@ class InvoiceReminder(TenantColumns, Base):
     invoice_id: Mapped[UUID]
     channel: Mapped[str]
     note: Mapped[str | None]
+
+
+class CustomerRefund(TenantColumns, Base):
+    __tablename__ = "customer_refund"
+    __table_args__ = {"schema": "pos"}
+
+    created_by: Mapped[UUID | None]
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    receipt_id: Mapped[UUID]
+    customer_id: Mapped[UUID]
+    payment_id: Mapped[UUID | None]
+    till_session_id: Mapped[UUID | None]
+    method: Mapped[str]
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    refunded_on: Mapped[date]
+    reason: Mapped[str]
+    status: Mapped[str] = mapped_column(server_default=text("'posted'"))

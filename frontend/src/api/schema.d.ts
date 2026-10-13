@@ -595,6 +595,128 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Channels
+         * @description The channels a business has set up (never their keys).
+         */
+        get: operations["get_channels_api_v1_notifications_channels_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/channels/{channel}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Channel
+         * @description Set up (or replace) how a business sends email, SMS or WhatsApp. The old keys stop being used.
+         */
+        put: operations["put_channel_api_v1_notifications_channels__channel__put"];
+        post?: never;
+        /**
+         * Delete Channel
+         * @description Stop using a channel (its keys are kept encrypted for the audit trail).
+         */
+        delete: operations["delete_channel_api_v1_notifications_channels__channel__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Test
+         * @description Send a test message to check a channel works.
+         */
+        post: operations["post_test_api_v1_notifications_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Notifications
+         * @description What was sent, and what became of it (recipients masked).
+         */
+        get: operations["get_notifications_api_v1_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/opt-outs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Opt Outs */
+        get: operations["get_opt_outs_api_v1_notifications_opt_outs_get"];
+        put?: never;
+        /**
+         * Post Opt Out
+         * @description Record that a person asked not to be contacted.
+         */
+        post: operations["post_opt_out_api_v1_notifications_opt_outs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/opt-outs/{optout_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Opt Out */
+        delete: operations["delete_opt_out_api_v1_notifications_opt_outs__optout_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/crm/customers": {
         parameters: {
             query?: never;
@@ -661,6 +783,26 @@ export interface paths {
         post?: never;
         /** Delete Contact */
         delete: operations["delete_contact_api_v1_crm_customers__customer_id__contacts__contact_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/customers/{customer_id}/do-not-contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Do Not Contact
+         * @description The customer asked not to be messaged: reminders and statements will skip them.
+         */
+        post: operations["post_do_not_contact_api_v1_crm_customers__customer_id__do_not_contact_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2632,6 +2774,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pos/invoices/{invoice_id}/send-reminder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Send Reminder
+         * @description Message the customer about this invoice now (SMS, WhatsApp or email).
+         */
+        post: operations["post_send_reminder_api_v1_pos_invoices__invoice_id__send_reminder_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receivables/send-reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Send Reminders
+         * @description Chase every overdue invoice that has not been chased lately.
+         */
+        post: operations["post_send_reminders_api_v1_pos_receivables_send_reminders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pos/customers/{customer_id}/statement": {
         parameters: {
             query?: never;
@@ -2666,6 +2848,100 @@ export interface paths {
         get: operations["get_balance_api_v1_pos_customers__customer_id__balance_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/customers/{customer_id}/apply-credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Apply Credit
+         * @description Use money the customer paid in advance to pay their invoices (the oldest first unless you name them).
+         */
+        post: operations["post_apply_credit_api_v1_pos_customers__customer_id__apply_credit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receipts/{receipt_id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Refund Advance
+         * @description Give back money the customer paid in advance and has not used.
+         */
+        post: operations["post_refund_advance_api_v1_pos_receipts__receipt_id__refund_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Refunds */
+        get: operations["get_refunds_api_v1_pos_refunds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/refunds/{refund_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Refund */
+        get: operations["get_refund_api_v1_pos_refunds__refund_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/refunds/{refund_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reverse Refund
+         * @description Cancel a refund: the customer holds that money on account again.
+         */
+        post: operations["post_reverse_refund_api_v1_pos_refunds__refund_id__reverse_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3784,6 +4060,23 @@ export interface components {
             /** Revoked At */
             revoked_at: string | null;
         };
+        /** AppliedOut */
+        AppliedOut: {
+            /** Receipt */
+            receipt: string;
+            /** Invoice */
+            invoice: string;
+            /** Amount */
+            amount: string;
+        };
+        /** ApplyCreditIn */
+        ApplyCreditIn: {
+            /**
+             * Allocations
+             * @description Default: the oldest invoices first
+             */
+            allocations?: components["schemas"]["AllocationIn"][] | null;
+        };
         /** AssignmentOut */
         AssignmentOut: {
             /** Role Id */
@@ -4149,6 +4442,51 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** ChannelIn */
+        ChannelIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Secret
+             * @description Keys and passwords for the gateway; stored encrypted, never shown
+             */
+            secret: {
+                [key: string]: unknown;
+            };
+            /**
+             * Config
+             * @description Settings that are not secret (a sender name)
+             */
+            config?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Label
+             * @default Messaging
+             */
+            label: string;
+        };
+        /** ChannelOut */
+        ChannelOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Channel */
+            channel: string;
+            /** Provider */
+            provider: string | null;
+            /** Label */
+            label: string;
+            /** Status */
+            status: string;
+        };
         /** ChecklistOut */
         ChecklistOut: {
             /** Ready */
@@ -4252,6 +4590,14 @@ export interface components {
             count_variance_threshold?: number | string | null;
             /** Late Posting */
             late_posting?: ("redirect" | "reject") | null;
+            /** Bill Match Tolerance Percent */
+            bill_match_tolerance_percent?: number | string | null;
+            /** Reminder Channel */
+            reminder_channel?: ("off" | "sms" | "whatsapp" | "email") | null;
+            /** Reminder Min Days Overdue */
+            reminder_min_days_overdue?: number | null;
+            /** Reminder Repeat Days */
+            reminder_repeat_days?: number | null;
         };
         /** CompanySettingsOut */
         CompanySettingsOut: {
@@ -4264,6 +4610,17 @@ export interface components {
              * @enum {string}
              */
             late_posting: "redirect" | "reject";
+            /** Bill Match Tolerance Percent */
+            bill_match_tolerance_percent: string;
+            /**
+             * Reminder Channel
+             * @enum {string}
+             */
+            reminder_channel: "off" | "sms" | "whatsapp" | "email";
+            /** Reminder Min Days Overdue */
+            reminder_min_days_overdue: number;
+            /** Reminder Repeat Days */
+            reminder_repeat_days: number;
         };
         /** ContactIn */
         ContactIn: {
@@ -4855,6 +5212,21 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "blocked";
+        };
+        /** DoNotContactIn */
+        DoNotContactIn: {
+            /**
+             * Channel
+             * @description Default: every channel
+             */
+            channel?: ("email" | "sms" | "whatsapp") | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** DoNotContactOut */
+        DoNotContactOut: {
+            /** Recorded */
+            recorded: string[];
         };
         /** DocLineIn */
         DocLineIn: {
@@ -5982,6 +6354,44 @@ export interface components {
              */
             created_at: string;
         };
+        /** NotificationOut */
+        NotificationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Channel */
+            channel: string;
+            /**
+             * Recipient
+             * @description Masked
+             */
+            recipient: string;
+            /** Subject */
+            subject: string | null;
+            /** Status */
+            status: string;
+            /** Attempts */
+            attempts: number;
+            /** Provider */
+            provider: string | null;
+            /** Error */
+            error: string | null;
+            /** Ref Type */
+            ref_type: string | null;
+            /** Ref Id */
+            ref_id: string | null;
+            /** Created At */
+            created_at: string;
+            /** Sent At */
+            sent_at: string | null;
+        };
         /** OpResultOut */
         OpResultOut: {
             /**
@@ -6040,6 +6450,39 @@ export interface components {
             business_date?: string | null;
             /** Lines */
             lines: components["schemas"]["OpeningLineIn"][];
+        };
+        /** OptOutIn */
+        OptOutIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Recipient */
+            recipient: string;
+            /** Channel */
+            channel?: ("email" | "sms" | "whatsapp") | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** OptOutOut */
+        OptOutOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Recipient */
+            recipient: string;
+            /** Channel */
+            channel: string | null;
+            /** Reason */
+            reason: string | null;
         };
         /** OrderLineIn */
         OrderLineIn: {
@@ -6617,6 +7060,64 @@ export interface components {
             /** Device Id */
             device_id: string;
         };
+        /** RefundIn */
+        RefundIn: {
+            /** Amount */
+            amount: number | string;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "cash" | "mpesa" | "bank";
+            /** Reason */
+            reason: string;
+            /** Payment Account Id */
+            payment_account_id?: string | null;
+            /** External Ref */
+            external_ref?: string | null;
+        };
+        /** RefundOut */
+        RefundOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Receipt Id
+             * Format: uuid
+             */
+            receipt_id: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Payment Id */
+            payment_id: string | null;
+            /** Method */
+            method: string;
+            /** Amount */
+            amount: string;
+            /**
+             * Refunded On
+             * Format: date
+             */
+            refunded_on: string;
+            /** Reason */
+            reason: string;
+            /** Status */
+            status: string;
+        };
         /** RejectionOut */
         RejectionOut: {
             /**
@@ -6713,6 +7214,34 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ReminderSentOut */
+        ReminderSentOut: {
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /**
+             * Notification Id
+             * Format: uuid
+             */
+            notification_id: string;
+            /** Channel */
+            channel: string;
+            /** Status */
+            status: string;
+        };
+        /** RemindersSentOut */
+        RemindersSentOut: {
+            /** Sent */
+            sent: number;
+            /** Skipped */
+            skipped: number;
+            /** No Contact */
+            no_contact: number;
+            /** Failed */
+            failed: number;
         };
         /** RequestIn */
         RequestIn: {
@@ -7086,6 +7615,34 @@ export interface components {
             /** Synced Offline */
             synced_offline: boolean;
         };
+        /** SendReminderIn */
+        SendReminderIn: {
+            /**
+             * Channel
+             * @description Default: the company's
+             */
+            channel?: ("sms" | "whatsapp" | "email") | null;
+        };
+        /** SendRemindersIn */
+        SendRemindersIn: {
+            /** Channel */
+            channel?: ("sms" | "whatsapp" | "email") | null;
+            /**
+             * Min Days Overdue
+             * @default 1
+             */
+            min_days_overdue: number;
+            /**
+             * Repeat Days
+             * @default 7
+             */
+            repeat_days: number;
+            /**
+             * Limit
+             * @default 200
+             */
+            limit: number;
+        };
         /** SeriesOut */
         SeriesOut: {
             /**
@@ -7399,6 +7956,21 @@ export interface components {
              * Format: uuid
              */
             id: string;
+        };
+        /** TestIn */
+        TestIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "email" | "sms" | "whatsapp";
+            /** Recipient */
+            recipient: string;
         };
         /** TillCloseIn */
         TillCloseIn: {
@@ -8215,8 +8787,15 @@ export interface components {
             customer_id: string;
             /** Customer */
             customer: string;
-            /** Owes */
+            /**
+             * Owes
+             * @description Owed on invoices less money held on account (negative: in credit)
+             */
             owes: string;
+            /** Invoices Owed */
+            invoices_owed: string;
+            /** Credit On Account */
+            credit_on_account: string;
             /** Credit Limit */
             credit_limit: string;
             /** Available */
@@ -8284,6 +8863,12 @@ export interface components {
              * @description Cash taken at your till
              */
             till_session_id?: string | null;
+            /**
+             * Hold Balance
+             * @description Keep what is not needed for invoices on the customer's account as an advance
+             * @default false
+             */
+            hold_balance: boolean;
         };
         /** ReceiptOut */
         ziira__modules__pos__api__schemas__ReceiptOut: {
@@ -8321,6 +8906,10 @@ export interface components {
             reference: string | null;
             /** Status */
             status: string;
+            /** Unallocated */
+            unallocated: string;
+            /** Refunded */
+            refunded: string;
             /** Allocations */
             allocations: components["schemas"]["AllocationOut"][];
         };
@@ -8360,6 +8949,10 @@ export interface components {
             reference: string | null;
             /** Status */
             status: string;
+            /** Unallocated */
+            unallocated: string;
+            /** Refunded */
+            refunded: string;
         };
         /** ReturnIn */
         ziira__modules__pos__api__schemas__ReturnIn: {
@@ -10264,6 +10857,326 @@ export interface operations {
             };
         };
     };
+    get_channels_api_v1_notifications_channels_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_channel_api_v1_notifications_channels__channel__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                channel: "email" | "sms" | "whatsapp";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChannelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChannelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_channel_api_v1_notifications_channels__channel__delete: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                channel: "email" | "sms" | "whatsapp";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_test_api_v1_notifications_test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_notifications_api_v1_notifications_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                channel?: ("email" | "sms" | "whatsapp") | null;
+                status?: string | null;
+                ref_type?: string | null;
+                ref_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_opt_outs_api_v1_notifications_opt_outs_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptOutOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_opt_out_api_v1_notifications_opt_outs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptOutIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OptOutOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_opt_out_api_v1_notifications_opt_outs__optout_id__delete: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                optout_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_customers_api_v1_crm_customers_get: {
         parameters: {
             query?: {
@@ -10532,6 +11445,48 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_do_not_contact_api_v1_crm_customers__customer_id__do_not_contact_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DoNotContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DoNotContactOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -15819,6 +16774,88 @@ export interface operations {
             };
         };
     };
+    post_send_reminder_api_v1_pos_invoices__invoice_id__send_reminder_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendReminderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderSentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_send_reminders_api_v1_pos_receivables_send_reminders_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendRemindersIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemindersSentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_statement_api_v1_pos_customers__customer_id__statement_get: {
         parameters: {
             query?: {
@@ -15885,6 +16922,210 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ziira__modules__pos__api__schemas__BalanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_apply_credit_api_v1_pos_customers__customer_id__apply_credit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyCreditIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppliedOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_refund_advance_api_v1_pos_receipts__receipt_id__refund_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefundIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_refunds_api_v1_pos_refunds_get: {
+        parameters: {
+            query?: {
+                customer_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_refund_api_v1_pos_refunds__refund_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                refund_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reverse_refund_api_v1_pos_refunds__refund_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                refund_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundOut"];
                 };
             };
             /** @description Validation Error */

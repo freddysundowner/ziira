@@ -28,8 +28,9 @@ def load_customer(session: Session, customer_id: UUID, company_id: UUID, *, for_
 
 
 def owed(session: Session, customer_id: UUID) -> Decimal:
-    """What the customer owes on unpaid invoices."""
-    return pos_repo.customer_exposure(session, customer_id)
+    """What the customer owes on unpaid invoices, less money they hold on account in advance (negative: they are in
+    credit)."""
+    return pos_repo.customer_exposure(session, customer_id) - pos_repo.customer_advances(session, customer_id)
 
 
 def due_date(day: date, customer: CustomerView) -> date:

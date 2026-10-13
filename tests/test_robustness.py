@@ -11,6 +11,7 @@ from collections import Counter
 from decimal import Decimal
 from uuid import uuid4
 
+import httpx
 import pytest
 
 from tests.conftest import sign_in
@@ -30,6 +31,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(s["tenant_id"], "pos")
     registry.enable(s["tenant_id"], "purchasing")
     registry.enable(s["tenant_id"], "crm")
+    registry.enable(s["tenant_id"], "messaging")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
     s["reason"] = next(x["id"] for x in reasons if x["category"] == "stock_adjustment")
@@ -184,6 +186,20 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
         if path.endswith("/payments/closes") and method == "POST":
             return {"company_id": co, "branch_id": str(shop["branch_id"]), "business_date": "2026-01-01",
                     "cash_banked": "0"}
+        if "/notifications/channels/" in path and method == "PUT":
+            return {"company_id": co, "provider": "fake", "secret": {"k": "v"}}
+        if path.endswith("/notifications/test"):
+            return {"company_id": co, "channel": "sms", "recipient": "0712345678"}
+        if path.endswith("/notifications/opt-outs") and method == "POST":
+            return {"company_id": co, "recipient": f"07130000{n % 100:02d}"}
+        if path.endswith("/apply-credit"):
+            return {}
+        if path.endswith("/refund") and "/pos/" in path:
+            return {"amount": "1", "method": "mpesa", "reason": "Fuzz"}
+        if path.endswith("/send-reminder") or path.endswith("/send-reminders"):
+            return {}
+        if path.endswith("/do-not-contact"):
+            return {}
         if path.endswith("/crm/customers") and method == "POST":
             return {"company_id": co, "name": f"Fuzz customer {n}"}
         if path.endswith("/contacts") and method == "POST":
@@ -291,6 +307,8 @@ def test_no_request_causes_a_server_error(client, shop) -> None:  # type: ignore
         for url, query, body, label in mutations(spec, method, path, operation, rng, 5, fix):
             try:
                 r = client.request(method, url, headers=shop["owner"], params=query, json=body)
+            except httpx.InvalidURL:                                # the client refused to send it: it never arrived
+                continue
             except Exception as error:                              # an exception escaped the application
                 problems.append(f"{method} {path} [{label}] raised {type(error).__name__}: {str(error)[:150]}")
                 continue

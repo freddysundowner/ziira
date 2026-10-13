@@ -61,6 +61,21 @@ def _percent(value: Any) -> Decimal:
     return amount
 
 
+def _reminder_channel(value: Any) -> str:
+    if value not in ("off", "sms", "whatsapp", "email"):
+        raise ValidationFailed("Expected 'off', 'sms', 'whatsapp' or 'email'")
+    return str(value)
+
+
+def _days(maximum: int) -> Callable[[Any], int]:
+    def parse(value: Any) -> int:
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0 or value > maximum:
+            raise ValidationFailed(f"Expected a whole number of days from 0 to {maximum}")
+        return value
+
+    return parse
+
+
 def _late_posting(value: Any) -> str:
     if value not in ("redirect", "reject"):
         raise ValidationFailed("Expected 'redirect' or 'reject'")
@@ -78,6 +93,12 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("bill_match_tolerance_percent", Decimal("2"), _percent,
             "A supplier bill whose cost per unit is more than this percentage away from what was ordered or "
             "received is an exception that needs approval before it posts"),
+    Setting("reminder_channel", "off", _reminder_channel,
+            "Chase customers with overdue invoices automatically every day by this channel ('off' to chase by hand)"),
+    Setting("reminder_min_days_overdue", 1, _days(365),
+            "An invoice is chased once it is this many days past its due date"),
+    Setting("reminder_repeat_days", 7, _days(365),
+            "A customer is not chased about the same invoice more often than this"),
 )}
 
 

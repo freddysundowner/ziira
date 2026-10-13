@@ -92,6 +92,10 @@ class CompanySettingsOut(Out):
     negative_stock_allowed: bool
     count_variance_threshold: Decimal
     late_posting: Literal["redirect", "reject"]
+    bill_match_tolerance_percent: Decimal
+    reminder_channel: Literal["off", "sms", "whatsapp", "email"]
+    reminder_min_days_overdue: int
+    reminder_repeat_days: int
 
 
 class CompanySettingsIn(BaseModel):
@@ -101,6 +105,10 @@ class CompanySettingsIn(BaseModel):
     negative_stock_allowed: bool | None = None
     count_variance_threshold: Annotated[Amount, Field(ge=0)] | None = None
     late_posting: Literal["redirect", "reject"] | None = None
+    bill_match_tolerance_percent: Annotated[Decimal, Field(ge=0, le=100, max_digits=5, decimal_places=2)] | None = None
+    reminder_channel: Literal["off", "sms", "whatsapp", "email"] | None = None
+    reminder_min_days_overdue: Annotated[int, Field(ge=0, le=365)] | None = None
+    reminder_repeat_days: Annotated[int, Field(ge=0, le=365)] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles

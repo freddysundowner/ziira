@@ -10,8 +10,8 @@ from ziira.sdk import IntegrityCheck, Session, provides
 
 @provides("kernel.integrity_check")
 class CustomerLedgerCheck(IntegrityCheck):
-    """What customers owe on their invoices must equal what each customer's account in the books says, and an invoice's
-    paid amount must equal the live receipts allocated to it."""
+    """What customers owe on their invoices (less money held for them in advance) must equal what each customer's
+    account in the books says, and an invoice's paid amount must equal the live receipts allocated to it."""
 
     name = "customer ledger"
 
@@ -31,6 +31,10 @@ class CustomerLedgerCheck(IntegrityCheck):
                     "select customer_id, sum(total - amount_paid - credited) as owed from pos.sales_invoice "
                     "where company_id = :c and status in ('issued', 'part_paid') group by customer_id"),
                     {"c": str(company_id)}) if Decimal(r.owed) != 0}
+            for r in session.execute(text(
+                    "select customer_id, sum(unallocated) as held from pos.customer_receipt where company_id = :c and "
+                    "status = 'posted' and unallocated > 0 group by customer_id"), {"c": str(company_id)}):
+                owed[r.customer_id] = owed.get(r.customer_id, Decimal(0)) - Decimal(r.held)    # in credit
             ledger = party_balances(session, company_id, "1100")
             for customer in sorted({*owed, *ledger}, key=str):
                 if owed.get(customer, Decimal(0)) != ledger.get(customer, Decimal(0)):

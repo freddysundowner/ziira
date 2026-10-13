@@ -12,6 +12,7 @@ from ziira.modules.pos.repository.models import (
     BRANCH,
     CustomerReceipt,
     CustomerReceiptAllocation,
+    CustomerRefund,
     Device,
     InvoiceReminder,
     Sale,
@@ -435,3 +436,46 @@ def last_reminders(session: Session, invoice_ids: list[UUID]) -> dict[UUID, Any]
 def reminders_of(session: Session, invoice_id: UUID) -> list[InvoiceReminder]:
     return list(session.scalars(select(InvoiceReminder).where(InvoiceReminder.invoice_id == invoice_id)
                                 .order_by(InvoiceReminder.created_at)))
+
+
+# --------------------------------------------------------------------------- advances
+def advances_of(session: Session, customer_id: UUID, *, lock: bool = False) -> list[CustomerReceipt]:
+    """Receipts with money still held on the customer's account, oldest first."""
+    query = select(CustomerReceipt).where(
+        CustomerReceipt.customer_id == customer_id, CustomerReceipt.status == "posted",
+        CustomerReceipt.unallocated > 0).order_by(CustomerReceipt.received_on, CustomerReceipt.number)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return list(session.scalars(query))
+
+
+def customer_advances(session: Session, customer_id: UUID) -> Decimal:
+    """Money the customer has paid in advance and not yet used or had back."""
+    return Decimal(session.scalar(select(func.coalesce(func.sum(CustomerReceipt.unallocated), 0)).where(
+        CustomerReceipt.customer_id == customer_id, CustomerReceipt.status == "posted")) or 0)
+
+
+def refund_by_payment(session: Session, payment_id: UUID, *, lock: bool = False) -> CustomerRefund | None:
+    query = select(CustomerRefund).where(CustomerRefund.payment_id == payment_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def get_refund(session: Session, refund_id: UUID) -> CustomerRefund | None:
+    return session.get(CustomerRefund, refund_id)
+
+
+def refunds_of_receipt(session: Session, receipt_id: UUID) -> list[CustomerRefund]:
+    return list(session.scalars(select(CustomerRefund).where(CustomerRefund.receipt_id == receipt_id)
+                                .order_by(CustomerRefund.created_at)))
+
+
+def list_refunds(session: Session, scopes: Scopes, *, customer_id: UUID | None, limit: int,
+                 offset: int) -> list[CustomerRefund]:
+    query = select(CustomerRefund).where(in_scope(scopes, CustomerRefund.company_id, CustomerRefund.branch_id)
+                                         ).order_by(CustomerRefund.refunded_on.desc(), CustomerRefund.number.desc()
+                                                    ).limit(limit).offset(offset)
+    if customer_id:
+        query = query.where(CustomerRefund.customer_id == customer_id)
+    return list(session.scalars(query))

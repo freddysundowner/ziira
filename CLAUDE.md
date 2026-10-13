@@ -33,7 +33,7 @@ eTIMS integrates directly with KRA systems.
 ```bash
 bash scripts/run_local.sh     # one step: venv, master DB + template, demo business, API on :8000
 make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT in .env)
-make test                     # all tests (creates/drops ziira_test_master, _template, _t_* databases)
+make test                     # all tests (use `caffeinate -i make test` on a Mac: a sleeping laptop expires the test tokens) (creates/drops ziira_test_master, _template, _t_* databases)
 make lint                     # ruff + mypy + import-linter
 make web-setup | web | web-check   # web app: npm ci | dev server :5173 | lint+types+tests+build
 make api-types                # regenerate frontend/src/api/schema.d.ts after backend API changes (commit it)
@@ -123,12 +123,16 @@ tests/             unit tests for domain rules
   (+ `@subscribe("approval.decided")`), `@subscribe_after`, `idempotent` / `idempotency_key_header` (retry-safe creates),
   `flag_for_review` (exceptions inbox: anything a person must look at), `@job` / `enqueue` (background jobs with retry and
   backoff, run by `ziira worker`), `store_credential` / `read_credential` (encrypted integration secrets),
-  `system_session` (work nobody signed in for, such as a Safaricom callback). See `docs/adding-a-module.md`.
+  `system_session` (work nobody signed in for, such as a Safaricom callback), `periodic` (recurring tasks, run by the
+  worker once per interval per business), `send_notification` / `opt_out_contact` (email, SMS and WhatsApp through the
+  business's channel; see `docs/notifications.md`). See `docs/adding-a-module.md`.
 - Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
   (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
 - A business event that already happened (an offline sale) is accepted and its problems are flagged, not refused.
-- Daraja (M-Pesa) request formats in `payments/providers.py` are written from the public documentation and have not been
-  run against Safaricom: test in their sandbox before any live use.
+- Daraja (M-Pesa) request formats in `payments/providers.py`, and the SMS and WhatsApp formats in
+  `plugins/messaging/providers.py`, are written from public documentation and have not been run against the real services:
+  test in their sandboxes before any live use.
+- Never send a message in the caller's request: queue it. Respect the do-not-contact list (the kernel does).
 - Auth: sign-in with workspace code + email/phone + password; bearer tokens; API keys (`X-API-Key`).
   Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
 - New endpoints are covered by the fuzzer automatically (`tests/test_robustness.py`: add a valid baseline body to its

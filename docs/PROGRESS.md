@@ -27,12 +27,11 @@ code), optionally a validation hook on sale posting (sign before completing), an
 fields through `products/public.py`. It listens to `sale.posted` / `sale.returned`, keeps its own `plg_etims` table of
 status per document (so POS stays unchanged), and signs with jobs and retry.
 
-Phases 4, 7 and 6 are done. Next in the agreed order: **phase 8, Finance reports** (expenses, bank reconciliation, P&L, balance
-sheet, VAT summary, exports). VAT output comes from sales (`2200`), VAT input from purchases (`1300`); both are booked from
-the manual tax codes until the eTIMS plugin exists. Left over from phase 6: advance payments from customers (a payment must
-be allocated to invoices for now), sending reminders (needs notifications, phase 10), a nightly job that expires old
-quotations (they are expired when looked at). Left from purchasing: supplier invoices from eTIMS, statement reconciliation,
-supplier refunds of overpaid bills.
+Phases 4, 7 and 6 are done, including their loose ends. Next in the agreed order: **phase 8, Finance reports** (expenses, bank
+reconciliation, P&L, balance sheet, VAT summary, exports). VAT output comes from sales (`2200`), VAT input from purchases
+(`1300`); both are booked from the manual tax codes until the eTIMS plugin exists. Still open from earlier phases: supplier
+invoices from eTIMS (the eTIMS plugin), supplier statement reconciliation, supplier refunds of overpaid bills, receipt
+printing, running the Daraja, Africa's Talking and WhatsApp calls against their sandboxes.
 
 Phase 4 left open (small, do when convenient):
 - [ ] **Run the Daraja flows in Safaricom's sandbox.** Request formats in `payments/providers.py` are from the public
@@ -69,6 +68,7 @@ Phase 4 left open (small, do when convenient):
 | Purchasing | Suppliers with guarded bank details, requests, orders, receipts, bills with the three-way match, payment, payables | `modules/purchasing/` (README) |
 | CRM | Customers, contacts, versioned credit (increases approved), leads, follow-ups | `modules/crm/` (README) |
 | Receivables | Credit sales, invoices, quotations/orders, customer payments, credit notes, statements, ageing, reminders, ledger check | `modules/pos/` (README) |
+| Messaging | Notification queue, opt-outs, channel set-up (kernel); email/SMS/WhatsApp providers (plugin); recurring tasks | `kernel/notifications.py`, `plugins/messaging/`, `docs/notifications.md` |
 | Other modules | Tables, manifests and folders only | `modules/*/` |
 
 Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
@@ -83,7 +83,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ✅ Done | Hypothesis and concurrency tests; reports beyond TB/GL are phase 8 |
 | 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ✅ Done | Daraja untested live (sandbox run pending); web POS shell later |
 | 5 | eTIMS **plugin**: direct KRA integration, credit notes, retry | ⬜ Last | Deferred by decision; manual tax entry meanwhile. KRA integrator certification before live |
-| 6 | Customers and sales: CRM, credit, invoices, receivables, statements, reminders | ✅ Done | Advance payments and sending reminders later |
+| 6 | Customers and sales: CRM, credit, invoices, receivables, advances, statements, reminders (sent) | ✅ Done | Messaging gateways untested live |
 | 7 | Purchasing: orders, receipts, bills, three-way match, returns, credit notes, reversals | ✅ Done | eTIMS purchase pull and statement reconciliation later |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, VAT | ⬜ | |
 | 9 | People and payroll: HR, attendance, payroll, payslips | ⬜ | Rates verified by an accountant before launch |
@@ -132,6 +132,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (m) | **Loose ends of phase 6 closed.** Recurring tasks (`@periodic`, claimed per business per interval) running the expiry of old quotations; advance payments (`hold_balance`, `apply-credit`, refunds, reversal in either place, credit counted against the limit, ledger check updated); messaging: kernel notification queue with opt-outs, retries and the exceptions inbox, channel set-up API, the `messaging` plugin (SMTP, Africa's Talking, WhatsApp Cloud, fake), reminders sent on request, in a batch and daily by company setting, CRM do-not-contact. Fixed: the settings API did not expose `bill_match_tolerance_percent`. Migrations `kernel/0005`, `pos/0004`. |
 | 2026-10-13 (l) | **Phase 6 done (Customers and sales).** CRM: customers, contacts, credit limits and terms with history (raises approved by someone else), leads with sources and conversion, follow-ups. POS: credit sales (limit and terms enforced, serialised per customer; offline credit accepted and raised), invoices to business customers, quotations and sales orders delivered by invoice, customer receipts (oldest first or named, via Payments, cash through the till), reversal of customer payments, credit notes for goods taken back (sales and invoices), voids, statements, ageing, reminders, `receivables.*` permissions, customer ledger integrity check. Finance: customer payment recipes. Products: customer-group price lists. Migrations `crm/0002`, `pos/0003`. |
 | 2026-10-13 (k) | **Purchasing completed.** Reversing a payment updates the bill and the books (`payment.reversed` from Payments, `supplier.payment_reversed`); reversing a posted bill (mirror entry, quantities back, invoice number reusable); returning goods to a supplier (`goods.returned`, stock out, order reopened, flagged until credited); supplier credit notes (goods at stock value, variance, expense credits); landed-cost lines on bills. Finance: mirrored recipes, `credit_note.posted`. Migration `purchasing/0003`. Tests 953 -> 976. |
 | 2026-10-13 (j) | **Phase 7 done (Purchasing).** Suppliers; bank details changed only by propose -> confirm by a different person -> approval, stored encrypted and shown masked; requests and orders with approval by amount; goods receipts (partial, never more than ordered, costed at the order, landed cost, supplier price history); supplier bills with the three-way match (tolerance setting `bill_match_tolerance_percent`), exceptions that need someone else, expense bills, payment through Payments, payables by age. Finance: recipes and rules for `bill.posted` and `supplier.paid`, purchase price variance account, recipe lines that name their own account. Products: `tax_code_rate`; Inventory: `location_scope`. Plan changed: eTIMS last, as a plugin. |

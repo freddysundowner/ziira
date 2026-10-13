@@ -1,0 +1,14 @@
+[unit]
+name = "messaging"
+title = "Messaging channels (email, SMS, WhatsApp)"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+
+[provides]
+api_prefix = "/api/v1/plugins/messaging"
+
+# Sockets of other units this plugin plugs into (code in hooks.py)
+[extends]
+implements = ["kernel.notification_channel"]
