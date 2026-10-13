@@ -27,9 +27,11 @@ code), optionally a validation hook on sale posting (sign before completing), an
 fields through `products/public.py`. It listens to `sale.posted` / `sale.returned`, keeps its own `plg_etims` table of
 status per document (so POS stays unchanged), and signs with jobs and retry.
 
-Now: **phase 7, Purchasing** (orders, receipts, supplier bills, three-way match). Tables exist in
-`ziira/modules/purchasing/migrations/`; Inventory already handles `goods.received` (payload in
-`inventory/services/stock_events.py`); Finance needs recipes for receipts (goods received not invoiced) and bills.
+Phase 7 (Purchasing) is done. Next: **phase 6, Customers and sales** (CRM, credit sales, invoices, receivables; credit
+notes; POS currently refuses `credit` payments and `credit_note` refunds until this exists). Tables for quotations,
+orders and invoices exist in `pos` and `crm` migrations. Purchasing left open (small): returning goods to a supplier and
+supplier credit notes, reversing a posted bill, a landed-cost invoice that clears the landed part of "goods received not
+invoiced" (until then a manual journal), reversing a bill payment from Payments.
 
 Phase 4 left open (small, do when convenient):
 - [ ] **Run the Daraja flows in Safaricom's sandbox.** Request formats in `payments/providers.py` are from the public
@@ -63,6 +65,7 @@ Phase 4 left open (small, do when convenient):
 | Platform (phase 4) | Idempotency keys, job queue + `ziira worker`, exceptions inbox, encrypted credentials | `kernel/idempotency.py`, `jobs.py`, `exceptions_inbox.py`, `credentials.py` |
 | Payments | Payments model, M-Pesa STK push and C2B, statements, matching engine, settlements, daily close | `modules/payments/` (README) |
 | POS | Devices, tills, sales, voids, returns, price overrides, offline sync; price lists live in Products | `modules/pos/` (README) |
+| Purchasing | Suppliers with guarded bank details, requests, orders, receipts, bills with the three-way match, payment, payables | `modules/purchasing/` (README) |
 | Other modules | Tables, manifests and folders only | `modules/*/` |
 
 Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
@@ -78,7 +81,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ✅ Done | Daraja untested live (sandbox run pending); web POS shell later |
 | 5 | eTIMS **plugin**: direct KRA integration, credit notes, retry | ⬜ Last | Deferred by decision; manual tax entry meanwhile. KRA integrator certification before live |
 | 6 | Customers and sales: CRM, credit, invoices, receivables | ⬜ | |
-| 7 | Purchasing: orders, receipts, bills, three-way match | ⬜ | |
+| 7 | Purchasing: orders, receipts, bills, three-way match | ✅ Done | Returns to suppliers, supplier credit notes, bill reversal later |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, VAT | ⬜ | |
 | 9 | People and payroll: HR, attendance, payroll, payslips | ⬜ | Rates verified by an accountant before launch |
 | 10 | Command Center, Intelligence, WhatsApp | ⬜ | |
@@ -126,6 +129,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (j) | **Phase 7 done (Purchasing).** Suppliers; bank details changed only by propose -> confirm by a different person -> approval, stored encrypted and shown masked; requests and orders with approval by amount; goods receipts (partial, never more than ordered, costed at the order, landed cost, supplier price history); supplier bills with the three-way match (tolerance setting `bill_match_tolerance_percent`), exceptions that need someone else, expense bills, payment through Payments, payables by age. Finance: recipes and rules for `bill.posted` and `supplier.paid`, purchase price variance account, recipe lines that name their own account. Products: `tax_code_rate`; Inventory: `location_scope`. Plan changed: eTIMS last, as a plugin. |
 | 2026-10-13 (i) | **Phase 4 done.** Platform: idempotency keys, job queue and `ziira worker`, exceptions inbox, encrypted credentials. Payments: one payments model, C2B and STK (fake + Daraja providers, signed callbacks, status checks), statement import, matching engine with undo, settlements and cash deposits (Finance postings), daily close with reopening through approval. Products: price lists with history. POS: devices, tills with X/Z reports and variance posting, sales (VAT-inclusive, overrides, change, retry-safe), voids, returns with approval, immutable sale records, offline snapshot + exactly-once upload with kept rejections. Fixes found by tests: Payments never reopened a day on approval (no `approval.decided` handler); default-rule seeding restored deliberately removed posting rules. Tests 712 -> 912. |
 | 2026-10-13 (h) | **Phase 3 done.** Finance module: pure domain (entries, periods, chart template, recipes, posting rules), chart of accounts, posting engine (`post_entry`: balanced, immutable, branch dimension, period policy, numbering, `journal.posted`), posting rules as data, subscribers for `stock.moved`, `sale.posted`, `sale.returned` (atomic with the operation), periods and closing checklist, manual journals with approval, reversals (manual entries only), trial balance and general ledger (reproducible for any past date, branch-limited), books check (`ziira verify`, with `--fix` catching up unposted movements). New migration `finance/0002_manual_journals`; new company setting `late_posting`; Inventory `stock.moved` carries branch and location kind; Inventory public stock-value reads. Tests 554 -> 712 (incl. Hypothesis and race tests; fuzzer covers Finance). Also fixed a scaling limit found by the full suite: every tenant database kept its own connection pool, so ~80 tenants exhausted PostgreSQL's connections; the least recently used pools are now closed beyond `ZIIRA_MAX_CACHED_TENANT_ENGINES` (25). |
 | 2026-10-13 (g) | **Hardening pass on phases 1 and 2** (`docs/testing.md`). Added schema-driven fuzzing of every endpoint, adversarial security tests, concurrency tests, kernel and Products unit tests, every unit enabled alone, domain and service edge cases. Fixed 12 real defects: unstorable numbers (500s), bad paging, NUL text, malformed signed tokens, two races (simultaneous counts, simultaneous opening stock), `%`/`_` search wildcards, blank names, unknown eTIMS types, email/phone/password validation, corrupt settings, last-owner check, expired approvals listed, DB wording in 409s, NaN quantities. New migration `0003_one_open_count`. Tests 270 -> 554. Note: the full suite now takes ~6 minutes (the fuzz test is slower when many test databases exist). |

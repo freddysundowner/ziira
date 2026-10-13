@@ -5,12 +5,12 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = ["products"]
-optional = ["inventory", "finance"]
+optional = ["inventory", "finance", "payments"]
 
 [provides]
 api_prefix = "/api/v1/purchasing"
-publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed"]
-subscribes = []
+publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid"]
+subscribes = ["approval.decided"]
 
 [permissions]
 "suppliers.manage" = "Manage suppliers"
@@ -19,3 +19,19 @@ subscribes = []
 "po.approve" = "Approve purchase orders"
 "goods.receive" = "Receive goods"
 "bills.manage" = "Enter supplier bills"
+"bills.approve" = "Approve supplier bills that do not match their order and receipt"
+"bills.pay" = "Pay supplier bills"
+"supplier.bank_confirm" = "Confirm supplier bank details with the supplier"
+"purchasing.view" = "View suppliers, orders, receipts and bills"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["suppliers.manage", "supplier.bank_edit", "supplier.bank_confirm", "po.create", "po.approve", "goods.receive", "bills.manage", "bills.approve", "bills.pay", "purchasing.view"]
+"Branch Manager" = ["purchasing.view", "po.create", "goods.receive"]
+"Storekeeper" = ["purchasing.view", "goods.receive"]
+"Accountant" = ["purchasing.view", "suppliers.manage", "bills.manage"]
+
+[reason_codes.bill_exception]
+PRICE_AGREED = "Price agreed with the supplier"
+SHORT_DELIVERY_BILLED = "Supplier billed for the full order"
+OTHER = "Other, explained in the note"

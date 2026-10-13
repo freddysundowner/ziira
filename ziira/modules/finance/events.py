@@ -1,8 +1,8 @@
 """Events published and handled by the Finance and Accounting module.
 
 Publishes: journal.posted, period.closed
-Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed,
-approval.decided (kernel)
+Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed, bill.posted,
+supplier.paid, approval.decided (kernel)
 """
 
 from ziira.modules.finance.services import event_postings, manual_journals
@@ -51,3 +51,15 @@ def on_approval_decided(session: Session, event: Event) -> None:
     if event.aggregate_type == manual_journals.DOC_TYPE:
         manual_journals.apply_decision(session, event.aggregate_id, approved=event.payload["status"] == "approved",
                                        decided_by=event.payload.get("decided_by"))
+
+
+@subscribe("bill.posted")
+def on_bill_posted(session: Session, event: Event) -> None:
+    """Clear goods received not invoiced and record what is owed to the supplier."""
+    event_postings.post_supplier_bill(session, event)
+
+
+@subscribe("supplier.paid")
+def on_supplier_paid(session: Session, event: Event) -> None:
+    """Reduce what is owed to the supplier by the money paid."""
+    event_postings.post_supplier_payment(session, event)

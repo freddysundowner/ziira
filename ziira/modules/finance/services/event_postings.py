@@ -138,3 +138,34 @@ def post_till_variance(session: Session, event: Event) -> JournalEntry | None:
         entry_date=_date(p.get("business_date")), recipe=recipes.till_variance(variance), context={},
         branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="till_variance",
         source_id=event.aggregate_id, description="Till shortage" if variance < 0 else "Till overage")
+
+
+def post_supplier_bill(session: Session, event: Event) -> JournalEntry | None:
+    """`bill.posted`: what was received is no longer "not invoiced"; the supplier is owed the bill's total."""
+    p = event.payload
+    expenses = p.get("expenses") or []
+    if not isinstance(expenses, list):
+        raise ValidationFailed("bill.posted: expenses must be a list")
+    recipe = recipes.supplier_bill(
+        _amount(p.get("stock_received_value", 0), "stock_received_value"),
+        _amount(p.get("stock_billed_value", 0), "stock_billed_value"), _amount(p.get("tax", 0), "tax"),
+        [(_uuid(x.get("account_id"), "expense account"), _amount(x.get("amount"), "expense amount")) for x in expenses],
+        party=_optional_uuid(p.get("supplier_id"), "supplier_id"),
+        description=f"Supplier bill {p.get('number') or ''}".strip())
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_bill", journal_code="PUR",
+        entry_date=_date(p.get("business_date")), recipe=recipe, context={},
+        branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_bill",
+        source_id=event.aggregate_id, description=f"Supplier bill {p.get('number') or ''}".strip())
+
+
+def post_supplier_payment(session: Session, event: Event) -> JournalEntry | None:
+    """`supplier.paid`: money left the business to pay a supplier's bill."""
+    p = event.payload
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_payment",
+        journal_code="CSH", entry_date=_date(p.get("business_date")),
+        recipe=recipes.supplier_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
+                                        party=_optional_uuid(p.get("supplier_id"), "supplier_id")),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_payment",
+        source_id=event.aggregate_id, description=f"Payment of supplier bill {p.get('number') or ''}".strip())

@@ -72,3 +72,11 @@ def stock_at_location(session: Session, location_id: UUID, product_ids: set[UUID
     for balance in inventory_repo.balances_at(session, location_id, product_ids):
         totals[balance.product_id] = totals.get(balance.product_id, Decimal(0)) + balance.quantity
     return totals
+
+
+def location_scope(session: Session, location_id: UUID) -> tuple[UUID, UUID | None] | None:
+    """(company, branch) of an active stock location, or None when it does not exist or is not in use."""
+    location = inventory_repo.get_location(session, location_id)
+    if location is None or not location.is_active:
+        return None
+    return location.company_id, location.branch_id

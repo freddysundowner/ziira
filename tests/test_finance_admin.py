@@ -85,7 +85,7 @@ def test_rules_are_data_and_a_specific_rule_overrides_the_general_one(client, sh
     rules = client.get(f"{FIN}/posting-rules", headers=owner, params={"company_id": co}).json()
     assert len(rules) > 15 and {r["doc_type"] for r in rules} >= {"stock_movement", "sale", "sale_return"}
     damage = client.post(f"{FIN}/accounts", headers=owner, json={
-        "company_id": co, "code": "5200", "name": "Damaged goods", "type": "expense"}).json()
+        "company_id": co, "code": "5290", "name": "Damaged goods", "type": "expense"}).json()
     r = client.post(f"{FIN}/posting-rules", headers=owner, json={
         "company_id": co, "doc_type": "stock_movement", "line_role": "shrinkage", "account_id": damage["id"],
         "side": "debit", "conditions": {"movement_type": "write_off"}})
@@ -103,9 +103,9 @@ def test_rules_are_data_and_a_specific_rule_overrides_the_general_one(client, sh
                 reason_code_id=UUID(reason)))
 
     move("write_off", write_off)                         # the specific rule: this loss goes to "Damaged goods"
-    assert balance(shop, "5200") == 20 and balance(shop, "5100") == shrinkage_before
+    assert balance(shop, "5290") == 20 and balance(shop, "5100") == shrinkage_before
     move("adjustment", adjust)                           # anything else still goes to the general shrinkage account
-    assert balance(shop, "5200") == 20 and balance(shop, "5100") == shrinkage_before + 20
+    assert balance(shop, "5290") == 20 and balance(shop, "5100") == shrinkage_before + 20
 
 
 def test_rule_validation(client, shop) -> None:  # type: ignore[no-untyped-def]

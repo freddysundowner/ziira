@@ -100,3 +100,9 @@ def sellable_products(session: Session, company_id: UUID, search: str | None = N
         is_batch_tracked=p.is_batch_tracked, is_active=p.is_active, reorder_level=p.reorder_level)
         for p in products_repo.list_products(session, search, min(limit, 1000), offset, {company_id},
                                              only_active=True)]
+
+
+def tax_code_rate(session: Session, tax_code_id: UUID) -> Decimal | None:
+    """The VAT rate (percent) of an active tax code, or None when it does not exist or is not in use."""
+    tax = products_repo.get_tax_code(session, tax_code_id)
+    return tax.vat_rate if tax is not None and tax.is_active else None

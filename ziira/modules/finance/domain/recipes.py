@@ -20,9 +20,12 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
     "settlement": ("bank", "bank_charges", "mpesa_clearing"),
     "cash_deposit": ("bank", "cash"),
     "till_variance": ("cash", "till_variance"),
+    "supplier_bill": ("grni", "purchase_variance", "vat_input", "payable"),
+    "supplier_payment": ("payable", "cash", "bank", "mpesa", "card", "other"),
 }
 RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
-                                               "settlement": (), "cash_deposit": (), "till_variance": ()}
+                                               "settlement": (), "cash_deposit": (), "till_variance": (),
+                                               "supplier_bill": (), "supplier_payment": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -37,6 +40,7 @@ class RecipeLine:
     party_type: str | None = None
     party_id: Any = None
     description: str | None = None
+    account_id: Any = None        # a line that names its own account (a bill's expense line) skips the posting rules
 
 
 def stock_movement(movement_type: str, value: Decimal, location_kind: str) -> list[RecipeLine]:
@@ -140,3 +144,42 @@ def till_variance(variance: Decimal, *, description: str | None = None) -> list[
                 RecipeLine("cash", "credit", amount, description=description)]
     return [RecipeLine("cash", "debit", amount, description=description),
             RecipeLine("till_variance", "credit", amount, description=description)]
+
+
+def supplier_bill(stock_received_value: Decimal, stock_billed_value: Decimal, vat: Decimal,
+                  expenses: list[tuple[Any, Decimal]], *, party: Any = None,
+                  description: str | None = None) -> list[RecipeLine]:
+    """A supplier bill: goods received not invoiced cleared at what was received, any price difference, other costs and
+    VAT input, against what is owed to the supplier.
+
+    Dr goods received not invoiced (value when received)   Dr/Cr purchase price variance (billed - received)
+    Dr expense accounts (non-stock lines)                    Dr VAT input        Cr accounts payable (the bill's total)
+    """
+    if min(stock_received_value, stock_billed_value, vat) < 0 or any(amount <= 0 for _, amount in expenses):
+        raise ValidationFailed("A bill's amounts cannot be negative")
+    variance = (stock_billed_value - stock_received_value).quantize(MONEY)
+    lines = []
+    if stock_received_value:
+        lines.append(RecipeLine("grni", "debit", stock_received_value, description=description))
+    if variance:
+        lines.append(RecipeLine("purchase_variance", "debit" if variance > 0 else "credit", abs(variance),
+                                description=description))
+    for account_id, amount in expenses:
+        lines.append(RecipeLine("expense", "debit", amount, description=description, account_id=account_id))
+    if vat:
+        lines.append(RecipeLine("vat_input", "debit", vat, description=description))
+    total = stock_billed_value + sum((a for _, a in expenses), Decimal(0)) + vat
+    if total <= 0:
+        raise ValidationFailed("A bill must be worth more than nothing")
+    lines.append(RecipeLine("payable", "credit", total, party_type="supplier", party_id=party, description=description))
+    return lines
+
+
+def supplier_payment(method: str, amount: Decimal, *, party: Any = None,
+                     description: str | None = None) -> list[RecipeLine]:
+    """Paying a supplier: Dr accounts payable  Cr cash / bank / M-Pesa / card."""
+    if amount <= 0:
+        raise ValidationFailed("A payment must be more than nothing")
+    role = method if method in ("cash", "mpesa", "card", "bank") else "other"
+    return [RecipeLine("payable", "debit", amount, party_type="supplier", party_id=party, description=description),
+            RecipeLine(role, "credit", amount, description=description)]

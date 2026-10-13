@@ -51,6 +51,16 @@ def _non_negative_amount(value: Any) -> Decimal:
     return amount
 
 
+def _percent(value: Any) -> Decimal:
+    try:
+        amount = Decimal(str(value))
+    except InvalidOperation:
+        raise ValidationFailed("Expected a percentage") from None
+    if not amount.is_finite() or amount < 0 or amount > 100:
+        raise ValidationFailed("A percentage is between 0 and 100")
+    return amount
+
+
 def _late_posting(value: Any) -> str:
     if value not in ("redirect", "reject"):
         raise ValidationFailed("Expected 'redirect' or 'reject'")
@@ -65,6 +75,9 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("late_posting", "redirect", _late_posting,
             "A document dated in a closed accounting period is posted to the current period ('redirect') or "
             "refused ('reject')"),
+    Setting("bill_match_tolerance_percent", Decimal("2"), _percent,
+            "A supplier bill whose cost per unit is more than this percentage away from what was ordered or "
+            "received is an exception that needs approval before it posts"),
 )}
 
 

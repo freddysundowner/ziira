@@ -28,6 +28,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(s["tenant_id"], "finance")
     registry.enable(s["tenant_id"], "payments")
     registry.enable(s["tenant_id"], "pos")
+    registry.enable(s["tenant_id"], "purchasing")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
     s["reason"] = next(x["id"] for x in reasons if x["category"] == "stock_adjustment")
@@ -82,9 +83,22 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
         "payments": [{"method": "cash", "amount": "116"}]})
     assert made.status_code == 201, made.text
     sale = made.json()
+    pur = "/api/v1/purchasing"
+    supplier = client.post(f"{pur}/suppliers", headers=owner, json={
+        "company_id": co, "code": "FZSUP", "name": "Fuzz supplier"}).json()
+    order = client.post(f"{pur}/orders", headers=owner, json={
+        "company_id": co, "supplier_id": supplier["id"], "deliver_to_location_id": s["main"],
+        "lines": [{"product_id": s["cement"], "quantity": "5", "unit_cost": "10"}]}).json()
+    request = client.post(f"{pur}/requests", headers=owner, json={
+        "company_id": co, "branch_id": str(s["branch_id"]),
+        "lines": [{"product_id": s["cement"], "quantity": "1"}]}).json()
+    bank = client.post(f"{pur}/suppliers/{supplier['id']}/bank-accounts", headers=owner, json={
+        "method": "mpesa", "account_no": "0712345678"}).json()
+    s["pur_ids"] = {"supplier": supplier["id"], "order": order["id"]}
     s["pos_ids"] = {"device": device["id"], "key": device["key"], "till": till_session["id"], "price_list": plist["id"]}
     s["ids"] = {
-        "device_id": device["id"], "till_id": till_session["id"], "sale_id": sale["id"], "price_list_id": plist["id"],
+        "supplier_id": supplier["id"], "order_id": order["id"], "request_id": request["id"], "bank_id": bank["id"],
+        "bill_id": str(uuid4()), "receipt_id": str(uuid4()), "device_id": device["id"], "till_id": till_session["id"], "sale_id": sale["id"], "price_list_id": plist["id"],
         "return_id": str(uuid4()),
         "payment_id": payment["id"], "intent_id": intent["id"],
         "account_id": s["acc"]["6000"], "manual_id": manual["id"], "entry_id": posted["entry_id"],
@@ -150,6 +164,32 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
         if path.endswith("/payments/closes") and method == "POST":
             return {"company_id": co, "branch_id": str(shop["branch_id"]), "business_date": "2026-01-01",
                     "cash_banked": "0"}
+        if path.endswith("/purchasing/suppliers") and method == "POST":
+            return {"company_id": co, "code": f"FZ{n}", "name": "Fuzz supplier"}
+        if path.endswith("/bank-accounts") and method == "POST":
+            return {"method": "mpesa", "account_no": "0712345678"}
+        if path.endswith("/purchasing/requests") and method == "POST":
+            return {"company_id": co, "branch_id": str(shop["branch_id"]),
+                    "lines": [{"product_id": shop["cement"], "quantity": "1"}]}
+        if path.endswith("/purchasing/orders") and method == "POST":
+            return {"company_id": co, "supplier_id": shop["pur_ids"]["supplier"], "deliver_to_location_id": shop["main"],
+                    "lines": [{"product_id": shop["cement"], "quantity": "1", "unit_cost": "10"}]}
+        if path.endswith("/purchasing/receipts") and method == "POST":
+            return {"supplier_id": shop["pur_ids"]["supplier"], "location_id": shop["main"],
+                    "lines": [{"product_id": shop["cement"], "quantity": "1", "unit_cost": "10"}]}
+        if path.endswith("/purchasing/bills") and method == "POST":
+            return {"supplier_id": shop["pur_ids"]["supplier"], "supplier_invoice_no": f"FZ-{n}",
+                    "bill_date": "2026-10-01", "lines": [{"quantity": "1", "unit_cost": "10",
+                                                          "expense_account_id": shop["acc"]["6000"],
+                                                          "description": "Fuzz"}]}
+        if path.endswith("/confirm") and "/purchasing/" in path:
+            return {"confirmation_method": "in_person"}
+        if path.endswith("/approve-exception"):
+            return {"reason_code_id": str(uuid4())}
+        if path.endswith("/reject-exception"):
+            return {"note": "Fuzz"}
+        if path.endswith("/pay") and "/purchasing/" in path:
+            return {"amount": "1", "method": "cash"}
         if path.endswith("/pos/devices") and method == "POST":
             return {"branch_id": str(shop["branch_id"]), "code": f"F{n}"[:8], "name": "Fuzz device",
                     "location_id": shop["main"]}

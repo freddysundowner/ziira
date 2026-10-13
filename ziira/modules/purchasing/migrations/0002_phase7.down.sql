@@ -1,0 +1,20 @@
+drop trigger if exists supplier_bill_line_protected on purchasing.supplier_bill_line;
+drop function if exists purchasing.protect_bill_lines();
+drop trigger if exists supplier_price_immutable on purchasing.supplier_price;
+drop trigger if exists supplier_bill_no_delete on purchasing.supplier_bill;
+drop trigger if exists goods_receipt_no_delete on purchasing.goods_receipt;
+drop function if exists purchasing.forbid_delete();
+drop trigger if exists goods_receipt_line_immutable on purchasing.goods_receipt_line;
+drop index if exists purchasing.supplier_price_ix2;
+drop index if exists purchasing.goods_receipt_ix1;
+drop index if exists purchasing.supplier_bill_ix2;
+drop index if exists purchasing.supplier_bill_one_per_invoice;
+alter table purchasing.supplier_bill add constraint supplier_bill_supplier_id_supplier_invoice_no_key
+  unique (supplier_id, supplier_invoice_no);
+alter table purchasing.supplier_bill drop column if exists submitted_by;
+alter table purchasing.supplier_bill drop column if exists posted_at;
+alter table purchasing.supplier_bill drop column if exists match_notes;
+alter table purchasing.goods_receipt drop column if exists landed_cost;
+drop index if exists purchasing.supplier_bank_one_active;
+alter table purchasing.supplier_bank_account drop column if exists confirmed_at;
+alter table purchasing.supplier_bank_account drop column if exists status;

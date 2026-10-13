@@ -137,7 +137,7 @@ def post_from_recipe(session: Session, *, company_id: UUID, doc_type: str, journ
                      for r in finance_repo.list_rules(session, company_id)]
     lines = []
     for item in recipe:
-        account_id = rules.resolve_account(posting_rules, doc_type, item.role, context)
+        account_id = item.account_id or rules.resolve_account(posting_rules, doc_type, item.role, context)
         lines.append(Line(account_id=account_id, debit=item.amount if item.side == "debit" else Decimal(0),
                           credit=item.amount if item.side == "credit" else Decimal(0), branch_id=branch_id,
                           party_type=item.party_type, party_id=item.party_id,
