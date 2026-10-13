@@ -10,6 +10,7 @@ before it posts. Posting publishes `bill.posted`, and Finance clears "goods rece
 received), books any price difference, VAT input and the amount owed to the supplier.
 """
 
+import json
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -17,7 +18,7 @@ from typing import Any
 from uuid import UUID
 
 from ziira.modules.finance.public import is_expense_account
-from ziira.modules.payments.public import record_payment
+from ziira.modules.payments.public import DocumentPayment, payments_for_document, record_payment, reverse_payment
 from ziira.modules.products.public import find_product, tax_code_rate
 from ziira.modules.purchasing.domain import rules
 from ziira.modules.purchasing.permissions import BILLS_APPROVE, BILLS_MANAGE, BILLS_PAY
@@ -56,6 +57,7 @@ class BillLineIn:
     expense_account_id: UUID | None = None   # anything else: the expense account it belongs to
     description: str | None = None
     tax_code_id: UUID | None = None          # default for goods: the order's / product's; for expenses: none
+    landed_receipt_id: UUID | None = None    # a transport or duty charge for the goods of this receipt
 
 
 @dataclass
@@ -125,6 +127,15 @@ def _build(session: Session, company_id: UUID, supplier_id: UUID, lines: list[Bi
             branch_id = receipt.branch_id
             tax_code_id = line.tax_code_id or (order_line.tax_code_id if order_line else
                                                (product.tax_code_id if product else None))
+        elif line.landed_receipt_id is not None:
+            receipt = repo.get_receipt(session, line.landed_receipt_id)
+            if receipt is None or receipt.company_id != company_id or receipt.status != "posted":
+                raise ValidationFailed("A landed cost line names goods that were not received by this company")
+            if line.expense_account_id is not None or line.receipt_line_id is not None:
+                raise ValidationFailed("A landed cost line is not also goods or an expense")
+            if line.quantity != 1:
+                raise ValidationFailed("A landed cost line has a quantity of 1 and the charge as its cost")
+            branch_id, tax_code_id = receipt.branch_id, line.tax_code_id
         else:
             if line.expense_account_id is None or not (line.description and line.description.strip()):
                 raise ValidationFailed("A line that is not goods needs an expense account and a description")
@@ -152,7 +163,7 @@ def _write(session: Session, bill: SupplierBill, built: list[Prepared]) -> None:
             receipt_line_id=line.receipt_line_id, product_id=item.product_id,
             expense_account_id=line.expense_account_id, description=(line.description or "").strip() or None,
             quantity=line.quantity, unit_cost=line.unit_cost, tax_code_id=item.tax_code_id,
-            tax_amount=item.amounts.tax, line_total=item.amounts.gross))
+            tax_amount=item.amounts.tax, line_total=item.amounts.gross, landed_receipt_id=line.landed_receipt_id))
     bill.subtotal = sum((x.amounts.net for x in built), Decimal(0))
     bill.tax_total = sum((x.amounts.tax for x in built), Decimal(0))
     bill.total = bill.subtotal + bill.tax_total
@@ -172,8 +183,7 @@ def create_bill(session: Session, *, supplier_id: UUID, supplier_invoice_no: str
     ctx.require(BILLS_MANAGE, company_id=company_id)
     check_company(session, company_id)
     invoice_no = rules.check_invoice_no(supplier_invoice_no)
-    earlier = repo.bill_by_invoice(session, supplier.id, invoice_no)
-    if earlier is not None and earlier.status != "cancelled":
+    if repo.bill_by_invoice(session, supplier.id, invoice_no) is not None:
         raise Conflict(f"{supplier.name}'s invoice {invoice_no} has already been entered")
     if due_date is None:
         due_date = bill_date + timedelta(days=supplier.payment_terms_days)
@@ -232,12 +242,24 @@ def cancel_bill(session: Session, bill_id: UUID) -> BillView:
 
 # --------------------------------------------------------------------------- matching and posting
 def _match(session: Session, bill: SupplierBill, lines: list[SupplierBillLine]) -> list[str]:
-    """The problems found checking a bill's goods lines against their receipts and orders."""
+    """The problems found checking a bill's goods lines against their receipts and orders (goods already sent back do
+    not count as received), and its landed cost lines against what the receipts recorded."""
     ids = [x.receipt_line_id for x in lines if x.receipt_line_id is not None]
     received = {x.id: x for x in repo.lock_receipt_lines(session, ids)}
     tolerance = Decimal(company_setting(session, bill.company_id, "bill_match_tolerance_percent"))
     problems: list[str] = []
+    landed_now: dict[UUID, Decimal] = {}
     for line in lines:
+        if line.landed_receipt_id is not None:
+            receipt = repo.get_receipt(session, line.landed_receipt_id)
+            assert receipt is not None
+            net = line.line_total - line.tax_amount
+            landed_now[receipt.id] = landed_now.get(receipt.id, Decimal(0)) + net
+            if landed_now[receipt.id] + repo.landed_billed_for_receipt(session, receipt.id, exclude_bill=bill.id) \
+                    > receipt.landed_cost:
+                problems.append(f"Receipt {receipt.number}: landed cost billed would be more than the "
+                                f"{rules.plain(receipt.landed_cost)} recorded on the receipt")
+            continue
         if line.receipt_line_id is None:
             continue
         receipt_line = received[line.receipt_line_id]
@@ -245,7 +267,7 @@ def _match(session: Session, bill: SupplierBill, lines: list[SupplierBillLine]) 
         product = find_product(session, receipt_line.product_id)
         problems += rules.match_problems(
             label=product.sku if product else "Goods", billed_qty=line.quantity, billed_cost=line.unit_cost,
-            received_qty=receipt_line.quantity,
+            received_qty=receipt_line.quantity - repo.returned_on_receipt_line(session, receipt_line.id),
             already_billed=repo.billed_on_receipt_line(session, receipt_line.id, exclude_bill=bill.id),
             received_cost=receipt_line.unit_cost, ordered_cost=order_line.unit_cost if order_line else None,
             tolerance_percent=tolerance)
@@ -265,7 +287,7 @@ def submit_bill(session: Session, bill_id: UUID) -> BillView:
     if bill.total <= 0:
         raise ValidationFailed("A bill must be worth more than nothing")
     bill.submitted_by = ctx.user_id
-    has_goods = any(x.receipt_line_id is not None for x in lines)
+    has_goods = any(x.receipt_line_id is not None or x.landed_receipt_id is not None for x in lines)
     problems = _match(session, bill, lines) if has_goods else []
     bill.match_status = "exception" if problems else ("matched" if has_goods else "not_required")
     bill.match_notes = problems
@@ -333,10 +355,12 @@ def reject_exception(session: Session, bill_id: UUID, *, note: str) -> BillView:
     return _view(session, bill)
 
 
-def _post(session: Session, bill: SupplierBill, lines: list[SupplierBillLine], *, approved_by: UUID | None) -> None:
-    """Make the bill real: count what is now billed on the orders and tell Finance what is owed."""
+def _figures(session: Session, bill: SupplierBill, lines: list[SupplierBillLine]) -> dict[str, Any]:
+    """What a bill means to the books: the value of the goods it clears at what was received, the value billed, the
+    expense lines, and the VAT."""
     received_value = billed_value = Decimal(0)
     expenses: dict[UUID, Decimal] = {}
+    landed_left: dict[UUID, Decimal] = {}
     for line in lines:
         net = line.line_total - line.tax_amount
         if line.receipt_line_id is not None:
@@ -344,20 +368,76 @@ def _post(session: Session, bill: SupplierBill, lines: list[SupplierBillLine], *
             assert receipt_line is not None
             received_value += rules.cents(line.quantity * receipt_line.unit_cost)
             billed_value += net
-            if line.order_line_id is not None:
-                order_line = repo.get_order_line(session, line.order_line_id, lock=True)
-                if order_line is not None:
-                    order_line.qty_billed += line.quantity
+        elif line.landed_receipt_id is not None:
+            receipt = repo.get_receipt(session, line.landed_receipt_id)
+            assert receipt is not None
+            if receipt.id not in landed_left:
+                landed_left[receipt.id] = receipt.landed_cost - repo.landed_billed_for_receipt(
+                    session, receipt.id, exclude_bill=bill.id)
+            cleared = max(min(net, landed_left[receipt.id]), Decimal(0))
+            landed_left[receipt.id] -= cleared
+            received_value += cleared
+            billed_value += net
         elif line.expense_account_id is not None:
             expenses[line.expense_account_id] = expenses.get(line.expense_account_id, Decimal(0)) + net
+    return {"stock_received_value": received_value, "stock_billed_value": billed_value, "tax": bill.tax_total,
+            "expenses": [{"account_id": a, "amount": v} for a, v in expenses.items()]}
+
+
+def _plain_json(figures: dict[str, Any]) -> dict[str, Any]:
+    """The figures with every amount and id as text, so that they are stored exactly."""
+    return dict(json.loads(json.dumps(figures, default=str)))
+
+
+def _bill_event(bill: SupplierBill, figures: dict[str, Any]) -> dict[str, Any]:
+    return {"company_id": bill.company_id, "branch_id": bill.branch_id, "business_date": bill.bill_date,
+            "number": bill.number, "supplier_id": bill.supplier_id, "total": bill.total, **figures}
+
+
+def _post(session: Session, bill: SupplierBill, lines: list[SupplierBillLine], *, approved_by: UUID | None) -> None:
+    """Make the bill real: count what is now billed on the orders and tell Finance what is owed."""
+    figures = _figures(session, bill, lines)
+    for line in lines:
+        if line.receipt_line_id is not None and line.order_line_id is not None:
+            order_line = repo.get_order_line(session, line.order_line_id, lock=True)
+            if order_line is not None:
+                order_line.qty_billed += line.quantity
     bill.status, bill.approved_by, bill.posted_at = "posted", approved_by, datetime.now(UTC)
+    bill.posted_figures = _plain_json(figures)
     session.flush()
     audit_record(session, "post", "purchasing.supplier_bill", bill.id, {"number": bill.number, "total": bill.total})
-    publish(session, Event("bill.posted", "purchasing.supplier_bill", bill.id, {
-        "company_id": bill.company_id, "branch_id": bill.branch_id, "business_date": bill.bill_date,
-        "number": bill.number, "supplier_id": bill.supplier_id, "total": bill.total, "tax": bill.tax_total,
-        "stock_received_value": received_value, "stock_billed_value": billed_value,
-        "expenses": [{"account_id": a, "amount": v} for a, v in expenses.items()]}))
+    publish(session, Event("bill.posted", "purchasing.supplier_bill", bill.id, _bill_event(bill, figures)))
+
+
+def reverse_bill(session: Session, bill_id: UUID, *, reason: str) -> BillView:
+    """Undo a posted bill that was entered wrongly: the books are reversed, what was billed on the orders goes back, and
+    the supplier's invoice number can be entered again. Refused while the bill has payments or credit notes (reverse
+    the payments first). Needs 'bills.approve'; a reason is required."""
+    bill = _own(session, bill_id, lock=True)
+    ctx = current_context()
+    ctx.require(BILLS_APPROVE, company_id=bill.company_id)
+    if bill.status not in PAYABLE and bill.status != "paid":
+        raise Conflict(f"A bill that is {bill.status.replace('_', ' ')} cannot be reversed")
+    if not reason.strip():
+        raise ValidationFailed("A reason is required")
+    if bill.amount_paid > 0:
+        raise ValidationFailed("This bill has payments: reverse them first")
+    if bill.credited > 0:
+        raise ValidationFailed("This bill has supplier credit notes against it and cannot be reversed")
+    lines = repo.bill_lines(session, bill.id)
+    for line in lines:
+        if line.receipt_line_id is not None and line.order_line_id is not None:
+            order_line = repo.get_order_line(session, line.order_line_id, lock=True)
+            if order_line is not None:
+                order_line.qty_billed -= line.quantity
+    figures = bill.posted_figures or _plain_json(_figures(session, bill, lines))
+    bill.status, bill.reversed_at, bill.reversed_by = "reversed", datetime.now(UTC), ctx.user_id
+    bill.reverse_reason = reason.strip()
+    session.flush()
+    audit_record(session, "reverse", "purchasing.supplier_bill", bill.id,
+                 {"number": bill.number, "reason": reason.strip()})
+    publish(session, Event("bill.reversed", "purchasing.supplier_bill", bill.id, _bill_event(bill, figures)))
+    return _view(session, bill)
 
 
 # --------------------------------------------------------------------------- paying
@@ -378,7 +458,7 @@ def pay_bill(session: Session, bill_id: UUID, *, amount: Decimal, method: str,
         raise ValidationFailed("Enable Payments to pay bills")
     if amount <= 0 or amount != amount.quantize(rules.CENT):
         raise ValidationFailed("A payment is more than zero with at most 2 decimal places")
-    owed = bill.total - bill.amount_paid
+    owed = bill.total - bill.amount_paid - bill.credited
     if amount > owed:
         raise ValidationFailed(f"Only {rules.plain(owed)} is still owed on this bill")
     day = paid_on or today()
@@ -387,7 +467,7 @@ def pay_bill(session: Session, bill_id: UUID, *, amount: Decimal, method: str,
         payment_account_id=payment_account_id, business_date=day, external_ref=external_ref, party_type="supplier",
         party_id=bill.supplier_id, allocations=[("supplier_bill", bill.id, amount)])
     bill.amount_paid += amount
-    bill.status = "paid" if bill.amount_paid >= bill.total else "part_paid"
+    bill.status = "paid" if bill.amount_paid + bill.credited >= bill.total else "part_paid"
     session.flush()
     audit_record(session, "pay", "purchasing.supplier_bill", bill.id,
                  {"amount": amount, "method": method, "payment": paid.number})
@@ -406,7 +486,7 @@ def payables(session: Session, *, as_of: date | None = None,
     for bill in repo.open_bills(session, access.view_scopes(), as_of):
         if supplier_id is not None and bill.supplier_id != supplier_id:
             continue
-        owed = bill.total - bill.amount_paid
+        owed = bill.total - bill.amount_paid - bill.credited
         row = totals.setdefault(bill.supplier_id, {b: Decimal(0) for b in rules.AGEING_BUCKETS})
         row[rules.ageing_bucket(bill.due_date, as_of)] += owed
     rows: list[dict[str, Any]] = []
@@ -417,3 +497,50 @@ def payables(session: Session, *, as_of: date | None = None,
     rows.sort(key=lambda r: str(r["supplier"]))
     grand = {b: sum((Decimal(r[b]) for r in rows), Decimal(0)) for b in rules.AGEING_BUCKETS}
     return {"as_of": as_of, "suppliers": rows, "total": sum(grand.values(), Decimal(0)), "buckets": grand}
+
+
+# --------------------------------------------------------------------------- payments made on a bill
+def list_bill_payments(session: Session, bill_id: UUID) -> list[DocumentPayment]:
+    """The payments made against a bill (empty when Payments is not on)."""
+    bill = _own(session, bill_id)
+    if not unit_enabled(session, "payments"):
+        return []
+    return payments_for_document(session, "supplier_bill", bill.id)
+
+
+def reverse_bill_payment(session: Session, bill_id: UUID, *, payment_id: UUID, reason: str) -> BillView:
+    """Cancel a payment made against a bill (it went to the wrong place, or bounced). The bill owes that amount
+    again and the books follow. Needs 'bills.pay'."""
+    bill = _own(session, bill_id, lock=True)
+    current_context().require(BILLS_PAY, company_id=bill.company_id, branch_id=bill.branch_id)
+    if not unit_enabled(session, "payments"):
+        raise ValidationFailed("Payments is not enabled")
+    if payment_id not in {p.payment_id for p in payments_for_document(session, "supplier_bill", bill.id)}:
+        raise NotFound("That payment was not made against this bill")
+    reverse_payment(session, payment_id, reason)             # the event below brings the bill and the books up to date
+    return _view(session, bill)
+
+
+def apply_payment_reversal(session: Session, event: Event) -> None:
+    """A payment was reversed in Payments (from `payment.reversed`): any supplier bill it paid is owed again."""
+    payload = event.payload
+    if payload.get("direction") != "out":
+        return
+    for allocation in payload.get("allocations") or []:
+        if allocation.get("doc_type") != "supplier_bill":
+            continue
+        bill = repo.get_bill(session, UUID(str(allocation["doc_id"])), lock=True)
+        if bill is None:
+            continue
+        amount = Decimal(str(allocation["amount"]))
+        bill.amount_paid = max(bill.amount_paid - amount, Decimal(0))
+        if bill.status in ("part_paid", "paid"):
+            bill.status = "paid" if bill.amount_paid + bill.credited >= bill.total else (
+                "part_paid" if bill.amount_paid > 0 else "posted")
+        session.flush()
+        audit_record(session, "payment_reversed", "purchasing.supplier_bill", bill.id,
+                     {"payment": payload.get("number"), "amount": amount})
+        publish(session, Event("supplier.payment_reversed", "payments.payment", event.aggregate_id, {
+            "company_id": bill.company_id, "branch_id": bill.branch_id, "business_date": today(), "amount": amount,
+            "method": payload.get("method"), "supplier_id": bill.supplier_id, "number": bill.number,
+            "bill_id": bill.id}))

@@ -22,10 +22,12 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
     "till_variance": ("cash", "till_variance"),
     "supplier_bill": ("grni", "purchase_variance", "vat_input", "payable"),
     "supplier_payment": ("payable", "cash", "bank", "mpesa", "card", "other"),
+    "supplier_credit_note": ("payable", "grni", "purchase_variance", "vat_input"),
 }
 RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
                                                "settlement": (), "cash_deposit": (), "till_variance": (),
-                                               "supplier_bill": (), "supplier_payment": ()}
+                                               "supplier_bill": (), "supplier_payment": (),
+                                               "supplier_credit_note": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -146,9 +148,15 @@ def till_variance(variance: Decimal, *, description: str | None = None) -> list[
             RecipeLine("till_variance", "credit", amount, description=description)]
 
 
+def _flip(lines: list[RecipeLine]) -> list[RecipeLine]:
+    """The mirror image of an entry: every debit becomes a credit and the other way round."""
+    return [RecipeLine(x.role, "credit" if x.side == "debit" else "debit", x.amount, x.party_type, x.party_id,
+                       x.description, x.account_id) for x in lines]
+
+
 def supplier_bill(stock_received_value: Decimal, stock_billed_value: Decimal, vat: Decimal,
-                  expenses: list[tuple[Any, Decimal]], *, party: Any = None,
-                  description: str | None = None) -> list[RecipeLine]:
+                  expenses: list[tuple[Any, Decimal]], *, party: Any = None, description: str | None = None,
+                  reverse: bool = False) -> list[RecipeLine]:
     """A supplier bill: goods received not invoiced cleared at what was received, any price difference, other costs and
     VAT input, against what is owed to the supplier.
 
@@ -172,14 +180,45 @@ def supplier_bill(stock_received_value: Decimal, stock_billed_value: Decimal, va
     if total <= 0:
         raise ValidationFailed("A bill must be worth more than nothing")
     lines.append(RecipeLine("payable", "credit", total, party_type="supplier", party_id=party, description=description))
-    return lines
+    return _flip(lines) if reverse else lines
 
 
-def supplier_payment(method: str, amount: Decimal, *, party: Any = None,
-                     description: str | None = None) -> list[RecipeLine]:
-    """Paying a supplier: Dr accounts payable  Cr cash / bank / M-Pesa / card."""
+def supplier_payment(method: str, amount: Decimal, *, party: Any = None, description: str | None = None,
+                     reverse: bool = False) -> list[RecipeLine]:
+    """Paying a supplier: Dr accounts payable  Cr cash / bank / M-Pesa / card (reversed: the other way round)."""
     if amount <= 0:
         raise ValidationFailed("A payment must be more than nothing")
     role = method if method in ("cash", "mpesa", "card", "bank") else "other"
-    return [RecipeLine("payable", "debit", amount, party_type="supplier", party_id=party, description=description),
-            RecipeLine(role, "credit", amount, description=description)]
+    lines = [RecipeLine("payable", "debit", amount, party_type="supplier", party_id=party, description=description),
+             RecipeLine(role, "credit", amount, description=description)]
+    return _flip(lines) if reverse else lines
+
+
+def supplier_credit_note(stock_value: Decimal, goods_credit: Decimal, vat: Decimal,
+                         expenses: list[tuple[Any, Decimal]], *, party: Any = None,
+                         description: str | None = None) -> list[RecipeLine]:
+    """A credit the supplier gave: less owed to the supplier, goods received not invoiced cleared for the goods sent
+    back (at what the stock was worth), any difference with the credit given to purchase price variance, expense
+    credits, and VAT input reduced.
+
+    Dr accounts payable (the credit's total)   Cr goods received not invoiced (stock value of the goods returned)
+    Cr/Dr purchase price variance (credit given - stock value)   Cr expense accounts   Cr VAT input
+    """
+    if min(stock_value, goods_credit, vat) < 0 or any(amount <= 0 for _, amount in expenses):
+        raise ValidationFailed("A credit note's amounts cannot be negative")
+    variance = (goods_credit - stock_value).quantize(MONEY)
+    lines = []
+    if stock_value:
+        lines.append(RecipeLine("grni", "credit", stock_value, description=description))
+    if variance:
+        lines.append(RecipeLine("purchase_variance", "credit" if variance > 0 else "debit", abs(variance),
+                                description=description))
+    for account_id, amount in expenses:
+        lines.append(RecipeLine("expense", "credit", amount, description=description, account_id=account_id))
+    if vat:
+        lines.append(RecipeLine("vat_input", "credit", vat, description=description))
+    total = goods_credit + sum((a for _, a in expenses), Decimal(0)) + vat
+    if total <= 0:
+        raise ValidationFailed("A credit note must be worth more than nothing")
+    lines.append(RecipeLine("payable", "debit", total, party_type="supplier", party_id=party, description=description))
+    return lines

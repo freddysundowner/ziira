@@ -291,3 +291,10 @@ def cash_in_session(session: Session, till_session_id: UUID) -> Decimal:
         case((Payment.direction == "in", Payment.amount), else_=-Payment.amount)), 0)).where(
         Payment.till_session_id == till_session_id, Payment.method == "cash", Payment.status == "posted"))
     return Decimal(value or 0)
+
+
+def payments_for_document(session: Session, doc_type: str, doc_id: UUID) -> list[tuple[PaymentAllocation, Payment]]:
+    rows = session.execute(select(PaymentAllocation, Payment).join(Payment, Payment.id == PaymentAllocation.payment_id)
+                           .where(PaymentAllocation.doc_type == doc_type, PaymentAllocation.doc_id == doc_id)
+                           .order_by(Payment.created_at, Payment.id))
+    return [(a, p) for a, p in rows]

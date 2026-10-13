@@ -108,3 +108,10 @@ def test_validation_of_codes_pins_numbers_and_accounts() -> None:
     for method, bad in (("bank", "12"), ("bank", "ab;c"), ("mpesa", "12345"), ("mpesa", "0212345678")):
         with pytest.raises(ValidationFailed):
             rules.check_account_number(method, bad)
+
+
+def test_numbers_in_messages_have_no_trailing_zeros() -> None:
+    assert rules.plain(D("6.0000")) == "6" and rules.plain(D("2.50")) == "2.5" and rules.plain(D("100")) == "100"
+    assert rules.plain(D("0.0500")) == "0.05" and rules.plain(D("1234.5678")) == "1234.5678"
+    with pytest.raises(ValidationFailed, match="Only 6 more"):
+        rules.check_receipt_quantity(D("10.0000"), D("4.0000"), D("7"))

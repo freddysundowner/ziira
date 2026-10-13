@@ -152,4 +152,11 @@ def reverse_payment(session: Session, payment_id: UUID, reason: str, *, authoris
     payment.status = "reversed"
     session.flush()
     audit_record(session, "reverse", "payments.payment", payment.id, {"reason": reason.strip()})
+    publish(session, Event("payment.reversed", "payments.payment", payment.id, {
+        "company_id": payment.company_id, "branch_id": payment.branch_id, "number": payment.number,
+        "direction": payment.direction, "method": payment.method, "amount": payment.amount,
+        "business_date": payment.business_date, "reason": reason.strip(),
+        "payment_account_id": payment.payment_account_id,
+        "allocations": [{"doc_type": a.doc_type, "doc_id": a.doc_id, "amount": a.amount}
+                        for a in payments_repo.allocations(session, payment.id)]}))
     return payment

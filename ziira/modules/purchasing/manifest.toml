@@ -9,8 +9,8 @@ optional = ["inventory", "finance", "payments"]
 
 [provides]
 api_prefix = "/api/v1/purchasing"
-publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid"]
-subscribes = ["approval.decided"]
+publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid", "goods.returned", "bill.reversed", "supplier.payment_reversed", "credit_note.posted"]
+subscribes = ["approval.decided", "payment.reversed"]
 
 [permissions]
 "suppliers.manage" = "Manage suppliers"
@@ -18,6 +18,7 @@ subscribes = ["approval.decided"]
 "po.create" = "Create purchase orders"
 "po.approve" = "Approve purchase orders"
 "goods.receive" = "Receive goods"
+"goods.return" = "Send goods back to a supplier"
 "bills.manage" = "Enter supplier bills"
 "bills.approve" = "Approve supplier bills that do not match their order and receipt"
 "bills.pay" = "Pay supplier bills"
@@ -26,12 +27,19 @@ subscribes = ["approval.decided"]
 
 # Default roles that receive these permissions when the module is enabled (Owner gets all).
 [roles]
-"Finance Manager" = ["suppliers.manage", "supplier.bank_edit", "supplier.bank_confirm", "po.create", "po.approve", "goods.receive", "bills.manage", "bills.approve", "bills.pay", "purchasing.view"]
-"Branch Manager" = ["purchasing.view", "po.create", "goods.receive"]
-"Storekeeper" = ["purchasing.view", "goods.receive"]
+"Finance Manager" = ["suppliers.manage", "supplier.bank_edit", "supplier.bank_confirm", "po.create", "po.approve", "goods.receive", "goods.return", "bills.manage", "bills.approve", "bills.pay", "purchasing.view"]
+"Branch Manager" = ["purchasing.view", "po.create", "goods.receive", "goods.return"]
+"Storekeeper" = ["purchasing.view", "goods.receive", "goods.return"]
 "Accountant" = ["purchasing.view", "suppliers.manage", "bills.manage"]
 
 [reason_codes.bill_exception]
 PRICE_AGREED = "Price agreed with the supplier"
 SHORT_DELIVERY_BILLED = "Supplier billed for the full order"
 OTHER = "Other, explained in the note"
+
+[reason_codes.purchase_return]
+DAMAGED = "Damaged on delivery"
+WRONG_ITEM = "Wrong item delivered"
+EXPIRED = "Expired or near expiry"
+OVER_SUPPLIED = "More than ordered"
+QUALITY = "Does not meet the required quality"

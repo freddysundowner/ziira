@@ -2612,6 +2612,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/purchasing/bills/{bill_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reverse Bill
+         * @description Undo a posted bill that was entered wrongly (not while it has payments or credit notes).
+         */
+        post: operations["post_reverse_bill_api_v1_purchasing_bills__bill_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/bills/{bill_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Bill Payments */
+        get: operations["get_bill_payments_api_v1_purchasing_bills__bill_id__payments_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/bills/{bill_id}/reverse-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reverse Payment
+         * @description Cancel a payment made against the bill; it is owed again.
+         */
+        post: operations["post_reverse_payment_api_v1_purchasing_bills__bill_id__reverse_payment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/purchasing/payables": {
         parameters: {
             query?: never;
@@ -2624,6 +2681,114 @@ export interface paths {
          * @description What is owed to suppliers on posted bills, aged by due date.
          */
         get: operations["get_payables_api_v1_purchasing_payables_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/receipts/{receipt_id}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Return
+         * @description Send received goods back to the supplier. The stock leaves in the same transaction.
+         */
+        post: operations["post_return_api_v1_purchasing_receipts__receipt_id__returns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Returns */
+        get: operations["get_returns_api_v1_purchasing_returns_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/returns/{return_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Return */
+        get: operations["get_return_api_v1_purchasing_returns__return_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/bills/{bill_id}/credit-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Credit Note
+         * @description Record a credit note the supplier gave against a posted bill (for goods sent back, or any allowance).
+         */
+        post: operations["post_credit_note_api_v1_purchasing_bills__bill_id__credit_notes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/credit-notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Credit Notes */
+        get: operations["get_credit_notes_api_v1_purchasing_credit_notes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/purchasing/credit-notes/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Credit Note */
+        get: operations["get_credit_note_api_v1_purchasing_credit_notes__note_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3008,6 +3173,11 @@ export interface components {
             description?: string | null;
             /** Tax Code Id */
             tax_code_id?: string | null;
+            /**
+             * Landed Receipt Id
+             * @description A transport or duty charge for a receipt
+             */
+            landed_receipt_id?: string | null;
         };
         /** BillLineOut */
         BillLineOut: {
@@ -3022,6 +3192,8 @@ export interface components {
             product_id: string | null;
             /** Expense Account Id */
             expense_account_id: string | null;
+            /** Landed Receipt Id */
+            landed_receipt_id: string | null;
             /** Description */
             description: string | null;
             /** Quantity */
@@ -3074,14 +3246,39 @@ export interface components {
             total: string;
             /** Amount Paid */
             amount_paid: string;
+            /** Credited */
+            credited: string;
             /** Match Status */
             match_status: string;
             /** Status */
             status: string;
+            /** Reverse Reason */
+            reverse_reason: string | null;
             /** Match Notes */
             match_notes: string[];
             /** Lines */
             lines: components["schemas"]["BillLineOut"][];
+        };
+        /** BillPaymentOut */
+        BillPaymentOut: {
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Number */
+            number: string;
+            /** Method */
+            method: string;
+            /** Status */
+            status: string;
+            /**
+             * Business Date
+             * Format: date
+             */
+            business_date: string;
+            /** Amount */
+            amount: string;
         };
         /** BillSummaryOut */
         BillSummaryOut: {
@@ -3124,6 +3321,8 @@ export interface components {
             total: string;
             /** Amount Paid */
             amount_paid: string;
+            /** Credited */
+            credited: string;
             /** Match Status */
             match_status: string;
             /** Status */
@@ -3508,6 +3707,146 @@ export interface components {
             consumer_secret: string;
             /** Passkey */
             passkey: string;
+        };
+        /** CreditLineIn */
+        CreditLineIn: {
+            /** Quantity */
+            quantity: number | string;
+            /**
+             * Unit Cost
+             * @description Before VAT
+             */
+            unit_cost: number | string;
+            /**
+             * Return Line Id
+             * @description Goods sent back that this credits
+             */
+            return_line_id?: string | null;
+            /**
+             * Expense Account Id
+             * @description Anything else: the expense it reduces
+             */
+            expense_account_id?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Tax Code Id */
+            tax_code_id?: string | null;
+        };
+        /** CreditLineOut */
+        CreditLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Return Line Id */
+            return_line_id: string | null;
+            /** Expense Account Id */
+            expense_account_id: string | null;
+            /** Description */
+            description: string | null;
+            /** Quantity */
+            quantity: string;
+            /** Unit Cost */
+            unit_cost: string;
+            /** Tax Amount */
+            tax_amount: string;
+            /** Line Total */
+            line_total: string;
+        };
+        /** CreditNoteIn */
+        CreditNoteIn: {
+            /** Supplier Credit No */
+            supplier_credit_no: string;
+            /**
+             * Credit Date
+             * Format: date
+             */
+            credit_date: string;
+            /** Lines */
+            lines: components["schemas"]["CreditLineIn"][];
+        };
+        /** CreditNoteOut */
+        CreditNoteOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /**
+             * Bill Id
+             * Format: uuid
+             */
+            bill_id: string;
+            /** Supplier Credit No */
+            supplier_credit_no: string;
+            /**
+             * Credit Date
+             * Format: date
+             */
+            credit_date: string;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Lines */
+            lines: components["schemas"]["CreditLineOut"][];
+        };
+        /** CreditNoteSummaryOut */
+        CreditNoteSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /**
+             * Bill Id
+             * Format: uuid
+             */
+            bill_id: string;
+            /** Supplier Credit No */
+            supplier_credit_no: string;
+            /**
+             * Credit Date
+             * Format: date
+             */
+            credit_date: string;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
         };
         /** DecisionIn */
         DecisionIn: {
@@ -5090,121 +5429,15 @@ export interface components {
             /** Status */
             status: string;
         };
-        /** ReturnIn */
-        ReturnIn: {
-            /** Lines */
-            lines: components["schemas"]["ReturnLineIn"][];
+        /** ReversePaymentIn */
+        ReversePaymentIn: {
             /**
-             * Reason Code Id
+             * Payment Id
              * Format: uuid
              */
-            reason_code_id: string;
-            /**
-             * Refund Method
-             * @enum {string}
-             */
-            refund_method: "cash" | "mpesa" | "exchange";
-            /** Note */
-            note?: string | null;
-            /** Restock Location Id */
-            restock_location_id?: string | null;
-        };
-        /** ReturnLineIn */
-        ReturnLineIn: {
-            /**
-             * Sale Line Id
-             * Format: uuid
-             */
-            sale_line_id: string;
-            /** Quantity */
-            quantity: number | string;
-        };
-        /** ReturnLineOut */
-        ReturnLineOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Sale Line Id */
-            sale_line_id: string | null;
-            /**
-             * Product Id
-             * Format: uuid
-             */
-            product_id: string;
-            /** Quantity */
-            quantity: string;
-            /** Line Total */
-            line_total: string;
-            /** Tax Amount */
-            tax_amount: string;
-        };
-        /** ReturnOut */
-        ReturnOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Number */
-            number: string;
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /** Branch Id */
-            branch_id: string | null;
-            /** Original Sale Id */
-            original_sale_id: string | null;
-            /** Refund Method */
-            refund_method: string;
-            /** Total */
-            total: string;
-            /** Status */
-            status: string;
-            /** Business Date */
-            business_date: string | null;
-            /** Lines */
-            lines: components["schemas"]["ReturnLineOut"][];
-        };
-        /** ReturnSummaryOut */
-        ReturnSummaryOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Number */
-            number: string;
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /** Branch Id */
-            branch_id: string | null;
-            /** Original Sale Id */
-            original_sale_id: string | null;
-            /** Refund Method */
-            refund_method: string;
-            /** Total */
-            total: string;
-            /** Status */
-            status: string;
-            /** Business Date */
-            business_date: string | null;
-        };
-        /** ReverseIn */
-        ReverseIn: {
+            payment_id: string;
             /** Reason */
             reason: string;
-            /**
-             * Entry Date
-             * @description Defaults to today
-             */
-            entry_date?: string | null;
         };
         /** RoleIn */
         RoleIn: {
@@ -6386,6 +6619,16 @@ export interface components {
             /** Is Active */
             is_active?: boolean | null;
         };
+        /** ReverseIn */
+        ziira__modules__finance__api__schemas__ReverseIn: {
+            /** Reason */
+            reason: string;
+            /**
+             * Entry Date
+             * @description Defaults to today
+             */
+            entry_date?: string | null;
+        };
         /** RuleIn */
         ziira__modules__finance__api__schemas__RuleIn: {
             /**
@@ -6532,6 +6775,112 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** ReturnIn */
+        ziira__modules__pos__api__schemas__ReturnIn: {
+            /** Lines */
+            lines: components["schemas"]["ziira__modules__pos__api__schemas__ReturnLineIn"][];
+            /**
+             * Reason Code Id
+             * Format: uuid
+             */
+            reason_code_id: string;
+            /**
+             * Refund Method
+             * @enum {string}
+             */
+            refund_method: "cash" | "mpesa" | "exchange";
+            /** Note */
+            note?: string | null;
+            /** Restock Location Id */
+            restock_location_id?: string | null;
+        };
+        /** ReturnLineIn */
+        ziira__modules__pos__api__schemas__ReturnLineIn: {
+            /**
+             * Sale Line Id
+             * Format: uuid
+             */
+            sale_line_id: string;
+            /** Quantity */
+            quantity: number | string;
+        };
+        /** ReturnLineOut */
+        ziira__modules__pos__api__schemas__ReturnLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Sale Line Id */
+            sale_line_id: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: string;
+            /** Line Total */
+            line_total: string;
+            /** Tax Amount */
+            tax_amount: string;
+        };
+        /** ReturnOut */
+        ziira__modules__pos__api__schemas__ReturnOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Original Sale Id */
+            original_sale_id: string | null;
+            /** Refund Method */
+            refund_method: string;
+            /** Total */
+            total: string;
+            /** Status */
+            status: string;
+            /** Business Date */
+            business_date: string | null;
+            /** Lines */
+            lines: components["schemas"]["ziira__modules__pos__api__schemas__ReturnLineOut"][];
+        };
+        /** ReturnSummaryOut */
+        ziira__modules__pos__api__schemas__ReturnSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Original Sale Id */
+            original_sale_id: string | null;
+            /** Refund Method */
+            refund_method: string;
+            /** Total */
+            total: string;
+            /** Status */
+            status: string;
+            /** Business Date */
+            business_date: string | null;
+        };
         /** PriceOut */
         ziira__modules__products__api__schemas__PriceOut: {
             /**
@@ -6598,6 +6947,141 @@ export interface components {
             status: string;
             /** Lines */
             lines: components["schemas"]["RequestLineOut"][];
+        };
+        /** ReturnIn */
+        ziira__modules__purchasing__api__schemas__ReturnIn: {
+            /** Lines */
+            lines: components["schemas"]["ziira__modules__purchasing__api__schemas__ReturnLineIn"][];
+            /**
+             * Reason Code Id
+             * Format: uuid
+             */
+            reason_code_id: string;
+            /** Note */
+            note?: string | null;
+            /** Returned At */
+            returned_at?: string | null;
+        };
+        /** ReturnLineIn */
+        ziira__modules__purchasing__api__schemas__ReturnLineIn: {
+            /**
+             * Receipt Line Id
+             * Format: uuid
+             */
+            receipt_line_id: string;
+            /** Quantity */
+            quantity: number | string;
+        };
+        /** ReturnLineOut */
+        ziira__modules__purchasing__api__schemas__ReturnLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Receipt Line Id
+             * Format: uuid
+             */
+            receipt_line_id: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: string;
+            /** Unit Cost */
+            unit_cost: string;
+            /** Stock Value */
+            stock_value: string;
+            /** Qty Credited */
+            qty_credited: string;
+        };
+        /** ReturnOut */
+        ziira__modules__purchasing__api__schemas__ReturnOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /**
+             * Receipt Id
+             * Format: uuid
+             */
+            receipt_id: string;
+            /**
+             * Location Id
+             * Format: uuid
+             */
+            location_id: string;
+            /**
+             * Returned At
+             * Format: date-time
+             */
+            returned_at: string;
+            /** Note */
+            note: string | null;
+            /** Lines */
+            lines: components["schemas"]["ziira__modules__purchasing__api__schemas__ReturnLineOut"][];
+        };
+        /** ReturnSummaryOut */
+        ziira__modules__purchasing__api__schemas__ReturnSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /**
+             * Receipt Id
+             * Format: uuid
+             */
+            receipt_id: string;
+            /**
+             * Location Id
+             * Format: uuid
+             */
+            location_id: string;
+            /**
+             * Returned At
+             * Format: date-time
+             */
+            returned_at: string;
+            /** Note */
+            note: string | null;
+        };
+        /** ReverseIn */
+        ziira__modules__purchasing__api__schemas__ReverseIn: {
+            /** Reason */
+            reason: string;
         };
     };
     responses: never;
@@ -8642,7 +9126,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReverseIn"];
+                "application/json": components["schemas"]["ziira__modules__finance__api__schemas__ReverseIn"];
             };
         };
         responses: {
@@ -11548,7 +12032,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReturnIn"];
+                "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReturnIn"];
             };
         };
         responses: {
@@ -11558,7 +12042,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReturnOut"];
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReturnOut"];
                 };
             };
             /** @description Validation Error */
@@ -11599,7 +12083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReturnSummaryOut"][];
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReturnSummaryOut"][];
                 };
             };
             /** @description Validation Error */
@@ -11637,7 +12121,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReturnOut"];
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReturnOut"];
                 };
             };
             /** @description Validation Error */
@@ -13558,6 +14042,128 @@ export interface operations {
             };
         };
     };
+    post_reverse_bill_api_v1_purchasing_bills__bill_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                bill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReverseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_bill_payments_api_v1_purchasing_bills__bill_id__payments_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                bill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillPaymentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reverse_payment_api_v1_purchasing_bills__bill_id__reverse_payment_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                bill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReversePaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_payables_api_v1_purchasing_payables_get: {
         parameters: {
             query?: {
@@ -13584,6 +14190,247 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PayablesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_return_api_v1_purchasing_receipts__receipt_id__returns_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReturnIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReturnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_returns_api_v1_purchasing_returns_get: {
+        parameters: {
+            query?: {
+                supplier_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReturnSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_return_api_v1_purchasing_returns__return_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                return_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReturnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_credit_note_api_v1_purchasing_bills__bill_id__credit_notes_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                bill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditNoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditNoteOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_credit_notes_api_v1_purchasing_credit_notes_get: {
+        parameters: {
+            query?: {
+                supplier_id?: string | null;
+                bill_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditNoteSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_credit_note_api_v1_purchasing_credit_notes__note_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                note_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditNoteOut"];
                 };
             };
             /** @description Validation Error */

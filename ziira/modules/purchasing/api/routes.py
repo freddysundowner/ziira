@@ -12,13 +12,14 @@ from ziira.modules.purchasing.permissions import (
     BILLS_MANAGE,
     BILLS_PAY,
     GOODS_RECEIVE,
+    GOODS_RETURN,
     PO_CREATE,
     SUPPLIER_BANK_CONFIRM,
     SUPPLIER_BANK_EDIT,
     SUPPLIERS_MANAGE,
 )
 from ziira.modules.purchasing.repository import purchasing_repo
-from ziira.modules.purchasing.services import bills, orders, receipts, suppliers
+from ziira.modules.purchasing.services import bills, credit_notes, orders, receipts, returns, suppliers
 from ziira.sdk import (
     Forbidden,
     RequestContext,
@@ -50,6 +51,7 @@ BANK_EDIT = [Depends(any_of(SUPPLIER_BANK_EDIT))]
 BANK_CONFIRM = [Depends(any_of(SUPPLIER_BANK_CONFIRM, SUPPLIER_BANK_EDIT))]
 ORDERS = [Depends(any_of(PO_CREATE))]
 RECEIVE = [Depends(any_of(GOODS_RECEIVE))]
+RETURN = [Depends(any_of(GOODS_RETURN))]
 BILLS = [Depends(any_of(BILLS_MANAGE))]
 APPROVE_BILL = [Depends(any_of(BILLS_APPROVE))]
 PAY = [Depends(any_of(BILLS_PAY))]
@@ -231,13 +233,13 @@ def get_receipt(receipt_id: UUID, session: Session = Depends(db_session)) -> obj
 # --------------------------------------------------------------------------- bills
 def _bill_out(view: bills.BillView) -> sc.BillOut:
     return sc.BillOut(**sc.BillSummaryOut.model_validate(view.bill).model_dump(),
-                      match_notes=[str(x) for x in view.bill.match_notes],
+                      reverse_reason=view.bill.reverse_reason, match_notes=[str(x) for x in view.bill.match_notes],
                       lines=[sc.BillLineOut.model_validate(x) for x in view.lines])
 
 
 def _bill_lines(items: list[sc.BillLineIn]) -> list[bills.BillLineIn]:
     return [bills.BillLineIn(x.quantity, x.unit_cost, x.receipt_line_id, x.expense_account_id, x.description,
-                             x.tax_code_id) for x in items]
+                             x.tax_code_id, x.landed_receipt_id) for x in items]
 
 
 @router.post("/bills", response_model=sc.BillOut, status_code=CREATED, dependencies=BILLS)
@@ -298,6 +300,23 @@ def post_pay_bill(bill_id: UUID, body: sc.PayBillIn, session: Session = Depends(
                                     paid_on=body.paid_on))
 
 
+@router.post("/bills/{bill_id}/reverse", response_model=sc.BillOut, dependencies=APPROVE_BILL)
+def post_reverse_bill(bill_id: UUID, body: sc.ReverseIn, session: Session = Depends(db_session)) -> object:
+    """Undo a posted bill that was entered wrongly (not while it has payments or credit notes)."""
+    return _bill_out(bills.reverse_bill(session, bill_id, reason=body.reason))
+
+
+@router.get("/bills/{bill_id}/payments", response_model=list[sc.BillPaymentOut], dependencies=VIEW)
+def get_bill_payments(bill_id: UUID, session: Session = Depends(db_session)) -> object:
+    return [sc.BillPaymentOut(**p.__dict__) for p in bills.list_bill_payments(session, bill_id)]
+
+
+@router.post("/bills/{bill_id}/reverse-payment", response_model=sc.BillOut, dependencies=PAY)
+def post_reverse_payment(bill_id: UUID, body: sc.ReversePaymentIn, session: Session = Depends(db_session)) -> object:
+    """Cancel a payment made against the bill; it is owed again."""
+    return _bill_out(bills.reverse_bill_payment(session, bill_id, payment_id=body.payment_id, reason=body.reason))
+
+
 @router.get("/payables", response_model=sc.PayablesOut, dependencies=VIEW)
 def get_payables(as_of: date | None = None, supplier_id: UUID | None = None,
                  session: Session = Depends(db_session)) -> object:
@@ -305,3 +324,56 @@ def get_payables(as_of: date | None = None, supplier_id: UUID | None = None,
     return bills.payables(session, as_of=as_of, supplier_id=supplier_id)
 
 
+
+
+# --------------------------------------------------------------------------- returns to suppliers
+def _return_out(view: returns.ReturnView) -> sc.ReturnOut:
+    return sc.ReturnOut(**sc.ReturnSummaryOut.model_validate(view.purchase_return).model_dump(),
+                        lines=[sc.ReturnLineOut.model_validate(x) for x in view.lines])
+
+
+@router.post("/receipts/{receipt_id}/returns", response_model=sc.ReturnOut, status_code=CREATED, dependencies=RETURN)
+def post_return(receipt_id: UUID, body: sc.ReturnIn, session: Session = Depends(db_session)) -> object:
+    """Send received goods back to the supplier. The stock leaves in the same transaction."""
+    return _return_out(returns.return_goods(
+        session, receipt_id, lines=[(x.receipt_line_id, x.quantity) for x in body.lines],
+        reason_code_id=body.reason_code_id, note=body.note, returned_at=body.returned_at))
+
+
+@router.get("/returns", response_model=list[sc.ReturnSummaryOut], dependencies=VIEW)
+def get_returns(supplier_id: UUID | None = None, limit: int = page_limit(50), offset: int = page_offset(),
+                session: Session = Depends(db_session)) -> object:
+    return returns.list_returns(session, supplier_id=supplier_id, limit=limit, offset=offset)
+
+
+@router.get("/returns/{return_id}", response_model=sc.ReturnOut, dependencies=VIEW)
+def get_return(return_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _return_out(returns.get_return(session, return_id))
+
+
+# --------------------------------------------------------------------------- supplier credit notes
+def _credit_out(view: credit_notes.CreditNoteView) -> sc.CreditNoteOut:
+    return sc.CreditNoteOut(**sc.CreditNoteSummaryOut.model_validate(view.credit_note).model_dump(),
+                            lines=[sc.CreditLineOut.model_validate(x) for x in view.lines])
+
+
+@router.post("/bills/{bill_id}/credit-notes", response_model=sc.CreditNoteOut, status_code=CREATED,
+             dependencies=APPROVE_BILL)
+def post_credit_note(bill_id: UUID, body: sc.CreditNoteIn, session: Session = Depends(db_session)) -> object:
+    """Record a credit note the supplier gave against a posted bill (for goods sent back, or any allowance)."""
+    return _credit_out(credit_notes.create_credit_note(
+        session, bill_id, supplier_credit_no=body.supplier_credit_no, credit_date=body.credit_date,
+        lines=[credit_notes.CreditLineIn(x.quantity, x.unit_cost, x.return_line_id, x.expense_account_id,
+                                         x.description, x.tax_code_id) for x in body.lines]))
+
+
+@router.get("/credit-notes", response_model=list[sc.CreditNoteSummaryOut], dependencies=VIEW)
+def get_credit_notes(supplier_id: UUID | None = None, bill_id: UUID | None = None, limit: int = page_limit(50),
+                     offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+    return credit_notes.list_credit_notes(session, supplier_id=supplier_id, bill_id=bill_id, limit=limit,
+                                          offset=offset)
+
+
+@router.get("/credit-notes/{note_id}", response_model=sc.CreditNoteOut, dependencies=VIEW)
+def get_credit_note(note_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _credit_out(credit_notes.get_credit_note(session, note_id))

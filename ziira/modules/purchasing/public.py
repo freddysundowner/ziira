@@ -16,5 +16,5 @@ def supplier_balance(session: Session, supplier_id: UUID) -> Decimal:
     for bill in purchasing_repo.list_bills(session, None, supplier_id=supplier_id, status=None, due_before=None,
                                            limit=500, offset=0):
         if bill.status in ("posted", "part_paid"):
-            total += bill.total - bill.amount_paid
+            total += bill.total - bill.amount_paid - bill.credited
     return total

@@ -170,6 +170,11 @@ class SupplierBill(Audited, Base):
     match_notes: Mapped[list[Any]] = mapped_column(JSONB, server_default=text("'[]'"))
     posted_at: Mapped[datetime | None]
     submitted_by: Mapped[UUID | None]
+    credited: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    reversed_at: Mapped[datetime | None]
+    reversed_by: Mapped[UUID | None]
+    reverse_reason: Mapped[str | None]
+    posted_figures: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
 
 class SupplierBillLine(TenantColumns, Base):
@@ -187,6 +192,7 @@ class SupplierBillLine(TenantColumns, Base):
     tax_code_id: Mapped[UUID | None]
     tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    landed_receipt_id: Mapped[UUID | None]
 
 
 class SupplierPrice(TenantColumns, Base):
@@ -199,3 +205,62 @@ class SupplierPrice(TenantColumns, Base):
     effective_date: Mapped[date]
     source_type: Mapped[str]
     source_id: Mapped[UUID]
+
+
+class PurchaseReturn(Audited, Base):
+    __tablename__ = "purchase_return"
+    __table_args__ = {"schema": "purchasing"}
+
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    supplier_id: Mapped[UUID]
+    receipt_id: Mapped[UUID]
+    location_id: Mapped[UUID]
+    reason_code_id: Mapped[UUID]
+    note: Mapped[str | None]
+    returned_at: Mapped[datetime]
+
+
+class PurchaseReturnLine(TenantColumns, Base):
+    __tablename__ = "purchase_return_line"
+    __table_args__ = {"schema": "purchasing"}
+
+    return_id: Mapped[UUID]
+    receipt_line_id: Mapped[UUID]
+    product_id: Mapped[UUID]
+    quantity: Mapped[Decimal] = mapped_column(Numeric(18, 4))
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(18, 6))
+    stock_value: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    qty_credited: Mapped[Decimal] = mapped_column(Numeric(18, 4), server_default=text("0"))
+
+
+class SupplierCreditNote(Audited, Base):
+    __tablename__ = "supplier_credit_note"
+    __table_args__ = {"schema": "purchasing"}
+
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    supplier_id: Mapped[UUID]
+    bill_id: Mapped[UUID]
+    supplier_credit_no: Mapped[str]
+    credit_date: Mapped[date]
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    tax_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+
+
+class SupplierCreditNoteLine(TenantColumns, Base):
+    __tablename__ = "supplier_credit_note_line"
+    __table_args__ = {"schema": "purchasing"}
+
+    credit_note_id: Mapped[UUID]
+    return_line_id: Mapped[UUID | None]
+    expense_account_id: Mapped[UUID | None]
+    description: Mapped[str | None]
+    quantity: Mapped[Decimal] = mapped_column(Numeric(18, 4))
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(18, 6))
+    tax_code_id: Mapped[UUID | None]
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))

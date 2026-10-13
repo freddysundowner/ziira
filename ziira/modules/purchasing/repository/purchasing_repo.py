@@ -15,10 +15,14 @@ from ziira.modules.purchasing.repository.models import (
     PurchaseOrderLine,
     PurchaseRequest,
     PurchaseRequestLine,
+    PurchaseReturn,
+    PurchaseReturnLine,
     Supplier,
     SupplierBankAccount,
     SupplierBill,
     SupplierBillLine,
+    SupplierCreditNote,
+    SupplierCreditNoteLine,
     SupplierPrice,
 )
 
@@ -188,8 +192,10 @@ def delete_bill_lines(session: Session, bill_id: UUID) -> None:
 
 
 def bill_by_invoice(session: Session, supplier_id: UUID, invoice_no: str) -> SupplierBill | None:
-    return session.scalar(select(SupplierBill).where(SupplierBill.supplier_id == supplier_id,
-                                                     SupplierBill.supplier_invoice_no == invoice_no))
+    """The live bill (not cancelled or reversed) for a supplier's invoice number, if any."""
+    return session.scalar(select(SupplierBill).where(
+        SupplierBill.supplier_id == supplier_id, SupplierBill.supplier_invoice_no == invoice_no,
+        SupplierBill.status.not_in(["cancelled", "reversed"])))
 
 
 def list_bills(session: Session, scopes: Scopes, *, supplier_id: UUID | None, status: str | None,
@@ -247,3 +253,73 @@ def lock_receipt_lines(session: Session, line_ids: list[UUID]) -> list[GoodsRece
         return []
     return list(session.scalars(_locked(select(GoodsReceiptLine).where(GoodsReceiptLine.id.in_(line_ids))
                                         .order_by(GoodsReceiptLine.id))))
+
+
+# --------------------------------------------------------------------------- returns and credit notes
+def returned_on_receipt_line(session: Session, receipt_line_id: UUID) -> Decimal:
+    """Quantity of a receipt line already sent back to the supplier."""
+    return Decimal(session.scalar(select(func.coalesce(func.sum(PurchaseReturnLine.quantity), 0)).where(
+        PurchaseReturnLine.receipt_line_id == receipt_line_id)) or 0)
+
+
+def get_return(session: Session, return_id: UUID) -> PurchaseReturn | None:
+    return session.get(PurchaseReturn, return_id)
+
+
+def return_lines(session: Session, return_id: UUID) -> list[PurchaseReturnLine]:
+    return list(session.scalars(select(PurchaseReturnLine).where(PurchaseReturnLine.return_id == return_id)
+                                .order_by(PurchaseReturnLine.created_at, PurchaseReturnLine.id)))
+
+
+def get_return_line(session: Session, line_id: UUID, *, lock: bool = False) -> PurchaseReturnLine | None:
+    if lock:
+        return session.scalars(_locked(select(PurchaseReturnLine).where(PurchaseReturnLine.id == line_id))).first()
+    return session.get(PurchaseReturnLine, line_id)
+
+
+def list_returns(session: Session, scopes: Scopes, *, supplier_id: UUID | None, limit: int,
+                 offset: int) -> list[PurchaseReturn]:
+    query = select(PurchaseReturn).where(
+        in_scope(scopes, PurchaseReturn.company_id, PurchaseReturn.branch_id)).order_by(
+        PurchaseReturn.returned_at.desc(), PurchaseReturn.id).limit(limit).offset(offset)
+    if supplier_id:
+        query = query.where(PurchaseReturn.supplier_id == supplier_id)
+    return list(session.scalars(query))
+
+
+def get_credit_note(session: Session, note_id: UUID) -> SupplierCreditNote | None:
+    return session.get(SupplierCreditNote, note_id)
+
+
+def credit_note_lines(session: Session, note_id: UUID) -> list[SupplierCreditNoteLine]:
+    return list(session.scalars(select(SupplierCreditNoteLine).where(SupplierCreditNoteLine.credit_note_id == note_id)
+                                .order_by(SupplierCreditNoteLine.created_at, SupplierCreditNoteLine.id)))
+
+
+def credit_note_by_supplier_no(session: Session, supplier_id: UUID, number: str) -> SupplierCreditNote | None:
+    return session.scalar(select(SupplierCreditNote).where(SupplierCreditNote.supplier_id == supplier_id,
+                                                           SupplierCreditNote.supplier_credit_no == number))
+
+
+def list_credit_notes(session: Session, scopes: Scopes, *, supplier_id: UUID | None, bill_id: UUID | None, limit: int,
+                      offset: int) -> list[SupplierCreditNote]:
+    query = select(SupplierCreditNote).where(in_scope(scopes, SupplierCreditNote.company_id,
+                                                      SupplierCreditNote.branch_id)).order_by(
+        SupplierCreditNote.credit_date.desc(), SupplierCreditNote.id).limit(limit).offset(offset)
+    if supplier_id:
+        query = query.where(SupplierCreditNote.supplier_id == supplier_id)
+    if bill_id:
+        query = query.where(SupplierCreditNote.bill_id == bill_id)
+    return list(session.scalars(query))
+
+
+def landed_billed_for_receipt(session: Session, receipt_id: UUID, *, exclude_bill: UUID | None = None) -> Decimal:
+    """Landed cost of a receipt already on bills that are posted or waiting only for an amount approval."""
+    query = select(func.coalesce(func.sum(SupplierBillLine.line_total - SupplierBillLine.tax_amount), 0)).join(
+        SupplierBill, SupplierBill.id == SupplierBillLine.bill_id).where(
+        SupplierBillLine.landed_receipt_id == receipt_id,
+        or_(SupplierBill.status.in_(["posted", "part_paid", "paid"]),
+            and_(SupplierBill.status == "pending_approval", SupplierBill.match_status != "exception")))
+    if exclude_bill is not None:
+        query = query.where(SupplierBill.id != exclude_bill)
+    return Decimal(session.scalar(query) or 0)

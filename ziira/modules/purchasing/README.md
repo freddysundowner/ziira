@@ -1,22 +1,22 @@
 # Purchasing and Suppliers
 
 **Status:** working for phase 7: suppliers (with guarded bank details), purchase requests and orders, goods receipts,
-supplier bills with the three-way match, payment of bills, and what is owed to suppliers by age. Not built yet: returning
-goods to a supplier and supplier credit notes, reversing a posted bill, landed-cost invoices that clear the landed part of
-"goods received not invoiced", pulling supplier invoices from eTIMS (phase 5), supplier statements reconciliation.
+supplier bills with the three-way match, payment of bills, returns to suppliers, supplier credit notes, reversal of bills
+and of payments, landed-cost invoices, and what is owed to suppliers by age. Not built yet: pulling supplier invoices
+from eTIMS (the eTIMS plugin), reconciling a supplier's statement, supplier refunds of overpaid bills.
 
 | | |
 |---|---|
 | Schema | `purchasing` (migrations `0001_init`, `0002_phase7`) |
 | Requires | products |
 | Optional | inventory (receiving goods), finance (expense accounts and the books), payments (paying bills) |
-| Publishes | `po.approved`, `goods.received`, `bill.posted`, `bill.match_exception`, `supplier.bank_changed`, `supplier.price_changed`, `supplier.paid` |
-| Subscribes | `approval.decided` (kernel): purchase requests, orders, bills and supplier bank changes |
+| Publishes | `po.approved`, `goods.received`, `goods.returned`, `bill.posted`, `bill.reversed`, `bill.match_exception`, `credit_note.posted`, `supplier.bank_changed`, `supplier.price_changed`, `supplier.paid`, `supplier.payment_reversed` |
+| Subscribes | `approval.decided` (kernel): purchase requests, orders, bills and supplier bank changes · `payment.reversed` (Payments): a bill whose payment was reversed is owed again |
 | API | `/api/v1/purchasing` |
-| Permissions | `suppliers.manage`, `supplier.bank_edit`, `supplier.bank_confirm`, `po.create`, `po.approve`, `goods.receive`, `bills.manage`, `bills.approve`, `bills.pay`, `purchasing.view` |
+| Permissions | `suppliers.manage`, `supplier.bank_edit`, `supplier.bank_confirm`, `po.create`, `po.approve`, `goods.receive`, `goods.return`, `bills.manage`, `bills.approve`, `bills.pay`, `purchasing.view` |
 | Default roles | Finance Manager: all · Branch Manager: view, order, receive · Storekeeper: view, receive · Accountant: view, suppliers, bills |
 | Company setting | `bill_match_tolerance_percent` (default 2) |
-| Reason list | `bill_exception` |
+| Reason lists | `bill_exception`, `purchase_return` |
 
 ## The flow
 
@@ -45,11 +45,32 @@ bill    draft -> submit -> three-way match -> posted -> part_paid -> paid
 - **Records are guarded:** receipt lines and supplier prices cannot be changed or deleted, bills and receipts cannot be
   deleted, and a bill's lines cannot change once it is submitted.
 
+## Putting things right
+
+- **Reversing a payment** (`POST /bills/{id}/reverse-payment`, or directly in Payments): the bill is owed again and Finance
+  puts the money back (`supplier.payment_reversed`).
+- **Reversing a bill** (`POST /bills/{id}/reverse`, `bills.approve`, with a reason): Finance books the mirror image, what was
+  billed on the orders goes back, and the supplier's invoice number can be entered again. Not while the bill has payments
+  or credit notes: reverse the payments first.
+- **Sending goods back** (`POST /receipts/{id}/returns`, `goods.return`, reason from `purchase_return`): the stock leaves at
+  the average cost it is held at (`goods.returned`), the order's received quantity goes down so a replacement can be received
+  on the same order, and goods not yet billed cannot be billed. If they were already billed the return is flagged in the
+  exceptions inbox until the supplier's credit note is entered.
+- **Supplier credit notes** (`POST /bills/{id}/credit-notes`, `bills.approve`): reduce what is owed on a posted bill (never by
+  more than is still owed). Credit for returned goods clears "goods received not invoiced" at the stock's value and puts
+  any difference with the credit given to *purchase price variance*; other credits name the expense account they reduce.
+- **Landed cost** (transport, duty): a bill line with `landed_receipt_id` (quantity 1) clears the landed part of that
+  receipt's "goods received not invoiced"; billing more than the receipt recorded is a match exception. The charge usually
+  comes from a different supplier than the goods.
+- Because outgoing stock is always costed at the average, a returned item can differ slightly from the cost it arrived at;
+  the credit note books that difference to purchase price variance.
+
 ## Layout
 
 ```
 api/          routes.py, schemas.py
-services/     suppliers (+ bank details), orders (+ requests), receipts, bills (+ payment, payables), access, common
+services/     suppliers (+ bank details), orders (+ requests), receipts, returns, bills (+ payment, reversal, payables),
+              credit_notes, access, common
 domain/       rules.py: costs and VAT, the match, order status, ageing, validation (pure, unit-tested)
 repository/   models.py, purchasing_repo.py
 events.py     approval.decided

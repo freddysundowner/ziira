@@ -233,6 +233,7 @@ class BillLineIn(BaseModel):
     expense_account_id: UUID | None = Field(default=None, description="Anything else: its expense account")
     description: str | None = Field(default=None, max_length=200)
     tax_code_id: UUID | None = None
+    landed_receipt_id: UUID | None = Field(default=None, description="A transport or duty charge for a receipt")
 
 
 class BillIn(BaseModel):
@@ -272,6 +273,7 @@ class BillLineOut(BaseModel):
     receipt_line_id: UUID | None
     product_id: UUID | None
     expense_account_id: UUID | None
+    landed_receipt_id: UUID | None
     description: str | None
     quantity: Decimal
     unit_cost: Decimal
@@ -293,11 +295,13 @@ class BillSummaryOut(BaseModel):
     tax_total: Decimal
     total: Decimal
     amount_paid: Decimal
+    credited: Decimal
     match_status: str
     status: str
 
 
 class BillOut(BillSummaryOut):
+    reverse_reason: str | None
     match_notes: list[str]
     lines: list[BillLineOut]
 
@@ -307,3 +311,108 @@ class PayablesOut(BaseModel):
     total: Decimal
     buckets: dict[str, Decimal]
     suppliers: list[dict[str, Any]]
+
+
+class ReverseIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class ReversePaymentIn(BaseModel):
+    payment_id: UUID
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class BillPaymentOut(BaseModel):
+    payment_id: UUID
+    number: str
+    method: str
+    status: str
+    business_date: date
+    amount: Decimal
+
+
+# --------------------------------------------------------------------------- returns and credit notes
+class ReturnLineIn(BaseModel):
+    receipt_line_id: UUID
+    quantity: Qty
+
+
+class ReturnIn(BaseModel):
+    lines: Annotated[list[ReturnLineIn], Field(min_length=1, max_length=200)]
+    reason_code_id: UUID
+    note: str | None = Field(default=None, max_length=500)
+    returned_at: datetime | None = None
+
+
+class ReturnLineOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    receipt_line_id: UUID
+    product_id: UUID
+    quantity: Decimal
+    unit_cost: Decimal
+    stock_value: Decimal
+    qty_credited: Decimal
+
+
+class ReturnSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    supplier_id: UUID
+    receipt_id: UUID
+    location_id: UUID
+    returned_at: datetime
+    note: str | None
+
+
+class ReturnOut(ReturnSummaryOut):
+    lines: list[ReturnLineOut]
+
+
+class CreditLineIn(BaseModel):
+    quantity: Qty
+    unit_cost: Cost = Field(description="Before VAT")
+    return_line_id: UUID | None = Field(default=None, description="Goods sent back that this credits")
+    expense_account_id: UUID | None = Field(default=None, description="Anything else: the expense it reduces")
+    description: str | None = Field(default=None, max_length=200)
+    tax_code_id: UUID | None = None
+
+
+class CreditNoteIn(BaseModel):
+    supplier_credit_no: str = Field(min_length=1, max_length=60)
+    credit_date: date
+    lines: Annotated[list[CreditLineIn], Field(min_length=1, max_length=200)]
+
+
+class CreditLineOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    return_line_id: UUID | None
+    expense_account_id: UUID | None
+    description: str | None
+    quantity: Decimal
+    unit_cost: Decimal
+    tax_amount: Decimal
+    line_total: Decimal
+
+
+class CreditNoteSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    supplier_id: UUID
+    bill_id: UUID
+    supplier_credit_no: str
+    credit_date: date
+    subtotal: Decimal
+    tax_total: Decimal
+    total: Decimal
+
+
+class CreditNoteOut(CreditNoteSummaryOut):
+    lines: list[CreditLineOut]

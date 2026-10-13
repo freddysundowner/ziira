@@ -140,8 +140,9 @@ def post_till_variance(session: Session, event: Event) -> JournalEntry | None:
         source_id=event.aggregate_id, description="Till shortage" if variance < 0 else "Till overage")
 
 
-def post_supplier_bill(session: Session, event: Event) -> JournalEntry | None:
-    """`bill.posted`: what was received is no longer "not invoiced"; the supplier is owed the bill's total."""
+def post_supplier_bill(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
+    """`bill.posted`: what was received is no longer "not invoiced"; the supplier is owed the bill's total. With
+    `reverse` (`bill.reversed`) the entry is mirrored."""
     p = event.payload
     expenses = p.get("expenses") or []
     if not isinstance(expenses, list):
@@ -151,21 +152,44 @@ def post_supplier_bill(session: Session, event: Event) -> JournalEntry | None:
         _amount(p.get("stock_billed_value", 0), "stock_billed_value"), _amount(p.get("tax", 0), "tax"),
         [(_uuid(x.get("account_id"), "expense account"), _amount(x.get("amount"), "expense amount")) for x in expenses],
         party=_optional_uuid(p.get("supplier_id"), "supplier_id"),
-        description=f"Supplier bill {p.get('number') or ''}".strip())
+        description=f"Supplier bill {p.get('number') or ''}".strip(), reverse=reverse)
+    label = "Reversal of supplier bill" if reverse else "Supplier bill"
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_bill", journal_code="PUR",
         entry_date=_date(p.get("business_date")), recipe=recipe, context={},
-        branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_bill",
-        source_id=event.aggregate_id, description=f"Supplier bill {p.get('number') or ''}".strip())
+        branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
+        source_type="supplier_bill_reversal" if reverse else "supplier_bill", source_id=event.aggregate_id,
+        description=f"{label} {p.get('number') or ''}".strip())
 
 
-def post_supplier_payment(session: Session, event: Event) -> JournalEntry | None:
-    """`supplier.paid`: money left the business to pay a supplier's bill."""
+def post_supplier_payment(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
+    """`supplier.paid`: money left the business to pay a supplier's bill (`supplier.payment_reversed`: it came back)."""
     p = event.payload
+    label = "Reversal of payment of supplier bill" if reverse else "Payment of supplier bill"
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_payment",
         journal_code="CSH", entry_date=_date(p.get("business_date")),
         recipe=recipes.supplier_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
-                                        party=_optional_uuid(p.get("supplier_id"), "supplier_id")),
-        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_payment",
-        source_id=event.aggregate_id, description=f"Payment of supplier bill {p.get('number') or ''}".strip())
+                                        party=_optional_uuid(p.get("supplier_id"), "supplier_id"), reverse=reverse),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
+        source_type="supplier_payment_reversal" if reverse else "supplier_payment", source_id=event.aggregate_id,
+        description=f"{label} {p.get('number') or ''}".strip())
+
+
+def post_supplier_credit_note(session: Session, event: Event) -> JournalEntry | None:
+    """`credit_note.posted`: the supplier credited us, so we owe less."""
+    p = event.payload
+    expenses = p.get("expenses") or []
+    if not isinstance(expenses, list):
+        raise ValidationFailed("credit_note.posted: expenses must be a list")
+    recipe = recipes.supplier_credit_note(
+        _amount(p.get("stock_value", 0), "stock_value"), _amount(p.get("goods_credit", 0), "goods_credit"),
+        _amount(p.get("tax", 0), "tax"),
+        [(_uuid(x.get("account_id"), "expense account"), _amount(x.get("amount"), "expense amount")) for x in expenses],
+        party=_optional_uuid(p.get("supplier_id"), "supplier_id"),
+        description=f"Supplier credit note {p.get('number') or ''}".strip())
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_credit_note",
+        journal_code="PUR", entry_date=_date(p.get("business_date")), recipe=recipe, context={},
+        branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_credit_note",
+        source_id=event.aggregate_id, description=f"Supplier credit note {p.get('number') or ''}".strip())

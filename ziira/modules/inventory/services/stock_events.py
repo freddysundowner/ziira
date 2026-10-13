@@ -184,3 +184,23 @@ def post_goods_receipt(session: Session, event: Event) -> None:
             company_id=company_id, location_id=location.id, product_id=line.product.id, quantity=line.quantity,
             movement_type="receipt", source_type="goods_receipt", source_id=event.aggregate_id,
             source_line_id=line.id, batch_id=batch_id, unit_cost=unit_cost, business_date=business_date))
+
+
+def post_goods_return(session: Session, event: Event) -> None:
+    """`goods.returned`: send stock back to the supplier, at the average cost it is held at (a batch-tracked product's
+    lines name their batch_no)."""
+    company_id = _uuid(event.payload.get("company_id"), "company_id")
+    location = _location(session, event, company_id)
+    _refuse_repeat(session, "purchase_return", event)
+    business_date = _date(event.payload.get("business_date"))
+    for line in _stock_lines(session, event, company_id):
+        batch_id = None
+        if line.product.is_batch_tracked:
+            if not line.raw.get("batch_no"):
+                raise ValidationFailed(f"goods.returned: {line.product.sku} is batch-tracked, give a batch_no")
+            batch_id = get_or_create_batch(session, line.product, str(line.raw["batch_no"]),
+                                           _date(line.raw.get("expiry_date"))).id
+        post_stock_out(session, MovementRequest(
+            company_id=company_id, location_id=location.id, product_id=line.product.id, quantity=-line.quantity,
+            movement_type="purchase_return", source_type="purchase_return", source_id=event.aggregate_id,
+            source_line_id=line.id, batch_id=batch_id, business_date=business_date, allow_negative=False))

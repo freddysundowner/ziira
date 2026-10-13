@@ -2,7 +2,7 @@
 
 Publishes: stock.moved, stock.negative, stock.adjusted, transfer.dispatched, transfer.received,
 count.posted, stock.below_reorder
-Subscribes: approval.decided (kernel), sale.posted, sale.returned, goods.received
+Subscribes: approval.decided (kernel), sale.posted, sale.returned, goods.received, goods.returned
 """
 
 from ziira.modules.inventory.services import adjustments, counts, stock_events, transfers
@@ -41,3 +41,9 @@ def on_sale_returned(session: Session, event: Event) -> None:
 def on_goods_received(session: Session, event: Event) -> None:
     """Receive purchased stock at its cost (with landed cost spread over the lines)."""
     stock_events.post_goods_receipt(session, event)
+
+
+@subscribe("goods.returned")
+def on_goods_returned(session: Session, event: Event) -> None:
+    """Take stock sent back to a supplier out of the location."""
+    stock_events.post_goods_return(session, event)

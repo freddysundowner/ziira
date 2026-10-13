@@ -10,7 +10,7 @@ optional = ["purchasing", "pos"]
 [provides]
 api_prefix = "/api/v1/inventory"
 publishes = ["stock.moved", "stock.negative", "stock.adjusted", "transfer.dispatched", "transfer.received", "count.posted", "stock.below_reorder"]
-subscribes = ["approval.decided", "sale.posted", "sale.returned", "goods.received"]
+subscribes = ["approval.decided", "sale.posted", "sale.returned", "goods.received", "goods.returned"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]

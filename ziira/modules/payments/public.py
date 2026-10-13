@@ -125,3 +125,27 @@ def cash_in_till_session(session: Session, till_session_id: UUID) -> Decimal:
     from ziira.modules.payments.repository import payments_repo
 
     return payments_repo.cash_in_session(session, till_session_id)
+
+
+@dataclass(frozen=True)
+class DocumentPayment:
+    """A payment allocated (wholly or in part) to a document, as other units may see it."""
+
+    payment_id: UUID
+    number: str
+    method: str
+    direction: str
+    status: str
+    business_date: date
+    amount: Decimal              # what was allocated to the document
+
+
+def payments_for_document(session: Session, doc_type: str, doc_id: UUID) -> list[DocumentPayment]:
+    """The payments allocated to a document (for example a supplier bill), oldest first."""
+    from ziira.modules.payments.repository import payments_repo
+
+    found = []
+    for allocation, payment in payments_repo.payments_for_document(session, doc_type, doc_id):
+        found.append(DocumentPayment(payment.id, payment.number, payment.method, payment.direction, payment.status,
+                                     payment.business_date, allocation.amount))
+    return found

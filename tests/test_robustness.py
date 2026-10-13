@@ -182,6 +182,13 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
                     "bill_date": "2026-10-01", "lines": [{"quantity": "1", "unit_cost": "10",
                                                           "expense_account_id": shop["acc"]["6000"],
                                                           "description": "Fuzz"}]}
+        if path.endswith("/returns") and "/purchasing/" in path and method == "POST":
+            return {"lines": [{"receipt_line_id": str(uuid4()), "quantity": "1"}], "reason_code_id": str(uuid4())}
+        if path.endswith("/credit-notes") and method == "POST":
+            return {"supplier_credit_no": f"FZC{n}", "credit_date": "2026-10-01", "lines": [
+                {"quantity": "1", "unit_cost": "1", "expense_account_id": shop["acc"]["6000"], "description": "Fuzz"}]}
+        if path.endswith("/reverse-payment"):
+            return {"payment_id": str(uuid4()), "reason": "Fuzz"}
         if path.endswith("/confirm") and "/purchasing/" in path:
             return {"confirmation_method": "in_person"}
         if path.endswith("/approve-exception"):
