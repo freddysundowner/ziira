@@ -17,17 +17,25 @@ push (see the end-of-session steps in `CLAUDE.md`).
 
 ## Start here (next session)
 
-Phase 5 · eTIMS: direct KRA integration, credit notes, retry. Read spec section on eTIMS and `docs/specs/*.txt`. POS
-publishes `sale.posted` / `sale.returned` (payload keys in `pos/services/sales.py`, `returns.py`); eTIMS should subscribe
-and sign invoices after commit with retry (`@job`), flagging failures with `flag_for_review`.
+**Order changed (decided with the owner):** eTIMS is deferred and will be built last as a **plugin** (`ziira/plugins/etims`,
+installable and removable per business). Until then taxes are entered by hand: each product's tax code and VAT rate.
+Order now: **7 Purchasing -> 6 Customers and sales -> 8 Finance reports -> 9 People and payroll -> 10 Intelligence ->
+11 Hardening -> 5 eTIMS plugin.** Pull MFA and sign-in rate limiting forward if a customer goes live before phase 11.
+
+When the eTIMS plugin is built it needs these sockets added first: a receipt/invoice output hook (KRA signature and QR
+code), optionally a validation hook on sale posting (sign before completing), and read access to the products' eTIMS
+fields through `products/public.py`. It listens to `sale.posted` / `sale.returned`, keeps its own `plg_etims` table of
+status per document (so POS stays unchanged), and signs with jobs and retry.
+
+Now: **phase 7, Purchasing** (orders, receipts, supplier bills, three-way match). Tables exist in
+`ziira/modules/purchasing/migrations/`; Inventory already handles `goods.received` (payload in
+`inventory/services/stock_events.py`); Finance needs recipes for receipts (goods received not invoiced) and bills.
 
 Phase 4 left open (small, do when convenient):
 - [ ] **Run the Daraja flows in Safaricom's sandbox.** Request formats in `payments/providers.py` are from the public
       docs and untested live; check real responses before any production use.
 - [ ] A sale payment line that points at a succeeded STK prompt (`intent_id`) instead of a typed M-Pesa code.
-- [ ] Web POS shell (screens for tills, sales, offline queue in the browser); quotations, orders and invoices (tables exist);
-      credit sales and credit notes arrive with phase 6.
-- [ ] Balances of the daily close use "taken vs matched"; refine with real statements once sandbox data exists.
+- [ ] Web POS shell; quotations, orders and invoices (tables exist); credit sales and credit notes with phase 6.
 
 ## What exists, and where
 
@@ -68,7 +76,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 2 | Catalogue and inventory: costing, stock ledger, transfers, counts. Exit: stock and costing invariants pass | ✅ Done | Property tests + concurrency tests; web screens later |
 | 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ✅ Done | Hypothesis and concurrency tests; reports beyond TB/GL are phase 8 |
 | 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ✅ Done | Daraja untested live (sandbox run pending); web POS shell later |
-| 5 | eTIMS: direct KRA integration, credit notes, retry | ⬜ | KRA integrator certification before live |
+| 5 | eTIMS **plugin**: direct KRA integration, credit notes, retry | ⬜ Last | Deferred by decision; manual tax entry meanwhile. KRA integrator certification before live |
 | 6 | Customers and sales: CRM, credit, invoices, receivables | ⬜ | |
 | 7 | Purchasing: orders, receipts, bills, three-way match | ⬜ | |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, VAT | ⬜ | |
