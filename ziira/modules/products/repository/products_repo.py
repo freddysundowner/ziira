@@ -51,6 +51,12 @@ def name_exists(session: Session, company_id: UUID, name: str) -> bool:
         func.lower(func.trim(Product.name)) == name.strip().lower())) is not None
 
 
+def get_products(session: Session, product_ids: set[UUID]) -> list[Product]:
+    if not product_ids:
+        return []
+    return list(session.scalars(select(Product).where(Product.id.in_(product_ids))))
+
+
 def get_product(session: Session, product_id: UUID) -> Product | None:
     return session.get(Product, product_id)
 

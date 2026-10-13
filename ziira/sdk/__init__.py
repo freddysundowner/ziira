@@ -5,16 +5,18 @@ Modules and plugins must import from `ziira.sdk`, never from `ziira.kernel`
 """
 
 from collections.abc import Callable, Iterator
+from dataclasses import replace
 from decimal import ROUND_HALF_UP, Decimal
+from typing import Any
 from uuid import UUID
 
-from fastapi import Depends, Header
+from fastapi import Depends, Header, Request
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import approvals, audit, numbering, reasons
-from ziira.kernel.auth import context_from_access_token, context_from_api_key
+from ziira.kernel import approvals, audit, company_settings, numbering, reasons
+from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext, get_context, set_context
 from ziira.kernel.db import tenant_session
@@ -39,8 +41,8 @@ from ziira.kernel.manifest import SDK_VERSION
 
 __all__ = [
     "SDK_VERSION", "Conflict", "Event", "Forbidden", "NotFound", "RequestContext", "Session", "Unauthorized",
-    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "current_context",
-    "db_session", "define_extension_point", "define_validation_hook", "implementations", "money",
+    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_setting",
+    "current_context", "db_session", "define_extension_point", "define_validation_hook", "implementations", "money",
     "next_document_number", "provides", "publish", "request_context", "require_permission",
     "run_validators", "submit_for_approval", "subscribe", "subscribe_after", "validate",
 ]
@@ -66,6 +68,11 @@ def audit_record(session: Session, action: str, entity_type: str, entity_id: UUI
 
 
 # --------------------------------------------------------------------------- kernel services
+def company_setting(session: Session, company_id: UUID, key: str) -> Any:
+    """A company policy such as 'negative_stock_allowed' (default if never changed). See kernel/company_settings.py."""
+    return company_settings.get_setting(session, company_id, key)
+
+
 def check_company(session: Session, company_id: UUID, branch_id: UUID | None = None) -> None:
     """Raise ValidationFailed unless the company (and branch, if given) belong to the current tenant.
 
@@ -105,6 +112,7 @@ def submit_for_approval(session: Session, *, company_id: UUID, doc_type: str, do
 
 # --------------------------------------------------------------------------- FastAPI dependencies
 async def request_context(
+    request: Request,
     authorization: str | None = Header(default=None, description="Bearer <access token>"),
     x_api_key: str | None = Header(default=None, description="API key for server-to-server integrations"),
     x_tenant_id: UUID | None = Header(default=None, description="Development only: act as this tenant"),
@@ -129,6 +137,7 @@ async def request_context(
         ctx = RequestContext(tenant_id=tenant_id, channel="api", all_permissions=True)
     else:
         raise Unauthorized("Sign in first")
+    ctx = replace(ctx, ip_address=client_ip(request))
     set_context(ctx)
     return ctx
 

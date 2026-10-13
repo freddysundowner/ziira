@@ -32,10 +32,11 @@ def record(session: Session, action: str, entity_type: str, entity_id: UUID | No
     entry = {"user_id": ctx.user_id, "channel": ctx.channel, "action": action,
              "entity_type": entity_type, "entity_id": entity_id, "changes": changes}
     session.execute(text(
-        "insert into kernel.audit_log (tenant_id, user_id, channel, action, entity_type, entity_id, "
-        "changes, prev_hash, hash) values (:t, :u, :c, :a, :et, :ei, cast(:ch as jsonb), :p, :h)"),
+        "insert into kernel.audit_log (tenant_id, user_id, channel, device_id, ip_address, action, entity_type, "
+        "entity_id, changes, prev_hash, hash) values (:t, :u, :c, :d, cast(:ip as inet), :a, :et, :ei, "
+        "cast(:ch as jsonb), :p, :h)"),
         {"t": str(ctx.tenant_id), "u": str(ctx.user_id) if ctx.user_id else None,
-         "c": ctx.channel, "a": action, "et": entity_type,
+         "c": ctx.channel, "d": ctx.device_id, "ip": ctx.ip_address, "a": action, "et": entity_type,
          "ei": str(entity_id) if entity_id else None,
          "ch": json.dumps(changes, default=str) if changes is not None else None,
          "p": prev, "h": _digest(prev, entry)})

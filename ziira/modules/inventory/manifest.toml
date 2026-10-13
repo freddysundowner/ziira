@@ -9,8 +9,8 @@ optional = ["purchasing", "pos"]
 
 [provides]
 api_prefix = "/api/v1/inventory"
-publishes = ["stock.moved", "stock.adjusted", "transfer.dispatched", "transfer.received", "count.posted", "stock.below_reorder"]
-subscribes = ["sale.posted", "sale.returned", "goods.received"]
+publishes = ["stock.moved", "stock.negative", "stock.adjusted", "transfer.dispatched", "transfer.received", "count.posted", "stock.below_reorder"]
+subscribes = ["approval.decided", "sale.posted", "sale.returned", "goods.received"]
 
 [permissions]
 "stock.view" = "View stock"
@@ -18,14 +18,17 @@ subscribes = ["sale.posted", "sale.returned", "goods.received"]
 "stock.transfer" = "Transfer stock"
 "stock.count" = "Run stock counts"
 "stock.approve" = "Approve adjustments and count variances"
+"stock.cost" = "See what stock cost and what it is worth"
+"locations.manage" = "Create and change stock locations"
 
 # Default roles that receive these permissions when the module is enabled (Owner gets all).
 [roles]
-"Branch Manager" = ["stock.view", "stock.adjust", "stock.transfer", "stock.count", "stock.approve"]
+"Branch Manager" = ["stock.view", "stock.adjust", "stock.transfer", "stock.count", "stock.approve", "stock.cost", "locations.manage"]
+"Finance Manager" = ["stock.view", "stock.cost"]
 "Storekeeper" = ["stock.view", "stock.adjust", "stock.transfer", "stock.count"]
 "Cashier" = ["stock.view"]
 "Sales Rep" = ["stock.view"]
-"Accountant" = ["stock.view"]
+"Accountant" = ["stock.view", "stock.cost"]
 
 # Reason codes seeded for the tenant when the module is enabled; tenants can add their own.
 [reason_codes.stock_adjustment]

@@ -86,6 +86,19 @@ class CompanyOut(Out):
     branches: list[BranchOut]
 
 
+class CompanySettingsOut(Out):
+    negative_stock_allowed: bool
+    count_variance_threshold: Decimal
+
+
+class CompanySettingsIn(BaseModel):
+    """Only the fields sent are changed."""
+
+    model_config = ConfigDict(extra="forbid")
+    negative_stock_allowed: bool | None = None
+    count_variance_threshold: Decimal | None = Field(default=None, ge=0)
+
+
 # --------------------------------------------------------------------------- users and roles
 class UserIn(BaseModel):
     full_name: str

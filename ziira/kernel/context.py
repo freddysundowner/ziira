@@ -49,6 +49,9 @@ class RequestContext:
     session_id: UUID | None = None
     assignments: tuple[Assignment, ...] = ()
     all_permissions: bool = False
+    # Where the request came from, for the audit log.
+    device_id: str | None = None
+    ip_address: str | None = None
 
     def can(self, permission: str, *, company_id: UUID | None = None, branch_id: UUID | None = None,
             owner_id: UUID | None = None) -> bool:
@@ -82,6 +85,24 @@ class RequestContext:
             if a.company_id is None:
                 return None
             found.add(a.company_id)
+        return found
+
+    def scopes_with(self, permission: str) -> list[tuple[UUID | None, UUID | None]] | None:
+        """Where the actor holds `permission`, as (company_id, branch_id) pairs; None means everywhere.
+
+        A null company means every company; a null branch means every branch of the company.
+        Use it to filter lists of branch-level records (stock, till sessions). "Own" grants reach
+        only records the user created, so they are left out.
+        """
+        if self.all_permissions:
+            return None
+        found: list[tuple[UUID | None, UUID | None]] = []
+        for a in self.assignments:
+            if permission not in a.permissions or a.scope == "own":
+                continue
+            if a.company_id is None:
+                return None
+            found.append((a.company_id, a.branch_id))
         return found
 
     def has_role(self, role_id: UUID, *, company_id: UUID | None = None,

@@ -7,10 +7,10 @@ Administration here is tenant-wide, so it needs the permission with a tenant-wid
 from collections.abc import Callable
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy import text
 
-from ziira.kernel import approvals, audit, auth, numbering, reasons, users
+from ziira.kernel import approvals, audit, auth, company_settings, numbering, reasons, users
 from ziira.kernel.api import schemas as sc
 from ziira.kernel.context import RequestContext
 from ziira.kernel.errors import NotFound, Unauthorized
@@ -45,10 +45,10 @@ def signed_in_user(ctx: RequestContext = Depends(request_context)) -> RequestCon
 
 # --------------------------------------------------------------------------- auth
 @router.post("/auth/sign-in", response_model=sc.TokensOut, tags=["Auth"])
-def sign_in(body: sc.SignInIn) -> object:
+def sign_in(body: sc.SignInIn, request: Request) -> object:
     """Sign in with the workspace code, an email or phone, and the password."""
     return auth.sign_in(body.workspace, body.login, body.password, device_id=body.device_id,
-                        device_name=body.device_name, channel=body.channel)
+                        device_name=body.device_name, channel=body.channel, ip_address=auth.client_ip(request))
 
 
 @router.post("/auth/refresh", response_model=sc.TokensOut, tags=["Auth"])
@@ -127,6 +127,22 @@ def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session =
         if r.branch_id:
             company.branches.append(sc.BranchOut(id=r.branch_id, code=r.code, name=r.branch_name))
     return list(companies.values())
+
+
+@router.get("/companies/{company_id}/settings", response_model=sc.CompanySettingsOut, tags=["Organisation"])
+def get_company_settings(company_id: UUID, ctx: RequestContext = Depends(request_context),
+                         s: Session = Depends(db_session)) -> object:
+    """Company policies such as negative stock. Needs 'settings.manage' for the company."""
+    ctx.require("settings.manage", company_id=company_id)
+    return company_settings.get_settings(s, company_id)
+
+
+@router.patch("/companies/{company_id}/settings", response_model=sc.CompanySettingsOut, tags=["Organisation"])
+def update_company_settings(company_id: UUID, body: sc.CompanySettingsIn,
+                            ctx: RequestContext = Depends(request_context),
+                            s: Session = Depends(db_session)) -> object:
+    ctx.require("settings.manage", company_id=company_id)
+    return company_settings.update_settings(s, company_id, body.model_dump(exclude_none=True))
 
 
 # --------------------------------------------------------------------------- users

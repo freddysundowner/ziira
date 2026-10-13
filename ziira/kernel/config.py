@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     # so the API can be browsed directly. Set by scripts/run_local.sh.
     dev_default_tenant: UUID | None = None
 
+    # Behind a reverse proxy, take the client address (for the audit log) from the last entry of
+    # X-Forwarded-For, which the proxy appends. Leave false unless a proxy you control sets it.
+    trust_forwarded_for: bool = False
+
     # Signs access tokens. Must be set to a long random value outside development.
     secret_key: str = DEV_SECRET_KEY
     access_token_minutes: int = 15

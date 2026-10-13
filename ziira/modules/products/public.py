@@ -50,6 +50,7 @@ class ProductView:
     """What other modules need to know about a product."""
 
     id: UUID
+    company_id: UUID
     sku: str
     name: str
     product_type: str
@@ -57,6 +58,8 @@ class ProductView:
     tax_code_id: UUID
     vat_rate: Decimal
     is_batch_tracked: bool
+    is_active: bool
+    reorder_level: Decimal | None
 
 
 def find_product(session: Session, product_id: UUID) -> ProductView | None:
@@ -65,7 +68,13 @@ def find_product(session: Session, product_id: UUID) -> ProductView | None:
     if p is None:
         return None
     tax = products_repo.get_tax_code(session, p.tax_code_id)
-    return ProductView(id=p.id, sku=p.sku, name=p.name, product_type=p.product_type,
+    return ProductView(id=p.id, company_id=p.company_id, sku=p.sku, name=p.name, product_type=p.product_type,
                        base_uom_id=p.base_uom_id, tax_code_id=p.tax_code_id,
                        vat_rate=tax.vat_rate if tax else Decimal("0"),
-                       is_batch_tracked=p.is_batch_tracked)
+                       is_batch_tracked=p.is_batch_tracked, is_active=p.is_active,
+                       reorder_level=p.reorder_level)
+
+
+def product_labels(session: Session, product_ids: set[UUID]) -> dict[UUID, tuple[str, str]]:
+    """(sku, name) for each existing product id: for screens that list other units' records."""
+    return {p.id: (p.sku, p.name) for p in products_repo.get_products(session, product_ids)}

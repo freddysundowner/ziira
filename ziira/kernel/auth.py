@@ -11,10 +11,12 @@ Token formats (the tenant is embedded so the row can be found under row-level se
     API key        zk_<tenant hex>_<secret>
 """
 
+import ipaddress
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+from fastapi import Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -63,6 +65,22 @@ def _require_active_tenant(tenant_id: UUID) -> None:
         raise Unauthorized("Credentials are not valid") from None
 
 
+def client_ip(request: Request) -> str | None:
+    """The caller's address for the audit log, or None if it is not a valid IP.
+
+    Behind a trusted proxy (ZIIRA_TRUST_FORWARDED_FOR) the proxy's own entry, the last one in
+    X-Forwarded-For, is used; earlier entries can be forged by the client.
+    """
+    candidate = request.client.host if request.client else None
+    forwarded = request.headers.get("x-forwarded-for")
+    if get_settings().trust_forwarded_for and forwarded:
+        candidate = forwarded.split(",")[-1].strip()
+    try:
+        return str(ipaddress.ip_address(candidate)) if candidate else None
+    except ValueError:
+        return None
+
+
 def tenant_by_code(code: str) -> UUID | None:
     """Find an active tenant by its workspace code in the master database."""
     with master_session() as s:
@@ -73,7 +91,7 @@ def tenant_by_code(code: str) -> UUID | None:
 
 # --------------------------------------------------------------------------- sign in / out
 def sign_in(workspace: str, login: str, password: str, *, device_id: str, device_name: str | None = None,
-            channel: str = "web") -> Tokens:
+            channel: str = "web", ip_address: str | None = None) -> Tokens:
     """Check the password and open a session on this device. Raises Unauthorized."""
     if channel not in CHANNELS:
         raise ValidationFailed(f"Channel must be one of: {', '.join(CHANNELS)}")
@@ -90,9 +108,11 @@ def sign_in(workspace: str, login: str, password: str, *, device_id: str, device
             "select id, password_hash, status from kernel.app_user "
             "where lower(email) = lower(:l) or phone = :l"), {"l": login.strip()}).first()
         if verify_password(password, user.password_hash if user else None) and user and user.status == "active":
-            tokens = _open_session(s, tenant_id, user.id, channel, device_id, device_name)
+            tokens = _open_session(s, tenant_id, user.id, channel, device_id, device_name,
+                                   ip_address)
         else:
-            set_context(RequestContext(tenant_id=tenant_id, channel=channel))
+            set_context(RequestContext(tenant_id=tenant_id, channel=channel, device_id=device_id,
+                                       ip_address=ip_address))
             audit.record(s, "login_failed", "kernel.app_user", user.id if user else None,
                          {"login": login.strip(), "device_id": device_id})
     # The failed-login audit entry is committed before refusing.
@@ -102,7 +122,7 @@ def sign_in(workspace: str, login: str, password: str, *, device_id: str, device
 
 
 def _open_session(s: Session, tenant_id: UUID, user_id: UUID, channel: str, device_id: str,
-                  device_name: str | None) -> Tokens:
+                  device_name: str | None, ip_address: str | None = None) -> Tokens:
     settings = get_settings()
     refresh = f"zr_{tenant_id.hex}_{new_secret()}"
     session_id: UUID = s.execute(text(
@@ -111,7 +131,8 @@ def _open_session(s: Session, tenant_id: UUID, user_id: UUID, channel: str, devi
         {"t": str(tenant_id), "u": str(user_id), "c": channel, "d": device_id, "n": device_name,
          "h": hash_secret(refresh), "e": _now() + timedelta(days=settings.refresh_token_days)}).scalar_one()
     s.execute(text("update kernel.app_user set last_login_at = now() where id = :u"), {"u": str(user_id)})
-    set_context(RequestContext(tenant_id=tenant_id, user_id=user_id, channel=channel, session_id=session_id))
+    set_context(RequestContext(tenant_id=tenant_id, user_id=user_id, channel=channel, session_id=session_id,
+                               device_id=device_id, ip_address=ip_address))
     audit.record(s, "login", "kernel.app_user", user_id, {"device_id": device_id, "session_id": session_id})
     return _tokens(tenant_id, user_id, session_id, refresh)
 
@@ -200,14 +221,14 @@ def context_from_access_token(token: str) -> RequestContext:
     _require_active_tenant(tenant_id)
     with tenant_session(tenant_id) as s:
         row = s.execute(text(
-            "select s.channel, s.revoked_at, s.expires_at, u.status from kernel.user_session s "
+            "select s.channel, s.device_id, s.revoked_at, s.expires_at, u.status from kernel.user_session s "
             "join kernel.app_user u on u.id = s.user_id where s.id = :i and s.user_id = :u"),
             {"i": str(session_id), "u": str(user_id)}).first()
         if row is None or row.revoked_at is not None or row.expires_at < _now() or row.status != "active":
             raise Unauthorized("Session is no longer valid; sign in again")
         assignments = load_assignments(s, user_id)
     return RequestContext(tenant_id=tenant_id, user_id=user_id, channel=row.channel, session_id=session_id,
-                          assignments=assignments)
+                          assignments=assignments, device_id=row.device_id)
 
 
 def context_from_api_key(key: str) -> RequestContext:
