@@ -10,10 +10,17 @@ from sqlalchemy.orm import Session
 
 from ziira.modules.pos.repository.models import (
     BRANCH,
+    CustomerReceipt,
+    CustomerReceiptAllocation,
     Device,
+    InvoiceReminder,
     Sale,
     SaleLine,
     SalePayment,
+    SalesDocument,
+    SalesDocumentLine,
+    SalesInvoice,
+    SalesInvoiceLine,
     SalesReturn,
     SalesReturnLine,
     SyncRejection,
@@ -243,3 +250,188 @@ def list_rejections(session: Session, scopes: Scopes, *, include_resolved: bool,
     if not include_resolved:
         query = query.where(SyncRejection.resolved_at.is_(None))
     return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- invoices
+OPEN_INVOICE = ("issued", "part_paid")
+
+
+def get_invoice(session: Session, invoice_id: UUID, *, lock: bool = False) -> SalesInvoice | None:
+    if lock:
+        return session.scalars(select(SalesInvoice).where(SalesInvoice.id == invoice_id).with_for_update()
+                               .execution_options(populate_existing=True)).first()
+    return session.get(SalesInvoice, invoice_id)
+
+
+def invoice_for_sale(session: Session, sale_id: UUID, *, lock: bool = False) -> SalesInvoice | None:
+    query = select(SalesInvoice).where(SalesInvoice.sale_id == sale_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def invoice_lines(session: Session, invoice_id: UUID) -> list[SalesInvoiceLine]:
+    return list(session.scalars(select(SalesInvoiceLine).where(SalesInvoiceLine.invoice_id == invoice_id)
+                                .order_by(SalesInvoiceLine.line_no, SalesInvoiceLine.created_at,
+                                          SalesInvoiceLine.id)))
+
+
+def list_invoices(session: Session, scopes: Scopes, *, customer_id: UUID | None, status: str | None,
+                  due_before: date | None, number: str | None, limit: int, offset: int) -> list[SalesInvoice]:
+    query = select(SalesInvoice).where(in_scope(scopes, SalesInvoice.company_id, SalesInvoice.branch_id)).order_by(
+        SalesInvoice.issue_date.desc(), SalesInvoice.number.desc()).limit(limit).offset(offset)
+    if customer_id:
+        query = query.where(SalesInvoice.customer_id == customer_id)
+    if status:
+        query = query.where(SalesInvoice.status == status)
+    if due_before:
+        query = query.where(SalesInvoice.due_date <= due_before)
+    if number:
+        query = query.where(SalesInvoice.number == number)
+    return list(session.scalars(query))
+
+
+def open_invoices_of(session: Session, customer_id: UUID, *, lock: bool = False) -> list[SalesInvoice]:
+    """A customer's unpaid invoices, oldest due first."""
+    query = select(SalesInvoice).where(SalesInvoice.customer_id == customer_id,
+                                       SalesInvoice.status.in_(OPEN_INVOICE)).order_by(
+        SalesInvoice.due_date, SalesInvoice.issue_date, SalesInvoice.number)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return list(session.scalars(query))
+
+
+def customer_exposure(session: Session, customer_id: UUID) -> Decimal:
+    """What a customer owes on invoices that are not paid or cancelled."""
+    return Decimal(session.scalar(select(func.coalesce(func.sum(
+        SalesInvoice.total - SalesInvoice.amount_paid - SalesInvoice.credited), 0)).where(
+        SalesInvoice.customer_id == customer_id, SalesInvoice.status.in_(OPEN_INVOICE))) or 0)
+
+
+def all_open_invoices(session: Session, scopes: Scopes, as_of: date) -> list[SalesInvoice]:
+    return list(session.scalars(select(SalesInvoice).where(
+        in_scope(scopes, SalesInvoice.company_id, SalesInvoice.branch_id), SalesInvoice.status.in_(OPEN_INVOICE),
+        SalesInvoice.issue_date <= as_of).order_by(SalesInvoice.due_date)))
+
+
+def invoices_of_customer(session: Session, customer_id: UUID) -> list[SalesInvoice]:
+    return list(session.scalars(select(SalesInvoice).where(
+        SalesInvoice.customer_id == customer_id, SalesInvoice.status != "cancelled").order_by(
+        SalesInvoice.issue_date, SalesInvoice.number)))
+
+
+def invoice_returned_quantities(session: Session, invoice_id: UUID) -> dict[UUID, Decimal]:
+    """Quantity already returned (or awaiting approval) per invoice line."""
+    rows = session.execute(text(
+        "select l.invoice_line_id, sum(l.quantity) as q from pos.sales_return_line l join pos.sales_return r on "
+        "r.id = l.return_id where r.original_invoice_id = :i and r.status in ('posted', 'pending_approval') "
+        "group by l.invoice_line_id"), {"i": str(invoice_id)}).all()
+    return {r.invoice_line_id: Decimal(r.q) for r in rows}
+
+
+def returns_of_invoice(session: Session, invoice_id: UUID) -> list[SalesReturn]:
+    return list(session.scalars(select(SalesReturn).where(SalesReturn.original_invoice_id == invoice_id)
+                                .order_by(SalesReturn.created_at)))
+
+
+# --------------------------------------------------------------------------- receipts
+def get_receipt(session: Session, receipt_id: UUID, *, lock: bool = False) -> CustomerReceipt | None:
+    if lock:
+        return session.scalars(select(CustomerReceipt).where(CustomerReceipt.id == receipt_id).with_for_update()
+                               .execution_options(populate_existing=True)).first()
+    return session.get(CustomerReceipt, receipt_id)
+
+
+def receipt_by_payment(session: Session, payment_id: UUID, *, lock: bool = False) -> CustomerReceipt | None:
+    query = select(CustomerReceipt).where(CustomerReceipt.payment_id == payment_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def receipt_allocations(session: Session, receipt_id: UUID) -> list[CustomerReceiptAllocation]:
+    return list(session.scalars(select(CustomerReceiptAllocation).where(
+        CustomerReceiptAllocation.receipt_id == receipt_id).order_by(CustomerReceiptAllocation.created_at,
+                                                                     CustomerReceiptAllocation.id)))
+
+
+def list_receipts(session: Session, scopes: Scopes, *, customer_id: UUID | None, limit: int,
+                  offset: int) -> list[CustomerReceipt]:
+    query = select(CustomerReceipt).where(in_scope(scopes, CustomerReceipt.company_id, CustomerReceipt.branch_id)
+                                          ).order_by(CustomerReceipt.received_on.desc(), CustomerReceipt.number.desc()
+                                                     ).limit(limit).offset(offset)
+    if customer_id:
+        query = query.where(CustomerReceipt.customer_id == customer_id)
+    return list(session.scalars(query))
+
+
+def receipts_of_customer(session: Session, customer_id: UUID) -> list[CustomerReceipt]:
+    return list(session.scalars(select(CustomerReceipt).where(
+        CustomerReceipt.customer_id == customer_id, CustomerReceipt.status == "posted").order_by(
+        CustomerReceipt.received_on, CustomerReceipt.number)))
+
+
+def receipts_on_invoice(session: Session, invoice_id: UUID) -> list[tuple[CustomerReceipt, CustomerReceiptAllocation]]:
+    rows = session.execute(select(CustomerReceipt, CustomerReceiptAllocation).join(
+        CustomerReceiptAllocation, CustomerReceiptAllocation.receipt_id == CustomerReceipt.id).where(
+        CustomerReceiptAllocation.invoice_id == invoice_id).order_by(CustomerReceipt.received_on,
+                                                                     CustomerReceipt.number))
+    return [(r, a) for r, a in rows]
+
+
+# --------------------------------------------------------------------------- quotations and orders
+def get_document(session: Session, document_id: UUID, *, lock: bool = False) -> SalesDocument | None:
+    if lock:
+        return session.scalars(select(SalesDocument).where(SalesDocument.id == document_id).with_for_update()
+                               .execution_options(populate_existing=True)).first()
+    return session.get(SalesDocument, document_id)
+
+
+def document_lines(session: Session, document_id: UUID, *, lock: bool = False) -> list[SalesDocumentLine]:
+    query = select(SalesDocumentLine).where(SalesDocumentLine.document_id == document_id).order_by(
+        SalesDocumentLine.line_no, SalesDocumentLine.created_at, SalesDocumentLine.id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return list(session.scalars(query))
+
+
+def delete_document_lines(session: Session, document_id: UUID) -> None:
+    for line in document_lines(session, document_id):
+        session.delete(line)
+    session.flush()
+
+
+def list_documents(session: Session, scopes: Scopes, *, kind: str | None, customer_id: UUID | None,
+                   status: str | None, limit: int, offset: int) -> list[SalesDocument]:
+    query = select(SalesDocument).where(in_scope(scopes, SalesDocument.company_id, SalesDocument.branch_id)).order_by(
+        SalesDocument.doc_date.desc(), SalesDocument.number.desc()).limit(limit).offset(offset)
+    if kind:
+        query = query.where(SalesDocument.doc_kind == kind)
+    if customer_id:
+        query = query.where(SalesDocument.customer_id == customer_id)
+    if status:
+        query = query.where(SalesDocument.status == status)
+    return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- statements and reminders
+def credit_notes_of_customer(session: Session, customer_id: UUID) -> list[SalesReturn]:
+    """Posted returns that reduced what the customer owes (refunded as a credit note)."""
+    return list(session.scalars(
+        select(SalesReturn).join(SalesInvoice, (SalesInvoice.id == SalesReturn.original_invoice_id)
+                                 | (SalesInvoice.sale_id == SalesReturn.original_sale_id)).where(
+            SalesInvoice.customer_id == customer_id, SalesReturn.refund_method == "credit_note",
+            SalesReturn.status == "posted").order_by(SalesReturn.business_date, SalesReturn.number)))
+
+
+def last_reminders(session: Session, invoice_ids: list[UUID]) -> dict[UUID, Any]:
+    if not invoice_ids:
+        return {}
+    rows = session.execute(select(InvoiceReminder.invoice_id, func.max(InvoiceReminder.created_at)).where(
+        InvoiceReminder.invoice_id.in_(invoice_ids)).group_by(InvoiceReminder.invoice_id))
+    return {i: t for i, t in rows}
+
+
+def reminders_of(session: Session, invoice_id: UUID) -> list[InvoiceReminder]:
+    return list(session.scalars(select(InvoiceReminder).where(InvoiceReminder.invoice_id == invoice_id)
+                                .order_by(InvoiceReminder.created_at)))

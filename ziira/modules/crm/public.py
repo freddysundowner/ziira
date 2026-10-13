@@ -1,4 +1,44 @@
 """Public interface of the CRM and Customers module.
 
-Other units may import only from this file. Nothing is exposed yet.
+POS reads customers (and their credit) through these functions; it never reads CRM's tables.
 """
+
+from dataclasses import dataclass
+from decimal import Decimal
+from uuid import UUID
+
+from ziira.modules.crm.repository import crm_repo
+from ziira.modules.crm.repository.models import Customer
+from ziira.sdk import Session
+
+
+@dataclass(frozen=True)
+class CustomerView:
+    """What other units need to know about a customer."""
+
+    id: UUID
+    company_id: UUID
+    code: str
+    name: str
+    phone: str | None
+    kra_pin: str | None
+    customer_group: str | None
+    credit_limit: Decimal
+    payment_terms_days: int
+    status: str
+
+
+def _view(c: Customer) -> CustomerView:
+    return CustomerView(c.id, c.company_id, c.code, c.name, c.phone, c.kra_pin, c.customer_group, c.credit_limit,
+                        c.payment_terms_days, c.status)
+
+
+def find_customer(session: Session, customer_id: UUID) -> CustomerView | None:
+    """A customer with their current credit limit and terms, or None."""
+    customer = crm_repo.get_customer(session, customer_id)
+    return _view(customer) if customer is not None else None
+
+
+def find_customers(session: Session, customer_ids: set[UUID]) -> dict[UUID, CustomerView]:
+    """Several customers at once, by id."""
+    return {c.id: _view(c) for c in crm_repo.customers_by_ids(session, customer_ids)}

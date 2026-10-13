@@ -160,6 +160,7 @@ class SalesReturnLine(TenantColumns, Base):
     tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     sale_line_id: Mapped[UUID | None]
+    invoice_line_id: Mapped[UUID | None]
 
 
 class SyncRejection(TenantColumns, Base):
@@ -175,3 +176,127 @@ class SyncRejection(TenantColumns, Base):
     error: Mapped[str]
     attempts: Mapped[int] = mapped_column(server_default=text("1"))
     resolved_at: Mapped[datetime | None]
+
+
+class SalesInvoice(Audited, Base):
+    __tablename__ = "sales_invoice"
+    __table_args__ = {"schema": "pos"}
+
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    customer_id: Mapped[UUID]
+    sale_id: Mapped[UUID | None]
+    sales_order_id: Mapped[UUID | None]
+    issue_date: Mapped[date]
+    due_date: Mapped[date]
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    tax_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    amount_paid: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    status: Mapped[str] = mapped_column(server_default=text("'issued'"))
+    kind: Mapped[str] = mapped_column(server_default=text("'invoice'"))
+    location_id: Mapped[UUID | None]
+    credited: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    cancelled_at: Mapped[datetime | None]
+    cancelled_by: Mapped[UUID | None]
+    cancel_reason: Mapped[str | None]
+    notes: Mapped[str | None]
+
+
+class SalesInvoiceLine(TenantColumns, Base):
+    __tablename__ = "sales_invoice_line"
+    __table_args__ = {"schema": "pos"}
+
+    invoice_id: Mapped[UUID]
+    product_id: Mapped[UUID]
+    uom_id: Mapped[UUID]
+    quantity: Mapped[Decimal] = mapped_column(Numeric(18, 4))
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    discount_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    tax_code_id: Mapped[UUID]
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    line_no: Mapped[int | None]
+    batch_id: Mapped[UUID | None]
+    cost_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    order_line_id: Mapped[UUID | None]
+    price_reason_code_id: Mapped[UUID | None]
+    list_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+
+
+class SalesDocument(Audited, Base):
+    __tablename__ = "sales_document"
+    __table_args__ = {"schema": "pos"}
+
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    doc_kind: Mapped[str]
+    number: Mapped[str]
+    customer_id: Mapped[UUID | None]
+    doc_date: Mapped[date]
+    valid_until: Mapped[date | None]
+    source_quotation_id: Mapped[UUID | None]
+    total: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    status: Mapped[str] = mapped_column(server_default=text("'draft'"))
+    approved_by: Mapped[UUID | None]
+    location_id: Mapped[UUID | None]
+    terms_days: Mapped[int] = mapped_column(server_default=text("0"))
+    notes: Mapped[str | None]
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    tax_total: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+
+
+class SalesDocumentLine(TenantColumns, Base):
+    __tablename__ = "sales_document_line"
+    __table_args__ = {"schema": "pos"}
+
+    document_id: Mapped[UUID]
+    product_id: Mapped[UUID]
+    uom_id: Mapped[UUID]
+    quantity: Mapped[Decimal] = mapped_column(Numeric(18, 4))
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    discount_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    tax_code_id: Mapped[UUID]
+    line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    qty_delivered: Mapped[Decimal] = mapped_column(Numeric(18, 4), server_default=text("0"))
+    line_no: Mapped[int | None]
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+
+
+class CustomerReceipt(Audited, Base):
+    __tablename__ = "customer_receipt"
+    __table_args__ = {"schema": "pos"}
+
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    customer_id: Mapped[UUID]
+    payment_id: Mapped[UUID | None]
+    till_session_id: Mapped[UUID | None]
+    method: Mapped[str]
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    received_on: Mapped[date]
+    reference: Mapped[str | None]
+    status: Mapped[str] = mapped_column(server_default=text("'posted'"))
+    reversed_at: Mapped[datetime | None]
+    reverse_reason: Mapped[str | None]
+
+
+class CustomerReceiptAllocation(TenantColumns, Base):
+    __tablename__ = "customer_receipt_allocation"
+    __table_args__ = {"schema": "pos"}
+
+    receipt_id: Mapped[UUID]
+    invoice_id: Mapped[UUID]
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+
+
+class InvoiceReminder(TenantColumns, Base):
+    __tablename__ = "invoice_reminder"
+    __table_args__ = {"schema": "pos"}
+
+    created_by: Mapped[UUID | None]
+    invoice_id: Mapped[UUID]
+    channel: Mapped[str]
+    note: Mapped[str | None]

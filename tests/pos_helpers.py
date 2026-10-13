@@ -45,6 +45,36 @@ def make_pos_shop(client, registry, name: str, *, finance: bool = False, stock: 
     return shop
 
 
+def make_sales_shop(client, registry, name: str, **kw):  # type: ignore[no-untyped-def]
+    """The POS shop with CRM on (and Finance, by default), for credit sales and invoices."""
+    shop = make_pos_shop(client, registry, name, **{"finance": True, **kw})
+    registry.enable(shop["tenant_id"], "crm")
+    return shop
+
+
+def credit_customer(client, shop, name="Mama Mboga", limit="5000", terms=14, **kw):  # type: ignore[no-untyped-def]
+    """A customer with a credit limit and terms (set by the finance manager)."""
+    made = client.post("/api/v1/crm/customers", headers=shop["owner"], json={
+        "company_id": str(shop["company_id"]), "name": name, **kw})
+    assert made.status_code == 201, made.text
+    customer = made.json()
+    if Decimal(limit) > 0 or terms:
+        r = client.post(f"/api/v1/crm/customers/{customer['id']}/credit", headers=shop["fm"], json={
+            "credit_limit": limit, "payment_terms_days": terms, "reason": "Test"})
+        assert r.status_code == 201, r.text
+    return client.get(f"/api/v1/crm/customers/{customer['id']}", headers=shop["owner"]).json()
+
+
+def credit_sale(client, shop, customer, qty="2", who="cashier", cash=None, **kw):  # type: ignore[no-untyped-def]
+    """Sell `qty` cement to the customer on credit (optionally part in cash)."""
+    total = Decimal("116.00") * Decimal(qty)
+    payments = [{"method": "credit", "amount": str(total - Decimal(cash or 0))}]
+    if cash:
+        payments.insert(0, {"method": "cash", "amount": str(cash)})
+    return sell(client, shop, who=who, lines=[line(shop, "cement", qty)], payments=payments,
+                customer_id=customer["id"], **kw)
+
+
 def reasons(client, owner) -> dict[str, str]:  # type: ignore[no-untyped-def]
     """First reason code id of each category."""
     found: dict[str, str] = {}

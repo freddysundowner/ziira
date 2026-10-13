@@ -9,8 +9,12 @@ optional = ["crm", "finance"]
 
 [provides]
 api_prefix = "/api/v1/pos"
-publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued", "pos.synced"]
-subscribes = ["approval.decided"]
+publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued", "invoice.cancelled", "pos.synced", "customer.paid", "customer.payment_reversed", "customer.over_limit_attempt"]
+subscribes = ["approval.decided", "payment.reversed"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["kernel.integrity_check"]
 
 [permissions]
 "sales.sell" = "Make sales"
@@ -21,14 +25,16 @@ subscribes = ["approval.decided"]
 "till.manage" = "Open and close your own till"
 "till.review" = "See and close any till at a branch"
 "devices.manage" = "Register and block POS devices"
+"receivables.view" = "See what customers owe: invoices, statements and ageing"
+"receivables.manage" = "Record payments from customers"
 
 # Default roles that receive these permissions when the module is enabled (Owner gets all).
 [roles]
-"Branch Manager" = ["sales.sell", "sales.void", "sales.refund", "price.override", "invoices.manage", "till.manage", "till.review", "devices.manage"]
-"Finance Manager" = ["till.review"]
-"Accountant" = ["till.review"]
-"Cashier" = ["sales.sell", "till.manage"]
-"Sales Rep" = ["sales.sell"]
+"Branch Manager" = ["sales.sell", "sales.void", "sales.refund", "price.override", "invoices.manage", "till.manage", "till.review", "devices.manage", "receivables.view", "receivables.manage"]
+"Finance Manager" = ["till.review", "invoices.manage", "receivables.view", "receivables.manage"]
+"Accountant" = ["till.review", "receivables.view", "receivables.manage"]
+"Cashier" = ["sales.sell", "till.manage", "receivables.manage"]
+"Sales Rep" = ["sales.sell", "invoices.manage", "receivables.view"]
 
 # Reason codes seeded for the tenant when the module is enabled; tenants can add their own.
 [reason_codes.void]

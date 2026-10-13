@@ -17,7 +17,7 @@ CENT = Decimal("0.01")
 MAX_LINES = 200
 MAX_QUANTITY = Decimal("1000000")
 MAX_PRICE = Decimal("100000000")
-SALE_METHODS = ("cash", "mpesa", "card", "other")     # "credit" arrives with customer accounts (phase 6)
+SALE_METHODS = ("cash", "mpesa", "card", "other", "credit")     # "credit" is left on the customer's account
 NUMBER_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9\-]{2,59}$")
 
 

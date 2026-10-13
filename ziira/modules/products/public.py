@@ -82,12 +82,12 @@ def product_labels(session: Session, product_ids: set[UUID]) -> dict[UUID, tuple
 
 
 def selling_prices(session: Session, company_id: UUID, branch_id: UUID | None, product_ids: set[UUID],
-                   day: date | None = None) -> dict[UUID, Decimal]:
-    """The tax-inclusive selling price of each product that has one on `day` (default today) at the branch. Products
-    without a price are absent."""
+                   day: date | None = None, customer_group: str | None = None) -> dict[UUID, Decimal]:
+    """The tax-inclusive selling price of each product that has one on `day` (default today) at the branch, from a
+    list for the customer's group where there is one. Products without a price are absent."""
     from ziira.modules.products.services.pricing import current_prices
 
-    return current_prices(session, company_id, branch_id, product_ids, day)
+    return current_prices(session, company_id, branch_id, product_ids, day, customer_group)
 
 
 def sellable_products(session: Session, company_id: UUID, search: str | None = None, limit: int = 100,

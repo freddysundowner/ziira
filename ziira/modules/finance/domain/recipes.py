@@ -23,11 +23,12 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
     "supplier_bill": ("grni", "purchase_variance", "vat_input", "payable"),
     "supplier_payment": ("payable", "cash", "bank", "mpesa", "card", "other"),
     "supplier_credit_note": ("payable", "grni", "purchase_variance", "vat_input"),
+    "customer_payment": ("receivable", "cash", "bank", "mpesa", "card", "other"),
 }
 RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
                                                "settlement": (), "cash_deposit": (), "till_variance": (),
                                                "supplier_bill": (), "supplier_payment": (),
-                                               "supplier_credit_note": ()}
+                                               "supplier_credit_note": (), "customer_payment": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -222,3 +223,14 @@ def supplier_credit_note(stock_value: Decimal, goods_credit: Decimal, vat: Decim
         raise ValidationFailed("A credit note must be worth more than nothing")
     lines.append(RecipeLine("payable", "debit", total, party_type="supplier", party_id=party, description=description))
     return lines
+
+
+def customer_payment(method: str, amount: Decimal, *, party: Any = None, description: str | None = None,
+                     reverse: bool = False) -> list[RecipeLine]:
+    """A customer paid an invoice: Dr cash / M-Pesa / card / bank  Cr accounts receivable (reversed: the other way)."""
+    if amount <= 0:
+        raise ValidationFailed("A payment must be more than nothing")
+    role = method if method in ("cash", "mpesa", "card", "bank") else "other"
+    lines = [RecipeLine(role, "debit", amount, description=description),
+             RecipeLine("receivable", "credit", amount, party_type="customer", party_id=party, description=description)]
+    return _flip(lines) if reverse else lines

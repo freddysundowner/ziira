@@ -98,7 +98,7 @@ class SaleLineIn(BaseModel):
 
 
 class SalePaymentIn(BaseModel):
-    method: Literal["cash", "mpesa", "card", "other"]
+    method: Literal["cash", "mpesa", "card", "other", "credit"]
     amount: Money = Field(description="What was handed over. Cash may be more than is due: the rest is change")
     external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code or card slip number")
     payment_account_id: UUID | None = None
@@ -175,7 +175,7 @@ class ReturnLineIn(BaseModel):
 class ReturnIn(BaseModel):
     lines: Annotated[list[ReturnLineIn], Field(min_length=1, max_length=200)]
     reason_code_id: UUID
-    refund_method: Literal["cash", "mpesa", "exchange"]
+    refund_method: Literal["cash", "mpesa", "exchange", "credit_note"]
     note: str | None = Field(default=None, max_length=500)
     restock_location_id: UUID | None = None
 
@@ -197,6 +197,7 @@ class ReturnSummaryOut(BaseModel):
     company_id: UUID
     branch_id: UUID | None
     original_sale_id: UUID | None
+    original_invoice_id: UUID | None
     refund_method: str
     total: Decimal
     status: str
@@ -294,3 +295,284 @@ class SnapshotOut(BaseModel):
     server_time: datetime
     items: list[CatalogItemOut]
     has_more: bool
+
+
+# --------------------------------------------------------------------------- invoices and receipts
+class InvoiceLineIn(BaseModel):
+    product_id: UUID
+    quantity: Annotated[Quantity, Field(gt=0)]
+    unit_price: NonNegative | None = Field(default=None, description="Tax-inclusive; leave out for their price")
+    discount: NonNegative = Decimal(0)
+    reason_code_id: UUID | None = Field(default=None, description="From the 'price_override' list")
+    batch_id: UUID | None = None
+    order_line_id: UUID | None = None
+
+
+class InvoiceIn(BaseModel):
+    customer_id: UUID
+    lines: Annotated[list[InvoiceLineIn], Field(min_length=1, max_length=200)]
+    branch_id: UUID | None = None
+    location_id: UUID | None = Field(default=None, description="The store the goods leave from")
+    issue_date: date | None = None
+    terms_days: int | None = Field(default=None, ge=0, le=365, description="Default: the customer's terms")
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class InvoiceLineOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    line_no: int | None
+    product_id: UUID
+    quantity: Decimal
+    list_price: Decimal | None
+    unit_price: Decimal
+    discount_amount: Decimal
+    tax_amount: Decimal
+    line_total: Decimal
+    cost_amount: Decimal | None
+
+
+class InvoiceSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    customer_id: UUID
+    sale_id: UUID | None
+    sales_order_id: UUID | None
+    kind: str
+    issue_date: date
+    due_date: date
+    subtotal: Decimal
+    tax_total: Decimal
+    total: Decimal
+    amount_paid: Decimal
+    credited: Decimal
+    status: str
+
+
+class InvoiceOut(InvoiceSummaryOut):
+    notes: str | None
+    cancel_reason: str | None
+    lines: list[InvoiceLineOut]
+
+
+class ReasonIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class AllocationIn(BaseModel):
+    invoice_id: UUID
+    amount: Money
+
+
+class ReceiptIn(BaseModel):
+    customer_id: UUID
+    amount: Money
+    method: Literal["cash", "mpesa", "bank", "card", "cheque", "other"]
+    branch_id: UUID | None = None
+    payment_account_id: UUID | None = None
+    external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code, bank ref, cheque no.")
+    received_on: date | None = None
+    allocations: list[AllocationIn] | None = Field(default=None, description="Default: the oldest invoices first")
+    till_session_id: UUID | None = Field(default=None, description="Cash taken at your till")
+
+
+class AllocationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    invoice_id: UUID
+    amount: Decimal
+
+
+class ReceiptSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    customer_id: UUID
+    payment_id: UUID | None
+    method: str
+    amount: Decimal
+    received_on: date
+    reference: str | None
+    status: str
+
+
+class ReceiptOut(ReceiptSummaryOut):
+    allocations: list[AllocationOut]
+
+
+# --------------------------------------------------------------------------- quotations and orders
+class DocLineIn(BaseModel):
+    product_id: UUID
+    quantity: Annotated[Quantity, Field(gt=0)]
+    unit_price: NonNegative | None = Field(default=None, description="Tax-inclusive; leave out for their price")
+    discount: NonNegative = Decimal(0)
+    reason_code_id: UUID | None = Field(default=None, description="From the 'price_override' list")
+
+
+class QuotationIn(BaseModel):
+    customer_id: UUID
+    lines: Annotated[list[DocLineIn], Field(min_length=1, max_length=200)]
+    branch_id: UUID | None = None
+    location_id: UUID | None = None
+    valid_until: date | None = Field(default=None, description="Default: 14 days from today")
+    terms_days: int | None = Field(default=None, ge=0, le=365)
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class OrderIn(BaseModel):
+    customer_id: UUID
+    lines: Annotated[list[DocLineIn], Field(min_length=1, max_length=200)]
+    branch_id: UUID | None = None
+    location_id: UUID | None = None
+    terms_days: int | None = Field(default=None, ge=0, le=365)
+    notes: str | None = Field(default=None, max_length=500)
+
+
+class DocUpdate(BaseModel):
+    lines: Annotated[list[DocLineIn], Field(min_length=1, max_length=200)] | None = None
+    notes: str | None = Field(default=None, max_length=500)
+    valid_until: date | None = None
+
+
+class DeliverLineIn(BaseModel):
+    order_line_id: UUID
+    quantity: Annotated[Quantity, Field(gt=0)]
+
+
+class DeliverIn(BaseModel):
+    lines: list[DeliverLineIn] | None = Field(default=None, description="Default: everything left to deliver")
+    location_id: UUID | None = None
+    issue_date: date | None = None
+
+
+class DocLineOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    line_no: int | None
+    product_id: UUID
+    quantity: Decimal
+    unit_price: Decimal
+    discount_amount: Decimal
+    tax_amount: Decimal
+    line_total: Decimal
+    qty_delivered: Decimal
+
+
+class DocSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    doc_kind: str
+    number: str
+    customer_id: UUID | None
+    doc_date: date
+    valid_until: date | None
+    source_quotation_id: UUID | None
+    location_id: UUID | None
+    terms_days: int
+    subtotal: Decimal
+    tax_total: Decimal
+    total: Decimal
+    status: str
+
+
+class DocOut(DocSummaryOut):
+    notes: str | None
+    lines: list[DocLineOut]
+
+
+class InvoiceReturnLineIn(BaseModel):
+    invoice_line_id: UUID
+    quantity: Annotated[Quantity, Field(gt=0)]
+
+
+class InvoiceReturnIn(BaseModel):
+    lines: Annotated[list[InvoiceReturnLineIn], Field(min_length=1, max_length=200)]
+    reason_code_id: UUID
+    refund_method: Literal["credit_note", "cash", "mpesa", "exchange"]
+    note: str | None = Field(default=None, max_length=500)
+    restock_location_id: UUID | None = None
+
+
+# --------------------------------------------------------------------------- receivables
+class AgeingRowOut(BaseModel):
+    customer_id: UUID
+    customer: str
+    total: Decimal
+    not_due: Decimal
+    d1_30: Decimal = Field(alias="1_30")
+    d31_60: Decimal = Field(alias="31_60")
+    d61_90: Decimal = Field(alias="61_90")
+    over_90: Decimal
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class AgeingOut(BaseModel):
+    as_of: date
+    total: Decimal
+    buckets: dict[str, Decimal]
+    customers: list[AgeingRowOut]
+
+
+class StatementLineOut(BaseModel):
+    date: date
+    kind: str
+    number: str
+    description: str
+    debit: Decimal
+    credit: Decimal
+    balance: Decimal
+
+
+class StatementOut(BaseModel):
+    customer_id: UUID
+    customer: str
+    code: str
+    date_from: date | None
+    date_to: date | None
+    opening_balance: Decimal
+    closing_balance: Decimal
+    owed_now: Decimal
+    lines: list[StatementLineOut]
+
+
+class BalanceOut(BaseModel):
+    customer_id: UUID
+    customer: str
+    owes: Decimal
+    credit_limit: Decimal
+    available: Decimal
+    terms_days: int
+    status: str
+
+
+class ReminderDueOut(BaseModel):
+    invoice_id: UUID
+    number: str
+    customer_id: UUID
+    customer: str
+    phone: str | None
+    due_date: date
+    days_overdue: int
+    outstanding: Decimal
+    last_reminder: datetime | None
+
+
+class ReminderIn(BaseModel):
+    channel: Literal["whatsapp", "sms", "email", "call", "visit"]
+    note: str | None = Field(default=None, max_length=300)
+
+
+class ReminderOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    invoice_id: UUID
+    channel: str
+    note: str | None
+    created_at: datetime

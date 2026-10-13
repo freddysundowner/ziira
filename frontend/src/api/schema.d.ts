@@ -595,6 +595,230 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/crm/customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Customers */
+        get: operations["get_customers_api_v1_crm_customers_get"];
+        put?: never;
+        /** Post Customer */
+        post: operations["post_customer_api_v1_crm_customers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/customers/{customer_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Customer */
+        get: operations["get_customer_api_v1_crm_customers__customer_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Customer */
+        patch: operations["patch_customer_api_v1_crm_customers__customer_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/crm/customers/{customer_id}/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Contacts */
+        get: operations["get_contacts_api_v1_crm_customers__customer_id__contacts_get"];
+        put?: never;
+        /** Post Contact */
+        post: operations["post_contact_api_v1_crm_customers__customer_id__contacts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/customers/{customer_id}/contacts/{contact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Contact */
+        delete: operations["delete_contact_api_v1_crm_customers__customer_id__contacts__contact_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/customers/{customer_id}/credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Credit History
+         * @description Every credit limit and terms the customer has had, newest first.
+         */
+        get: operations["get_credit_history_api_v1_crm_customers__customer_id__credit_get"];
+        put?: never;
+        /**
+         * Post Credit Change
+         * @description Change the credit limit and terms. Raising the limit is approved by someone else.
+         */
+        post: operations["post_credit_change_api_v1_crm_customers__customer_id__credit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/lead-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Sources */
+        get: operations["get_sources_api_v1_crm_lead_sources_get"];
+        put?: never;
+        /** Post Source */
+        post: operations["post_source_api_v1_crm_lead_sources_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Leads */
+        get: operations["get_leads_api_v1_crm_leads_get"];
+        put?: never;
+        /** Post Lead */
+        post: operations["post_lead_api_v1_crm_leads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/leads/{lead_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Lead */
+        get: operations["get_lead_api_v1_crm_leads__lead_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Lead */
+        patch: operations["patch_lead_api_v1_crm_leads__lead_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/crm/leads/{lead_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Lead Status */
+        post: operations["post_lead_status_api_v1_crm_leads__lead_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/leads/{lead_id}/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Convert Lead
+         * @description Turn the lead into a customer.
+         */
+        post: operations["post_convert_lead_api_v1_crm_leads__lead_id__convert_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Activities
+         * @description Follow-ups about one lead or customer, or (with mine=true) your own.
+         */
+        get: operations["get_activities_api_v1_crm_activities_get"];
+        put?: never;
+        /** Post Activity */
+        post: operations["post_activity_api_v1_crm_activities_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/crm/activities/{activity_id}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Activity Done */
+        post: operations["post_activity_done_api_v1_crm_activities__activity_id__done_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/finance/companies/{company_id}/books": {
         parameters: {
             query?: never;
@@ -2029,6 +2253,425 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pos/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Invoices */
+        get: operations["get_invoices_api_v1_pos_invoices_get"];
+        put?: never;
+        /**
+         * Post Invoice
+         * @description Invoice a business customer and deliver the goods (stock leaves; the books debit accounts receivable).
+         */
+        post: operations["post_invoice_api_v1_pos_invoices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Invoice */
+        get: operations["get_invoice_api_v1_pos_invoices__invoice_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/invoices/{invoice_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Cancel Invoice
+         * @description Cancel an invoice nothing has been paid or credited on; the goods return to stock.
+         */
+        post: operations["post_cancel_invoice_api_v1_pos_invoices__invoice_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Receipts */
+        get: operations["get_receipts_api_v1_pos_receipts_get"];
+        put?: never;
+        /**
+         * Post Receipt
+         * @description Record a customer's payment against their invoices (the oldest first unless you name them).
+         */
+        post: operations["post_receipt_api_v1_pos_receipts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receipts/{receipt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Receipt */
+        get: operations["get_receipt_api_v1_pos_receipts__receipt_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receipts/{receipt_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reverse Receipt
+         * @description Cancel a customer's payment (recorded wrongly, or bounced): the invoices are owed again.
+         */
+        post: operations["post_reverse_receipt_api_v1_pos_receipts__receipt_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/invoices/{invoice_id}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Invoice Return
+         * @description Take goods back from an invoice. A credit note while the invoice is unpaid; a refund once it is paid.
+         */
+        post: operations["post_invoice_return_api_v1_pos_invoices__invoice_id__returns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/quotations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Quotations */
+        get: operations["get_quotations_api_v1_pos_quotations_get"];
+        put?: never;
+        /** Post Quotation */
+        post: operations["post_quotation_api_v1_pos_quotations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/quotations/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Quotation */
+        get: operations["get_quotation_api_v1_pos_quotations__document_id__get"];
+        /** Put Quotation */
+        put: operations["put_quotation_api_v1_pos_quotations__document_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/quotations/{document_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Send Quotation */
+        post: operations["post_send_quotation_api_v1_pos_quotations__document_id__send_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/quotations/{document_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Accept Quotation
+         * @description The customer accepted: returns the sales order made from it.
+         */
+        post: operations["post_accept_quotation_api_v1_pos_quotations__document_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/quotations/{document_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Cancel Quotation */
+        post: operations["post_cancel_quotation_api_v1_pos_quotations__document_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Orders */
+        get: operations["get_orders_api_v1_pos_orders_get"];
+        put?: never;
+        /** Post Order */
+        post: operations["post_order_api_v1_pos_orders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/orders/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order */
+        get: operations["get_order_api_v1_pos_orders__document_id__get"];
+        /** Put Order */
+        put: operations["put_order_api_v1_pos_orders__document_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/orders/{document_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Submit Order
+         * @description Confirm the order (an approver may need to agree first).
+         */
+        post: operations["post_submit_order_api_v1_pos_orders__document_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/orders/{document_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Cancel Order */
+        post: operations["post_cancel_order_api_v1_pos_orders__document_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/orders/{document_id}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Deliver Order
+         * @description Deliver the order (all that is left, or the quantities named) and invoice it at the agreed prices.
+         */
+        post: operations["post_deliver_order_api_v1_pos_orders__document_id__deliver_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receivables/ageing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Ageing
+         * @description What customers owe on unpaid invoices, aged by due date.
+         */
+        get: operations["get_ageing_api_v1_pos_receivables_ageing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/receivables/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Reminders Due
+         * @description Overdue invoices that have not been chased lately.
+         */
+        get: operations["get_reminders_due_api_v1_pos_receivables_reminders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/invoices/{invoice_id}/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reminder
+         * @description Note that the customer was reminded about this invoice.
+         */
+        post: operations["post_reminder_api_v1_pos_invoices__invoice_id__reminders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/customers/{customer_id}/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Statement
+         * @description A customer's account: invoices, payments and credit notes with a running balance.
+         */
+        get: operations["get_statement_api_v1_pos_customers__customer_id__statement_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/customers/{customer_id}/balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Balance
+         * @description What the customer owes, their credit limit and what they can still take on account.
+         */
+        get: operations["get_balance_api_v1_pos_customers__customer_id__balance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/products/uoms": {
         parameters: {
             query?: never;
@@ -2857,6 +3500,60 @@ export interface components {
             /** Active */
             active: boolean;
         };
+        /** ActivityDoneIn */
+        ActivityDoneIn: {
+            /** Note */
+            note?: string | null;
+        };
+        /** ActivityIn */
+        ActivityIn: {
+            /**
+             * Related Type
+             * @enum {string}
+             */
+            related_type: "lead" | "customer";
+            /**
+             * Related Id
+             * Format: uuid
+             */
+            related_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "call" | "visit" | "message" | "meeting" | "task";
+            /** Due At */
+            due_at?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** ActivityOut */
+        ActivityOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Related Type */
+            related_type: string;
+            /**
+             * Related Id
+             * Format: uuid
+             */
+            related_id: string;
+            /** Kind */
+            kind: string;
+            /** Due At */
+            due_at: string | null;
+            /** Done At */
+            done_at: string | null;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Note */
+            note: string | null;
+        };
         /** AdjustmentIn */
         AdjustmentIn: {
             /**
@@ -2983,6 +3680,64 @@ export interface components {
             /** Posted At */
             posted_at: string | null;
         };
+        /** AgeingOut */
+        AgeingOut: {
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Total */
+            total: string;
+            /** Buckets */
+            buckets: {
+                [key: string]: string;
+            };
+            /** Customers */
+            customers: components["schemas"]["AgeingRowOut"][];
+        };
+        /** AgeingRowOut */
+        AgeingRowOut: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer */
+            customer: string;
+            /** Total */
+            total: string;
+            /** Not Due */
+            not_due: string;
+            /** 1 30 */
+            "1_30": string;
+            /** 31 60 */
+            "31_60": string;
+            /** 61 90 */
+            "61_90": string;
+            /** Over 90 */
+            over_90: string;
+        };
+        /** AllocationIn */
+        AllocationIn: {
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Amount */
+            amount: number | string;
+        };
+        /** AllocationOut */
+        AllocationOut: {
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Amount */
+            amount: string;
+        };
         /** ApiKeyCreatedOut */
         ApiKeyCreatedOut: {
             /**
@@ -3043,29 +3798,6 @@ export interface components {
             branch_id: string | null;
             /** Permissions */
             permissions: string[];
-        };
-        /** BalanceOut */
-        BalanceOut: {
-            /**
-             * Location Id
-             * Format: uuid
-             */
-            location_id: string;
-            /** Location Code */
-            location_code: string;
-            /**
-             * Product Id
-             * Format: uuid
-             */
-            product_id: string;
-            /** Sku */
-            sku: string | null;
-            /** Product Name */
-            product_name: string | null;
-            /** Batch Id */
-            batch_id: string | null;
-            /** Quantity */
-            quantity: string;
         };
         /** BankConfirmIn */
         BankConfirmIn: {
@@ -3533,6 +4265,43 @@ export interface components {
              */
             late_posting: "redirect" | "reject";
         };
+        /** ContactIn */
+        ContactIn: {
+            /** Name */
+            name: string;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Role */
+            role?: string | null;
+        };
+        /** ContactOut */
+        ContactOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Role */
+            role: string | null;
+        };
+        /** ConvertedOut */
+        ConvertedOut: {
+            lead: components["schemas"]["LeadOut"];
+            customer: components["schemas"]["CustomerOut"];
+        };
         /** CountEntriesIn */
         CountEntriesIn: {
             /** Entries */
@@ -3708,6 +4477,15 @@ export interface components {
             /** Passkey */
             passkey: string;
         };
+        /** CreditChangeIn */
+        CreditChangeIn: {
+            /** Credit Limit */
+            credit_limit: number | string;
+            /** Payment Terms Days */
+            payment_terms_days: number;
+            /** Reason */
+            reason: string;
+        };
         /** CreditLineIn */
         CreditLineIn: {
             /** Quantity */
@@ -3848,12 +4626,159 @@ export interface components {
             /** Total */
             total: string;
         };
+        /** CreditVersionOut */
+        CreditVersionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Credit Limit */
+            credit_limit: string;
+            /** Previous Limit */
+            previous_limit: string | null;
+            /** Payment Terms Days */
+            payment_terms_days: number;
+            /** Status */
+            status: string;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Valid From
+             * Format: date-time
+             */
+            valid_from: string;
+            /** Created By */
+            created_by: string | null;
+            /** Approved By */
+            approved_by: string | null;
+        };
+        /** CustomerIn */
+        CustomerIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Code
+             * @description Made for you when left out
+             */
+            code?: string | null;
+            /**
+             * Kind
+             * @default business
+             * @enum {string}
+             */
+            kind: "individual" | "business";
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Kra Pin */
+            kra_pin?: string | null;
+            /**
+             * Customer Group
+             * @description Used by price lists
+             */
+            customer_group?: string | null;
+            /**
+             * Payment Terms Days
+             * @default 0
+             */
+            payment_terms_days: number;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+        };
+        /** CustomerOut */
+        CustomerOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Kra Pin */
+            kra_pin: string | null;
+            /** Customer Group */
+            customer_group: string | null;
+            /** Credit Limit */
+            credit_limit: string;
+            /** Payment Terms Days */
+            payment_terms_days: number;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Status */
+            status: string;
+        };
+        /** CustomerUpdate */
+        CustomerUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Kind */
+            kind?: ("individual" | "business") | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Kra Pin */
+            kra_pin?: string | null;
+            /** Customer Group */
+            customer_group?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Status */
+            status?: ("active" | "on_hold" | "inactive") | null;
+        };
         /** DecisionIn */
         DecisionIn: {
             /** Approve */
             approve: boolean;
             /** Note */
             note?: string | null;
+        };
+        /** DeliverIn */
+        DeliverIn: {
+            /**
+             * Lines
+             * @description Default: everything left to deliver
+             */
+            lines?: components["schemas"]["DeliverLineIn"][] | null;
+            /** Location Id */
+            location_id?: string | null;
+            /** Issue Date */
+            issue_date?: string | null;
+        };
+        /** DeliverLineIn */
+        DeliverLineIn: {
+            /**
+             * Order Line Id
+             * Format: uuid
+             */
+            order_line_id: string;
+            /** Quantity */
+            quantity: number | string;
         };
         /** DeviceIn */
         DeviceIn: {
@@ -3930,6 +4855,155 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "blocked";
+        };
+        /** DocLineIn */
+        DocLineIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: number | string;
+            /**
+             * Unit Price
+             * @description Tax-inclusive; leave out for their price
+             */
+            unit_price?: number | string | null;
+            /**
+             * Discount
+             * @default 0
+             */
+            discount: number | string;
+            /**
+             * Reason Code Id
+             * @description From the 'price_override' list
+             */
+            reason_code_id?: string | null;
+        };
+        /** DocLineOut */
+        DocLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Line No */
+            line_no: number | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Discount Amount */
+            discount_amount: string;
+            /** Tax Amount */
+            tax_amount: string;
+            /** Line Total */
+            line_total: string;
+            /** Qty Delivered */
+            qty_delivered: string;
+        };
+        /** DocOut */
+        DocOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Doc Kind */
+            doc_kind: string;
+            /** Number */
+            number: string;
+            /** Customer Id */
+            customer_id: string | null;
+            /**
+             * Doc Date
+             * Format: date
+             */
+            doc_date: string;
+            /** Valid Until */
+            valid_until: string | null;
+            /** Source Quotation Id */
+            source_quotation_id: string | null;
+            /** Location Id */
+            location_id: string | null;
+            /** Terms Days */
+            terms_days: number;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Status */
+            status: string;
+            /** Notes */
+            notes: string | null;
+            /** Lines */
+            lines: components["schemas"]["DocLineOut"][];
+        };
+        /** DocSummaryOut */
+        DocSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Doc Kind */
+            doc_kind: string;
+            /** Number */
+            number: string;
+            /** Customer Id */
+            customer_id: string | null;
+            /**
+             * Doc Date
+             * Format: date
+             */
+            doc_date: string;
+            /** Valid Until */
+            valid_until: string | null;
+            /** Source Quotation Id */
+            source_quotation_id: string | null;
+            /** Location Id */
+            location_id: string | null;
+            /** Terms Days */
+            terms_days: number;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Status */
+            status: string;
+        };
+        /** DocUpdate */
+        DocUpdate: {
+            /** Lines */
+            lines?: components["schemas"]["DocLineIn"][] | null;
+            /** Notes */
+            notes?: string | null;
+            /** Valid Until */
+            valid_until?: string | null;
         };
         /** EntryLineOut */
         EntryLineOut: {
@@ -4271,6 +5345,310 @@ export interface components {
             expires_at: string | null;
             /** Receipt */
             receipt?: string | null;
+        };
+        /** InvoiceIn */
+        InvoiceIn: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Lines */
+            lines: components["schemas"]["InvoiceLineIn"][];
+            /** Branch Id */
+            branch_id?: string | null;
+            /**
+             * Location Id
+             * @description The store the goods leave from
+             */
+            location_id?: string | null;
+            /** Issue Date */
+            issue_date?: string | null;
+            /**
+             * Terms Days
+             * @description Default: the customer's terms
+             */
+            terms_days?: number | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** InvoiceLineIn */
+        InvoiceLineIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: number | string;
+            /**
+             * Unit Price
+             * @description Tax-inclusive; leave out for their price
+             */
+            unit_price?: number | string | null;
+            /**
+             * Discount
+             * @default 0
+             */
+            discount: number | string;
+            /**
+             * Reason Code Id
+             * @description From the 'price_override' list
+             */
+            reason_code_id?: string | null;
+            /** Batch Id */
+            batch_id?: string | null;
+            /** Order Line Id */
+            order_line_id?: string | null;
+        };
+        /** InvoiceLineOut */
+        InvoiceLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Line No */
+            line_no: number | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Quantity */
+            quantity: string;
+            /** List Price */
+            list_price: string | null;
+            /** Unit Price */
+            unit_price: string;
+            /** Discount Amount */
+            discount_amount: string;
+            /** Tax Amount */
+            tax_amount: string;
+            /** Line Total */
+            line_total: string;
+            /** Cost Amount */
+            cost_amount: string | null;
+        };
+        /** InvoiceOut */
+        InvoiceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Sale Id */
+            sale_id: string | null;
+            /** Sales Order Id */
+            sales_order_id: string | null;
+            /** Kind */
+            kind: string;
+            /**
+             * Issue Date
+             * Format: date
+             */
+            issue_date: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Amount Paid */
+            amount_paid: string;
+            /** Credited */
+            credited: string;
+            /** Status */
+            status: string;
+            /** Notes */
+            notes: string | null;
+            /** Cancel Reason */
+            cancel_reason: string | null;
+            /** Lines */
+            lines: components["schemas"]["InvoiceLineOut"][];
+        };
+        /** InvoiceReturnIn */
+        InvoiceReturnIn: {
+            /** Lines */
+            lines: components["schemas"]["InvoiceReturnLineIn"][];
+            /**
+             * Reason Code Id
+             * Format: uuid
+             */
+            reason_code_id: string;
+            /**
+             * Refund Method
+             * @enum {string}
+             */
+            refund_method: "credit_note" | "cash" | "mpesa" | "exchange";
+            /** Note */
+            note?: string | null;
+            /** Restock Location Id */
+            restock_location_id?: string | null;
+        };
+        /** InvoiceReturnLineIn */
+        InvoiceReturnLineIn: {
+            /**
+             * Invoice Line Id
+             * Format: uuid
+             */
+            invoice_line_id: string;
+            /** Quantity */
+            quantity: number | string;
+        };
+        /** InvoiceSummaryOut */
+        InvoiceSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Sale Id */
+            sale_id: string | null;
+            /** Sales Order Id */
+            sales_order_id: string | null;
+            /** Kind */
+            kind: string;
+            /**
+             * Issue Date
+             * Format: date
+             */
+            issue_date: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Subtotal */
+            subtotal: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Amount Paid */
+            amount_paid: string;
+            /** Credited */
+            credited: string;
+            /** Status */
+            status: string;
+        };
+        /** LeadConvertIn */
+        LeadConvertIn: {
+            /** Code */
+            code?: string | null;
+            /** Customer Group */
+            customer_group?: string | null;
+        };
+        /** LeadIn */
+        LeadIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /** Business Name */
+            business_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Customer Kind */
+            customer_kind?: ("individual" | "business") | null;
+        };
+        /** LeadOut */
+        LeadOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /** Business Name */
+            business_name: string | null;
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /** Source Id */
+            source_id: string | null;
+            /** Status */
+            status: string;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /** Converted Customer Id */
+            converted_customer_id: string | null;
+            /** Lost Reason */
+            lost_reason: string | null;
+        };
+        /** LeadStatusIn */
+        LeadStatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "new" | "contacted" | "qualified" | "lost";
+            /** Lost Reason */
+            lost_reason?: string | null;
+        };
+        /** LeadUpdate */
+        LeadUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Business Name */
+            business_name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Owner User Id */
+            owner_user_id?: string | null;
+            /** Source Id */
+            source_id?: string | null;
         };
         /** LedgerLineOut */
         LedgerLineOut: {
@@ -4663,31 +6041,6 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["OpeningLineIn"][];
         };
-        /** OrderIn */
-        OrderIn: {
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /**
-             * Supplier Id
-             * Format: uuid
-             */
-            supplier_id: string;
-            /** Lines */
-            lines: components["schemas"]["OrderLineIn"][];
-            /** Branch Id */
-            branch_id?: string | null;
-            /** Deliver To Location Id */
-            deliver_to_location_id?: string | null;
-            /** Order Date */
-            order_date?: string | null;
-            /** Expected Date */
-            expected_date?: string | null;
-            /** Request Id */
-            request_id?: string | null;
-        };
         /** OrderLineIn */
         OrderLineIn: {
             /**
@@ -5029,6 +6382,11 @@ export interface components {
              * @default false
              */
             is_default: boolean;
+            /**
+             * Customer Group
+             * @description Prices for customers of this group
+             */
+            customer_group?: string | null;
         };
         /** PriceListOut */
         PriceListOut: {
@@ -5050,6 +6408,8 @@ export interface components {
             currency: string;
             /** Is Default */
             is_default: boolean;
+            /** Customer Group */
+            customer_group: string | null;
         };
         /** ProductIn */
         ProductIn: {
@@ -5145,6 +6505,29 @@ export interface components {
             /** Value */
             value: string | null;
         };
+        /** QuotationIn */
+        QuotationIn: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Lines */
+            lines: components["schemas"]["DocLineIn"][];
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Location Id */
+            location_id?: string | null;
+            /**
+             * Valid Until
+             * @description Default: 14 days from today
+             */
+            valid_until?: string | null;
+            /** Terms Days */
+            terms_days?: number | null;
+            /** Notes */
+            notes?: string | null;
+        };
         /** ReasonOut */
         ReasonOut: {
             /**
@@ -5162,26 +6545,6 @@ export interface components {
             requires_note: boolean;
             /** Is Active */
             is_active: boolean;
-        };
-        /** ReceiptIn */
-        ReceiptIn: {
-            /** Lines */
-            lines: components["schemas"]["ReceiptLineIn"][];
-            /** Order Id */
-            order_id?: string | null;
-            /** Supplier Id */
-            supplier_id?: string | null;
-            /** Location Id */
-            location_id?: string | null;
-            /** Received At */
-            received_at?: string | null;
-            /** Delivery Note No */
-            delivery_note_no?: string | null;
-            /**
-             * Landed Cost
-             * @default 0
-             */
-            landed_cost: number | string;
         };
         /** ReceiptLineIn */
         ReceiptLineIn: {
@@ -5220,82 +6583,6 @@ export interface components {
             quantity: string;
             /** Unit Cost */
             unit_cost: string;
-        };
-        /** ReceiptOut */
-        ReceiptOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /** Branch Id */
-            branch_id: string | null;
-            /** Number */
-            number: string;
-            /** Order Id */
-            order_id: string | null;
-            /**
-             * Supplier Id
-             * Format: uuid
-             */
-            supplier_id: string;
-            /** Location Id */
-            location_id: string | null;
-            /**
-             * Received At
-             * Format: date-time
-             */
-            received_at: string;
-            /** Delivery Note No */
-            delivery_note_no: string | null;
-            /** Status */
-            status: string;
-            /** Landed Cost */
-            landed_cost: string;
-            /** Lines */
-            lines: components["schemas"]["ReceiptLineOut"][];
-        };
-        /** ReceiptSummaryOut */
-        ReceiptSummaryOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /** Branch Id */
-            branch_id: string | null;
-            /** Number */
-            number: string;
-            /** Order Id */
-            order_id: string | null;
-            /**
-             * Supplier Id
-             * Format: uuid
-             */
-            supplier_id: string;
-            /** Location Id */
-            location_id: string | null;
-            /**
-             * Received At
-             * Format: date-time
-             */
-            received_at: string;
-            /** Delivery Note No */
-            delivery_note_no: string | null;
-            /** Status */
-            status: string;
-            /** Landed Cost */
-            landed_cost: string;
         };
         /** ReceiveIn */
         ReceiveIn: {
@@ -5364,6 +6651,68 @@ export interface components {
             payload: {
                 [key: string]: unknown;
             };
+        };
+        /** ReminderDueOut */
+        ReminderDueOut: {
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer */
+            customer: string;
+            /** Phone */
+            phone: string | null;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Days Overdue */
+            days_overdue: number;
+            /** Outstanding */
+            outstanding: string;
+            /** Last Reminder */
+            last_reminder: string | null;
+        };
+        /** ReminderIn */
+        ReminderIn: {
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "whatsapp" | "sms" | "email" | "call" | "visit";
+            /** Note */
+            note?: string | null;
+        };
+        /** ReminderOut */
+        ReminderOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Channel */
+            channel: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** RequestIn */
         RequestIn: {
@@ -5660,7 +7009,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "card" | "other";
+            method: "cash" | "mpesa" | "card" | "other" | "credit";
             /**
              * Amount
              * @description What was handed over. Cash may be more than is due: the rest is change
@@ -5871,6 +7220,21 @@ export interface components {
             /** Has More */
             has_more: boolean;
         };
+        /** SourceIn */
+        SourceIn: {
+            /** Name */
+            name: string;
+        };
+        /** SourceOut */
+        SourceOut: {
+            /** Name */
+            name: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+        };
         /** StatementIn */
         StatementIn: {
             /**
@@ -5890,6 +7254,50 @@ export interface components {
             options?: {
                 [key: string]: string;
             };
+        };
+        /** StatementLineOut */
+        StatementLineOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Kind */
+            kind: string;
+            /** Number */
+            number: string;
+            /** Description */
+            description: string;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /** Balance */
+            balance: string;
+        };
+        /** StatementOut */
+        StatementOut: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer */
+            customer: string;
+            /** Code */
+            code: string;
+            /** Date From */
+            date_from: string | null;
+            /** Date To */
+            date_to: string | null;
+            /** Opening Balance */
+            opening_balance: string;
+            /** Closing Balance */
+            closing_balance: string;
+            /** Owed Now */
+            owed_now: string;
+            /** Lines */
+            lines: components["schemas"]["StatementLineOut"][];
         };
         /** StatementResultOut */
         StatementResultOut: {
@@ -6690,6 +8098,29 @@ export interface components {
             /** Priority */
             priority: number;
         };
+        /** BalanceOut */
+        ziira__modules__inventory__api__schemas__BalanceOut: {
+            /**
+             * Location Id
+             * Format: uuid
+             */
+            location_id: string;
+            /** Location Code */
+            location_code: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Sku */
+            sku: string | null;
+            /** Product Name */
+            product_name: string | null;
+            /** Batch Id */
+            batch_id: string | null;
+            /** Quantity */
+            quantity: string;
+        };
         /** AccountIn */
         ziira__modules__payments__api__schemas__AccountIn: {
             /**
@@ -6775,6 +8206,161 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** BalanceOut */
+        ziira__modules__pos__api__schemas__BalanceOut: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Customer */
+            customer: string;
+            /** Owes */
+            owes: string;
+            /** Credit Limit */
+            credit_limit: string;
+            /** Available */
+            available: string;
+            /** Terms Days */
+            terms_days: number;
+            /** Status */
+            status: string;
+        };
+        /** OrderIn */
+        ziira__modules__pos__api__schemas__OrderIn: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Lines */
+            lines: components["schemas"]["DocLineIn"][];
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Location Id */
+            location_id?: string | null;
+            /** Terms Days */
+            terms_days?: number | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** ReasonIn */
+        ziira__modules__pos__api__schemas__ReasonIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** ReceiptIn */
+        ziira__modules__pos__api__schemas__ReceiptIn: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Amount */
+            amount: number | string;
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "cash" | "mpesa" | "bank" | "card" | "cheque" | "other";
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Payment Account Id */
+            payment_account_id?: string | null;
+            /**
+             * External Ref
+             * @description M-Pesa code, bank ref, cheque no.
+             */
+            external_ref?: string | null;
+            /** Received On */
+            received_on?: string | null;
+            /**
+             * Allocations
+             * @description Default: the oldest invoices first
+             */
+            allocations?: components["schemas"]["AllocationIn"][] | null;
+            /**
+             * Till Session Id
+             * @description Cash taken at your till
+             */
+            till_session_id?: string | null;
+        };
+        /** ReceiptOut */
+        ziira__modules__pos__api__schemas__ReceiptOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Payment Id */
+            payment_id: string | null;
+            /** Method */
+            method: string;
+            /** Amount */
+            amount: string;
+            /**
+             * Received On
+             * Format: date
+             */
+            received_on: string;
+            /** Reference */
+            reference: string | null;
+            /** Status */
+            status: string;
+            /** Allocations */
+            allocations: components["schemas"]["AllocationOut"][];
+        };
+        /** ReceiptSummaryOut */
+        ziira__modules__pos__api__schemas__ReceiptSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Payment Id */
+            payment_id: string | null;
+            /** Method */
+            method: string;
+            /** Amount */
+            amount: string;
+            /**
+             * Received On
+             * Format: date
+             */
+            received_on: string;
+            /** Reference */
+            reference: string | null;
+            /** Status */
+            status: string;
+        };
         /** ReturnIn */
         ziira__modules__pos__api__schemas__ReturnIn: {
             /** Lines */
@@ -6788,7 +8374,7 @@ export interface components {
              * Refund Method
              * @enum {string}
              */
-            refund_method: "cash" | "mpesa" | "exchange";
+            refund_method: "cash" | "mpesa" | "exchange" | "credit_note";
             /** Note */
             note?: string | null;
             /** Restock Location Id */
@@ -6843,6 +8429,8 @@ export interface components {
             branch_id: string | null;
             /** Original Sale Id */
             original_sale_id: string | null;
+            /** Original Invoice Id */
+            original_invoice_id: string | null;
             /** Refund Method */
             refund_method: string;
             /** Total */
@@ -6872,6 +8460,8 @@ export interface components {
             branch_id: string | null;
             /** Original Sale Id */
             original_sale_id: string | null;
+            /** Original Invoice Id */
+            original_invoice_id: string | null;
             /** Refund Method */
             refund_method: string;
             /** Total */
@@ -6908,6 +8498,31 @@ export interface components {
             /** Valid To */
             valid_to: string | null;
         };
+        /** OrderIn */
+        ziira__modules__purchasing__api__schemas__OrderIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /** Lines */
+            lines: components["schemas"]["OrderLineIn"][];
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Deliver To Location Id */
+            deliver_to_location_id?: string | null;
+            /** Order Date */
+            order_date?: string | null;
+            /** Expected Date */
+            expected_date?: string | null;
+            /** Request Id */
+            request_id?: string | null;
+        };
         /** PriceOut */
         ziira__modules__purchasing__api__schemas__PriceOut: {
             /**
@@ -6924,6 +8539,102 @@ export interface components {
             effective_date: string;
             /** Source Type */
             source_type: string;
+        };
+        /** ReceiptIn */
+        ziira__modules__purchasing__api__schemas__ReceiptIn: {
+            /** Lines */
+            lines: components["schemas"]["ReceiptLineIn"][];
+            /** Order Id */
+            order_id?: string | null;
+            /** Supplier Id */
+            supplier_id?: string | null;
+            /** Location Id */
+            location_id?: string | null;
+            /** Received At */
+            received_at?: string | null;
+            /** Delivery Note No */
+            delivery_note_no?: string | null;
+            /**
+             * Landed Cost
+             * @default 0
+             */
+            landed_cost: number | string;
+        };
+        /** ReceiptOut */
+        ziira__modules__purchasing__api__schemas__ReceiptOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /** Order Id */
+            order_id: string | null;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /** Location Id */
+            location_id: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Delivery Note No */
+            delivery_note_no: string | null;
+            /** Status */
+            status: string;
+            /** Landed Cost */
+            landed_cost: string;
+            /** Lines */
+            lines: components["schemas"]["ReceiptLineOut"][];
+        };
+        /** ReceiptSummaryOut */
+        ziira__modules__purchasing__api__schemas__ReceiptSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /** Order Id */
+            order_id: string | null;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /** Location Id */
+            location_id: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Delivery Note No */
+            delivery_note_no: string | null;
+            /** Status */
+            status: string;
+            /** Landed Cost */
+            landed_cost: string;
         };
         /** RequestOut */
         ziira__modules__purchasing__api__schemas__RequestOut: {
@@ -8540,6 +10251,815 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExceptionItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_customers_api_v1_crm_customers_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+                status?: string | null;
+                group?: string | null;
+                owner_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_customer_api_v1_crm_customers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_customer_api_v1_crm_customers__customer_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_customer_api_v1_crm_customers__customer_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_contacts_api_v1_crm_customers__customer_id__contacts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_contact_api_v1_crm_customers__customer_id__contacts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_contact_api_v1_crm_customers__customer_id__contacts__contact_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+                contact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_credit_history_api_v1_crm_customers__customer_id__credit_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditVersionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_credit_change_api_v1_crm_customers__customer_id__credit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreditChangeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sources_api_v1_crm_lead_sources_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_source_api_v1_crm_lead_sources_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SourceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_leads_api_v1_crm_leads_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                owner_id?: string | null;
+                source_id?: string | null;
+                search?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_lead_api_v1_crm_leads_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_lead_api_v1_crm_leads__lead_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_lead_api_v1_crm_leads__lead_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_lead_status_api_v1_crm_leads__lead_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_convert_lead_api_v1_crm_leads__lead_id__convert_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadConvertIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConvertedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_activities_api_v1_crm_activities_get: {
+        parameters: {
+            query?: {
+                related_type?: string | null;
+                related_id?: string | null;
+                mine?: boolean;
+                open_only?: boolean;
+                due_before?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_activity_api_v1_crm_activities_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_activity_done_api_v1_crm_activities__activity_id__done_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityDoneIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
                 };
             };
             /** @description Validation Error */
@@ -10217,7 +12737,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BalanceOut"][];
+                    "application/json": components["schemas"]["ziira__modules__inventory__api__schemas__BalanceOut"][];
                 };
             };
             /** @description Validation Error */
@@ -12258,6 +14778,1126 @@ export interface operations {
             };
         };
     };
+    get_invoices_api_v1_pos_invoices_get: {
+        parameters: {
+            query?: {
+                customer_id?: string | null;
+                status?: string | null;
+                due_before?: string | null;
+                number?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_invoice_api_v1_pos_invoices_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_invoice_api_v1_pos_invoices__invoice_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cancel_invoice_api_v1_pos_invoices__invoice_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_receipts_api_v1_pos_receipts_get: {
+        parameters: {
+            query?: {
+                customer_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReceiptSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_receipt_api_v1_pos_receipts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReceiptIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReceiptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_receipt_api_v1_pos_receipts__receipt_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReceiptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reverse_receipt_api_v1_pos_receipts__receipt_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReceiptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_invoice_return_api_v1_pos_invoices__invoice_id__returns_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoiceReturnIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__ReturnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_quotations_api_v1_pos_quotations_get: {
+        parameters: {
+            query?: {
+                customer_id?: string | null;
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_quotation_api_v1_pos_quotations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_quotation_api_v1_pos_quotations__document_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_quotation_api_v1_pos_quotations__document_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_send_quotation_api_v1_pos_quotations__document_id__send_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_accept_quotation_api_v1_pos_quotations__document_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cancel_quotation_api_v1_pos_quotations__document_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_orders_api_v1_pos_orders_get: {
+        parameters: {
+            query?: {
+                customer_id?: string | null;
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_order_api_v1_pos_orders_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__pos__api__schemas__OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_order_api_v1_pos_orders__document_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_order_api_v1_pos_orders__document_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_submit_order_api_v1_pos_orders__document_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cancel_order_api_v1_pos_orders__document_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_deliver_order_api_v1_pos_orders__document_id__deliver_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliverIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ageing_api_v1_pos_receivables_ageing_get: {
+        parameters: {
+            query?: {
+                as_of?: string | null;
+                customer_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgeingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_reminders_due_api_v1_pos_receivables_reminders_get: {
+        parameters: {
+            query?: {
+                as_of?: string | null;
+                min_days_overdue?: number;
+                repeat_days?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderDueOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reminder_api_v1_pos_invoices__invoice_id__reminders_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReminderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReminderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_statement_api_v1_pos_customers__customer_id__statement_get: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_balance_api_v1_pos_customers__customer_id__balance_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__pos__api__schemas__BalanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_uoms_api_v1_products_uoms_get: {
         parameters: {
             query?: never;
@@ -13303,7 +16943,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrderIn"];
+                "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__OrderIn"];
             };
         };
         responses: {
@@ -13586,7 +17226,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReceiptSummaryOut"][];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReceiptSummaryOut"][];
                 };
             };
             /** @description Validation Error */
@@ -13616,7 +17256,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReceiptIn"];
+                "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReceiptIn"];
             };
         };
         responses: {
@@ -13626,7 +17266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReceiptOut"];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReceiptOut"];
                 };
             };
             /** @description Validation Error */
@@ -13664,7 +17304,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReceiptOut"];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__ReceiptOut"];
                 };
             };
             /** @description Validation Error */

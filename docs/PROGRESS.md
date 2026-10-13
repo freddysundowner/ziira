@@ -27,11 +27,12 @@ code), optionally a validation hook on sale posting (sign before completing), an
 fields through `products/public.py`. It listens to `sale.posted` / `sale.returned`, keeps its own `plg_etims` table of
 status per document (so POS stays unchanged), and signs with jobs and retry.
 
-Phase 7 (Purchasing) is done. Next: **phase 6, Customers and sales** (CRM, credit sales, invoices, receivables; credit
-notes; POS currently refuses `credit` payments and `credit_note` refunds until this exists). Tables for quotations,
-orders and invoices exist in `pos` and `crm` migrations. Purchasing also covers returns to suppliers, supplier credit
-notes, bill and payment reversal and landed-cost invoices. Left for later: supplier invoices from eTIMS, supplier statement
-reconciliation, supplier refunds of overpaid bills.
+Phases 4, 7 and 6 are done. Next in the agreed order: **phase 8, Finance reports** (expenses, bank reconciliation, P&L, balance
+sheet, VAT summary, exports). VAT output comes from sales (`2200`), VAT input from purchases (`1300`); both are booked from
+the manual tax codes until the eTIMS plugin exists. Left over from phase 6: advance payments from customers (a payment must
+be allocated to invoices for now), sending reminders (needs notifications, phase 10), a nightly job that expires old
+quotations (they are expired when looked at). Left from purchasing: supplier invoices from eTIMS, statement reconciliation,
+supplier refunds of overpaid bills.
 
 Phase 4 left open (small, do when convenient):
 - [ ] **Run the Daraja flows in Safaricom's sandbox.** Request formats in `payments/providers.py` are from the public
@@ -66,6 +67,8 @@ Phase 4 left open (small, do when convenient):
 | Payments | Payments model, M-Pesa STK push and C2B, statements, matching engine, settlements, daily close | `modules/payments/` (README) |
 | POS | Devices, tills, sales, voids, returns, price overrides, offline sync; price lists live in Products | `modules/pos/` (README) |
 | Purchasing | Suppliers with guarded bank details, requests, orders, receipts, bills with the three-way match, payment, payables | `modules/purchasing/` (README) |
+| CRM | Customers, contacts, versioned credit (increases approved), leads, follow-ups | `modules/crm/` (README) |
+| Receivables | Credit sales, invoices, quotations/orders, customer payments, credit notes, statements, ageing, reminders, ledger check | `modules/pos/` (README) |
 | Other modules | Tables, manifests and folders only | `modules/*/` |
 
 Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
@@ -80,7 +83,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ✅ Done | Hypothesis and concurrency tests; reports beyond TB/GL are phase 8 |
 | 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ✅ Done | Daraja untested live (sandbox run pending); web POS shell later |
 | 5 | eTIMS **plugin**: direct KRA integration, credit notes, retry | ⬜ Last | Deferred by decision; manual tax entry meanwhile. KRA integrator certification before live |
-| 6 | Customers and sales: CRM, credit, invoices, receivables | ⬜ | |
+| 6 | Customers and sales: CRM, credit, invoices, receivables, statements, reminders | ✅ Done | Advance payments and sending reminders later |
 | 7 | Purchasing: orders, receipts, bills, three-way match, returns, credit notes, reversals | ✅ Done | eTIMS purchase pull and statement reconciliation later |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, VAT | ⬜ | |
 | 9 | People and payroll: HR, attendance, payroll, payslips | ⬜ | Rates verified by an accountant before launch |
@@ -129,6 +132,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (l) | **Phase 6 done (Customers and sales).** CRM: customers, contacts, credit limits and terms with history (raises approved by someone else), leads with sources and conversion, follow-ups. POS: credit sales (limit and terms enforced, serialised per customer; offline credit accepted and raised), invoices to business customers, quotations and sales orders delivered by invoice, customer receipts (oldest first or named, via Payments, cash through the till), reversal of customer payments, credit notes for goods taken back (sales and invoices), voids, statements, ageing, reminders, `receivables.*` permissions, customer ledger integrity check. Finance: customer payment recipes. Products: customer-group price lists. Migrations `crm/0002`, `pos/0003`. |
 | 2026-10-13 (k) | **Purchasing completed.** Reversing a payment updates the bill and the books (`payment.reversed` from Payments, `supplier.payment_reversed`); reversing a posted bill (mirror entry, quantities back, invoice number reusable); returning goods to a supplier (`goods.returned`, stock out, order reopened, flagged until credited); supplier credit notes (goods at stock value, variance, expense credits); landed-cost lines on bills. Finance: mirrored recipes, `credit_note.posted`. Migration `purchasing/0003`. Tests 953 -> 976. |
 | 2026-10-13 (j) | **Phase 7 done (Purchasing).** Suppliers; bank details changed only by propose -> confirm by a different person -> approval, stored encrypted and shown masked; requests and orders with approval by amount; goods receipts (partial, never more than ordered, costed at the order, landed cost, supplier price history); supplier bills with the three-way match (tolerance setting `bill_match_tolerance_percent`), exceptions that need someone else, expense bills, payment through Payments, payables by age. Finance: recipes and rules for `bill.posted` and `supplier.paid`, purchase price variance account, recipe lines that name their own account. Products: `tax_code_rate`; Inventory: `location_scope`. Plan changed: eTIMS last, as a plugin. |
 | 2026-10-13 (i) | **Phase 4 done.** Platform: idempotency keys, job queue and `ziira worker`, exceptions inbox, encrypted credentials. Payments: one payments model, C2B and STK (fake + Daraja providers, signed callbacks, status checks), statement import, matching engine with undo, settlements and cash deposits (Finance postings), daily close with reopening through approval. Products: price lists with history. POS: devices, tills with X/Z reports and variance posting, sales (VAT-inclusive, overrides, change, retry-safe), voids, returns with approval, immutable sale records, offline snapshot + exactly-once upload with kept rejections. Fixes found by tests: Payments never reopened a day on approval (no `approval.decided` handler); default-rule seeding restored deliberately removed posting rules. Tests 712 -> 912. |

@@ -9,11 +9,19 @@ optional = ["pos", "payments"]
 
 [provides]
 api_prefix = "/api/v1/crm"
-publishes = ["lead.created", "lead.converted", "customer.credit_limit_changed"]
-subscribes = []
+publishes = ["customer.created", "lead.created", "lead.converted", "customer.credit_limit_changed"]
+subscribes = ["approval.decided"]
 
 [permissions]
 "customers.view" = "View customers"
 "customers.manage" = "Create and edit customers"
 "credit.approve" = "Approve credit limit changes"
 "leads.manage" = "Manage leads and follow-ups"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["customers.view", "customers.manage", "credit.approve", "leads.manage"]
+"Branch Manager" = ["customers.view", "customers.manage", "leads.manage"]
+"Sales Rep" = ["customers.view", "customers.manage", "leads.manage"]
+"Cashier" = ["customers.view"]
+"Accountant" = ["customers.view"]

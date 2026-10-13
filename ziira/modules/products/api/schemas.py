@@ -63,6 +63,7 @@ class PriceListIn(BaseModel):
     name: str = Field(min_length=1, max_length=200, examples=["Retail prices"])
     branch_id: UUID | None = None
     is_default: bool = False
+    customer_group: str | None = Field(default=None, max_length=60, description="Prices for customers of this group")
 
 
 class PriceListOut(BaseModel):
@@ -73,6 +74,7 @@ class PriceListOut(BaseModel):
     branch_id: UUID | None
     currency: str
     is_default: bool
+    customer_group: str | None
 
 
 class PriceIn(BaseModel):

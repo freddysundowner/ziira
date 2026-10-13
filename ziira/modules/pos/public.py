@@ -4,6 +4,7 @@ Other units use these; they normally talk to POS through events (`sale.posted`, 
 """
 
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import text
@@ -16,3 +17,10 @@ def open_till_sessions(session: Session, branch_id: UUID, day: date) -> int:
     return int(session.execute(text(
         "select count(*) from pos.till_session where branch_id = :b and business_date = :d and status = 'open'"),
         {"b": str(branch_id), "d": day}).scalar_one())
+
+
+def customer_balance(session: Session, customer_id: UUID) -> Decimal:
+    """What a customer owes on invoices that are not paid or cancelled (for statements and credit decisions)."""
+    return Decimal(session.execute(text(
+        "select coalesce(sum(total - amount_paid - credited), 0) from pos.sales_invoice where customer_id = :c "
+        "and status in ('issued', 'part_paid')"), {"c": str(customer_id)}).scalar_one())

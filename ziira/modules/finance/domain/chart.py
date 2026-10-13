@@ -95,4 +95,10 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("supplier_credit_note", "grni", "2100", "credit"),
     ("supplier_credit_note", "purchase_variance", "5200", "credit"),
     ("supplier_credit_note", "vat_input", "1300", "credit"),
+    ("customer_payment", "receivable", "1100", "credit"),
+    ("customer_payment", "cash", "1010", "debit"),
+    ("customer_payment", "bank", "1020", "debit"),
+    ("customer_payment", "mpesa", "1030", "debit"),
+    ("customer_payment", "card", "1040", "debit"),
+    ("customer_payment", "other", "1020", "debit"),
 )

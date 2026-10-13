@@ -33,20 +33,24 @@ def today() -> date:
 
 
 def create_price_list(session: Session, *, company_id: UUID, name: str, branch_id: UUID | None = None,
-                      is_default: bool = False) -> PriceList:
+                      is_default: bool = False, customer_group: str | None = None) -> PriceList:
     """Create a price list. A default list prices every sale of the company (or of one branch); only one default is
-    allowed for each. Needs 'prices.manage' for the company."""
+    allowed for each. A list for a customer group prices what customers of that group buy (where it has a price; the
+    default list covers the rest). Needs 'prices.manage' for the company."""
     ctx = current_context()
     ctx.require(PRICES_MANAGE, company_id=company_id, branch_id=branch_id)
     check_company(session, company_id, branch_id)
     name = name.strip()
     if not name:
         raise ValidationFailed("A price list needs a name")
+    group = " ".join(customer_group.split()) if customer_group else None
+    if group and is_default:
+        raise ValidationFailed("A list for a customer group is not a default list")
     if is_default and any(x.branch_id == branch_id for x in products_repo.lists_for_branch(session, company_id,
                                                                                          branch_id)):
         raise Conflict("There is already a default price list for that company or branch")
     price_list = PriceList(tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, name=name,
-                           branch_id=branch_id, is_default=is_default)
+                           branch_id=branch_id, is_default=is_default, customer_group=group)
     products_repo.add_price(session, price_list)
     audit_record(session, "create", "products.price_list", price_list.id, {"name": name, "default": is_default})
     return price_list
@@ -102,12 +106,12 @@ def list_prices(session: Session, price_list_id: UUID, product_id: UUID | None =
 
 
 def current_prices(session: Session, company_id: UUID, branch_id: UUID | None, product_ids: set[UUID],
-                   day: date | None = None) -> dict[UUID, Decimal]:
-    """The tax-inclusive selling price of each product that has one on `day`, from the branch's default list and
-    then the company's. Products without a price are absent."""
+                   day: date | None = None, customer_group: str | None = None) -> dict[UUID, Decimal]:
+    """The tax-inclusive selling price of each product that has one on `day`: from a list for the customer's group if
+    there is one, then the branch's default list, then the company's. Products without a price are absent."""
     day = day or today()
     prices: dict[UUID, Decimal] = {}
-    for price_list in products_repo.lists_for_branch(session, company_id, branch_id):
+    for price_list in products_repo.lists_for_branch(session, company_id, branch_id, customer_group):
         wanted = product_ids - prices.keys()
         for product_id, item in products_repo.prices_on(session, price_list.id, wanted, day).items():
             prices[product_id] = item.price

@@ -57,7 +57,7 @@ def test_payments_must_cover_the_total_exactly() -> None:
         rules.settle(D("116"), [("mpesa", D("200"))])
     with pytest.raises(ValidationFailed, match="more than is still owed"):
         rules.settle(D("116"), [("mpesa", D("100")), ("card", D("100"))])
-    for bad in ([], [("credit", D("116"))], [("cash", D("0"))], [("cash", D("-5"))], [("cash", D("1.005"))]):
+    for bad in ([], [("bitcoin", D("116"))], [("cash", D("0"))], [("cash", D("-5"))], [("cash", D("1.005"))]):
         with pytest.raises(ValidationFailed):
             rules.settle(D("116"), bad)
     with pytest.raises(ValidationFailed):
@@ -117,3 +117,18 @@ def test_drawer_arithmetic_and_numbers() -> None:
     for bad in ("POS-HQ-D1-000123", "POS-HQ-D2-L000123", "POS-HQ-D1-L", "x", "POS-HQ-D1-L12;DROP", ""):
         with pytest.raises(ValidationFailed):
             rules.check_offline_number(bad, prefix)
+
+
+def test_credit_is_what_is_left_on_the_customers_account() -> None:
+    legs = rules.settle(D("500"), [("cash", D("200")), ("credit", D("300"))])
+    assert {x.method: x.amount for x in legs} == {"cash": D("200"), "credit": D("300")}
+    assert all(x.change == 0 for x in legs)
+    only = rules.settle(D("116"), [("credit", D("116"))])
+    assert [(x.method, x.amount) for x in only] == [("credit", D("116"))]
+    with pytest.raises(ValidationFailed, match="more than is still owed"):
+        rules.settle(D("116"), [("credit", D("200"))])                          # credit is never change
+    with pytest.raises(ValidationFailed, match="short"):
+        rules.settle(D("116"), [("credit", D("100"))])
+    legs = rules.settle(D("500"), [("credit", D("100")), ("cash", D("1000"))])   # cash takes up the slack as change
+    assert {x.method: (x.amount, x.change) for x in legs} == {"credit": (D("100"), D("0")),
+                                                              "cash": (D("400"), D("600"))}

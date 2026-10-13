@@ -193,3 +193,17 @@ def post_supplier_credit_note(session: Session, event: Event) -> JournalEntry | 
         journal_code="PUR", entry_date=_date(p.get("business_date")), recipe=recipe, context={},
         branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_credit_note",
         source_id=event.aggregate_id, description=f"Supplier credit note {p.get('number') or ''}".strip())
+
+
+def post_customer_payment(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
+    """`customer.paid`: a customer paid what they owe (`customer.payment_reversed`: the payment was cancelled)."""
+    p = event.payload
+    label = "Reversal of customer payment" if reverse else "Customer payment"
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="customer_payment",
+        journal_code="CSH", entry_date=_date(p.get("business_date")),
+        recipe=recipes.customer_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
+                                        party=_optional_uuid(p.get("customer_id"), "customer_id"), reverse=reverse),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
+        source_type="customer_payment_reversal" if reverse else "customer_payment", source_id=event.aggregate_id,
+        description=f"{label} {p.get('number') or ''}".strip())

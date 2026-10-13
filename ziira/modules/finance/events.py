@@ -2,7 +2,8 @@
 
 Publishes: journal.posted, period.closed
 Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed, bill.posted,
-bill.reversed, supplier.paid, supplier.payment_reversed, credit_note.posted, approval.decided (kernel)
+bill.reversed, supplier.paid, supplier.payment_reversed, credit_note.posted, customer.paid, customer.payment_reversed,
+approval.decided (kernel)
 """
 
 from ziira.modules.finance.services import event_postings, manual_journals
@@ -81,3 +82,15 @@ def on_supplier_payment_reversed(session: Session, event: Event) -> None:
 def on_credit_note_posted(session: Session, event: Event) -> None:
     """Reduce what is owed to the supplier by its credit note."""
     event_postings.post_supplier_credit_note(session, event)
+
+
+@subscribe("customer.paid")
+def on_customer_paid(session: Session, event: Event) -> None:
+    """Reduce what the customer owes by the money received."""
+    event_postings.post_customer_payment(session, event)
+
+
+@subscribe("customer.payment_reversed")
+def on_customer_payment_reversed(session: Session, event: Event) -> None:
+    """The customer owes the amount again when its payment is cancelled."""
+    event_postings.post_customer_payment(session, event, reverse=True)

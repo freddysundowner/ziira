@@ -81,7 +81,7 @@ def get_one_product(product_id: UUID, session: Session = Depends(db_session)) ->
 @router.post("/price-lists", response_model=PriceListOut, status_code=status.HTTP_201_CREATED, dependencies=PRICES)
 def post_price_list(body: PriceListIn, session: Session = Depends(db_session)) -> object:
     return pricing.create_price_list(session, company_id=body.company_id, name=body.name, branch_id=body.branch_id,
-                                     is_default=body.is_default)
+                                     is_default=body.is_default, customer_group=body.customer_group)
 
 
 @router.get("/price-lists", response_model=list[PriceListOut], dependencies=VIEW)

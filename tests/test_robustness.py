@@ -29,6 +29,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(s["tenant_id"], "payments")
     registry.enable(s["tenant_id"], "pos")
     registry.enable(s["tenant_id"], "purchasing")
+    registry.enable(s["tenant_id"], "crm")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
     s["reason"] = next(x["id"] for x in reasons if x["category"] == "stock_adjustment")
@@ -94,9 +95,28 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
         "lines": [{"product_id": s["cement"], "quantity": "1"}]}).json()
     bank = client.post(f"{pur}/suppliers/{supplier['id']}/bank-accounts", headers=owner, json={
         "method": "mpesa", "account_no": "0712345678"}).json()
+    crm = "/api/v1/crm"
+    customer = client.post(f"{crm}/customers", headers=owner, json={"company_id": co, "name": "Fuzz customer",
+                                                                      "phone": "0711000111"}).json()
+    client.post(f"{crm}/customers/{customer['id']}/credit", headers=owner, json={
+        "credit_limit": "100000", "payment_terms_days": 30, "reason": "Fuzz"})
+    contact = client.post(f"{crm}/customers/{customer['id']}/contacts", headers=owner, json={"name": "Fuzz contact"}).json()
+    lead = client.post(f"{crm}/leads", headers=owner, json={"company_id": co, "name": "Fuzz lead",
+                                                              "phone": "0711000222"}).json()
+    activity = client.post(f"{crm}/activities", headers=owner, json={
+        "related_type": "customer", "related_id": customer["id"], "kind": "call"}).json()
+    invoice = client.post(f"{pos}/invoices", headers=owner, json={
+        "customer_id": customer["id"], "branch_id": str(s["branch_id"]),
+        "lines": [{"product_id": s["delivery"], "quantity": "1"}]}).json()
+    document = client.post(f"{pos}/orders", headers=owner, json={
+        "customer_id": customer["id"], "branch_id": str(s["branch_id"]),
+        "lines": [{"product_id": s["delivery"], "quantity": "1"}]}).json()
+    s["crm_ids"] = {"customer": customer["id"]}
     s["pur_ids"] = {"supplier": supplier["id"], "order": order["id"]}
     s["pos_ids"] = {"device": device["id"], "key": device["key"], "till": till_session["id"], "price_list": plist["id"]}
     s["ids"] = {
+        "customer_id": customer["id"], "contact_id": contact["id"], "lead_id": lead["id"],
+        "activity_id": activity["id"], "invoice_id": invoice["id"], "document_id": document["id"],
         "supplier_id": supplier["id"], "order_id": order["id"], "request_id": request["id"], "bank_id": bank["id"],
         "bill_id": str(uuid4()), "receipt_id": str(uuid4()), "device_id": device["id"], "till_id": till_session["id"], "sale_id": sale["id"], "price_list_id": plist["id"],
         "return_id": str(uuid4()),
@@ -164,6 +184,38 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
         if path.endswith("/payments/closes") and method == "POST":
             return {"company_id": co, "branch_id": str(shop["branch_id"]), "business_date": "2026-01-01",
                     "cash_banked": "0"}
+        if path.endswith("/crm/customers") and method == "POST":
+            return {"company_id": co, "name": f"Fuzz customer {n}"}
+        if path.endswith("/contacts") and method == "POST":
+            return {"name": "Fuzz contact"}
+        if path.endswith("/crm/lead-sources") and method == "POST":
+            return {"name": f"Fuzz source {n}"}
+        if path.endswith("/crm/leads") and method == "POST":
+            return {"company_id": co, "name": f"Fuzz lead {n}", "phone": "0711000333"}
+        if path.endswith("/status") and "/crm/leads/" in path:
+            return {"status": "contacted"}
+        if path.endswith("/convert"):
+            return {}
+        if path.endswith("/credit") and method == "POST":
+            return {"credit_limit": "50", "payment_terms_days": 7, "reason": "Fuzz"}
+        if path.endswith("/crm/activities") and method == "POST":
+            return {"related_type": "customer", "related_id": shop["crm_ids"]["customer"], "kind": "call"}
+        if path.endswith("/pos/invoices") and method == "POST":
+            return {"customer_id": shop["crm_ids"]["customer"], "branch_id": str(shop["branch_id"]),
+                    "lines": [{"product_id": shop["delivery"], "quantity": "1"}]}
+        if path.endswith("/pos/quotations") and method == "POST" or path.endswith("/pos/orders") and method == "POST":
+            return {"customer_id": shop["crm_ids"]["customer"], "branch_id": str(shop["branch_id"]),
+                    "lines": [{"product_id": shop["delivery"], "quantity": "1"}]}
+        if path.endswith("/deliver"):
+            return {}
+        if path.endswith("/pos/receipts") and method == "POST":
+            return {"customer_id": shop["crm_ids"]["customer"], "amount": "1", "method": "cash",
+                    "branch_id": str(shop["branch_id"])}
+        if path.endswith("/reminders") and method == "POST":
+            return {"channel": "call"}
+        if path.endswith("/returns") and "/invoices/" in path and method == "POST":
+            return {"lines": [{"invoice_line_id": str(uuid4()), "quantity": "1"}], "reason_code_id": str(uuid4()),
+                    "refund_method": "credit_note"}
         if path.endswith("/purchasing/suppliers") and method == "POST":
             return {"company_id": co, "code": f"FZ{n}", "name": "Fuzz supplier"}
         if path.endswith("/bank-accounts") and method == "POST":

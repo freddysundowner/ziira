@@ -23,7 +23,7 @@ from ziira.modules.pos.domain import sales as rules
 from ziira.modules.pos.permissions import PRICE_OVERRIDE, SALES_SELL, SALES_VOID
 from ziira.modules.pos.repository import pos_repo
 from ziira.modules.pos.repository.models import Sale, SaleLine, SalePayment
-from ziira.modules.pos.services import access, tills
+from ziira.modules.pos.services import access, credit, invoices, tills
 from ziira.modules.products.public import ProductView, find_product, selling_prices
 from ziira.sdk import (
     Conflict,
@@ -159,7 +159,14 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
     if not lines or len(lines) > rules.MAX_LINES:
         raise ValidationFailed(f"A sale has between 1 and {rules.MAX_LINES} lines")
     products = _load_products(session, lines, company_id, offline=offline)
-    prices = selling_prices(session, company_id, till.branch_id, set(products), day)
+    wants_credit = any(p.method == "credit" for p in payments)
+    customer = None
+    if customer_id is not None:
+        customer = credit.load_customer(session, customer_id, company_id, for_credit=wants_credit)
+    elif wants_credit:
+        raise ValidationFailed("A sale on credit needs the customer")
+    prices = selling_prices(session, company_id, till.branch_id, set(products), day,
+                            customer.customer_group if customer else None)
     can_override = ctx.can(PRICE_OVERRIDE, company_id=company_id, branch_id=till.branch_id)
 
     rows: list[SaleLine] = []
@@ -199,6 +206,9 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
 
     legs = rules.settle(total, [(p.method, p.amount) for p in payments])
     offered = {p.method: p for p in payments}
+    credit_amount = next((leg.amount for leg in legs if leg.method == "credit"), Decimal(0))
+    if credit_amount and customer is not None:
+        warnings += credit.check_credit(session, customer, credit_amount, offline=offline)
     prefix = rules.device_prefix(pos_repo.branch_code(session, till.branch_id), device.code)
     if offline_number is not None:
         number_text = rules.check_offline_number(offline_number, prefix)
@@ -212,7 +222,7 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, branch_id=till.branch_id,
         number=number_text, device_id=device.id, local_id=local_id, till_session_id=till.id, customer_id=customer_id,
         cashier_id=ctx.user_id, business_date=day, sold_at=sold_at, subtotal=subtotal, discount_total=discount_total,
-        tax_total=tax_total, total=total, paid_total=total, synced_offline=offline,
+        tax_total=tax_total, total=total, paid_total=total - credit_amount, synced_offline=offline,
         location_id=device.location_id)
     try:
         pos_repo.add(session, sale)
@@ -226,6 +236,11 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
     payment_rows: list[SalePayment] = []
     for leg in legs:
         given = offered[leg.method]
+        if leg.method == "credit":
+            payment_rows.append(SalePayment(tenant_id=ctx.tenant_id, sale_id=sale.id, method="credit",
+                                            amount=leg.amount))
+            session.add(payment_rows[-1])
+            continue
         reference = given.external_ref.strip().upper() if given.external_ref and given.external_ref.strip() else None
         if leg.method == "mpesa" and reference is None:
             if not offline:
@@ -247,6 +262,8 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
         session.add(payment_row)
         payment_rows.append(payment_row)
     session.flush()
+    if credit_amount and customer is not None:
+        invoices.issue_credit_sale_invoice(session, sale, customer, credit_amount)
 
     publish(session, Event("sale.posted", "pos.sale", sale.id, {
         "company_id": company_id, "branch_id": till.branch_id, "business_date": day, "number": number_text,
@@ -286,6 +303,15 @@ def _flag_warnings(session: Session, sale: Sale, warnings: list[str]) -> None:
         elif kind == "price_changed":
             sku, said, now = detail.split(":")
             code, severity, text = "offline_price_changed", "low", f"sold {sku} at {said} but the price is now {now}"
+        elif kind == "over_credit_limit":
+            code_, owed, limit = detail.split(":")
+            code, severity, text = ("offline_over_credit_limit", "high",
+                                    f"put {code_} at {owed} on account, over their limit of {limit}")
+            publish(session, Event("customer.over_limit_attempt", "pos.sale", sale.id, {
+                "company_id": sale.company_id, "branch_id": sale.branch_id, "customer": code_, "would_owe": owed,
+                "limit": limit, "offline": True}))
+        elif kind == "customer_on_hold":
+            code, severity, text = "offline_customer_on_hold", "high", f"was sold on credit to {detail}, who is on hold"
         elif kind == "unauthorised_override":
             code, severity, text = ("offline_unauthorised_discount", "high",
                                     f"gave a discount or changed the price of {detail} without permission or a reason")
@@ -315,6 +341,16 @@ def void_sale(session: Session, sale_id: UUID, reason_code_id: UUID, note: str |
         raise ValidationFailed("Part of this sale has been returned: it cannot be voided")
     lines = pos_repo.lines_of(session, sale.id)
     paid = pos_repo.payments_of(session, sale.id)
+    invoice = pos_repo.invoice_for_sale(session, sale.id, lock=True)
+    if invoice is not None:
+        if invoice.amount_paid > 0 or invoice.credited > 0:
+            raise ValidationFailed("The customer has paid or been credited on this sale's invoice: reverse that first")
+        invoice.status, invoice.cancelled_at = "cancelled", datetime.now(UTC)
+        invoice.cancelled_by, invoice.cancel_reason = ctx.user_id, f"Sale {sale.number} voided"
+        session.flush()
+        publish(session, Event("invoice.cancelled", "pos.sales_invoice", invoice.id, {
+            "company_id": invoice.company_id, "number": invoice.number, "customer_id": invoice.customer_id,
+            "total": invoice.total, "reason": invoice.cancel_reason}))
     for payment in paid:
         if payment.payment_id is not None:
             reverse_payment(session, payment.payment_id, f"Sale {sale.number} voided")

@@ -9,13 +9,27 @@ from fastapi import APIRouter, Depends, Header, Query, Response, status
 from ziira.modules.pos.api import schemas as sc
 from ziira.modules.pos.permissions import (
     DEVICES_MANAGE,
+    INVOICES_MANAGE,
+    RECEIVABLES_MANAGE,
+    RECEIVABLES_VIEW,
     SALES_REFUND,
     SALES_SELL,
     SALES_VOID,
     TILL_MANAGE,
     TILL_REVIEW,
 )
-from ziira.modules.pos.services import catalog, devices, returns, sales, sync, tills
+from ziira.modules.pos.services import (
+    catalog,
+    customer_receipts,
+    devices,
+    documents,
+    invoices,
+    receivables,
+    returns,
+    sales,
+    sync,
+    tills,
+)
 from ziira.sdk import (
     Forbidden,
     RequestContext,
@@ -49,6 +63,10 @@ DEVICE_ADMIN = [Depends(any_of(DEVICES_MANAGE))]
 LOOK = [Depends(any_of(SALES_SELL, SALES_VOID, SALES_REFUND, TILL_REVIEW))]
 VOID = [Depends(any_of(SALES_VOID))]
 REFUND = [Depends(any_of(SALES_REFUND))]
+INVOICE = [Depends(any_of(INVOICES_MANAGE))]
+RECEIVABLES = [Depends(any_of(INVOICES_MANAGE, RECEIVABLES_VIEW))]
+BALANCE = [Depends(any_of(INVOICES_MANAGE, RECEIVABLES_VIEW, RECEIVABLES_MANAGE))]
+RECEIVE = [Depends(any_of(RECEIVABLES_MANAGE))]
 
 
 # --------------------------------------------------------------------------- devices
@@ -251,3 +269,219 @@ def get_rejections(include_resolved: bool = False, limit: int = page_limit(50), 
     return sync.list_rejections(session, include_resolved=include_resolved, limit=limit, offset=offset)
 
 
+
+
+# --------------------------------------------------------------------------- invoices
+def _invoice_out(view: invoices.InvoiceView) -> sc.InvoiceOut:
+    return sc.InvoiceOut(**sc.InvoiceSummaryOut.model_validate(view.invoice).model_dump(), notes=view.invoice.notes,
+                         cancel_reason=view.invoice.cancel_reason,
+                         lines=[sc.InvoiceLineOut.model_validate(x) for x in view.lines])
+
+
+@router.post("/invoices", response_model=sc.InvoiceOut, status_code=status.HTTP_201_CREATED, dependencies=INVOICE)
+def post_invoice(body: sc.InvoiceIn, session: Session = Depends(db_session)) -> object:
+    """Invoice a business customer and deliver the goods (stock leaves; the books debit accounts receivable)."""
+    return _invoice_out(invoices.issue_invoice(
+        session, customer_id=body.customer_id, branch_id=body.branch_id, location_id=body.location_id,
+        issue_date=body.issue_date, terms_days=body.terms_days, notes=body.notes,
+        lines=[invoices.InvoiceLineIn(x.product_id, x.quantity, x.unit_price, x.discount, x.reason_code_id,
+                                      x.batch_id, x.order_line_id) for x in body.lines]))
+
+
+@router.get("/invoices", response_model=list[sc.InvoiceSummaryOut], dependencies=RECEIVABLES)
+def get_invoices(customer_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
+                 due_before: date | None = None, number: str | None = Query(default=None, max_length=60),
+                 limit: int = page_limit(50), offset: int = page_offset(),
+                 session: Session = Depends(db_session)) -> object:
+    return invoices.list_invoices(session, customer_id=customer_id, status=status_, due_before=due_before,
+                                  number=number, limit=limit, offset=offset)
+
+
+@router.get("/invoices/{invoice_id}", response_model=sc.InvoiceOut, dependencies=RECEIVABLES)
+def get_invoice(invoice_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _invoice_out(invoices.get_invoice(session, invoice_id))
+
+
+@router.post("/invoices/{invoice_id}/cancel", response_model=sc.InvoiceOut, dependencies=INVOICE)
+def post_cancel_invoice(invoice_id: UUID, body: sc.ReasonIn, session: Session = Depends(db_session)) -> object:
+    """Cancel an invoice nothing has been paid or credited on; the goods return to stock."""
+    return _invoice_out(invoices.cancel_invoice(session, invoice_id, body.reason))
+
+
+# --------------------------------------------------------------------------- receipts from customers
+def _receipt_out(view: customer_receipts.ReceiptView) -> sc.ReceiptOut:
+    return sc.ReceiptOut(**sc.ReceiptSummaryOut.model_validate(view.receipt).model_dump(),
+                         allocations=[sc.AllocationOut.model_validate(x) for x in view.allocations])
+
+
+@router.post("/receipts", response_model=sc.ReceiptOut, status_code=status.HTTP_201_CREATED, dependencies=RECEIVE)
+def post_receipt(body: sc.ReceiptIn, session: Session = Depends(db_session)) -> object:
+    """Record a customer's payment against their invoices (the oldest first unless you name them)."""
+    return _receipt_out(customer_receipts.receive_payment(
+        session, customer_id=body.customer_id, amount=body.amount, method=body.method, branch_id=body.branch_id,
+        payment_account_id=body.payment_account_id, external_ref=body.external_ref, received_on=body.received_on,
+        allocations=[(x.invoice_id, x.amount) for x in body.allocations] if body.allocations is not None else None,
+        till_session_id=body.till_session_id))
+
+
+@router.get("/receipts", response_model=list[sc.ReceiptSummaryOut], dependencies=RECEIVABLES)
+def get_receipts(customer_id: UUID | None = None, limit: int = page_limit(50), offset: int = page_offset(),
+                 session: Session = Depends(db_session)) -> object:
+    return customer_receipts.list_receipts(session, customer_id=customer_id, limit=limit, offset=offset)
+
+
+@router.get("/receipts/{receipt_id}", response_model=sc.ReceiptOut, dependencies=RECEIVABLES)
+def get_receipt(receipt_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _receipt_out(customer_receipts.get_receipt(session, receipt_id))
+
+
+@router.post("/receipts/{receipt_id}/reverse", response_model=sc.ReceiptOut, dependencies=RECEIVE)
+def post_reverse_receipt(receipt_id: UUID, body: sc.ReasonIn, session: Session = Depends(db_session)) -> object:
+    """Cancel a customer's payment (recorded wrongly, or bounced): the invoices are owed again."""
+    return _receipt_out(customer_receipts.reverse_receipt(session, receipt_id, body.reason))
+
+
+@router.post("/invoices/{invoice_id}/returns", response_model=sc.ReturnOut, status_code=status.HTTP_201_CREATED,
+             dependencies=REFUND)
+def post_invoice_return(invoice_id: UUID, body: sc.InvoiceReturnIn, session: Session = Depends(db_session)) -> object:
+    """Take goods back from an invoice. A credit note while the invoice is unpaid; a refund once it is paid."""
+    return _return_out(returns.create_invoice_return(
+        session, invoice_id, lines=[(x.invoice_line_id, x.quantity) for x in body.lines],
+        reason_code_id=body.reason_code_id, refund_method=body.refund_method, note=body.note,
+        restock_location_id=body.restock_location_id))
+
+
+# --------------------------------------------------------------------------- quotations and sales orders
+def _doc_out(view: documents.DocView) -> sc.DocOut:
+    return sc.DocOut(**sc.DocSummaryOut.model_validate(view.document).model_dump(), notes=view.document.notes,
+                     lines=[sc.DocLineOut.model_validate(x) for x in view.lines])
+
+
+def _doc_lines(items: list[sc.DocLineIn]) -> list[documents.DocLineIn]:
+    return [documents.DocLineIn(x.product_id, x.quantity, x.unit_price, x.discount, x.reason_code_id) for x in items]
+
+
+@router.post("/quotations", response_model=sc.DocOut, status_code=status.HTTP_201_CREATED, dependencies=INVOICE)
+def post_quotation(body: sc.QuotationIn, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.create_quotation(
+        session, customer_id=body.customer_id, lines=_doc_lines(body.lines), branch_id=body.branch_id,
+        location_id=body.location_id, valid_until=body.valid_until, terms_days=body.terms_days, notes=body.notes))
+
+
+@router.get("/quotations", response_model=list[sc.DocSummaryOut], dependencies=RECEIVABLES)
+def get_quotations(customer_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
+                   limit: int = page_limit(50), offset: int = page_offset(),
+                   session: Session = Depends(db_session)) -> object:
+    return documents.list_documents(session, kind="quotation", customer_id=customer_id, status=status_, limit=limit,
+                                    offset=offset)
+
+
+@router.get("/quotations/{document_id}", response_model=sc.DocOut, dependencies=RECEIVABLES)
+def get_quotation(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.get_document(session, document_id, "quotation"))
+
+
+@router.put("/quotations/{document_id}", response_model=sc.DocOut, dependencies=INVOICE)
+def put_quotation(document_id: UUID, body: sc.DocUpdate, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.update_document(
+        session, document_id, lines=_doc_lines(body.lines) if body.lines is not None else None, notes=body.notes,
+        valid_until=body.valid_until))
+
+
+@router.post("/quotations/{document_id}/send", response_model=sc.DocOut, dependencies=INVOICE)
+def post_send_quotation(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.send_quotation(session, document_id))
+
+
+@router.post("/quotations/{document_id}/accept", response_model=sc.DocOut, dependencies=INVOICE)
+def post_accept_quotation(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    """The customer accepted: returns the sales order made from it."""
+    return _doc_out(documents.confirm_quotation(session, document_id))
+
+
+@router.post("/quotations/{document_id}/cancel", response_model=sc.DocOut, dependencies=INVOICE)
+def post_cancel_quotation(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.cancel_document(session, document_id))
+
+
+@router.post("/orders", response_model=sc.DocOut, status_code=status.HTTP_201_CREATED, dependencies=INVOICE)
+def post_order(body: sc.OrderIn, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.create_order(
+        session, customer_id=body.customer_id, lines=_doc_lines(body.lines), branch_id=body.branch_id,
+        location_id=body.location_id, terms_days=body.terms_days, notes=body.notes))
+
+
+@router.get("/orders", response_model=list[sc.DocSummaryOut], dependencies=RECEIVABLES)
+def get_orders(customer_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
+               limit: int = page_limit(50), offset: int = page_offset(),
+               session: Session = Depends(db_session)) -> object:
+    return documents.list_documents(session, kind="order", customer_id=customer_id, status=status_, limit=limit,
+                                    offset=offset)
+
+
+@router.get("/orders/{document_id}", response_model=sc.DocOut, dependencies=RECEIVABLES)
+def get_order(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.get_document(session, document_id, "order"))
+
+
+@router.put("/orders/{document_id}", response_model=sc.DocOut, dependencies=INVOICE)
+def put_order(document_id: UUID, body: sc.DocUpdate, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.update_document(
+        session, document_id, lines=_doc_lines(body.lines) if body.lines is not None else None, notes=body.notes))
+
+
+@router.post("/orders/{document_id}/submit", response_model=sc.DocOut, dependencies=INVOICE)
+def post_submit_order(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    """Confirm the order (an approver may need to agree first)."""
+    return _doc_out(documents.submit_order(session, document_id))
+
+
+@router.post("/orders/{document_id}/cancel", response_model=sc.DocOut, dependencies=INVOICE)
+def post_cancel_order(document_id: UUID, session: Session = Depends(db_session)) -> object:
+    return _doc_out(documents.cancel_document(session, document_id))
+
+
+@router.post("/orders/{document_id}/deliver", response_model=sc.InvoiceOut, status_code=status.HTTP_201_CREATED,
+             dependencies=INVOICE)
+def post_deliver_order(document_id: UUID, body: sc.DeliverIn, session: Session = Depends(db_session)) -> object:
+    """Deliver the order (all that is left, or the quantities named) and invoice it at the agreed prices."""
+    return _invoice_out(documents.invoice_order(
+        session, document_id, lines=[(x.order_line_id, x.quantity) for x in body.lines] if body.lines is not None
+        else None, location_id=body.location_id, issue_date=body.issue_date))
+
+
+# --------------------------------------------------------------------------- what customers owe
+@router.get("/receivables/ageing", response_model=sc.AgeingOut, dependencies=RECEIVABLES)
+def get_ageing(as_of: date | None = None, customer_id: UUID | None = None,
+               session: Session = Depends(db_session)) -> object:
+    """What customers owe on unpaid invoices, aged by due date."""
+    return receivables.ageing(session, as_of=as_of, customer_id=customer_id)
+
+
+@router.get("/receivables/reminders", response_model=list[sc.ReminderDueOut], dependencies=RECEIVABLES)
+def get_reminders_due(as_of: date | None = None, min_days_overdue: int = Query(1, ge=0, le=3650),
+                      repeat_days: int = Query(7, ge=0, le=365), limit: int = Query(100, ge=1, le=500),
+                      session: Session = Depends(db_session)) -> object:
+    """Overdue invoices that have not been chased lately."""
+    return receivables.due_reminders(session, as_of=as_of, min_days_overdue=min_days_overdue,
+                                     repeat_days=repeat_days, limit=limit)
+
+
+@router.post("/invoices/{invoice_id}/reminders", response_model=sc.ReminderOut,
+             status_code=status.HTTP_201_CREATED, dependencies=RECEIVABLES)
+def post_reminder(invoice_id: UUID, body: sc.ReminderIn, session: Session = Depends(db_session)) -> object:
+    """Note that the customer was reminded about this invoice."""
+    return receivables.record_reminder(session, invoice_id, channel=body.channel, note=body.note)
+
+
+@router.get("/customers/{customer_id}/statement", response_model=sc.StatementOut, dependencies=RECEIVABLES)
+def get_statement(customer_id: UUID, date_from: date | None = None, date_to: date | None = None,
+                  session: Session = Depends(db_session)) -> object:
+    """A customer's account: invoices, payments and credit notes with a running balance."""
+    return receivables.statement(session, customer_id, date_from=date_from, date_to=date_to)
+
+
+@router.get("/customers/{customer_id}/balance", response_model=sc.BalanceOut, dependencies=BALANCE)
+def get_balance(customer_id: UUID, session: Session = Depends(db_session)) -> object:
+    """What the customer owes, their credit limit and what they can still take on account."""
+    return receivables.balance(session, customer_id)

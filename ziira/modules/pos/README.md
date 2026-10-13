@@ -1,19 +1,20 @@
 # Point of Sale and Sales
 
-**Status:** working for phase 4: devices, till sessions with X and Z reports, sales at the till, voids, returns with
-refunds and approval, price overrides, and offline sync. Not built yet: quotations, sales orders and invoices (the tables
-exist), credit sales and credit notes (phase 6 with customer accounts), receipts printing, eTIMS (phase 5).
+**Status:** working for phases 4 and 6: devices, tills with X and Z reports, sales, voids, returns, price overrides and
+offline sync (phase 4); and, with CRM, **credit sales, invoices, quotations and sales orders, customer payments, credit
+notes, statements, ageing and reminders** (phase 6). Not built yet: advance payments from customers, receipt printing,
+sending reminders (needs notifications), eTIMS (the eTIMS plugin).
 
 | | |
 |---|---|
 | Schema | `pos` (migrations `0001_init`, `0002_phase4`) |
 | Requires | products, inventory, payments |
-| Optional | crm, finance |
-| Publishes | `sale.posted`, `sale.voided`, `sale.returned`, `discount.override`, `till.opened`, `till.closed`, `pos.synced` |
-| Subscribes | `approval.decided` (kernel): posts or rejects a return that waited for approval |
+| Optional | crm (customers, credit), finance |
+| Publishes | `sale.posted`, `sale.voided`, `sale.returned`, `discount.override`, `till.opened`, `till.closed`, `pos.synced`, `invoice.issued`, `invoice.cancelled`, `customer.paid`, `customer.payment_reversed`, `customer.over_limit_attempt` |
+| Subscribes | `approval.decided` (kernel): a return or a sales order that waited for approval · `payment.reversed` (Payments): the invoices a reversed customer payment paid are owed again |
 | API | `/api/v1/pos` |
-| Permissions | `sales.sell`, `sales.void`, `sales.refund`, `price.override`, `till.manage` (own till), `till.review` (any till at a branch), `devices.manage`, `invoices.manage` (later) |
-| Default roles | Cashier: sell, own till · Branch Manager: everything · Finance Manager and Accountant: review tills |
+| Permissions | `sales.sell`, `sales.void`, `sales.refund`, `price.override`, `till.manage` (own till), `till.review` (any till at a branch), `devices.manage`, `invoices.manage`, `receivables.view`, `receivables.manage` |
+| Default roles | Cashier: sell, own till, take customer payments · Branch Manager: everything · Finance Manager: invoices, receivables, tills · Accountant: receivables, tills · Sales Rep: sell, invoices, receivables view |
 | Reason lists | `void`, `sale_return`, `price_override`, `till_variance` (seeded, editable) |
 
 ## How a sale works
@@ -57,14 +58,39 @@ reason, an M-Pesa payment without its code, a day closed in the meantime (booked
 An operation that cannot be accepted at all is kept whole in `pos.sync_rejection` (`GET /sync/rejections`) and flagged;
 fix the cause and the device sends it again.
 
+## Customers on account (phase 6)
+
+- **Credit sales.** A till sale can leave all or part of its total on the customer's account (`payments: [{method:
+  credit}]`, with the customer named). The customer must be active and the sale must keep them within their credit limit
+  and terms (CRM); credit decisions for one customer are taken one at a time, so two sales cannot both fit under the same
+  limit. The sale makes an **invoice** for the part on credit; Finance debits accounts receivable (against the customer)
+  instead of cash. Offline, a credit sale that already happened is accepted and an over-limit or on-hold customer is raised
+  to a manager (`customer.over_limit_attempt`).
+- **Invoices to business customers.** `POST /invoices`, or deliver a **sales order**: quotation -> order (approved by amount
+  if a rule exists) -> delivery, which is an invoice for the quantities on it at the prices agreed (each delivery takes stock
+  out). The customer's group price list applies; changing a price needs `price.override` and a reason. Invoices are never
+  edited: cancel (nothing paid, credited or returned) and issue again.
+- **Customers paying.** `POST /receipts` shares a payment over the customer's invoices (the oldest first, or those named),
+  never more than is owed; it is recorded through Payments (so M-Pesa and bank money match as usual) and cash can go
+  through the cashier's till. Reversing it (here or in Payments) makes the invoices owed again.
+- **Credit notes.** Goods taken back from a credit sale or an invoice are refunded as a *credit note* (less owed) while the
+  invoice is unpaid, and in cash or M-Pesa once it is paid. Voiding a credit sale cancels its invoice.
+- **Statements and ageing.** `GET /customers/{id}/statement` (invoices, credit notes and payments with a running balance),
+  `/receivables/ageing` (by due date), `/receivables/reminders` (who to chase) and `POST /invoices/{id}/reminders` to record
+  a chase. A cashier can see a customer's balance but not browse debtors.
+- **Checked every night** (`ziira verify`, "customer ledger"): what the invoices say each customer owes equals what the books
+  say, and every invoice's paid amount equals its live receipts.
+
 ## Layout
 
 ```
 api/          routes.py, schemas.py
-services/     devices, tills, sales (sell and void), returns, catalog, sync, access
+services/     devices, tills, sales (sell and void), returns (sales and invoices), catalog, sync, access;
+              credit, invoices, documents (quotations and orders), customer_receipts, receivables
 domain/       sales.py: line money, change, refunds in parts, numbering (pure, unit-tested)
 repository/   models.py, pos_repo.py
 events.py     approval.decided -> returns
-public.py     open_till_sessions (used by the daily close)
+public.py     open_till_sessions (used by the daily close), customer_balance
+hooks.py      the customer ledger check
 tests/        domain tests; flows are in the top-level tests/ (test_pos_*.py)
 ```

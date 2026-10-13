@@ -3,7 +3,7 @@
 from datetime import date
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import ColumnElement, func, or_, select
 from sqlalchemy.orm import Session
 
 from ziira.modules.products.repository.models import PriceList, PriceListItem, Product, TaxCode, Uom
@@ -98,15 +98,25 @@ def list_price_lists(session: Session, company_ids: set[UUID] | None) -> list[Pr
     return list(session.scalars(query))
 
 
-def lists_for_branch(session: Session, company_id: UUID, branch_id: UUID | None) -> list[PriceList]:
-    """The lists that price a sale at a branch, most specific first: the branch's own, then the company's default."""
-    query = select(PriceList).where(PriceList.company_id == company_id, PriceList.is_default.is_(True))
+def lists_for_branch(session: Session, company_id: UUID, branch_id: UUID | None,
+                     customer_group: str | None = None) -> list[PriceList]:
+    """The lists that price a sale, most specific first: lists for the customer's group (the branch's, then the
+    company's), then the branch's default list, then the company's default."""
+    where = [PriceList.company_id == company_id]
     if branch_id is not None:
-        query = query.where(PriceList.branch_id.in_([branch_id]) | PriceList.branch_id.is_(None))
+        where.append(PriceList.branch_id.in_([branch_id]) | PriceList.branch_id.is_(None))
     else:
-        query = query.where(PriceList.branch_id.is_(None))
-    lists = list(session.scalars(query))
-    return sorted(lists, key=lambda x: x.branch_id is None)
+        where.append(PriceList.branch_id.is_(None))
+    wanted: ColumnElement[bool] = PriceList.is_default.is_(True)
+    if customer_group:
+        wanted = or_(wanted, PriceList.customer_group == customer_group)
+    lists = list(session.scalars(select(PriceList).where(*where, wanted).order_by(PriceList.name, PriceList.id)))
+
+    def rank(x: PriceList) -> tuple[int, int]:
+        grouped = bool(customer_group) and x.customer_group == customer_group
+        return (0 if grouped else 1, 0 if x.branch_id is not None else 1)
+
+    return sorted(lists, key=rank)
 
 
 def prices_on(session: Session, price_list_id: UUID, product_ids: set[UUID], day: date) -> dict[UUID, PriceListItem]:
