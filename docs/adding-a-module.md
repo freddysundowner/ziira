@@ -18,7 +18,9 @@ Use `ziira/modules/products` as the template.
 6. **Public interface** in `public.py`: the functions other modules may call.
 7. **Event handlers** in `events.py` with `@subscribe("event.type")`. They run inside the publisher's
    transaction, only for tenants that have this module enabled.
-8. **Tests**: domain unit tests in the module's `tests/`, API and database tests in `tests/`.
+8. **Sockets** (optional): offer validation hooks or extension points in `hooks.py`; see `docs/extending-units.md`.
+9. **Web screens** (optional): `frontend/src/modules/<unit>/`; see `docs/frontend.md`.
+10. **Tests**: domain unit tests in the module's `tests/`, API and database tests in `tests/`.
 
 ## Permissions, scope and kernel services
 

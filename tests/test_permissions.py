@@ -230,3 +230,13 @@ def test_unit_permissions_do_not_bypass_a_disabled_unit(client, setup, registry)
     r = client.get("/api/v1/plugins/catalog-stats", headers=owner)
     assert r.status_code == 404 and r.json()["error"] == "unit_not_enabled"
 
+
+
+def test_companies_list_follows_scope(client, setup) -> None:  # type: ignore[no-untyped-def]
+    owner = {c["name"]: c for c in client.get("/api/v1/companies", headers=setup["owner"]).json()}
+    assert set(owner) == {"Scope Co Ltd", "Other Ltd"}
+    assert {b["code"] for b in owner["Scope Co Ltd"]["branches"]} == {"HQ", "JUJA"}
+    manager = client.get("/api/v1/companies", headers=setup["manager"]).json()
+    assert [c["name"] for c in manager] == ["Scope Co Ltd"]          # company-scoped role
+    cashier = client.get("/api/v1/companies", headers=setup["cashier"]).json()
+    assert [c["name"] for c in cashier] == ["Scope Co Ltd"]          # branch role: its company

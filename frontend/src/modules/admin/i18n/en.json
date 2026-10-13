@@ -1,0 +1,16 @@
+{
+  "users": "Users",
+  "roles": "Roles",
+  "newUser": "New user",
+  "fullName": "Full name",
+  "email": "Email",
+  "phone": "Phone",
+  "password": "Password (leave empty to invite)",
+  "status": "Status",
+  "save": "Save user",
+  "noUsers": "No users yet.",
+  "role": "Role",
+  "permissions": "Permissions",
+  "system": "Built-in",
+  "noRoles": "No roles."
+}

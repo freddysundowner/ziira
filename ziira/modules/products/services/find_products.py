@@ -4,7 +4,7 @@ from uuid import UUID
 
 from ziira.modules.products.permissions import PRODUCTS_VIEW
 from ziira.modules.products.repository import products_repo
-from ziira.modules.products.repository.models import Product
+from ziira.modules.products.repository.models import Product, TaxCode, Uom
 from ziira.sdk import NotFound, Session, current_context
 
 
@@ -22,3 +22,13 @@ def list_products(session: Session, search: str | None = None, limit: int = 50,
     """List products by name, optionally filtered by name or SKU, in the companies the user may see."""
     companies = current_context().companies_with(PRODUCTS_VIEW)
     return products_repo.list_products(session, search, min(limit, 200), offset, companies)
+
+
+def list_uoms(session: Session) -> list[Uom]:
+    """Units of measure of the tenant (shared by every company)."""
+    return products_repo.list_uoms(session)
+
+
+def list_tax_codes(session: Session) -> list[TaxCode]:
+    """Tax codes of the tenant (shared by every company)."""
+    return products_repo.list_tax_codes(session)

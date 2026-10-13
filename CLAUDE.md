@@ -25,7 +25,7 @@ with the same name; read the `.txt`, since the PDFs need extra tools to read):
 ## Stack (decided)
 
 Python 3.12+, FastAPI, SQLAlchemy 2, Pydantic v2, PostgreSQL 16, Redis (later, for jobs),
-React for web and POS (later). Hosting is a VPS (do not document hosting details).
+React + TypeScript + Vite web app in `frontend/` (POS later). Hosting is a VPS (do not document hosting details).
 eTIMS integrates directly with KRA systems.
 
 ## Commands
@@ -35,6 +35,8 @@ bash scripts/run_local.sh     # one step: venv, master DB + template, demo busin
 make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT in .env)
 make test                     # all tests (creates/drops ziira_test_master, _template, _t_* databases)
 make lint                     # ruff + mypy + import-linter
+make web-setup | web | web-check   # web app: npm ci | dev server :5173 | lint+types+tests+build
+make api-types                # regenerate frontend/src/api/schema.d.ts after backend API changes (commit it)
 .venv/bin/ziira units | install --all | uninstall <unit>          # platform (master database)
 .venv/bin/ziira tenants | enable <tenant> <unit> | disable ... | remove ...   # <tenant> = code or id
 .venv/bin/ziira drop-tenant <code> --confirm <code>                # deletes the tenant's database
@@ -77,12 +79,18 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
    records that name a company or branch, so a wrong id gives a clear error (and foreign keys,
    which ignore row-level security, are never the only check).
 
+11. **Sockets between units:** to block or extend another unit's action use validation hooks and extension
+   points (`hooks.py`, `[extends]` in the manifest), not direct calls. See `docs/extending-units.md`.
+12. **Web modules mirror units** (`frontend/src/modules/<unit>`); they import only `@/sdk` and other modules'
+   `public.ts` (ESLint). Every web page names a permission. See `docs/frontend.md`.
+
 ## Module layout (copy `ziira/modules/products`)
 
 ```
 manifest.toml      name, version, requires, optional, permissions, events, api_prefix,
                    [roles] (default role grants), [reason_codes] (seeded per tenant)
 migrations/        0001_init.up.sql / .down.sql; new changes = new numbered pair, never edit applied ones
+hooks.py           sockets offered / plugged into (optional)
 api/               routes.py (HTTP only) + schemas.py
 services/          one file per use case: validate (domain) → repository → audit_record → publish
 domain/            pure business rules, unit-tested, no DB/HTTP
@@ -107,7 +115,7 @@ tests/             unit tests for domain rules
 
 ## Where things are
 
-`docs/PROGRESS.md` (state, checklist, log) · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` ·
+`docs/PROGRESS.md` (state, checklist, log) · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

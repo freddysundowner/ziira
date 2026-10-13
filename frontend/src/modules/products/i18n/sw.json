@@ -1,0 +1,20 @@
+{
+  "menu": "Bidhaa",
+  "title": "Bidhaa",
+  "search": "Tafuta kwa jina au SKU",
+  "empty": "Bado hakuna bidhaa.",
+  "new": "Bidhaa mpya",
+  "sku": "SKU",
+  "name": "Jina",
+  "type": "Aina",
+  "unit": "Kipimo",
+  "taxCode": "Msimbo wa kodi",
+  "company": "Kampuni",
+  "suggest": "Pendekeza SKU",
+  "noSuggestions": "Hakuna mapendekezo",
+  "save": "Hifadhi bidhaa",
+  "details": "Maelezo",
+  "reorderLevel": "Kiwango cha kuagiza tena",
+  "back": "Bidhaa zote",
+  "types": { "stock": "Hifadhi", "non_stock": "Isiyo hifadhi", "service": "Huduma" }
+}

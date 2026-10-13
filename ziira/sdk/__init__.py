@@ -27,13 +27,22 @@ from ziira.kernel.errors import (
     ZiiraError,
 )
 from ziira.kernel.events import Event, publish, subscribe, subscribe_after
+from ziira.kernel.extensions import (
+    define_extension_point,
+    define_validation_hook,
+    implementations,
+    provides,
+    run_validators,
+    validate,
+)
 from ziira.kernel.manifest import SDK_VERSION
 
 __all__ = [
     "SDK_VERSION", "Conflict", "Event", "Forbidden", "NotFound", "RequestContext", "Session", "Unauthorized",
     "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "current_context",
-    "db_session", "money", "next_document_number", "publish", "request_context", "require_permission",
-    "submit_for_approval", "subscribe", "subscribe_after",
+    "db_session", "define_extension_point", "define_validation_hook", "implementations", "money",
+    "next_document_number", "provides", "publish", "request_context", "require_permission",
+    "run_validators", "submit_for_approval", "subscribe", "subscribe_after", "validate",
 ]
 
 

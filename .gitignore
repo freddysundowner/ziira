@@ -11,3 +11,7 @@ build/
 .demo_tenant
 .import_linter_cache/
 *.tgz
+# Frontend
+frontend/node_modules/
+frontend/dist/
+build/

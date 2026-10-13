@@ -63,6 +63,10 @@ def test_plugin_remove_and_uninstall(registry, tenants) -> None:  # type: ignore
     registry.remove_from_tenant(a, "catalog_stats")
     assert "plg_catalog_stats" not in schemas(a)
     assert "catalog_stats" not in registry.installed_in(a)
+    others = [t for t in registry.tenant_ids() if "catalog_stats" in registry.installed_in(t)]
+    for t in others:                                           # other tests' tenants may have it too
+        registry.disable(t, "catalog_stats")
+        registry.remove_from_tenant(t, "catalog_stats")
     registry.uninstall("catalog_stats")
     with master_session() as s:
         assert s.execute(text("select count(*) from master.unit where name = 'catalog_stats'")).scalar() == 0

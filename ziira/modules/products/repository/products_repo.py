@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ziira.modules.products.repository.models import Product, TaxCode, Uom
@@ -13,6 +13,14 @@ def add(session: Session, record: Uom | TaxCode | Product) -> None:
     session.add(record)
     session.flush()
     session.refresh(record)
+
+
+def list_uoms(session: Session) -> list[Uom]:
+    return list(session.scalars(select(Uom).order_by(Uom.code)))
+
+
+def list_tax_codes(session: Session) -> list[TaxCode]:
+    return list(session.scalars(select(TaxCode).order_by(TaxCode.code)))
 
 
 def uom_code_exists(session: Session, code: str) -> bool:
@@ -34,6 +42,13 @@ def tax_code_exists(session: Session, code: str) -> bool:
 def sku_exists(session: Session, company_id: UUID, sku: str) -> bool:
     return session.scalar(
         select(Product.id).where(Product.company_id == company_id, Product.sku == sku)) is not None
+
+
+def name_exists(session: Session, company_id: UUID, name: str) -> bool:
+    """Case- and space-insensitive name check within a company."""
+    return session.scalar(select(Product.id).where(
+        Product.company_id == company_id,
+        func.lower(func.trim(Product.name)) == name.strip().lower())) is not None
 
 
 def get_product(session: Session, product_id: UUID) -> Product | None:

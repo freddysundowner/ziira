@@ -1,4 +1,4 @@
-.PHONY: setup db-up db-down install run test lint check
+.PHONY: setup db-up db-down install run test lint check web-setup web web-check api-types
 
 PY ?= python3
 
@@ -30,3 +30,19 @@ lint:             ## style, types and module boundaries
 	.venv/bin/lint-imports
 
 check: lint test
+
+web-setup:        ## install the web app's packages
+	npm --prefix frontend ci
+
+web:              ## start the web app on http://localhost:5173 (needs the API on :8000)
+	npm --prefix frontend run dev
+
+web-check:        ## web app: lint, types, tests, build
+	npm --prefix frontend run lint
+	npm --prefix frontend run typecheck
+	npm --prefix frontend test
+	npm --prefix frontend run build
+
+api-types:        ## regenerate the web app's API types after changing backend routes or schemas
+	.venv/bin/python scripts/export_openapi.py
+	npm --prefix frontend run api

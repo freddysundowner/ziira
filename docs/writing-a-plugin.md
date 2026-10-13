@@ -9,6 +9,7 @@ ziira/plugins/<name>/
   manifest.toml        kind = "plugin", requires = [...]
   migrations/          0001_init.up.sql / .down.sql, creating schema plg_<name>
   events.py            @subscribe handlers (optional)
+  hooks.py             @validate / @provides: plug into other units' sockets (optional; declare under [extends])
   api/routes.py        router mounted at the manifest's api_prefix (optional)
   README.md
 ```
@@ -23,6 +24,9 @@ ziira/plugins/<name>/
   back the original operation, so only raise to block an operation deliberately.
 - Slow or external work (webhooks, messages) goes in `@subscribe_after` handlers, which run after
   commit (via `ziira outbox-run`), are retried on failure, and must be safe to run twice.
+
+- To block or extend another unit's action (validation hooks, extension points) see `docs/extending-units.md`.
+- A plugin can add screens to the web app through slots; see `docs/frontend.md`.
 
 ## Third-party plugins (later)
 

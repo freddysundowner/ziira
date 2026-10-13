@@ -1,0 +1,16 @@
+{
+  "appName": "Ziira",
+  "signIn": {
+    "title": "Sign in to your business",
+    "workspace": "Workspace code",
+    "login": "Email or phone",
+    "password": "Password",
+    "submit": "Sign in",
+    "working": "Signing in…"
+  },
+  "signOut": "Sign out",
+  "home": { "menu": "Home", "title": "Today", "noWidgets": "Nothing to show yet. Widgets appear here as modules are enabled." },
+  "loading": "Loading…",
+  "notFound": "This page does not exist, or you do not have access to it.",
+  "language": "Language"
+}

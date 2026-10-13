@@ -73,6 +73,19 @@ class ChangePasswordIn(BaseModel):
     new_password: str = Field(min_length=8)
 
 
+# --------------------------------------------------------------------------- organisation
+class BranchOut(Out):
+    id: UUID
+    code: str
+    name: str
+
+
+class CompanyOut(Out):
+    id: UUID
+    name: str
+    branches: list[BranchOut]
+
+
 # --------------------------------------------------------------------------- users and roles
 class UserIn(BaseModel):
     full_name: str

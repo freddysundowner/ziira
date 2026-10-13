@@ -32,6 +32,11 @@ class Manifest:
     roles: dict[str, tuple[str, ...]] = field(default_factory=dict)
     # Reason code category -> {code: label}, seeded for a tenant when the unit is enabled.
     reason_codes: dict[str, dict[str, str]] = field(default_factory=dict)
+    # Sockets this unit offers ([provides]) and sockets of other units it plugs into ([extends]).
+    extension_points: tuple[str, ...] = ()
+    validation_hooks: tuple[str, ...] = ()
+    implements: tuple[str, ...] = ()
+    validates: tuple[str, ...] = ()
 
     @property
     def migrations_dir(self) -> Path:
@@ -86,4 +91,8 @@ def load_manifest(manifest_file: Path, package: str) -> Manifest:
         settings=tuple(provides.get("settings", [])),
         roles=roles,
         reason_codes={c: dict(codes) for c, codes in data.get("reason_codes", {}).items()},
+        extension_points=tuple(provides.get("extension_points", [])),
+        validation_hooks=tuple(provides.get("validation_hooks", [])),
+        implements=tuple(data.get("extends", {}).get("implements", [])),
+        validates=tuple(data.get("extends", {}).get("validates", [])),
     )

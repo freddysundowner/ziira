@@ -10,8 +10,8 @@ push (see the end-of-session steps in `CLAUDE.md`).
 |---|---|
 | Phase | **1 (Foundation) done**, MFA and CD deferred · **next: phase 2, Inventory** |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 80 passing on PostgreSQL 16 · lint clean (ruff, mypy strict, import-linter) |
-| CI | GitHub Actions runs lint + tests on every push (green on `191549e`) |
+| Tests | 90 backend (PostgreSQL 16) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) |
+| CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-13 |
 
@@ -68,6 +68,8 @@ has default role grants and reason codes. Follow `ziira/modules/products` and `d
 | SDK | The only kernel interface for modules and plugins | `sdk/__init__.py` |
 | CLI | `ziira units / install / tenants / create-tenant / enable / disable / remove / drop-tenant / outbox-run` | `kernel/cli.py` |
 | Products | Reference module: UoMs, tax codes, products with permissions and scope | `modules/products/` |
+| Sockets | Extension points and validation hooks between units; `[extends]` in manifests, checked at install | `kernel/extensions.py`, `docs/extending-units.md` |
+| Web app | Shell + modules mirroring backend units, slots, typed API client, English/Swahili: sign-in, Products (with SKU suggestions), Users, Roles, plugin widget and tab | `frontend/`, `docs/frontend.md` |
 | Other modules | Tables, manifests and folders only | `modules/*/` |
 
 Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
@@ -93,6 +95,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 
 | Item | Why it waits | Target |
 |---|---|---|
+| Web app: product edit, Inventory screens, offline POS shell | Phase 2+ follows the backend | Per module |
 | Audit device and IP | Small gap found after phase 1 | Phase 2 (step 2.0) |
 | Company settings (negative stock, limits) | First needed by Inventory | Phase 2 (step 2.0) |
 | MFA and one-time codes (spec 18) | Need an SMS/email gateway; **required before real customer data** | Phase 11 |
@@ -127,6 +130,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (e) | Finished and committed the work left uncommitted after (d): extension points and validation hooks (`kernel/extensions.py`, Products sockets, `catalog_stats` plugs in), `GET /companies`, UoM/tax-code lists, SKU suggestions; the `frontend/` web app. Verified in the browser (sign-in, widget, SKU suggestions, duplicate-name block, plugin tab). Fixed stale suggestions in the new-product form; added `make web*`/`api-types` and a CI web job; wrote `docs/extending-units.md` and `docs/frontend.md`. Tests 80 → 90 backend, 13 web. |
 | 2026-10-13 (d) | Clean-up: test runs now drop their databases; removed old shared databases (`ziira`, `ziira_test`) and the `ziira_app` login; updated decisions 0001/0002, module READMEs, guides; restructured this file with a phase 2 checklist. |
 | 2026-10-13 (c) | Switched to one database per tenant: master database, template, per-tenant logins with encrypted connection strings, provisioning with cleanup, per-tenant enable/remove, upgrades across tenant databases, CLI (`tenants`, `remove`, `drop-tenant`). Unknown tenants in credentials now give 401, not 404. Tests 75 → 80. |
 | 2026-10-13 (b) | Completed phase 1: auth, users/roles/scopes, permission checks, numbering, reason codes, approvals, outbox processor, SDK check, CI workflow, docs. Fixed cross-tenant company references and third-party plugin event matching. Tests 27 → 75. First push to GitHub. |

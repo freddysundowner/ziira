@@ -5,6 +5,7 @@ from uuid import UUID
 
 from ziira.modules.products.domain import rules
 from ziira.modules.products.permissions import PRODUCTS_MANAGE
+from ziira.modules.products.public import PRODUCT_BEFORE_CREATE, ProductDraft
 from ziira.modules.products.repository import products_repo
 from ziira.modules.products.repository.models import Product
 from ziira.sdk import (
@@ -16,6 +17,7 @@ from ziira.sdk import (
     check_company,
     current_context,
     publish,
+    run_validators,
 )
 
 
@@ -23,7 +25,10 @@ def create_product(session: Session, *, company_id: UUID, sku: str, name: str,
                    base_uom_id: UUID, tax_code_id: UUID, product_type: str = "stock",
                    is_batch_tracked: bool = False, reorder_level: Decimal | None = None,
                    etims_item_class: str | None = None) -> Product:
-    """Validate, save, audit and publish `product.created` in one transaction."""
+    """Validate, save, audit and publish `product.created` in one transaction.
+
+    Other units may block creation through the PRODUCT_BEFORE_CREATE validation hook.
+    """
     current_context().require(PRODUCTS_MANAGE, company_id=company_id)
     check_company(session, company_id)
     sku = rules.normalise_sku(sku)
@@ -35,6 +40,9 @@ def create_product(session: Session, *, company_id: UUID, sku: str, name: str,
         raise ValidationFailed("Tax code does not exist")
     if products_repo.sku_exists(session, company_id, sku):
         raise Conflict(f"SKU '{sku}' already exists in this company")
+    run_validators(session, PRODUCT_BEFORE_CREATE, ProductDraft(
+        company_id=company_id, sku=sku, name=name.strip(), product_type=product_type,
+        base_uom_id=base_uom_id, tax_code_id=tax_code_id))
 
     ctx = current_context()
     product = Product(

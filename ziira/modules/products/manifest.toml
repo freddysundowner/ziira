@@ -11,6 +11,9 @@ optional = ["inventory"]
 api_prefix = "/api/v1/products"
 publishes = ["product.created", "price.changed"]
 subscribes = []
+# Sockets other units can plug into (contracts in public.py, declared in hooks.py)
+extension_points = ["products.sku_suggester"]
+validation_hooks = ["products.product.before_create"]
 
 [permissions]
 "products.view" = "View products and prices"

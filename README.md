@@ -33,7 +33,9 @@ ziira_t_mamamboga            another business, its own database and login
 | CLI (`ziira ...`) | Working |
 | Schema: 110 tables in 11 schemas, created per tenant database as units are enabled | Working, tested |
 | Products module (API, services, domain rules, repository) | Working, tested |
-| Example plugin `catalog_stats` (own schema, event subscriber, API) | Working, tested |
+| Example plugin `catalog_stats` (own schema, event subscriber, API, plugs into Products' hook and extension point) | Working, tested |
+| Extension points and validation hooks between units | Working, tested |
+| Web app (`frontend/`): sign-in, module shell, Products, Users and Roles, plugin slots; English and Swahili | Working, tested |
 | Inventory, POS, Payments, CRM, Purchasing, Finance, People, Command Center | Tables, manifests and folders only |
 | MFA and one-time codes | Not yet (phase 11, needs an SMS/email gateway) |
 
@@ -164,6 +166,8 @@ See `docs/adding-a-module.md` and `docs/writing-a-plugin.md`.
 | `CLAUDE.md` | Rules and commands for anyone (or any AI session) changing the code |
 | `docs/adding-a-module.md` | Building a module: layout, permissions, scope, numbering, reasons, approvals |
 | `docs/writing-a-plugin.md` | Building a plugin |
+| `docs/extending-units.md` | Validation hooks and extension points between units |
+| `docs/frontend.md` | The web app: modules, slots, commands |
 | `docs/decisions/` | Why things are built this way (0001 units · 0002 row-level security · 0003 auth · 0004 database per tenant) |
 | `docs/specs/` | Product, Intelligence and technical specifications, as PDF and plain text (Appendix A: full schema) |
 | `ziira/modules/*/README.md` | Each module's tables, events, permissions and status |

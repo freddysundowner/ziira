@@ -86,21 +86,45 @@ def discover() -> dict[str, Manifest]:
 
 
 def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
-    """Import every unit's events.py so its @subscribe handlers are registered.
+    """Import every unit's hooks.py and events.py, registering its sockets (extension points,
+    validation hooks) and what it plugs in (@provides, @validate, @subscribe, @subscribe_after).
 
-    Must run in any process that publishes events: the API, the CLI and scripts.
+    Must run in any process that publishes events or runs services: the API, the CLI and scripts.
+    Import order does not matter: a registration waits until its socket is declared.
     """
-    import contextlib
     import importlib
+    import importlib.util
 
     from ziira.kernel.events import register_unit_package
 
-    for m in (units or discover()).values():
+    found = units or discover()
+    for m in found.values():
+        if not m.core:
+            register_unit_package(m.package, m.name)
+    for m in found.values():
         if m.core:
             continue
-        register_unit_package(m.package, m.name)
-        with contextlib.suppress(ModuleNotFoundError):
-            importlib.import_module(f"{m.package}.events")
+        for part in ("hooks", "events"):
+            # Import only files that exist, so a real error inside one is never hidden.
+            try:
+                exists = importlib.util.find_spec(f"{m.package}.{part}") is not None
+            except ModuleNotFoundError:          # the unit's package itself is not importable
+                exists = False
+            if exists:
+                importlib.import_module(f"{m.package}.{part}")
+
+
+def check_socket_declarations(units: dict[str, Manifest], m: Manifest) -> None:
+    """A unit may plug only into sockets offered by itself, the kernel, or units it requires or lists
+    as optional. Raises DependencyError otherwise."""
+    reachable = [m, *(units[n] for n in ("kernel", *m.requires, *m.optional) if n in units)]
+    points = {p for u in reachable for p in u.extension_points}
+    hooks = {h for u in reachable for h in u.validation_hooks}
+    unknown = [f"implements '{p}'" for p in m.implements if p not in points] + \
+              [f"validates '{h}'" for h in m.validates if h not in hooks]
+    if unknown:
+        raise DependencyError(f"'{m.name}' {', '.join(unknown)}, which no unit it requires or lists "
+                              "as optional offers")
 
 
 def install_order(units: dict[str, Manifest], names: list[str] | None = None) -> list[str]:
@@ -295,6 +319,7 @@ class Registry:
             m = self.units[unit_name]
             if not sdk_compatible(m.sdk):
                 raise DependencyError(f"'{unit_name}' needs SDK {m.sdk}; this kernel provides {SDK_VERSION}")
+            check_socket_declarations(self.units, m)
             self._register_platform(m)
             if m.core:
                 self.ensure_template()

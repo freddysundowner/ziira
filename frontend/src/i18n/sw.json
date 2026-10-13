@@ -1,0 +1,16 @@
+{
+  "appName": "Ziira",
+  "signIn": {
+    "title": "Ingia kwenye biashara yako",
+    "workspace": "Msimbo wa biashara",
+    "login": "Barua pepe au simu",
+    "password": "Nenosiri",
+    "submit": "Ingia",
+    "working": "Inaingia…"
+  },
+  "signOut": "Toka",
+  "home": { "menu": "Mwanzo", "title": "Leo", "noWidgets": "Hakuna cha kuonyesha bado. Vipengele vitaonekana hapa moduli zikiwashwa." },
+  "loading": "Inapakia…",
+  "notFound": "Ukurasa huu haupo, au huna ruhusa ya kuuona.",
+  "language": "Lugha"
+}

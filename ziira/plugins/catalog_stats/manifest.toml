@@ -10,6 +10,11 @@ requires = ["products"]
 api_prefix = "/api/v1/plugins/catalog-stats"
 subscribes = ["product.created"]
 
+# Sockets of other units this plugin plugs into (code in hooks.py)
+[extends]
+implements = ["products.sku_suggester"]
+validates = ["products.product.before_create"]
+
 [permissions]
 "catalog_stats.view" = "View catalog statistics"
 

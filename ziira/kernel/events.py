@@ -46,19 +46,24 @@ def register_unit_package(package: str, unit_name: str) -> None:
     _unit_packages[package] = unit_name
 
 
-def _unit_of(handler: Handler) -> str:
-    """Unit name of the handler's package, e.g. ziira.modules.finance.events -> finance.
+def unit_of(module_name: str) -> str:
+    """Unit name of a Python module, e.g. ziira.modules.finance.events -> finance.
 
     Third-party plugins are found through the package the registry recorded for them.
     """
-    module = handler.__module__
     for package, unit_name in _unit_packages.items():
-        if module == package or module.startswith(package + "."):
+        if module_name == package or module_name.startswith(package + "."):
             return unit_name
-    parts = module.split(".")
+    parts = module_name.split(".")
     if len(parts) >= 3 and parts[0] == "ziira" and parts[1] in ("modules", "plugins"):
         return parts[2]
+    if parts[:2] == ["ziira", "kernel"]:
+        return "kernel"
     return parts[0]
+
+
+def _unit_of(handler: Handler) -> str:
+    return unit_of(handler.__module__)
 
 
 def subscribe(event_type: str) -> Callable[[Handler], Handler]:

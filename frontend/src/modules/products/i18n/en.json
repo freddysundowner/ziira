@@ -1,0 +1,20 @@
+{
+  "menu": "Products",
+  "title": "Products",
+  "search": "Search by name or SKU",
+  "empty": "No products yet.",
+  "new": "New product",
+  "sku": "SKU",
+  "name": "Name",
+  "type": "Type",
+  "unit": "Unit",
+  "taxCode": "Tax code",
+  "company": "Company",
+  "suggest": "Suggest SKU",
+  "noSuggestions": "No suggestions",
+  "save": "Save product",
+  "details": "Details",
+  "reorderLevel": "Reorder level",
+  "back": "All products",
+  "types": { "stock": "Stock", "non_stock": "Non-stock", "service": "Service" }
+}

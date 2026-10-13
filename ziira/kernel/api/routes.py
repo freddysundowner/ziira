@@ -31,6 +31,11 @@ def admin(permission: str) -> Callable[[RequestContext], RequestContext]:
     return check
 
 
+def signed_in_or_key(ctx: RequestContext = Depends(request_context)) -> RequestContext:
+    """Dependency: any authenticated caller (user, API key, or the development header)."""
+    return ctx
+
+
 def signed_in_user(ctx: RequestContext = Depends(request_context)) -> RequestContext:
     """Dependency: a person signed in with a token (not an API key or the development header)."""
     if ctx.user_id is None or ctx.session_id is None:
@@ -103,6 +108,25 @@ def change_password(body: sc.ChangePasswordIn, ctx: RequestContext = Depends(sig
     assert ctx.user_id is not None
     users.set_password(s, ctx.user_id, body.new_password)
     return Response(status_code=NO_CONTENT)
+
+
+# --------------------------------------------------------------------------- organisation
+@router.get("/companies", response_model=list[sc.CompanyOut], tags=["Organisation"])
+def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session = Depends(db_session)) -> object:
+    """Companies and branches the user has any role in (all of them for a tenant-wide role)."""
+    rows = s.execute(text(
+        "select c.id, c.name, b.id as branch_id, b.code, b.name as branch_name from kernel.company c "
+        "left join kernel.branch b on b.company_id = c.id and b.is_active order by c.name, b.code")).all()
+    reach = None if ctx.all_permissions or any(a.company_id is None and a.scope != "own" for a in ctx.assignments) \
+        else {a.company_id for a in ctx.assignments}
+    companies: dict[UUID, sc.CompanyOut] = {}
+    for r in rows:
+        if reach is not None and r.id not in reach:
+            continue
+        company = companies.setdefault(r.id, sc.CompanyOut(id=r.id, name=r.name, branches=[]))
+        if r.branch_id:
+            company.branches.append(sc.BranchOut(id=r.branch_id, code=r.code, name=r.branch_name))
+    return list(companies.values())
 
 
 # --------------------------------------------------------------------------- users
