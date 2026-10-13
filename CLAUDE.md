@@ -90,6 +90,10 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
    (payloads in `inventory/services/stock_events.py`); they never write stock tables. Costs are shown only to
    users with `stock.cost`.
 
+14. **Journal entries are made only by Finance's posting engine** (`finance/services/posting.py: post_entry`), from events
+   (`stock.moved`, `sale.posted`, `sale.returned`), in the operation's own transaction. Units never write finance tables.
+   Which account a line uses is a posting rule (data), not code. Control accounts are never posted by hand.
+
 ## Module layout (copy `ziira/modules/products`)
 
 ```

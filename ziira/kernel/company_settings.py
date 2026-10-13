@@ -51,11 +51,20 @@ def _non_negative_amount(value: Any) -> Decimal:
     return amount
 
 
+def _late_posting(value: Any) -> str:
+    if value not in ("redirect", "reject"):
+        raise ValidationFailed("Expected 'redirect' or 'reject'")
+    return str(value)
+
+
 SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("negative_stock_allowed", False, _boolean,
             "Sell stock the system thinks is not there: the sale posts and an exception is raised for review"),
     Setting("count_variance_threshold", Decimal("0"), _non_negative_amount,
             "Stock count variances worth more than this (in the company currency) need approval before posting"),
+    Setting("late_posting", "redirect", _late_posting,
+            "A document dated in a closed accounting period is posted to the current period ('redirect') or "
+            "refused ('reject')"),
 )}
 
 

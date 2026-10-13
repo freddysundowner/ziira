@@ -1,0 +1,107 @@
+"""Journal entries made from other units' events, inside the publisher's transaction.
+
+Finance never imports POS or Inventory: they publish, and these handlers post. If a posting fails (no posting rule, the
+period is locked and the company's policy is 'reject'), the publisher's whole operation rolls back, so stock, sales and
+books always agree.
+
+Event contracts (payload keys; ids may be UUIDs or strings, amounts Decimals or strings):
+
+  stock.moved      aggregate = the stock movement (published by Inventory for every movement)
+      company_id, branch_id (null for the in-transit location), location_kind, movement_type, value, business_date
+  sale.posted      aggregate = the sale
+      company_id, branch_id, business_date, number (optional), customer_id (optional, for credit sales),
+      net, tax, payments: [{method: cash|mpesa|card|credit|other, amount}]   (payments add up to net + tax)
+  sale.returned    aggregate = the return
+      the same keys: net and tax returned, refunds paid back in `payments` (credit = reduced receivable)
+
+The cost of goods sold is not in `sale.posted`: the sale's stock movements publish `stock.moved`, which posts it.
+"""
+
+from datetime import date
+from decimal import Decimal, InvalidOperation
+from typing import Any
+from uuid import UUID
+
+from ziira.modules.finance.domain import recipes
+from ziira.modules.finance.repository.models import JournalEntry
+from ziira.modules.finance.services.posting import post_from_recipe, today
+from ziira.sdk import Event, Session, ValidationFailed
+
+
+def _uuid(value: Any, name: str) -> UUID:
+    try:
+        return value if isinstance(value, UUID) else UUID(str(value))
+    except ValueError:
+        raise ValidationFailed(f"'{name}' is not a valid id") from None
+
+
+def _amount(value: Any, name: str) -> Decimal:
+    try:
+        number = Decimal(str(value))
+    except InvalidOperation:
+        raise ValidationFailed(f"'{name}' is not a number") from None
+    if not number.is_finite():
+        raise ValidationFailed(f"'{name}' is not a number")
+    return number
+
+
+def _date(value: Any) -> date:
+    if value is None:
+        return today()
+    if isinstance(value, date):
+        return value
+    try:
+        return date.fromisoformat(str(value))
+    except ValueError:
+        raise ValidationFailed("'business_date' is not a date") from None
+
+
+def _optional_uuid(value: Any, name: str) -> UUID | None:
+    return _uuid(value, name) if value else None
+
+
+def post_stock_movement(session: Session, event: Event) -> JournalEntry | None:
+    """`stock.moved`: inventory, cost of goods sold, shrinkage, goods received not invoiced, transfers."""
+    p = event.payload
+    movement_type = str(p.get("movement_type"))
+    value = _amount(p.get("value"), "value")
+    recipe = recipes.stock_movement(movement_type, value, str(p.get("location_kind") or "store"))
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="stock_movement", journal_code="STK",
+        entry_date=_date(p.get("business_date")), recipe=recipe, context={"movement_type": movement_type},
+        branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="stock_movement",
+        source_id=event.aggregate_id, description=f"Stock {movement_type.replace('_', ' ')}")
+
+
+def _sale_parts(event: Event) -> tuple[Decimal, Decimal, list[tuple[str, Decimal]], UUID | None]:
+    p = event.payload
+    payments = p.get("payments")
+    if not isinstance(payments, list):
+        raise ValidationFailed(f"{event.type}: payments are required")
+    money = [(str(x.get("method", "other")), _amount(x.get("amount"), "payment amount")) for x in payments]
+    return (_amount(p.get("net"), "net"), _amount(p.get("tax", 0), "tax"), money,
+            _optional_uuid(p.get("customer_id"), "customer_id"))
+
+
+def post_sale(session: Session, event: Event) -> JournalEntry | None:
+    """`sale.posted`: money received (or owed) against sales and VAT output."""
+    net, tax, money, customer = _sale_parts(event)
+    p = event.payload
+    number = p.get("number")
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="sale", journal_code="SAL",
+        entry_date=_date(p.get("business_date")), recipe=recipes.sale(net, tax, money, party=customer),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="sale",
+        source_id=event.aggregate_id, description=f"Sale {number}" if number else "Sale")
+
+
+def post_sale_return(session: Session, event: Event) -> JournalEntry | None:
+    """`sale.returned`: sales returns and VAT output reversed against the refund."""
+    net, tax, money, customer = _sale_parts(event)
+    p = event.payload
+    number = p.get("number")
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="sale_return", journal_code="SAL",
+        entry_date=_date(p.get("business_date")), recipe=recipes.sale_return(net, tax, money, party=customer),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="sale_return",
+        source_id=event.aggregate_id, description=f"Sales return {number}" if number else "Sales return")

@@ -1,0 +1,103 @@
+"""How documents become journal entries: which roles are debited and credited. Pure Python.
+
+A recipe decides the *shape* of an entry (which line roles, which side). Which account a role uses is data: the
+company's posting rules (domain/rules.py), seeded from domain/chart.py and changeable per company.
+"""
+
+from dataclasses import dataclass
+from decimal import Decimal
+from typing import Any
+
+from ziira.modules.finance.domain.entries import MONEY
+from ziira.sdk import ValidationFailed
+
+# The roles each document type can ask for, and the conditions a rule for it may use.
+DOC_ROLES: dict[str, tuple[str, ...]] = {
+    "stock_movement": ("inventory", "inventory_in_transit", "cogs", "grni", "opening_equity", "shrinkage",
+                       "transfer_clearing"),
+    "sale": ("cash", "mpesa", "card", "credit", "other", "sales", "vat_output"),
+    "sale_return": ("cash", "mpesa", "card", "credit", "other", "sales_returns", "vat_output"),
+}
+RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": ()}
+MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
+                  "write_off", "transfer_in", "transfer_out")
+
+
+@dataclass(frozen=True)
+class RecipeLine:
+    """A line to post: the role (resolved to an account by the posting rules), the side and the amount."""
+
+    role: str
+    side: str                     # "debit" or "credit"
+    amount: Decimal
+    party_type: str | None = None
+    party_id: Any = None
+    description: str | None = None
+
+
+def stock_movement(movement_type: str, value: Decimal, location_kind: str) -> list[RecipeLine]:
+    """Entry for one stock movement worth `value` (+ in, - out). Nothing to post when it is worth nothing.
+
+    receipt        Dr inventory           Cr goods received not invoiced
+    opening        Dr inventory           Cr opening balance equity
+    sale           Dr cost of goods sold  Cr inventory
+    sale_return    Dr inventory           Cr cost of goods sold
+    purchase_return Dr goods received not invoiced  Cr inventory
+    adjustment, count_variance, write_off   (loss) Dr shrinkage  Cr inventory  /  (gain) Dr inventory  Cr shrinkage
+    transfer_out   Dr transfer clearing   Cr inventory      (the stock left this place)
+    transfer_in    Dr inventory           Cr transfer clearing
+    The inventory side is "inventory in transit" for the in-transit location.
+    """
+    amount = abs(value).quantize(MONEY)
+    if amount == 0:
+        return []
+    inventory = "inventory_in_transit" if location_kind == "transit" else "inventory"
+    gained = value > 0
+    other = {
+        "receipt": "grni", "opening": "opening_equity", "sale": "cogs", "sale_return": "cogs",
+        "purchase_return": "grni", "adjustment": "shrinkage", "count_variance": "shrinkage",
+        "write_off": "shrinkage", "transfer_in": "transfer_clearing", "transfer_out": "transfer_clearing",
+    }.get(movement_type)
+    if other is None:
+        raise ValidationFailed(f"No posting recipe for stock movement type '{movement_type}'")
+    inventory_side, other_side = ("debit", "credit") if gained else ("credit", "debit")
+    return [RecipeLine(inventory, inventory_side, amount), RecipeLine(other, other_side, amount)]
+
+
+def sale(net: Decimal, tax: Decimal, payments: list[tuple[str, Decimal]], *, party: Any = None,
+         description: str | None = None) -> list[RecipeLine]:
+    """Entry for a sale: the money received (or owed) against sales and VAT output.
+
+    Dr cash / mpesa / card / receivable (credit sales) / other   Cr sales   Cr VAT output
+    """
+    return _sale_lines(net, tax, payments, party, description, returned=False)
+
+
+def sale_return(net: Decimal, tax: Decimal, refunds: list[tuple[str, Decimal]], *, party: Any = None,
+                description: str | None = None) -> list[RecipeLine]:
+    """Entry for a customer return: sales returns and VAT output reversed against the money given back (or the
+    reduced receivable). Dr sales returns, Dr VAT output  Cr cash / mpesa / card / receivable / other."""
+    return _sale_lines(net, tax, refunds, party, description, returned=True)
+
+
+def _sale_lines(net: Decimal, tax: Decimal, money: list[tuple[str, Decimal]], party: Any,
+                description: str | None, *, returned: bool) -> list[RecipeLine]:
+    if net < 0 or tax < 0:
+        raise ValidationFailed("Sale amounts cannot be negative")
+    total = net + tax
+    paid = sum((amount for _, amount in money), Decimal(0))
+    if any(amount <= 0 for _, amount in money):
+        raise ValidationFailed("Payment amounts must be positive")
+    if paid != total:
+        raise ValidationFailed(f"The payments add up to {paid} but the sale is worth {total}")
+    if total == 0:
+        return []
+    sides = ("credit", "debit") if returned else ("debit", "credit")
+    lines = [RecipeLine(method if method in ("cash", "mpesa", "card", "credit") else "other", sides[0], amount,
+                        party_type="customer" if method == "credit" and party else None,
+                        party_id=party if method == "credit" else None, description=description)
+             for method, amount in money]
+    lines.append(RecipeLine("sales_returns" if returned else "sales", sides[1], net, description=description))
+    if tax:
+        lines.append(RecipeLine("vat_output", sides[1], tax, description=description))
+    return [line for line in lines if line.amount > 0]

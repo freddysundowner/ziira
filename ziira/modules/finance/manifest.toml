@@ -10,7 +10,11 @@ optional = ["pos", "payments", "purchasing", "inventory", "people"]
 [provides]
 api_prefix = "/api/v1/finance"
 publishes = ["journal.posted", "period.closed", "expense.approved"]
-subscribes = ["sale.posted", "sale.returned", "payment.received", "goods.received", "bill.posted", "stock.adjusted", "payroll.approved"]
+subscribes = ["stock.moved", "sale.posted", "sale.returned", "approval.decided"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["kernel.integrity_check"]
 
 [permissions]
 "accounts.manage" = "Manage chart of accounts"
@@ -20,3 +24,9 @@ subscribes = ["sale.posted", "sale.returned", "payment.received", "goods.receive
 "expenses.approve" = "Approve expenses"
 "period.close" = "Close accounting periods"
 "reports.view" = "View financial reports"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["accounts.manage", "journal.post_manual", "journal.approve", "period.close", "reports.view"]
+"Accountant" = ["accounts.manage", "journal.post_manual", "reports.view"]
+"Branch Manager" = ["reports.view"]

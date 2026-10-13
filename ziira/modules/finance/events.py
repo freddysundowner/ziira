@@ -1,35 +1,34 @@
 """Events published and handled by the Finance and Accounting module.
 
-Publishes: journal.posted, period.closed, expense.approved
-Subscribes: sale.posted, sale.returned, payment.received, goods.received, bill.posted, stock.adjusted, payroll.approved
+Publishes: journal.posted, period.closed
+Subscribes: stock.moved, sale.posted, sale.returned, approval.decided (kernel)
 """
 
-from ziira.sdk import Event, Session, subscribe  # noqa: F401
+from ziira.modules.finance.services import event_postings, manual_journals
+from ziira.sdk import Event, Session, subscribe
 
-# @subscribe("sale.posted")
-# def on_sale_posted(session: Session, event: Event) -> None:
-#     ...
 
-# @subscribe("sale.returned")
-# def on_sale_returned(session: Session, event: Event) -> None:
-#     ...
+@subscribe("stock.moved")
+def on_stock_moved(session: Session, event: Event) -> None:
+    """Post the inventory, cost of sales, shrinkage and transfer entries for a stock movement."""
+    event_postings.post_stock_movement(session, event)
 
-# @subscribe("payment.received")
-# def on_payment_received(session: Session, event: Event) -> None:
-#     ...
 
-# @subscribe("goods.received")
-# def on_goods_received(session: Session, event: Event) -> None:
-#     ...
+@subscribe("sale.posted")
+def on_sale_posted(session: Session, event: Event) -> None:
+    """Post a sale: money received or owed against sales and VAT output."""
+    event_postings.post_sale(session, event)
 
-# @subscribe("bill.posted")
-# def on_bill_posted(session: Session, event: Event) -> None:
-#     ...
 
-# @subscribe("stock.adjusted")
-# def on_stock_adjusted(session: Session, event: Event) -> None:
-#     ...
+@subscribe("sale.returned")
+def on_sale_returned(session: Session, event: Event) -> None:
+    """Post a customer return."""
+    event_postings.post_sale_return(session, event)
 
-# @subscribe("payroll.approved")
-# def on_payroll_approved(session: Session, event: Event) -> None:
-#     ...
+
+@subscribe("approval.decided")
+def on_approval_decided(session: Session, event: Event) -> None:
+    """Post or reject the manual journal whose approval was just decided."""
+    if event.aggregate_type == manual_journals.DOC_TYPE:
+        manual_journals.apply_decision(session, event.aggregate_id, approved=event.payload["status"] == "approved",
+                                       decided_by=event.payload.get("decided_by"))

@@ -25,6 +25,7 @@ SKIP = ("/auth/sign-out", "/auth/change-password", "/auth/password", "/health", 
 def shop(client, registry):  # type: ignore[no-untyped-def]
     s = make_stock_shop(client, registry, "Fuzz Co")
     registry.enable(s["tenant_id"], "catalog_stats")
+    registry.enable(s["tenant_id"], "finance")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
     s["reason"] = next(x["id"] for x in reasons if x["category"] == "stock_adjustment")
@@ -41,7 +42,17 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     rule = client.post("/api/v1/approvals/rules", headers=owner, json={
         "company_id": co, "doc_type": "stock_adjustment", "approver_role_id": s["roles"]["Branch Manager"],
         "min_amount": "100000"}).json()
+    books = client.post(f"/api/v1/finance/companies/{co}/books", headers=owner).json()
+    s["acc"] = {a["code"]: a["id"] for a in books}
+    manual = client.post("/api/v1/finance/manual-journals", headers=owner, json={
+        "company_id": co, "entry_date": "2026-10-13", "description": "Fuzz", "lines": [
+            {"account_id": s["acc"]["6000"], "debit": "5"}, {"account_id": s["acc"]["1020"], "credit": "5"}]}).json()
+    posted = client.post(f"/api/v1/finance/manual-journals/{manual['id']}/submit", headers=owner).json()
+    period = client.post("/api/v1/finance/periods", headers=owner, json={"company_id": co, "day": "2026-10-13"}).json()
+    rules = client.get("/api/v1/finance/posting-rules", headers=owner, params={"company_id": co}).json()
     s["ids"] = {
+        "account_id": s["acc"]["6000"], "manual_id": manual["id"], "entry_id": posted["entry_id"],
+        "period_id": period["id"], "posting_rule_id": rules[0]["id"],
         "company_id": co, "location_id": s["main"], "product_id": s["cement"], "from_location_id": s["main"],
         "to_location_id": s["juja_store"], "base_uom_id": s["uom"], "tax_code_id": s["tax"],
         "branch_id": str(s["branch_id"]), "role_id": s["roles"]["Cashier"], "reason_code_id": s["reason"],
@@ -79,6 +90,18 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
             return {"entries": [{"product_id": shop["cement"], "counted_qty": "1"}]}
         if path.endswith("/settings/reason-codes") and method == "POST":
             return {**body, "category": "stock_adjustment", "code": f"FUZZ{n}", "label": "Fuzz"}
+        if path.endswith("/finance/accounts") and method == "POST":
+            return {"company_id": co, "code": f"F{n}", "name": "Fuzz account", "type": "expense"}
+        if path.endswith("/finance/manual-journals") and method == "POST":
+            return {"company_id": co, "entry_date": "2026-10-13", "description": "Fuzz", "lines": [
+                {"account_id": shop["acc"]["6000"], "debit": "1"}, {"account_id": shop["acc"]["1020"], "credit": "1"}]}
+        if path.endswith("/finance/posting-rules") and method == "POST":
+            return {"company_id": co, "doc_type": "stock_movement", "line_role": "cogs",
+                    "account_id": shop["acc"]["5000"], "side": "debit", "conditions": {"movement_type": "sale"}}
+        if path.endswith("/finance/periods") and method == "POST":
+            return {"company_id": co, "day": "2026-10-13"}
+        if path.endswith("/reverse"):
+            return {"reason": "Fuzz"}
         if path.endswith("/products/uoms"):
             return {"code": f"U{n}", "name": "Fuzz unit"}
         if path.endswith("/tax-codes"):

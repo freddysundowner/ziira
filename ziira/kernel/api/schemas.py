@@ -91,6 +91,7 @@ class CompanyOut(Out):
 class CompanySettingsOut(Out):
     negative_stock_allowed: bool
     count_variance_threshold: Decimal
+    late_posting: Literal["redirect", "reject"]
 
 
 class CompanySettingsIn(BaseModel):
@@ -99,6 +100,7 @@ class CompanySettingsIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     negative_stock_allowed: bool | None = None
     count_variance_threshold: Annotated[Amount, Field(ge=0)] | None = None
+    late_posting: Literal["redirect", "reject"] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles

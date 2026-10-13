@@ -151,3 +151,26 @@ def test_suspended_tenant_is_locked_out(client, registry) -> None:  # type: igno
     r = client.post("/api/v1/auth/sign-in", json={"workspace": "paused-co", "login": "owner@paused-co.test",
                                                   "password": "owner-pass-123", "device_id": "d"})
     assert r.status_code == 401
+
+
+def test_only_the_most_recently_used_tenant_pools_stay_open(registry) -> None:  # type: ignore[no-untyped-def]
+    """Many tenants must not exhaust PostgreSQL's connections: pools beyond the cap are closed and reopen on demand."""
+    from ziira.kernel import db
+    from ziira.kernel.config import get_settings
+
+    settings, real = get_settings(), get_settings().max_cached_tenant_engines
+    ids = registry.tenant_ids()[:4]
+    assert len(ids) >= 3
+    settings.max_cached_tenant_engines = 2
+    try:
+        db.forget_all()
+        for tenant in ids[:3]:
+            with db.tenant_session(tenant) as s:
+                s.execute(text("select 1"))
+        assert len(db._engines) == 2
+        assert (ids[0], False) not in db._engines and (ids[2], False) in db._engines     # the oldest was closed
+        with db.tenant_session(ids[0]) as s:                                              # and comes back when needed
+            assert s.execute(text("select 1")).scalar_one() == 1
+        assert len(db._engines) == 2 and (ids[0], False) in db._engines
+    finally:
+        settings.max_cached_tenant_engines = real

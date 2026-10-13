@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     tenant_role_prefix: str = "zt_"
     template_database: str = "ziira_template"
 
+    # How many tenant databases keep an open connection pool at once. Each pool holds a few connections, and PostgreSQL
+    # allows a limited number in total, so the least recently used pools are closed beyond this (they reopen on demand).
+    max_cached_tenant_engines: int = 25
+
     # Encrypts tenant database credentials stored in the master database.
     credentials_key: str = DEV_CREDENTIALS_KEY
 

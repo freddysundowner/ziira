@@ -349,3 +349,23 @@ def movement_history(session: Session) -> dict[tuple[UUID, UUID], list[tuple[str
 
 def all_costs(session: Session) -> dict[tuple[UUID, UUID], ProductCost]:
     return {(c.company_id, c.product_id): c for c in session.scalars(select(ProductCost).with_for_update())}
+
+
+# --------------------------------------------------------------------------- for finance (via public.py)
+def stock_value(session: Session, company_id: UUID) -> Decimal:
+    """What the company's stock is worth now: the sum of its products' cost figures."""
+    return Decimal(session.scalar(select(func.coalesce(func.sum(ProductCost.value), 0)).where(
+        ProductCost.company_id == company_id)) or 0)
+
+
+def stock_value_as_of(session: Session, company_id: UUID, day: date) -> Decimal:
+    """The sum of the values of the company's movements dated up to a day."""
+    return Decimal(session.scalar(select(func.coalesce(func.sum(StockMovement.value), 0)).where(
+        StockMovement.company_id == company_id, StockMovement.business_date <= day)) or 0)
+
+
+def movements_after(session: Session, after_seq: int, limit: int) -> list[tuple[StockMovement, str]]:
+    """Movements after a movement number, oldest first, each with the kind of its location."""
+    query = (select(StockMovement, Location.kind).join(Location, Location.id == StockMovement.location_id)
+             .where(StockMovement.seq > after_seq).order_by(StockMovement.seq).limit(limit))
+    return [(row[0], row[1]) for row in session.execute(query)]

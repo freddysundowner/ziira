@@ -8,43 +8,41 @@ push (see the end-of-session steps in `CLAUDE.md`).
 
 | | |
 |---|---|
-| Phase | **1 (Foundation) and 2 (Catalogue and inventory) done**, MFA and CD deferred · **next: phase 3, Ledger** |
+| Phase | **1 (Foundation), 2 (Catalogue and inventory) and 3 (Ledger) done**, MFA and CD deferred · **next: phase 4, POS and payments** |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 554 backend (PostgreSQL 16; branch coverage 98%; incl. fuzzing, security, Hypothesis properties, concurrency) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
+| Tests | 712 backend (PostgreSQL 16; branch coverage 98%; incl. fuzzing, security, Hypothesis properties, concurrency) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
 | CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-13 |
 
 ## Start here (next session)
 
-Phase 3 · Ledger. **Exit criterion (spec section 21): trial balance always balances; postings reproducible.**
-Engine rules are in spec section 07 (`docs/specs/Ziira_Core_1.0_Technical_Specification.txt`, "Accounting engine").
-Tables already exist in `ziira/modules/finance/migrations/0001_init.up.sql` (`account`, `period`, `posting_rule`,
-`journal`, `journal_entry`, `journal_line`, `expense`, `bank_reconciliation`); the database already rejects
-unbalanced entries at commit and any change to posted entries. Follow `ziira/modules/inventory` (the most complete
-module) and `docs/adding-a-module.md`.
+Phase 4 · POS and payments. **Exit criterion (spec section 21): offline sales sync exactly once; M-Pesa matching tests
+pass.** Engine rules are spec sections 09 (Point of sale and offline operation) and 10 (Payments and reconciliation).
+Tables exist in `ziira/modules/pos/migrations/` and `ziira/modules/payments/migrations/`. POS must publish the event
+payloads documented in `inventory/services/stock_events.py` (`sale.posted`, `sale.returned`) and
+`finance/services/event_postings.py` (the same events carry `net`, `tax`, `payments`); Inventory and Finance already
+turn them into stock movements and journal entries inside the sale's transaction.
 
-- [ ] **3.1 Domain rules** (`finance/domain/`, pure, unit-tested): debits = credits per entry; money as Decimal;
-      posting-rule resolution (document type + line type -> accounts, company override over template default);
-      period status (open, soft-closed, locked) and back-dating policy.
-- [ ] **3.2 Chart of accounts**: Kenyan SME template seeded per company (assets, liabilities, equity, revenue, COGS,
-      expenses, VAT input/output, M-Pesa clearing, till cash, goods received not invoiced, inventory in transit,
-      shrinkage); create/list/deactivate accounts (`accounts.manage`).
-- [ ] **3.3 Periods**: monthly periods per company; soft-close and lock (`period.close`); period-close checklist.
-- [ ] **3.4 Posting engine**: `post_journal` (balanced entry, branch dimension, source document, immutable;
-      corrections by reversal), numbered, audited, publishes `journal.posted`; same transaction as the source.
-- [ ] **3.5 Posting rules as data** + subscribers: `stock.moved` (carries `value`, `movement_type`, `branch_id`,
-      `location_kind` for inventory, COGS, shrinkage, in-transit postings), `sale.posted`, `sale.returned`,
-      `goods.received`, `stock.adjusted`; tested with fake events (POS and Purchasing do not exist yet).
-- [ ] **3.6 Manual journals** with approval (`journal.post_manual`, `journal.approve`, kernel approval matrix).
-- [ ] **3.7 Reports**: trial balance (by company, branch, consolidated, any past date), general ledger detail.
-- [ ] **3.8 Sub-ledger control**: inventory valuation must equal the inventory control account; add it as a
-      `kernel.integrity_check` (`ziira verify`).
-- [ ] **3.9 API and tests**: endpoints with permissions; permission tests per role; property tests (trial balance
-      always balances; reversal restores the books; reports reproducible for past dates).
+- [ ] **4.0 Platform pieces first:** idempotency keys on create requests (table `kernel.idempotency_key` exists), a
+      background worker for outbox and retries (Redis/Celery or the existing `outbox-run` loop), exceptions inbox
+      (review of `stock.negative`, offline sales, till variances).
+- [ ] **4.1 Domain rules** (`pos/domain`, pure): sale totals, tax per line, discounts and price overrides with reason
+      codes, till session expected cash (float + cash sales - refunds - paid out), offline limits.
+- [ ] **4.2 Devices and tills**: register a POS device per branch (credential + cashier login), open/close a till session
+      with float and counted cash; X and Z reports; shortage/overage posting (`till_variance` account exists).
+- [ ] **4.3 Sales**: create and post a sale (number per device series, e.g. `POS-THK-02-000451`), payments, void and return
+      with reasons; publishes `sale.posted` / `sale.returned` with the documented payloads.
+- [ ] **4.4 Offline sync**: upload with idempotency keys, device order, exactly-once posting, conflicts raise exceptions
+      (price/stock/credit changed while offline), download of products/prices/stock snapshot.
+- [ ] **4.5 Payments model**: `payment`, `external_transaction`, payment accounts; M-Pesa STK push, C2B confirmation,
+      status query (Daraja; credentials encrypted per business); card and bank statement import.
+- [ ] **4.6 Matching engine**: exact reference, account number, rules, exceptions; daily close per branch.
+- [ ] **4.7 Finance postings** for customer payments and settlements (M-Pesa clearing -> bank, charges).
+- [ ] **4.8 API, web POS shell, tests** (permissions per role, property tests, concurrency, fuzz as in phases 1-3).
 
-Things phase 2 left for later phases (all in the deferred table): an exceptions inbox for `stock.negative`, expiry
-warnings, product edit and Inventory web screens, FEFO picking on transfers.
+Things earlier phases left for later (see the deferred table): product edit and Inventory/Finance web screens, expiry
+warnings, FEFO on transfers, expenses/bank reconciliation/P&L/balance sheet/VAT reports (phase 8), eTIMS (phase 5).
 
 ## What exists, and where
 
@@ -68,6 +66,7 @@ warnings, product edit and Inventory web screens, FEFO picking on transfers.
 | Inventory | Immutable stock ledger, locked balances, weighted average cost, locations, opening stock, adjustments, transfers via in-transit, counts, sale/return/receipt events, nightly check | `modules/inventory/` (README has the rules and endpoints) |
 | Company settings | Negative stock policy, count variance threshold; audit log records device and IP | `kernel/company_settings.py`, `kernel/audit.py` |
 | Integrity checks | `ziira verify` / `stock-verify`: units verify and rebuild their derived data | `kernel/checks.py`, `inventory/hooks.py` |
+| Finance | Double-entry ledger: chart of accounts, posting engine, posting rules as data, periods and closing, manual journals with approval, reversals, trial balance, general ledger, books check | `modules/finance/` (README has the rules and endpoints) |
 | Other modules | Tables, manifests and folders only | `modules/*/` |
 
 Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
@@ -79,8 +78,8 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 |---|---|---|---|
 | 1 | Foundation: tenancy, auth, users, roles, scopes, audit, numbering, events and outbox, registry, SDK, CI/CD. Exit: isolation, permission and lifecycle tests pass | ✅ Done | MFA and CD deferred (below) |
 | 2 | Catalogue and inventory: costing, stock ledger, transfers, counts. Exit: stock and costing invariants pass | ✅ Done | Property tests + concurrency tests; web screens later |
-| 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ⏳ Next | Plan above; tables exist, balance trigger works |
-| 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ⬜ | Needs idempotency keys, background jobs |
+| 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ✅ Done | Hypothesis and concurrency tests; reports beyond TB/GL are phase 8 |
+| 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ⏳ Next | Plan above; needs idempotency keys, background jobs |
 | 5 | eTIMS: direct KRA integration, credit notes, retry | ⬜ | KRA integrator certification before live |
 | 6 | Customers and sales: CRM, credit, invoices, receivables | ⬜ | |
 | 7 | Purchasing: orders, receipts, bills, three-way match | ⬜ | |
@@ -133,6 +132,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (h) | **Phase 3 done.** Finance module: pure domain (entries, periods, chart template, recipes, posting rules), chart of accounts, posting engine (`post_entry`: balanced, immutable, branch dimension, period policy, numbering, `journal.posted`), posting rules as data, subscribers for `stock.moved`, `sale.posted`, `sale.returned` (atomic with the operation), periods and closing checklist, manual journals with approval, reversals (manual entries only), trial balance and general ledger (reproducible for any past date, branch-limited), books check (`ziira verify`, with `--fix` catching up unposted movements). New migration `finance/0002_manual_journals`; new company setting `late_posting`; Inventory `stock.moved` carries branch and location kind; Inventory public stock-value reads. Tests 554 -> 712 (incl. Hypothesis and race tests; fuzzer covers Finance). Also fixed a scaling limit found by the full suite: every tenant database kept its own connection pool, so ~80 tenants exhausted PostgreSQL's connections; the least recently used pools are now closed beyond `ZIIRA_MAX_CACHED_TENANT_ENGINES` (25). |
 | 2026-10-13 (g) | **Hardening pass on phases 1 and 2** (`docs/testing.md`). Added schema-driven fuzzing of every endpoint, adversarial security tests, concurrency tests, kernel and Products unit tests, every unit enabled alone, domain and service edge cases. Fixed 12 real defects: unstorable numbers (500s), bad paging, NUL text, malformed signed tokens, two races (simultaneous counts, simultaneous opening stock), `%`/`_` search wildcards, blank names, unknown eTIMS types, email/phone/password validation, corrupt settings, last-owner check, expired approvals listed, DB wording in 409s, NaN quantities. New migration `0003_one_open_count`. Tests 270 -> 554. Note: the full suite now takes ~6 minutes (the fuzz test is slower when many test databases exist). |
 | 2026-10-13 (f) | **Phase 2 done.** Audit log records device and IP (`trust_forwarded_for` for proxies); company settings with API and `company_setting`. Inventory: pure domain rules (weighted average costing with negative stock, movement validation, FEFO, landed cost, transfers, counts), the immutable ledger (`post_movement`: locked cost and balance rows, events `stock.moved/negative/below_reorder`), locations, opening stock, adjustments with approval, transfers through in-transit with differences and approval, counts that compare against the system's figure at counting time (movement sequence numbers, share lock for the snapshot), cost visibility (`stock.cost`), subscribers for `sale.posted/returned`, `goods.received` (fake-event tests), `ziira verify` / `stock-verify` (new `kernel.integrity_check` extension point), demo opening stock. Tests 90 -> 270 (Hypothesis properties; a race test proven to fail without row locks). |
 | 2026-10-13 (e) | Finished and committed the work left uncommitted after (d): extension points and validation hooks (`kernel/extensions.py`, Products sockets, `catalog_stats` plugs in), `GET /companies`, UoM/tax-code lists, SKU suggestions; the `frontend/` web app. Verified in the browser (sign-in, widget, SKU suggestions, duplicate-name block, plugin tab). Fixed stale suggestions in the new-product form; added `make web*`/`api-types` and a CI web job; wrote `docs/extending-units.md` and `docs/frontend.md`. Tests 80 → 90 backend, 13 web. |

@@ -521,6 +521,310 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/finance/companies/{company_id}/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Setup Books
+         * @description Create the company's chart of accounts, journals and default posting rules (harmless if they exist).
+         */
+        post: operations["post_setup_books_api_v1_finance_companies__company_id__books_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Accounts */
+        get: operations["get_accounts_api_v1_finance_accounts_get"];
+        put?: never;
+        /** Post Account */
+        post: operations["post_account_api_v1_finance_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Account */
+        patch: operations["patch_account_api_v1_finance_accounts__account_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/finance/posting-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Rules */
+        get: operations["get_rules_api_v1_finance_posting_rules_get"];
+        put?: never;
+        /** Post Rule */
+        post: operations["post_rule_api_v1_finance_posting_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/posting-rules/{posting_rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Rule */
+        put: operations["put_rule_api_v1_finance_posting_rules__posting_rule_id__put"];
+        post?: never;
+        /** Delete Rule */
+        delete: operations["delete_rule_api_v1_finance_posting_rules__posting_rule_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/periods": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Periods */
+        get: operations["get_periods_api_v1_finance_periods_get"];
+        put?: never;
+        /**
+         * Post Period
+         * @description Create the monthly period containing a date (periods are also created when something is first posted).
+         */
+        post: operations["post_period_api_v1_finance_periods_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/periods/{period_id}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Checklist
+         * @description What stops this period from being closed.
+         */
+        get: operations["get_checklist_api_v1_finance_periods__period_id__checklist_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/periods/{period_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Period Status
+         * @description Close (soft), lock or reopen a period. Closing checks the period-close checklist first.
+         */
+        post: operations["post_period_status_api_v1_finance_periods__period_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/journal-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Entries */
+        get: operations["get_entries_api_v1_finance_journal_entries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/journal-entries/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get One Entry */
+        get: operations["get_one_entry_api_v1_finance_journal_entries__entry_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/journal-entries/{entry_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reverse
+         * @description Cancel an entry by posting its mirror image (once per entry; a reversal cannot be reversed).
+         */
+        post: operations["post_reverse_api_v1_finance_journal_entries__entry_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/manual-journals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Manuals */
+        get: operations["get_manuals_api_v1_finance_manual_journals_get"];
+        put?: never;
+        /**
+         * Post Manual
+         * @description Write a draft manual journal. It changes nothing until it is submitted (and approved).
+         */
+        post: operations["post_manual_api_v1_finance_manual_journals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/manual-journals/{manual_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Manual */
+        get: operations["get_manual_api_v1_finance_manual_journals__manual_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/manual-journals/{manual_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Submit Manual
+         * @description Send for approval; posts at once if no approval rule applies to its size.
+         */
+        post: operations["post_submit_manual_api_v1_finance_manual_journals__manual_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/reports/trial-balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Trial Balance
+         * @description Debit and credit totals per account up to a date. Reproducible for any past date.
+         */
+        get: operations["get_trial_balance_api_v1_finance_reports_trial_balance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/reports/general-ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get General Ledger
+         * @description The lines posted to an account between two dates, with a running balance.
+         */
+        get: operations["get_general_ledger_api_v1_finance_reports_general_ledger_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inventory/locations": {
         parameters: {
             query?: never;
@@ -1043,6 +1347,61 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountIn */
+        AccountIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "asset" | "liability" | "equity" | "income" | "expense";
+            /** Subtype */
+            subtype?: string | null;
+            /** Parent Id */
+            parent_id?: string | null;
+        };
+        /** AccountOut */
+        AccountOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Subtype */
+            subtype: string | null;
+            /** Parent Id */
+            parent_id: string | null;
+            /** Is Control */
+            is_control: boolean;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** AccountUpdateIn */
+        AccountUpdateIn: {
+            /** Name */
+            name?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
         /** ActiveIn */
         ActiveIn: {
             /** Active */
@@ -1277,6 +1636,13 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** ChecklistOut */
+        ChecklistOut: {
+            /** Ready */
+            ready: boolean;
+            /** Problems */
+            problems: string[];
+        };
         /** CompanyOut */
         CompanyOut: {
             /**
@@ -1298,6 +1664,8 @@ export interface components {
             negative_stock_allowed?: boolean | null;
             /** Count Variance Threshold */
             count_variance_threshold?: number | string | null;
+            /** Late Posting */
+            late_posting?: ("redirect" | "reject") | null;
         };
         /** CompanySettingsOut */
         CompanySettingsOut: {
@@ -1305,6 +1673,11 @@ export interface components {
             negative_stock_allowed: boolean;
             /** Count Variance Threshold */
             count_variance_threshold: string;
+            /**
+             * Late Posting
+             * @enum {string}
+             */
+            late_posting: "redirect" | "reject";
         };
         /** CountEntriesIn */
         CountEntriesIn: {
@@ -1479,6 +1852,135 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** EntryLineOut */
+        EntryLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /** Party Type */
+            party_type: string | null;
+            /** Party Id */
+            party_id: string | null;
+            /** Description */
+            description: string | null;
+        };
+        /** EntryOut */
+        EntryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Source Type */
+            source_type: string | null;
+            /** Source Id */
+            source_id: string | null;
+            /** Description */
+            description: string | null;
+            /** Is Manual */
+            is_manual: boolean;
+            /** Reversal Of Id */
+            reversal_of_id: string | null;
+            /**
+             * Posted At
+             * Format: date-time
+             */
+            posted_at: string;
+            /** Approved By */
+            approved_by: string | null;
+            /** Reversed By */
+            reversed_by: string | null;
+            /** Lines */
+            lines: components["schemas"]["EntryLineOut"][];
+        };
+        /** EntrySummaryOut */
+        EntrySummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Source Type */
+            source_type: string | null;
+            /** Source Id */
+            source_id: string | null;
+            /** Description */
+            description: string | null;
+            /** Is Manual */
+            is_manual: boolean;
+            /** Reversal Of Id */
+            reversal_of_id: string | null;
+            /**
+             * Posted At
+             * Format: date-time
+             */
+            posted_at: string;
+        };
+        /** GeneralLedgerOut */
+        GeneralLedgerOut: {
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Opening */
+            opening: string;
+            /** Closing */
+            closing: string;
+            /** Lines */
+            lines: components["schemas"]["LedgerLineOut"][];
+        };
         /** GrantIn */
         GrantIn: {
             /**
@@ -1527,6 +2029,33 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** LedgerLineOut */
+        LedgerLineOut: {
+            /**
+             * Entry Id
+             * Format: uuid
+             */
+            entry_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Description */
+            description: string | null;
+            /** Source Type */
+            source_type: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /** Balance */
+            balance: string;
+        };
         /** LocationIn */
         LocationIn: {
             /**
@@ -1572,6 +2101,132 @@ export interface components {
             kind: string;
             /** Is Active */
             is_active: boolean;
+        };
+        /** ManualJournalIn */
+        ManualJournalIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Description */
+            description: string;
+            /** Lines */
+            lines: components["schemas"]["ManualLineIn"][];
+        };
+        /** ManualJournalOut */
+        ManualJournalOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Description */
+            description: string;
+            /** Status */
+            status: string;
+            /** Total */
+            total: string;
+            /** Created By */
+            created_by: string | null;
+            /** Entry Id */
+            entry_id: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Lines */
+            lines: components["schemas"]["ManualLineOut"][];
+        };
+        /** ManualJournalSummaryOut */
+        ManualJournalSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Description */
+            description: string;
+            /** Status */
+            status: string;
+            /** Total */
+            total: string;
+            /** Created By */
+            created_by: string | null;
+            /** Entry Id */
+            entry_id: string | null;
+        };
+        /** ManualLineIn */
+        ManualLineIn: {
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /**
+             * Debit
+             * @default 0
+             */
+            debit: number | string;
+            /**
+             * Credit
+             * @default 0
+             */
+            credit: number | string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Description */
+            description?: string | null;
+        };
+        /** ManualLineOut */
+        ManualLineOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Line No */
+            line_no: number;
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /** Description */
+            description: string | null;
         };
         /** MeOut */
         MeOut: {
@@ -1686,6 +2341,57 @@ export interface components {
         PasswordIn: {
             /** Password */
             password: string;
+        };
+        /** PeriodOpenIn */
+        PeriodOpenIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Day
+             * Format: date
+             * @description Any date in the month
+             */
+            day: string;
+        };
+        /** PeriodOut */
+        PeriodOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Status */
+            status: string;
+            /** Closed By */
+            closed_by: string | null;
+            /** Closed At */
+            closed_at: string | null;
+        };
+        /** PeriodStatusIn */
+        PeriodStatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "soft_closed" | "locked";
         };
         /** PermissionOut */
         PermissionOut: {
@@ -1884,6 +2590,16 @@ export interface components {
             /** Note */
             note: string | null;
         };
+        /** ReverseIn */
+        ReverseIn: {
+            /** Reason */
+            reason: string;
+            /**
+             * Entry Date
+             * @description Defaults to today
+             */
+            entry_date?: string | null;
+        };
         /** RoleIn */
         RoleIn: {
             /** Name */
@@ -1910,67 +2626,13 @@ export interface components {
             /** Permissions */
             permissions: string[];
         };
-        /** RuleIn */
-        RuleIn: {
+        /** RuleUpdateIn */
+        RuleUpdateIn: {
             /**
-             * Company Id
+             * Account Id
              * Format: uuid
              */
-            company_id: string;
-            /** Doc Type */
-            doc_type: string;
-            /**
-             * Approver Role Id
-             * Format: uuid
-             */
-            approver_role_id: string;
-            /**
-             * Step
-             * @default 1
-             */
-            step: number;
-            /**
-             * Min Amount
-             * @default 0
-             */
-            min_amount: number | string;
-            /** Max Amount */
-            max_amount?: number | string | null;
-            /**
-             * Forbid Creator
-             * @default true
-             */
-            forbid_creator: boolean;
-        };
-        /** RuleOut */
-        RuleOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /** Doc Type */
-            doc_type: string;
-            /** Min Amount */
-            min_amount: string;
-            /** Max Amount */
-            max_amount: string | null;
-            /** Step */
-            step: number;
-            /**
-             * Approver Role Id
-             * Format: uuid
-             */
-            approver_role_id: string;
-            /** Forbid Creator */
-            forbid_creator: boolean;
-            /** Is Active */
-            is_active: boolean;
+            account_id: string;
         };
         /** SeriesOut */
         SeriesOut: {
@@ -2240,6 +2902,49 @@ export interface components {
             /** Received At */
             received_at: string | null;
         };
+        /** TrialBalanceLineOut */
+        TrialBalanceLineOut: {
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /** Balance */
+            balance: string;
+        };
+        /** TrialBalanceOut */
+        TrialBalanceOut: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Lines */
+            lines: components["schemas"]["TrialBalanceLineOut"][];
+            /** Total Debit */
+            total_debit: string;
+            /** Total Credit */
+            total_credit: string;
+            /** Balanced */
+            balanced: boolean;
+        };
         /** UomIn */
         UomIn: {
             /** Code */
@@ -2306,6 +3011,129 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** RuleIn */
+        ziira__kernel__api__schemas__RuleIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Doc Type */
+            doc_type: string;
+            /**
+             * Approver Role Id
+             * Format: uuid
+             */
+            approver_role_id: string;
+            /**
+             * Step
+             * @default 1
+             */
+            step: number;
+            /**
+             * Min Amount
+             * @default 0
+             */
+            min_amount: number | string;
+            /** Max Amount */
+            max_amount?: number | string | null;
+            /**
+             * Forbid Creator
+             * @default true
+             */
+            forbid_creator: boolean;
+        };
+        /** RuleOut */
+        ziira__kernel__api__schemas__RuleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Doc Type */
+            doc_type: string;
+            /** Min Amount */
+            min_amount: string;
+            /** Max Amount */
+            max_amount: string | null;
+            /** Step */
+            step: number;
+            /**
+             * Approver Role Id
+             * Format: uuid
+             */
+            approver_role_id: string;
+            /** Forbid Creator */
+            forbid_creator: boolean;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** RuleIn */
+        ziira__modules__finance__api__schemas__RuleIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Doc Type */
+            doc_type: string;
+            /** Line Role */
+            line_role: string;
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "debit" | "credit";
+            /** Conditions */
+            conditions?: {
+                [key: string]: string;
+            };
+            /**
+             * Priority
+             * @default 100
+             */
+            priority: number;
+        };
+        /** RuleOut */
+        ziira__modules__finance__api__schemas__RuleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Doc Type */
+            doc_type: string;
+            /** Line Role */
+            line_role: string;
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Side */
+            side: string;
+            /** Conditions */
+            conditions: {
+                [key: string]: string;
+            };
+            /** Priority */
+            priority: number;
         };
     };
     responses: never;
@@ -3440,7 +4268,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RuleOut"][];
+                    "application/json": components["schemas"]["ziira__kernel__api__schemas__RuleOut"][];
                 };
             };
             /** @description Validation Error */
@@ -3470,7 +4298,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RuleIn"];
+                "application/json": components["schemas"]["ziira__kernel__api__schemas__RuleIn"];
             };
         };
         responses: {
@@ -3480,7 +4308,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RuleOut"];
+                    "application/json": components["schemas"]["ziira__kernel__api__schemas__RuleOut"];
                 };
             };
             /** @description Validation Error */
@@ -3599,6 +4427,844 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_setup_books_api_v1_finance_companies__company_id__books_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                company_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_accounts_api_v1_finance_accounts_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                include_inactive?: boolean;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_account_api_v1_finance_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_account_api_v1_finance_accounts__account_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rules_api_v1_finance_posting_rules_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__finance__api__schemas__RuleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_rule_api_v1_finance_posting_rules_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__finance__api__schemas__RuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__finance__api__schemas__RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_rule_api_v1_finance_posting_rules__posting_rule_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                posting_rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__finance__api__schemas__RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_rule_api_v1_finance_posting_rules__posting_rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                posting_rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_periods_api_v1_finance_periods_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_period_api_v1_finance_periods_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PeriodOpenIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_checklist_api_v1_finance_periods__period_id__checklist_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                period_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChecklistOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_period_status_api_v1_finance_periods__period_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                period_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PeriodStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_entries_api_v1_finance_journal_entries_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                source_type?: string | null;
+                source_id?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntrySummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_one_entry_api_v1_finance_journal_entries__entry_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reverse_api_v1_finance_journal_entries__entry_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                entry_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_manuals_api_v1_finance_manual_journals_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualJournalSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_manual_api_v1_finance_manual_journals_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualJournalIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualJournalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_manual_api_v1_finance_manual_journals__manual_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                manual_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualJournalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_submit_manual_api_v1_finance_manual_journals__manual_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                manual_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManualJournalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_trial_balance_api_v1_finance_reports_trial_balance_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                as_of: string;
+                branch_id?: string | null;
+                include_zero?: boolean;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrialBalanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_general_ledger_api_v1_finance_reports_general_ledger_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                account_id: string;
+                date_from: string;
+                date_to: string;
+                branch_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GeneralLedgerOut"];
                 };
             };
             /** @description Validation Error */

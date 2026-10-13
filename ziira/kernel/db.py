@@ -8,6 +8,7 @@
 """
 
 import threading
+from collections import OrderedDict
 from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import lru_cache
@@ -55,26 +56,31 @@ def _new_engine(url: str) -> Engine:
     return create_engine(url, pool_pre_ping=True, pool_size=2, max_overflow=8, pool_recycle=1800)
 
 
-_engines: dict[tuple[UUID, bool], Engine] = {}
+# Least recently used last. Capped (config.max_cached_tenant_engines): every tenant has its own database and pool, and
+# PostgreSQL allows only so many connections in total.
+_engines: OrderedDict[tuple[UUID, bool], Engine] = OrderedDict()
 _engines_lock = threading.Lock()
 
 
 def tenant_engine(tenant_id: UUID, *, admin: bool = False) -> Engine:
     """Engine for one tenant's database: its own login, or the owner login when `admin`."""
     key = (tenant_id, admin)
-    engine = _engines.get(key)
-    if engine is not None:
-        return engine
     with _engines_lock:
-        if key not in _engines:
-            with master_engine().connect() as conn:
-                row = conn.execute(text(
-                    "select app_url_encrypted, admin_url_encrypted from master.tenant "
-                    "where id = :t and status in ('provisioning', 'active')"), {"t": str(tenant_id)}).first()
-            if row is None:
-                raise NotFound("Tenant not found or not active")
-            _engines[key] = _new_engine(decrypt(row.admin_url_encrypted if admin else row.app_url_encrypted))
-        return _engines[key]
+        engine = _engines.get(key)
+        if engine is not None:
+            _engines.move_to_end(key)                  # used just now
+            return engine
+        with master_engine().connect() as conn:
+            row = conn.execute(text(
+                "select app_url_encrypted, admin_url_encrypted from master.tenant "
+                "where id = :t and status in ('provisioning', 'active')"), {"t": str(tenant_id)}).first()
+        if row is None:
+            raise NotFound("Tenant not found or not active")
+        engine = _engines[key] = _new_engine(decrypt(row.admin_url_encrypted if admin else row.app_url_encrypted))
+        while len(_engines) > max(get_settings().max_cached_tenant_engines, 1):
+            _, oldest = _engines.popitem(last=False)
+            oldest.dispose()                           # in-use connections finish and are closed when returned
+        return engine
 
 
 def forget_tenant(tenant_id: UUID) -> None:
