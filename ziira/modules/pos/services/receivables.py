@@ -25,7 +25,7 @@ from ziira.sdk import (
 )
 
 BUCKETS = ("not_due", "1_30", "31_60", "61_90", "over_90")
-CHANNELS = ("whatsapp", "sms", "email", "call", "visit")
+CHANNELS = ("sms", "email", "call", "visit")
 
 
 def bucket(due: date, as_of: date) -> str:
@@ -185,8 +185,8 @@ def send_reminder(session: Session, invoice_id: UUID, *, channel: str | None = N
             or ctx.can(INVOICES_MANAGE, company_id=invoice.company_id, branch_id=invoice.branch_id)):
         ctx.require(RECEIVABLES_MANAGE, company_id=invoice.company_id, branch_id=invoice.branch_id)
     channel = channel or str(company_setting(session, invoice.company_id, "reminder_channel"))
-    if channel not in ("sms", "whatsapp", "email"):
-        raise ValidationFailed("Say how to send it (sms, whatsapp or email), or set the company's reminder channel")
+    if channel not in ("sms", "email"):
+        raise ValidationFailed("Say how to send it (sms or email), or set the company's reminder channel")
     if invoice.status not in pos_repo.OPEN_INVOICE:
         raise ValidationFailed("Only an unpaid invoice needs a reminder")
     customer = find_customer(session, invoice.customer_id) if unit_enabled(session, "crm") else None

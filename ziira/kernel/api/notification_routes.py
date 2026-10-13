@@ -14,7 +14,7 @@ from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.sdk import Session, check_company, db_session, page_limit, page_offset, request_context
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["Notifications"])
-Channel = Literal["email", "sms", "whatsapp"]
+Channel = Literal["email", "sms"]
 MANAGE = "settings.manage"
 
 
@@ -101,7 +101,7 @@ def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session
     check_company(session, company_id)
     rows = session.execute(text(
         "select id, provider as channel, config, label, status from kernel.integration_credential "
-        "where company_id = :c and provider in ('email', 'sms', 'whatsapp') order by provider, created_at desc"),
+        "where company_id = :c and provider in ('email', 'sms') order by provider, created_at desc"),
         {"c": str(company_id)})
     return [ChannelOut(id=r.id, channel=r.channel, provider=(r.config or {}).get("provider"), label=r.label,
                        status=r.status) for r in rows]
@@ -110,7 +110,7 @@ def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session
 @router.put("/channels/{channel}", response_model=ChannelOut)
 def put_channel(channel: Channel, body: ChannelIn, ctx: RequestContext = Depends(staff),
                 session: Session = Depends(db_session)) -> object:
-    """Set up (or replace) how a business sends email, SMS or WhatsApp. The old keys stop being used."""
+    """Set up (or replace) how a business sends email or SMS. The old keys stop being used."""
     ctx.require(MANAGE, company_id=body.company_id)
     check_company(session, body.company_id)
     for old in session.execute(text(ACTIVE), {"c": str(body.company_id), "ch": channel}):

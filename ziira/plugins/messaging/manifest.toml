@@ -1,6 +1,6 @@
 [unit]
 name = "messaging"
-title = "Messaging channels (email, SMS, WhatsApp)"
+title = "Messaging channels (email, SMS)"
 kind = "plugin"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

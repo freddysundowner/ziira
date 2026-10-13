@@ -7,7 +7,7 @@ from uuid import uuid4
 import httpx
 import pytest
 
-from ziira.plugins.messaging.providers import AfricasTalkingSms, BlessedTextsSms, FakeSms, SmtpEmail, WhatsAppCloud
+from ziira.plugins.messaging.providers import AfricasTalkingSms, BlessedTextsSms, FakeSms, SmtpEmail
 from ziira.sdk import Outgoing
 
 MESSAGE = Outgoing(uuid4(), uuid4(), "254712345678", "Invoice due", "Your invoice INV-1 of KES 116 is due.")
@@ -60,46 +60,6 @@ def test_sms_refusals_are_permanent_and_outages_are_retried() -> None:
 
     with pytest.raises(httpx.ConnectError):
         sms(down)
-
-
-# --------------------------------------------------------------------------- WhatsApp
-def whatsapp(handler: Any, **config: Any):  # type: ignore[no-untyped-def]
-    WhatsAppCloud.client_factory = staticmethod(lambda: gateway(handler))
-    return WhatsAppCloud().send(MESSAGE, {"access_token": "TOK"}, {"phone_number_id": "1055", **config})
-
-
-def test_whatsapp_text_and_template_messages() -> None:
-    seen: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        seen.append(request)
-        return httpx.Response(200, json={"messaging_product": "whatsapp", "messages": [{"id": "wamid.ABC"}]})
-
-    plain = whatsapp(handler)
-    assert plain.accepted and plain.provider_ref == "wamid.ABC"
-    assert str(seen[0].url) == "https://graph.facebook.com/v20.0/1055/messages"
-    assert seen[0].headers["authorization"] == "Bearer TOK"
-    import json
-
-    body = json.loads(seen[0].content)
-    assert body["type"] == "text" and body["to"] == "254712345678" and body["text"]["body"].startswith("Your invoice")
-    templated = whatsapp(handler, template="invoice_reminder", language="en_GB", api_version="v21.0")
-    assert templated.accepted
-    sent = json.loads(seen[1].content)
-    assert sent["type"] == "template" and sent["template"]["name"] == "invoice_reminder"
-    assert sent["template"]["language"] == {"code": "en_GB"}
-    assert sent["template"]["components"][0]["parameters"][0]["text"].startswith("Your invoice")
-    assert "/v21.0/" in str(seen[1].url)
-
-
-def test_whatsapp_errors() -> None:
-    refused = whatsapp(lambda r: httpx.Response(400, json={"error": {"message": "Re-engagement message",
-                                                                     "code": 131047}}))
-    assert not refused.accepted and refused.permanent_failure and "Re-engagement" in refused.message
-    with pytest.raises(httpx.HTTPStatusError):
-        whatsapp(lambda r: httpx.Response(503, text="down"))
-    odd = whatsapp(lambda r: httpx.Response(200, text="ok"))
-    assert not odd.accepted
 
 
 # --------------------------------------------------------------------------- SMTP

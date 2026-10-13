@@ -2,7 +2,7 @@
 
 A unit asks for a message to be sent with `queue(...)`. The message is recorded in the caller's transaction (so it
 exists only if the caller's change committed) and a background job sends it through the business's channel for that
-medium - email, SMS or WhatsApp - which a plugin provides through the "kernel.notification_channel" extension point.
+medium - email or SMS - which a plugin provides through the "kernel.notification_channel" extension point.
 Sending is never part of the caller's request: a slow or broken gateway cannot hold up a sale or lose a payment.
 
 * People who asked not to be contacted are respected: a message to them is recorded as skipped, not sent.
@@ -30,12 +30,12 @@ from ziira.kernel.extensions import define_extension_point, implementations
 from ziira.kernel.jobs import enqueue, job
 
 log = logging.getLogger("ziira.notifications")
-CHANNELS = ("email", "sms", "whatsapp")
+CHANNELS = ("email", "sms")
 NOTIFICATION_CHANNEL = "kernel.notification_channel"
 MAX_ATTEMPTS = 5
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 PHONE = re.compile(r"^254[17]\d{8}$")
-MAX_BODY = {"email": 20000, "sms": 1000, "whatsapp": 4000}
+MAX_BODY = {"email": 20000, "sms": 1000}
 
 
 @dataclass(frozen=True)
@@ -62,7 +62,7 @@ class SendResult:
 class NotificationChannel(ABC):
     """Contract of the "kernel.notification_channel" extension point: a way to send one medium."""
 
-    channel: str = "email"                   # email | sms | whatsapp
+    channel: str = "email"                   # email | sms
     name: str = "provider"                   # chosen by the credential's config {"provider": name}
 
     @abstractmethod
@@ -72,7 +72,7 @@ class NotificationChannel(ABC):
 
 
 define_extension_point(NOTIFICATION_CHANNEL, NotificationChannel,
-                       "A way to send a message: email, SMS or WhatsApp through a gateway.")
+                       "A way to send a message: email or SMS through a gateway.")
 
 
 def check_recipient(channel: str, recipient: str) -> str:

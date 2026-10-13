@@ -625,7 +625,7 @@ export interface paths {
         get?: never;
         /**
          * Put Channel
-         * @description Set up (or replace) how a business sends email, SMS or WhatsApp. The old keys stop being used.
+         * @description Set up (or replace) how a business sends email or SMS. The old keys stop being used.
          */
         put: operations["put_channel_api_v1_notifications_channels__channel__put"];
         post?: never;
@@ -2785,7 +2785,7 @@ export interface paths {
         put?: never;
         /**
          * Post Send Reminder
-         * @description Message the customer about this invoice now (SMS, WhatsApp or email).
+         * @description Message the customer about this invoice now (SMS or email).
          */
         post: operations["post_send_reminder_api_v1_pos_invoices__invoice_id__send_reminder_post"];
         delete?: never;
@@ -4764,7 +4764,7 @@ export interface components {
             /** Bill Match Tolerance Percent */
             bill_match_tolerance_percent?: number | string | null;
             /** Reminder Channel */
-            reminder_channel?: ("off" | "sms" | "whatsapp" | "email") | null;
+            reminder_channel?: ("off" | "sms" | "email") | null;
             /** Reminder Min Days Overdue */
             reminder_min_days_overdue?: number | null;
             /** Reminder Repeat Days */
@@ -4791,7 +4791,7 @@ export interface components {
              * Reminder Channel
              * @enum {string}
              */
-            reminder_channel: "off" | "sms" | "whatsapp" | "email";
+            reminder_channel: "off" | "sms" | "email";
             /** Reminder Min Days Overdue */
             reminder_min_days_overdue: number;
             /** Reminder Repeat Days */
@@ -5398,7 +5398,7 @@ export interface components {
              * Channel
              * @description Default: every channel
              */
-            channel?: ("email" | "sms" | "whatsapp") | null;
+            channel?: ("email" | "sms") | null;
             /** Reason */
             reason?: string | null;
         };
@@ -6640,7 +6640,7 @@ export interface components {
             /** Recipient */
             recipient: string;
             /** Channel */
-            channel?: ("email" | "sms" | "whatsapp") | null;
+            channel?: ("email" | "sms") | null;
             /** Reason */
             reason?: string | null;
         };
@@ -7392,7 +7392,7 @@ export interface components {
              * Channel
              * @enum {string}
              */
-            channel: "whatsapp" | "sms" | "email" | "call" | "visit";
+            channel: "sms" | "email" | "call" | "visit";
             /** Note */
             note?: string | null;
         };
@@ -7824,12 +7824,12 @@ export interface components {
              * Channel
              * @description Default: the company's
              */
-            channel?: ("sms" | "whatsapp" | "email") | null;
+            channel?: ("sms" | "email") | null;
         };
         /** SendRemindersIn */
         SendRemindersIn: {
             /** Channel */
-            channel?: ("sms" | "whatsapp" | "email") | null;
+            channel?: ("sms" | "email") | null;
             /**
              * Min Days Overdue
              * @default 1
@@ -7954,7 +7954,7 @@ export interface components {
              * @default web
              * @enum {string}
              */
-            channel: "web" | "pos" | "api" | "whatsapp";
+            channel: "web" | "pos" | "api";
         };
         /** SnapshotOut */
         SnapshotOut: {
@@ -8240,7 +8240,7 @@ export interface components {
              * Channel
              * @enum {string}
              */
-            channel: "email" | "sms" | "whatsapp";
+            channel: "email" | "sms";
             /** Recipient */
             recipient: string;
         };
@@ -11335,7 +11335,7 @@ export interface operations {
                 "x-tenant-id"?: string | null;
             };
             path: {
-                channel: "email" | "sms" | "whatsapp";
+                channel: "email" | "sms";
             };
             cookie?: never;
         };
@@ -11379,7 +11379,7 @@ export interface operations {
                 "x-tenant-id"?: string | null;
             };
             path: {
-                channel: "email" | "sms" | "whatsapp";
+                channel: "email" | "sms";
             };
             cookie?: never;
         };
@@ -11447,7 +11447,7 @@ export interface operations {
         parameters: {
             query: {
                 company_id: string;
-                channel?: ("email" | "sms" | "whatsapp") | null;
+                channel?: ("email" | "sms") | null;
                 status?: string | null;
                 ref_type?: string | null;
                 ref_id?: string | null;

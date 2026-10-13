@@ -571,7 +571,7 @@ class ReminderDueOut(BaseModel):
 
 
 class ReminderIn(BaseModel):
-    channel: Literal["whatsapp", "sms", "email", "call", "visit"]
+    channel: Literal["sms", "email", "call", "visit"]
     note: str | None = Field(default=None, max_length=300)
 
 
@@ -619,7 +619,7 @@ class RefundOut(BaseModel):
 
 
 class SendReminderIn(BaseModel):
-    channel: Literal["sms", "whatsapp", "email"] | None = Field(default=None, description="Default: the company's")
+    channel: Literal["sms", "email"] | None = Field(default=None, description="Default: the company's")
 
 
 class ReminderSentOut(BaseModel):
@@ -630,7 +630,7 @@ class ReminderSentOut(BaseModel):
 
 
 class SendRemindersIn(BaseModel):
-    channel: Literal["sms", "whatsapp", "email"] | None = None
+    channel: Literal["sms", "email"] | None = None
     min_days_overdue: int = Field(default=1, ge=0, le=3650)
     repeat_days: int = Field(default=7, ge=0, le=365)
     limit: int = Field(default=200, ge=1, le=500)

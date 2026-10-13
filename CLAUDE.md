@@ -13,8 +13,8 @@ Read this first in every session, then read `docs/PROGRESS.md`: "Current state" 
 ## What this is
 
 Ziira Core is a modular ERP for Kenyan SMEs (first customers: multi-branch retail and distribution).
-It pairs with **Ziira Intelligence**, a layer that checks business data daily and alerts owners on
-WhatsApp. Product and technical specifications are in `docs/specs/` (each PDF has a `.txt` copy
+It pairs with **Ziira Intelligence**, a layer that checks business data daily and alerts owners by
+message. Product and technical specifications are in `docs/specs/` (each PDF has a `.txt` copy
 with the same name; read the `.txt`, since the PDFs need extra tools to read):
 
 - `Ziira_Core_1.0.pdf`: the 12 modules and 1.0 scope
@@ -124,12 +124,12 @@ tests/             unit tests for domain rules
   `flag_for_review` (exceptions inbox: anything a person must look at), `@job` / `enqueue` (background jobs with retry and
   backoff, run by `ziira worker`), `store_credential` / `read_credential` (encrypted integration secrets),
   `system_session` (work nobody signed in for, such as a Safaricom callback), `periodic` (recurring tasks, run by the
-  worker once per interval per business), `send_notification` / `opt_out_contact` (email, SMS and WhatsApp through the
+  worker once per interval per business), `send_notification` / `opt_out_contact` (email and SMS through the
   business's channel; see `docs/notifications.md`). See `docs/adding-a-module.md`.
 - Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
   (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
 - A business event that already happened (an offline sale) is accepted and its problems are flagged, not refused.
-- Daraja (M-Pesa) request formats in `payments/providers.py`, and the SMS and WhatsApp formats in
+- Daraja (M-Pesa) request formats in `payments/providers.py`, and the SMS formats in
   `plugins/messaging/providers.py`, are written from public documentation and have not been run against the real services:
   test in their sandboxes before any live use.
 - Never send a message in the caller's request: queue it. Respect the do-not-contact list (the kernel does).

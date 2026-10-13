@@ -1,10 +1,10 @@
 # Messaging channels (plugin)
 
 Sends the messages other units ask for (`send_notification`): **email** through any SMTP server, **SMS** through
-Africa's Talking, **WhatsApp** through the WhatsApp Cloud API. The kernel owns the queue, the record of what was sent and
+BlessedTexts (or Africa's Talking). The kernel owns the queue, the record of what was sent and
 the list of people who asked not to be contacted; this plugin only knows how to deliver one message through a gateway.
 
-> The SMS and WhatsApp request formats were written from the gateways' public documentation and **have not been run
+> The SMS request formats were written from the gateways' public documentation and **have not been run
 > against the real services**. Try each with its sandbox or a test number (`POST /api/v1/notifications/test`) before
 > relying on it.
 
@@ -12,8 +12,8 @@ Set up a channel per business (permission `settings.manage`):
 
 ```
 PUT /api/v1/notifications/channels/sms
-{"company_id": "...", "provider": "africastalking", "secret": {"api_key": "..."},
- "config": {"username": "mybusiness", "sender_id": "MYSHOP"}}
+{"company_id": "...", "provider": "blessedtexts", "secret": {"api_key": "..."},
+ "config": {"sender_id": "23107"}}
 ```
 
 | Channel | Provider | Secret | Config |
@@ -21,7 +21,6 @@ PUT /api/v1/notifications/channels/sms
 | email | `smtp` | host, port, username, password | from_address, from_name, starttls |
 | sms | `blessedtexts` | api_key | sender_id |
 | sms | `africastalking` | api_key | username, sender_id, sandbox |
-| whatsapp | `whatsapp_cloud` | access_token | phone_number_id, template, language, api_version |
 | any | `fake` | any (development only) | |
 
 A failure that may pass (the gateway is unreachable, a server error) is retried with growing delays up to five times; one

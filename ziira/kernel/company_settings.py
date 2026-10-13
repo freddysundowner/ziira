@@ -62,8 +62,8 @@ def _percent(value: Any) -> Decimal:
 
 
 def _reminder_channel(value: Any) -> str:
-    if value not in ("off", "sms", "whatsapp", "email"):
-        raise ValidationFailed("Expected 'off', 'sms', 'whatsapp' or 'email'")
+    if value not in ("off", "sms", "email"):
+        raise ValidationFailed("Expected 'off', 'sms' or 'email'")
     return str(value)
 
 

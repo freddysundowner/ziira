@@ -17,7 +17,7 @@ from ziira.kernel.context import get_context
 from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.kernel.security import decrypt, encrypt
 
-PROVIDERS = ("daraja", "bank", "etims", "whatsapp", "email", "sms")
+PROVIDERS = ("daraja", "bank", "etims", "email", "sms")
 
 
 def store_secret(s: Session, *, company_id: UUID, provider: str, label: str, secret: dict[str, Any],

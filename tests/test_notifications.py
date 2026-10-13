@@ -16,7 +16,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     s = make_stock_shop(client, registry, "Notify Co")
     registry.enable(s["tenant_id"], "messaging")
     co = str(s["company_id"])
-    for channel in ("sms", "email", "whatsapp"):
+    for channel in ("sms", "email"):
         r = client.put(f"/api/v1/notifications/channels/{channel}", headers=s["owner"], json={
             "company_id": co, "provider": "fake", "secret": {"api_key": "k"}, "config": {}})
         assert r.status_code == 200, r.text
@@ -24,12 +24,12 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
 
 
 def providers():  # type: ignore[no-untyped-def]
-    from ziira.plugins.messaging.providers import FakeEmail, FakeSms, FakeWhatsApp
+    from ziira.plugins.messaging.providers import FakeEmail, FakeSms
 
-    for fake in (FakeSms, FakeEmail, FakeWhatsApp):
+    for fake in (FakeSms, FakeEmail):
         fake.sent.clear()
         fake.refuse_next, fake.fail_next = None, 0
-    return FakeSms, FakeEmail, FakeWhatsApp
+    return FakeSms, FakeEmail
 
 
 def queue(shop, channel="sms", to="0712345678", body="Hello", **kw):  # type: ignore[no-untyped-def]
@@ -53,7 +53,7 @@ def status_of(shop, notification_id):  # type: ignore[no-untyped-def]
 
 
 def test_a_message_is_sent_in_the_background(client, shop) -> None:  # type: ignore[no-untyped-def]
-    sms, email, whatsapp = providers()
+    sms, email = providers()
     first = queue(shop, "sms", "0712 345 678", "Your invoice is due")
     assert status_of(shop, first) == "queued" and sms.sent == []                    # nothing happens in the request
     assert run(shop) >= 1
@@ -61,10 +61,8 @@ def test_a_message_is_sent_in_the_background(client, shop) -> None:  # type: ign
     assert one(shop, "select provider from kernel.notification where id = :i", i=str(first)) == "fake"
     assert one(shop, "select provider_ref from kernel.notification where id = :i", i=str(first)).startswith("fake-")
     queue(shop, "email", "Mama@Shop.test", "Statement attached")
-    queue(shop, "whatsapp", "+254722000111", "Habari")
     run(shop)
     assert email.sent[0].recipient == "mama@shop.test" and email.sent[0].subject == "Subject"
-    assert whatsapp.sent[0].recipient == "254722000111"
     run(shop)
     assert len(sms.sent) == 1                                                        # nothing is sent twice
 
@@ -82,7 +80,7 @@ def test_recipients_and_messages_are_validated(client, shop) -> None:  # type: i
     from ziira.sdk import ValidationFailed
 
     for channel, to in (("sms", "12345"), ("sms", "0212345678"), ("email", "nope"), ("email", "a@b"),
-                        ("whatsapp", "abc"), ("pigeon", "0712345678")):
+                        ("whatsapp", "0712345678"), ("pigeon", "0712345678")):
         with pytest.raises(ValidationFailed):
             queue(shop, channel, to)
     with pytest.raises(ValidationFailed):
@@ -97,7 +95,7 @@ def test_recipients_and_messages_are_validated(client, shop) -> None:  # type: i
 
 
 def test_someone_who_asked_not_to_be_contacted_is_not_messaged(client, shop) -> None:  # type: ignore[no-untyped-def]
-    sms, email, _ = providers()
+    sms, email = providers()
     co = str(shop["company_id"])
     made = client.post("/api/v1/notifications/opt-outs", headers=shop["owner"], json={
         "company_id": co, "recipient": "0733000444", "channel": "sms", "reason": "Asked on the phone"})
@@ -106,7 +104,7 @@ def test_someone_who_asked_not_to_be_contacted_is_not_messaged(client, shop) -> 
     assert status_of(shop, skipped) == "skipped"
     run(shop)
     assert sms.sent == []
-    other_channel = queue(shop, "whatsapp", "0733000444", "Reminder")                # only SMS was refused
+    other_channel = queue(shop, "email", "mama@shop.test", "Reminder")                # only SMS was refused
     assert status_of(shop, other_channel) == "queued"
     everywhere = client.post("/api/v1/notifications/opt-outs", headers=shop["owner"], json={
         "company_id": co, "recipient": "stop@shop.test"}).json()
@@ -174,7 +172,7 @@ def test_a_business_without_a_channel_has_its_messages_skipped_and_flagged(clien
 def test_channels_are_set_up_and_shown_without_their_keys(client, shop) -> None:  # type: ignore[no-untyped-def]
     co = str(shop["company_id"])
     listed = client.get("/api/v1/notifications/channels", headers=shop["owner"], params={"company_id": co})
-    assert listed.status_code == 200 and {c["channel"] for c in listed.json()} >= {"sms", "email", "whatsapp"}
+    assert listed.status_code == 200 and {c["channel"] for c in listed.json()} >= {"sms", "email"}
     assert "api_key" not in listed.text and all(c["provider"] == "fake" for c in listed.json() if c["status"] == "active")
     replaced = client.put("/api/v1/notifications/channels/sms", headers=shop["owner"], json={
         "company_id": co, "provider": "fake", "secret": {"api_key": "new"}, "label": "Second"})
@@ -189,9 +187,9 @@ def test_channels_are_set_up_and_shown_without_their_keys(client, shop) -> None:
         "company_id": co, "provider": "fake", "secret": {}}).status_code == 422
     assert client.put("/api/v1/notifications/channels/telegram", headers=shop["owner"], json={
         "company_id": co, "provider": "x", "secret": {"a": "b"}}).status_code == 422
-    assert client.delete("/api/v1/notifications/channels/whatsapp", headers=shop["owner"],
+    assert client.delete("/api/v1/notifications/channels/email", headers=shop["owner"],
                          params={"company_id": co}).status_code == 204
-    assert client.delete("/api/v1/notifications/channels/whatsapp", headers=shop["owner"],
+    assert client.delete("/api/v1/notifications/channels/email", headers=shop["owner"],
                          params={"company_id": co}).status_code == 404
 
 

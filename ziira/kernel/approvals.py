@@ -233,4 +233,4 @@ def _user() -> str | None:
 
 
 def _channel(channel: str) -> str:
-    return channel if channel in ("web", "pos", "whatsapp", "api") else "api"
+    return channel if channel in ("web", "pos", "api") else "api"

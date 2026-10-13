@@ -1,6 +1,6 @@
-"""Ways of sending a message: SMTP email, Africa's Talking SMS and the WhatsApp Cloud API (and a fake one for tests).
+"""Ways of sending a message: SMTP email, BlessedTexts and Africa's Talking SMS (and a fake one for tests).
 
-**The SMS and WhatsApp request formats were written from the gateways' public documentation and have not been run
+**The SMS request formats were written from the gateways' public documentation and have not been run
 against the real services.** Try them with the gateway's sandbox or a test number before relying on them; the same goes
 for the details of their error replies, which decide whether a failure is retried.
 
@@ -132,41 +132,6 @@ class BlessedTextsSms(_HttpChannel):
         return SendResult(False, message=f"BlessedTexts: {description}"[:300], permanent_failure=True)
 
 
-class WhatsAppCloud(_HttpChannel):
-    """WhatsApp through the Cloud API. Secret: {access_token}. Config: {phone_number_id, api_version?, template?,
-    language?}. A business may start a conversation only with an approved *template*; give its name in the config and
-    the message text is sent as the template's single body parameter. Without a template the message is sent as plain
-    text, which WhatsApp delivers only to someone who messaged the business in the last 24 hours."""
-
-    channel = "whatsapp"
-    name = "whatsapp_cloud"
-
-    def send(self, message: Outgoing, secret: dict[str, Any], config: dict[str, Any]) -> SendResult:
-        version = str(config.get("api_version") or "v20.0")
-        url = f"https://graph.facebook.com/{version}/{config['phone_number_id']}/messages"
-        payload: dict[str, Any] = {"messaging_product": "whatsapp", "to": message.recipient}
-        if config.get("template"):
-            payload.update(type="template", template={
-                "name": config["template"], "language": {"code": config.get("language") or "en"},
-                "components": [{"type": "body", "parameters": [{"type": "text", "text": message.body[:1000]}]}]})
-        else:
-            payload.update(type="text", text={"body": message.body})
-        with self.client_factory() as client:
-            response = client.post(url, json=payload, headers={"Authorization": f"Bearer {secret['access_token']}"})
-        if self.server_failed(response):
-            response.raise_for_status()
-        try:
-            body = response.json()
-        except ValueError:
-            return SendResult(False, message=f"Unexpected reply from WhatsApp ({response.status_code})",
-                              permanent_failure=True)
-        if response.status_code < 300 and body.get("messages"):
-            return SendResult(True, provider_ref=body["messages"][0].get("id"))
-        error = body.get("error", {})
-        return SendResult(False, message=f"WhatsApp: {error.get('message', 'not sent')}"[:300],
-                          permanent_failure=True)
-
-
 class _Fake(NotificationChannel):
     """For development and tests: records what it was asked to send and says yes (or what the test scripted)."""
 
@@ -195,6 +160,3 @@ class FakeEmail(_Fake):
 class FakeSms(_Fake):
     channel, name, sent = "sms", "fake", []                    # noqa: RUF012
 
-
-class FakeWhatsApp(_Fake):
-    channel, name, sent = "whatsapp", "fake", []               # noqa: RUF012

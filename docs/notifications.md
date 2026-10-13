@@ -11,12 +11,12 @@ send_notification(session, company_id=co, channel="sms", recipient="0712345678",
                   dedupe_key=f"reminder:{invoice.id}:{today}:sms")
 ```
 
-* **Channels** are email, SMS and WhatsApp. Each business sets up its own (`PUT /api/v1/notifications/channels/{channel}`,
+* **Channels** are email and SMS. Each business sets up its own (`PUT /api/v1/notifications/channels/{channel}`,
   permission `settings.manage`): which provider, and the keys, which are stored encrypted and never shown again.
   `POST /api/v1/notifications/test` sends a test message.
-* **Providers** come from the `messaging` plugin: `smtp` (email), `blessedtexts` (SMS, the one we use) and `africastalking` (SMS), `whatsapp_cloud` (WhatsApp) and
+* **Providers** come from the `messaging` plugin: `smtp` (email), `blessedtexts` (SMS, the one we use) and `africastalking` (SMS) and
   `fake` (development). To support another gateway, write a class implementing `NotificationChannel` and register it with
-  `@provides("kernel.notification_channel")`. The SMS and WhatsApp formats were written from the gateways' documentation and
+  `@provides("kernel.notification_channel")`. The SMS formats were written from the gateways' documentation and
   have not been run against the real services: test each in the gateway's sandbox first.
 * **Do not contact.** `POST /api/v1/notifications/opt-outs` (or a customer's `do-not-contact` in CRM) stops all messages, or
   those on one channel, to a person. Such a message is recorded as skipped and never sent.

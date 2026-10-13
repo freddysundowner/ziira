@@ -27,7 +27,7 @@ from ziira.kernel.db import master_session, tenant_engine, tenant_session
 from ziira.kernel.errors import NotFound, Unauthorized, ValidationFailed
 from ziira.kernel.security import hash_secret, new_secret, read_token, sign_token, verify_password
 
-CHANNELS = ("web", "pos", "api", "whatsapp")
+CHANNELS = ("web", "pos", "api")
 
 
 @dataclass(frozen=True)

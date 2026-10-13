@@ -2,7 +2,7 @@
 
 **Status:** working for phases 4 and 6: devices, tills with X and Z reports, sales, voids, returns, price overrides and
 offline sync (phase 4); and, with CRM, **credit sales, invoices, quotations and sales orders, customer payments, credit
-notes, advance payments, statements, ageing and reminders sent by SMS, WhatsApp or email** (phase 6), and **printable receipts, invoices and payment receipts** (text for thermal printers, HTML, or data).
+notes, advance payments, statements, ageing and reminders sent by SMS or email** (phase 6), and **printable receipts, invoices and payment receipts** (text for thermal printers, HTML, or data).
 
 | | |
 |---|---|
@@ -84,7 +84,7 @@ fix the cause and the device sends it again.
   `/receivables/ageing` (by due date), `/receivables/reminders` (who to chase) and `POST /invoices/{id}/reminders` to record
   a chase. A cashier can see a customer's balance but not browse debtors.
 - **Reminders are sent.** `POST /invoices/{id}/send-reminder` and `POST /receivables/send-reminders` message the customer
-  (SMS, WhatsApp or email; their phone or email from CRM) through the kernel's messaging and note the reminder; one a day per
+  (SMS or email; their phone or email from CRM) through the kernel's messaging and note the reminder; one a day per
   invoice and channel, nothing to someone on the do-not-contact list. With the company setting `reminder_channel` turned on,
   a daily recurring task (`pos.send_reminders`) chases invoices `reminder_min_days_overdue` days late, no more often than
   every `reminder_repeat_days`. Old quotations are expired by another recurring task.

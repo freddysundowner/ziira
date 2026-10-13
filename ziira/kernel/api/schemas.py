@@ -21,7 +21,7 @@ class SignInIn(BaseModel):
     password: str
     device_id: str = Field(min_length=1, max_length=200, description="Stable id of this browser or device")
     device_name: str | None = Field(default=None, max_length=200, examples=["Thika till 2"])
-    channel: Literal["web", "pos", "api", "whatsapp"] = "web"
+    channel: Literal["web", "pos", "api"] = "web"
 
 
 class RefreshIn(BaseModel):
@@ -93,7 +93,7 @@ class CompanySettingsOut(Out):
     count_variance_threshold: Decimal
     late_posting: Literal["redirect", "reject"]
     bill_match_tolerance_percent: Decimal
-    reminder_channel: Literal["off", "sms", "whatsapp", "email"]
+    reminder_channel: Literal["off", "sms", "email"]
     reminder_min_days_overdue: int
     reminder_repeat_days: int
     receipt_footer: str
@@ -108,7 +108,7 @@ class CompanySettingsIn(BaseModel):
     count_variance_threshold: Annotated[Amount, Field(ge=0)] | None = None
     late_posting: Literal["redirect", "reject"] | None = None
     bill_match_tolerance_percent: Annotated[Decimal, Field(ge=0, le=100, max_digits=5, decimal_places=2)] | None = None
-    reminder_channel: Literal["off", "sms", "whatsapp", "email"] | None = None
+    reminder_channel: Literal["off", "sms", "email"] | None = None
     reminder_min_days_overdue: Annotated[int, Field(ge=0, le=365)] | None = None
     reminder_repeat_days: Annotated[int, Field(ge=0, le=365)] | None = None
     receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None

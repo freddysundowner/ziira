@@ -247,8 +247,8 @@ def do_not_contact(session: Session, customer_id: UUID, *, channel: str | None =
         raise NotFound("Customer not found")
     access.check_visible(customer.company_id, "Customer")
     access.require(CUSTOMERS_MANAGE, customer.company_id)
-    if channel not in (None, "email", "sms", "whatsapp"):
-        raise ValidationFailed("Channel must be email, sms or whatsapp")
+    if channel not in (None, "email", "sms"):
+        raise ValidationFailed("Channel must be email or sms")
     wanted = []
     if customer.phone and channel != "email":
         wanted.append(customer.phone)

@@ -160,7 +160,7 @@ async def idempotency_key_header(
 def send_notification(session: Session, *, company_id: UUID, channel: str, recipient: str, body: str,
                       subject: str | None = None, ref_type: str | None = None, ref_id: UUID | None = None,
                       dedupe_key: str | None = None) -> UUID | None:
-    """Queue an email, SMS or WhatsApp message to someone outside the system; it is sent in the background through the
+    """Queue an email or SMS message to someone outside the system; it is sent in the background through the
     business's channel. Returns its id (None if `dedupe_key` was already used). See kernel/notifications.py."""
     return notifications.queue(session, company_id=company_id, channel=channel, recipient=recipient, body=body,
                                subject=subject, ref_type=ref_type, ref_id=ref_id, dedupe_key=dedupe_key)

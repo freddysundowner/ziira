@@ -480,7 +480,7 @@ def post_reminder(invoice_id: UUID, body: sc.ReminderIn, session: Session = Depe
 @router.post("/invoices/{invoice_id}/send-reminder", response_model=sc.ReminderSentOut,
              status_code=status.HTTP_201_CREATED, dependencies=BALANCE)
 def post_send_reminder(invoice_id: UUID, body: sc.SendReminderIn, session: Session = Depends(db_session)) -> object:
-    """Message the customer about this invoice now (SMS, WhatsApp or email)."""
+    """Message the customer about this invoice now (SMS or email)."""
     return receivables.send_reminder(session, invoice_id, channel=body.channel)
 
 

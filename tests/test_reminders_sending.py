@@ -1,4 +1,4 @@
-"""Chasing customers: a message goes out by SMS, WhatsApp or email - on request, in a batch, or automatically every
+"""Chasing customers: a message goes out by SMS or email - on request, in a batch, or automatically every
 day - and never to someone who asked not to be contacted."""
 
 from datetime import date, timedelta
@@ -19,7 +19,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     s = make_sales_shop(client, registry, "Chase Co", stock="500")
     registry.enable(s["tenant_id"], "messaging")
     s["rep"] = s["user"]("rep", "Sales Rep", s["branch_id"])
-    for channel in ("sms", "email", "whatsapp"):
+    for channel in ("sms", "email"):
         r = client.put(f"/api/v1/notifications/channels/{channel}", headers=s["owner"], json={
             "company_id": str(s["company_id"]), "provider": "fake", "secret": {"k": "v"}})
         assert r.status_code == 200, r.text
@@ -27,12 +27,12 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
 
 
 def fakes():  # type: ignore[no-untyped-def]
-    from ziira.plugins.messaging.providers import FakeEmail, FakeSms, FakeWhatsApp
+    from ziira.plugins.messaging.providers import FakeEmail, FakeSms
 
-    for fake in (FakeSms, FakeEmail, FakeWhatsApp):
+    for fake in (FakeSms, FakeEmail):
         fake.sent.clear()
         fake.refuse_next, fake.fail_next = None, 0
-    return FakeSms, FakeEmail, FakeWhatsApp
+    return FakeSms, FakeEmail
 
 
 def deliver(shop) -> None:  # type: ignore[no-untyped-def]
@@ -75,17 +75,17 @@ def test_a_reminder_is_sent_by_sms_and_noted(client, shop) -> None:  # type: ign
     assert [h["status"] for h in history] == ["sent"]
 
 
-def test_email_and_whatsapp_reminders_and_missing_contact_details(client, shop) -> None:  # type: ignore[no-untyped-def]
-    _, email, whatsapp = fakes()
+def test_email_and_sms_reminders_and_missing_contact_details(client, shop) -> None:  # type: ignore[no-untyped-def]
+    sms, email = fakes()
     cust = credit_customer(client, shop, name="Both Ways", limit="50000", phone="0711999888", email="pay@both.test")
     inv = overdue(client, shop, cust, 3)
     assert client.post(f"{POS}/invoices/{inv['id']}/send-reminder", headers=shop["fm"],
                        json={"channel": "email"}).status_code == 201
     assert client.post(f"{POS}/invoices/{inv['id']}/send-reminder", headers=shop["fm"],
-                       json={"channel": "whatsapp"}).status_code == 201                       # another channel, same day
+                       json={"channel": "sms"}).status_code == 201                       # another channel, same day
     deliver(shop)
     assert email.sent[0].recipient == "pay@both.test" and email.sent[0].subject.startswith("Reminder: invoice")
-    assert whatsapp.sent[0].recipient == "254711999888"
+    assert sms.sent[0].recipient == "254711999888"
     no_email = credit_customer(client, shop, name="Phone Only", limit="50000", phone="0711999777")
     inv2 = overdue(client, shop, no_email, 3)
     r = client.post(f"{POS}/invoices/{inv2['id']}/send-reminder", headers=shop["fm"], json={"channel": "email"})

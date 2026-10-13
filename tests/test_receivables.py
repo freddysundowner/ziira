@@ -102,8 +102,8 @@ def test_overdue_invoices_come_up_for_a_reminder_until_chased(client, shop) -> N
     path = f"{POS}/invoices/{inv['id']}/reminders"
     assert client.post(path, headers=shop["fm"], json={"channel": "pigeon"}).status_code == 422
     assert client.post(path, headers=shop["storekeeper"], json={"channel": "call"}).status_code == 403
-    made = client.post(path, headers=shop["fm"], json={"channel": "whatsapp", "note": "Sent the statement"})
-    assert made.status_code == 201 and made.json()["channel"] == "whatsapp"
+    made = client.post(path, headers=shop["fm"], json={"channel": "call", "note": "Sent the statement"})
+    assert made.status_code == 201 and made.json()["channel"] == "call"
     again = client.get(f"{POS}/receivables/reminders", headers=shop["fm"]).json()
     assert all(r["invoice_id"] != inv["id"] for r in again)                                     # chased a moment ago
     later = client.get(f"{POS}/receivables/reminders", headers=shop["fm"], params={"repeat_days": 0}).json()
