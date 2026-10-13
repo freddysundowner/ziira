@@ -125,7 +125,8 @@ def post_movement(session: Session, request: MovementRequest) -> StockMovement:
     cost.quantity, cost.value, cost.average_cost = costed.state.quantity, costed.state.value, costed.state.average_cost
     session.flush()
 
-    payload = {"company_id": request.company_id, "location_id": request.location_id,
+    payload = {"company_id": request.company_id, "branch_id": location.branch_id,
+               "location_id": request.location_id, "location_kind": location.kind,
                "product_id": request.product_id, "batch_id": request.batch_id, "quantity": request.quantity,
                "unit_cost": costed.unit_cost, "value": costed.value, "movement_type": request.movement_type,
                "source_type": request.source_type, "source_id": request.source_id,

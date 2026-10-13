@@ -177,3 +177,25 @@ def test_first_expiry_first_out() -> None:
 def test_picking_needs_a_positive_quantity() -> None:
     with pytest.raises(ValueError):
         pick_first_expiry_first_out([], D("0"))
+
+
+# --------------------------------------------------------------------------- landed cost
+def test_landed_cost_is_spread_by_value() -> None:
+    lines = [(D("10"), D("100")), (D("5"), D("200"))]            # values 1,000 and 1,000
+    assert costing.spread_landed_cost(lines, D("200")) == [D("110.000000"), D("220.000000")]
+
+
+def test_landed_cost_shares_add_up_exactly() -> None:
+    lines = [(D("3"), D("10")), (D("3"), D("10")), (D("3"), D("10"))]
+    costs = costing.spread_landed_cost(lines, D("100"))
+    shares = [(cost - D("10")) * 3 for cost in costs]
+    assert abs(sum(shares) - D("100")) < D("0.00001")
+
+
+def test_no_landed_cost_leaves_costs_alone() -> None:
+    assert costing.spread_landed_cost([(D("2"), D("7.5"))], D("0")) == [D("7.500000")]
+    assert costing.spread_landed_cost([], D("50")) == []
+
+
+def test_free_goods_share_landed_cost_by_quantity() -> None:
+    assert costing.spread_landed_cost([(D("4"), D("0")), (D("6"), D("0"))], D("100")) == [D("10.000000")] * 2

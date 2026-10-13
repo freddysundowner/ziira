@@ -21,3 +21,14 @@ def average_cost(session: Session, company_id: UUID, product_id: UUID) -> Decima
     """The company's current weighted average cost of a product (zero if it never had stock)."""
     cost = inventory_repo.get_cost(session, company_id, product_id)
     return cost.average_cost if cost else Decimal(0)
+
+
+def posted_cost(session: Session, source_type: str, source_id: UUID) -> dict[UUID, Decimal]:
+    """What the stock movements of a document cost, by the document's line id (for example the cost of goods
+    sold of each line of a sale, available right after `sale.posted` was published). Lines that moved no stock
+    are absent."""
+    totals: dict[UUID, Decimal] = {}
+    for movement in inventory_repo.movements_for_source(session, source_type, source_id):
+        if movement.source_line_id is not None:
+            totals[movement.source_line_id] = totals.get(movement.source_line_id, Decimal(0)) + abs(movement.value)
+    return totals

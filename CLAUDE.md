@@ -43,6 +43,7 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira create-tenant NAME --code CODE --company ... --branch-code ... --branch-name ... \
     --owner-name ... --owner-email ...      # owner password from prompt or ZIIRA_OWNER_PASSWORD
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
+.venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
 ```
 
 On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything at Docker on 5433.
@@ -84,6 +85,11 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
 12. **Web modules mirror units** (`frontend/src/modules/<unit>`); they import only `@/sdk` and other modules'
    `public.ts` (ESLint). Every web page names a permission. See `docs/frontend.md`.
 
+13. **Stock changes only through `inventory/services/ledger.py: post_movement`** (immutable movements, locked
+   balances, weighted average cost). Other units publish `sale.posted`, `sale.returned`, `goods.received`
+   (payloads in `inventory/services/stock_events.py`); they never write stock tables. Costs are shown only to
+   users with `stock.cost`.
+
 ## Module layout (copy `ziira/modules/products`)
 
 ```
@@ -103,7 +109,8 @@ tests/             unit tests for domain rules
 ## Conventions
 
 - Type hints everywhere; clear names (`post_stock_adjustment`, not `proc_adj`); docstrings on public functions.
-- Every change ships with tests. Domain rules get unit tests; flows get API/database tests in `tests/`.
+- Every change ships with tests. Domain rules get unit tests (and Hypothesis property tests where invariants matter);
+  flows get API/database tests in `tests/` (shared stock setup: `tests/stock_helpers.py`).
 - Reason codes required for voids, refunds, discounts above policy, price overrides, stock adjustments.
 - Record creator and approver separately; enforce separation of duties where configured.
 - Statutory payroll rates live in `people.statutory_rate_table` (effective-dated data), never in code.

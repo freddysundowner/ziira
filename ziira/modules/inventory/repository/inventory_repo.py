@@ -1,5 +1,6 @@
 """Database access for the inventory schema. Row-level security scopes every query to the tenant."""
 
+from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from uuid import UUID
@@ -265,3 +266,81 @@ def list_counts(session: Session, scopes: Scopes, *, location_id: UUID | None = 
     if status:
         query = query.where(StockCount.status == status)
     return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- documents of other units
+def source_has_movements(session: Session, source_type: str, source_id: UUID) -> bool:
+    """True if stock has already been posted for this document (a sale, a goods receipt)."""
+    return session.scalar(select(StockMovement.id).where(
+        StockMovement.source_type == source_type, StockMovement.source_id == source_id).limit(1)) is not None
+
+
+def sale_movement(session: Session, sale_id: UUID, sale_line_id: UUID) -> StockMovement | None:
+    """The first stock movement posted for a sale line (what it cost and which batch it came from)."""
+    return session.scalar(select(StockMovement).where(
+        StockMovement.source_type == "sale", StockMovement.source_id == sale_id,
+        StockMovement.source_line_id == sale_line_id).order_by(StockMovement.seq).limit(1))
+
+
+def single_store(session: Session, company_id: UUID, branch_id: UUID) -> Location | None:
+    """The branch's only active store, if it has exactly one."""
+    stores = list(session.scalars(select(Location).where(
+        Location.company_id == company_id, Location.branch_id == branch_id, Location.kind == "store",
+        Location.is_active).limit(2)))
+    return stores[0] if len(stores) == 1 else None
+
+
+def movements_for_source(session: Session, source_type: str, source_id: UUID) -> list[StockMovement]:
+    return list(session.scalars(select(StockMovement).where(
+        StockMovement.source_type == source_type, StockMovement.source_id == source_id).order_by(StockMovement.seq)))
+
+
+# --------------------------------------------------------------------------- verification
+@dataclass(frozen=True)
+class BalanceMismatch:
+    location_id: UUID
+    product_id: UUID
+    batch_id: UUID | None
+    stored: Decimal
+    moved: Decimal
+
+
+def balance_mismatches(session: Session) -> list[BalanceMismatch]:
+    """Balances that differ from the sum of their movements (in either direction)."""
+    rows = session.execute(text(
+        "with moved as (select location_id, product_id, batch_id, sum(quantity) as q "
+        "  from inventory.stock_movement group by location_id, product_id, batch_id) "
+        "select coalesce(b.location_id, m.location_id) as location_id, coalesce(b.product_id, m.product_id) as "
+        "  product_id, coalesce(b.batch_id, m.batch_id) as batch_id, coalesce(b.quantity, 0) as stored, "
+        "  coalesce(m.q, 0) as moved "
+        "from inventory.stock_balance b full join moved m on b.location_id = m.location_id "
+        "  and b.product_id = m.product_id and b.batch_id is not distinct from m.batch_id "
+        "where coalesce(b.quantity, 0) <> coalesce(m.q, 0) order by 1, 2"))
+    return [BalanceMismatch(r.location_id, r.product_id, r.batch_id, r.stored, r.moved) for r in rows]
+
+
+def set_balance(session: Session, tenant_id: UUID, mismatch: BalanceMismatch) -> None:
+    """Make a balance equal to the sum of its movements (creating the row if it was missing)."""
+    session.execute(insert(StockBalance).values(
+        tenant_id=tenant_id, location_id=mismatch.location_id, product_id=mismatch.product_id,
+        batch_id=mismatch.batch_id, quantity=mismatch.moved).on_conflict_do_nothing())
+    batch_filter = StockBalance.batch_id.is_(None) if mismatch.batch_id is None \
+        else StockBalance.batch_id == mismatch.batch_id
+    for balance in session.scalars(select(StockBalance).where(
+            StockBalance.location_id == mismatch.location_id, StockBalance.product_id == mismatch.product_id,
+            batch_filter).with_for_update()):
+        balance.quantity = mismatch.moved
+    session.flush()
+
+
+def movement_history(session: Session) -> dict[tuple[UUID, UUID], list[tuple[str, Decimal, Decimal]]]:
+    """(movement type, quantity, value) of every movement in posting order, by (company, product)."""
+    history: dict[tuple[UUID, UUID], list[tuple[str, Decimal, Decimal]]] = {}
+    for row in session.execute(select(StockMovement.company_id, StockMovement.product_id, StockMovement.movement_type,
+                                      StockMovement.quantity, StockMovement.value).order_by(StockMovement.seq)):
+        history.setdefault((row.company_id, row.product_id), []).append((row.movement_type, row.quantity, row.value))
+    return history
+
+
+def all_costs(session: Session) -> dict[tuple[UUID, UUID], ProductCost]:
+    return {(c.company_id, c.product_id): c for c in session.scalars(select(ProductCost).with_for_update())}

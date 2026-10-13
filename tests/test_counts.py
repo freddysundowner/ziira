@@ -112,7 +112,7 @@ def test_recounting_replaces_the_earlier_figure(client, shop) -> None:  # type: 
 def test_entry_validation(client, shop) -> None:  # type: ignore[no-untyped-def]
     c = start(client, shop).json()
     assert do(client, shop, c["id"], "entries", entries=[entry(shop, "cement", "-1")]).status_code == 422
-    assert do(client, shop, c["id"], "entries", entries=[entry(shop, "paint", "3")]).status_code == 422     # which batch?
+    assert do(client, shop, c["id"], "entries", entries=[entry(shop, "paint", "3")]).status_code == 422   # which batch?
     assert do(client, shop, c["id"], "entries", entries=[entry(shop, "cement", "1"), entry(shop, "cement", "2")]
               ).status_code == 422
     assert do(client, shop, c["id"], "entries", entries=[entry(shop, "delivery", "1")]).status_code == 422   # a service

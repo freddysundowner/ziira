@@ -5,7 +5,7 @@ count.posted, stock.below_reorder
 Subscribes: approval.decided (kernel), sale.posted, sale.returned, goods.received
 """
 
-from ziira.modules.inventory.services import adjustments, counts, transfers
+from ziira.modules.inventory.services import adjustments, counts, stock_events, transfers
 from ziira.sdk import Event, Session, subscribe
 
 
@@ -23,14 +23,21 @@ def on_approval_decided(session: Session, event: Event) -> None:
         transfers.apply_decision(session, event.aggregate_id, approved=approved,
                                  decided_by=event.payload.get("decided_by"))
 
-# @subscribe("sale.posted")
-# def on_sale_posted(session: Session, event: Event) -> None:
-#     ...
 
-# @subscribe("sale.returned")
-# def on_sale_returned(session: Session, event: Event) -> None:
-#     ...
 
-# @subscribe("goods.received")
-# def on_goods_received(session: Session, event: Event) -> None:
-#     ...
+@subscribe("sale.posted")
+def on_sale_posted(session: Session, event: Event) -> None:
+    """Take sold stock out of the location. See services/stock_events.py for the payload."""
+    stock_events.post_sale(session, event)
+
+
+@subscribe("sale.returned")
+def on_sale_returned(session: Session, event: Event) -> None:
+    """Put returned stock back at the cost it left with."""
+    stock_events.post_sale_return(session, event)
+
+
+@subscribe("goods.received")
+def on_goods_received(session: Session, event: Event) -> None:
+    """Receive purchased stock at its cost (with landed cost spread over the lines)."""
+    stock_events.post_goods_receipt(session, event)

@@ -95,3 +95,31 @@ def rebuild(movements: list[tuple[str, Decimal, Decimal]]) -> CostState:
         average = round_cost(new_value / new_quantity) if quantity > 0 and new_quantity > 0 else state.average_cost
         state = CostState(new_quantity, new_value, average)
     return state
+
+
+def spread_landed_cost(lines: list[tuple[Decimal, Decimal]], landed_cost: Decimal) -> list[Decimal]:
+    """Unit costs of a receipt's lines with transport, duty and similar costs spread over them.
+
+    `lines` are (quantity, unit cost) as invoiced; the landed cost is shared in proportion to each line's value,
+    the last line taking the rounding remainder so the shares add up exactly. Returns the landed unit cost of
+    each line, to be averaged into stock like any receipt.
+    """
+    if landed_cost < 0:
+        raise ValueError("Landed cost cannot be negative")
+    values = [round_value(quantity * unit_cost) for quantity, unit_cost in lines]
+    total = sum(values, Decimal(0))
+    if landed_cost == 0 or not lines:
+        return [round_cost(unit_cost) for _, unit_cost in lines]
+    if total == 0:                                    # nothing to weigh by: share by quantity
+        weights = [quantity for quantity, _ in lines]
+        total = sum(weights, Decimal(0))
+    else:
+        weights = values
+    result: list[Decimal] = []
+    allocated = Decimal(0)
+    for index, ((quantity, unit_cost), weight) in enumerate(zip(lines, weights, strict=True)):
+        share = (landed_cost - allocated if index == len(lines) - 1
+                 else round_value(landed_cost * weight / total))
+        allocated += share
+        result.append(round_cost(unit_cost + share / quantity))
+    return result

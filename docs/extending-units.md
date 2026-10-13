@@ -45,3 +45,9 @@ validates = ["products.product.before_create"]
 - Validators run inside the transaction and block the operation. A validator that crashes also blocks,
   naming its unit (failing closed). Keep them fast (slow ones are logged). Slow or external work
   belongs in `@subscribe_after` handlers.
+
+## Sockets the kernel offers
+
+| Socket | Contract | Used for |
+|---|---|---|
+| `kernel.integrity_check` (extension point) | `IntegrityCheck.run(session, fix=False) -> list[str]` | A unit verifies its derived data against its source records. `ziira verify` runs every enabled unit's checks for every tenant (`--unit`, `--fix`; exit code 1 while problems remain); `ziira stock-verify` is Inventory's. Run it nightly. |

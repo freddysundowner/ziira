@@ -14,6 +14,8 @@ Every business (tenant) has its own database; the master database lists them.
     ziira remove <tenant> <unit>        drop a disabled unit's tables from the tenant's database
     ziira drop-tenant <code> --confirm <code>   delete a tenant's database and login (cannot be undone)
     ziira outbox-run [--once]           deliver committed events to after-commit subscribers
+    ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
+    ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
 """
 
 import argparse
@@ -86,6 +88,26 @@ def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
         outbox.run_forever()
 
 
+def cmd_verify(reg: Registry, a: argparse.Namespace) -> int:
+    from ziira.kernel.checks import run_integrity_checks
+
+    load_event_handlers(reg.units)
+    unit = "inventory" if a.cmd == "stock-verify" else a.unit
+    tenants = [_tenant(a.tenant)] if a.tenant else reg.tenant_ids()
+    problems = 0
+    for tenant_id in tenants:
+        for result in run_integrity_checks(tenant_id, fix=a.fix, unit=unit):
+            status = "ok" if not result.problems else f"{len(result.problems)} problem(s)"
+            print(f"{tenant_id}  {result.unit}: {result.check}: {status}")
+            for line in result.problems:
+                print(f"    {line}")
+            problems += len(result.problems)
+    if problems and a.fix:
+        print("Rebuilt from the movements; run again to confirm.")
+        return 0
+    return 1 if problems else 0
+
+
 def cmd_enable(reg: Registry, a: argparse.Namespace) -> None:
     done = reg.enable(_tenant(a.tenant), a.unit)
     print("Enabled: " + (", ".join(done) if done else "already enabled"))
@@ -126,6 +148,13 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("outbox-run")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_outbox_run)
+    for name in ("verify", "stock-verify"):
+        s = sub.add_parser(name)
+        s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
+        if name == "verify":
+            s.add_argument("--unit", help="check only this unit")
+        s.add_argument("--fix", action="store_true", help="rebuild derived data from the source records")
+        s.set_defaults(fn=cmd_verify, unit=None)
     for name, fn in (("enable", cmd_enable), ("disable", cmd_disable), ("remove", cmd_remove)):
         s = sub.add_parser(name)
         s.add_argument("tenant")
@@ -135,11 +164,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "install" and not args.all and not args.unit:
         p.error("give a unit name or --all")
     try:
-        args.fn(Registry(), args)
+        return int(args.fn(Registry(), args) or 0)
     except ZiiraError as e:
         print(f"Error: {e.message}", file=sys.stderr)
         return 1
-    return 0
 
 
 if __name__ == "__main__":

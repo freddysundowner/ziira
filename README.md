@@ -14,9 +14,9 @@ ziira_t_pevma                Pevma's own database: kernel + the modules Pevma en
 ziira_t_mamamboga            another business, its own database and login
 ```
 
-> **Status: build plan phase 1 (foundation) complete; phase 2 (Inventory) is next.** The kernel
+> **Status: build plan phases 1 (foundation) and 2 (catalogue and inventory) complete; phase 3 (ledger) is next.** The kernel
 > (database per tenant, sign-in, roles and scopes, audit, numbering, reason codes, approvals, events
-> and outbox), the module and plugin system and the Products module work and are tested. The other
+> and outbox), the module and plugin system and the Products and Inventory modules work and are tested. The other
 > modules have their manifests, migrations and folders in place, and are built next using Products
 > as the template. Where work stands and what comes next: `docs/PROGRESS.md`.
 
@@ -36,7 +36,8 @@ ziira_t_mamamboga            another business, its own database and login
 | Example plugin `catalog_stats` (own schema, event subscriber, API, plugs into Products' hook and extension point) | Working, tested |
 | Extension points and validation hooks between units | Working, tested |
 | Web app (`frontend/`): sign-in, module shell, Products, Users and Roles, plugin slots; English and Swahili | Working, tested |
-| Inventory, POS, Payments, CRM, Purchasing, Finance, People, Command Center | Tables, manifests and folders only |
+| Inventory: stock ledger, weighted average costing, locations, opening stock, adjustments, transfers, counts, nightly check | Working, tested (no web screens yet) |
+| POS, Payments, CRM, Purchasing, Finance, People, Command Center | Tables, manifests and folders only |
 | MFA and one-time codes | Not yet (phase 11, needs an SMS/email gateway) |
 
 ## Run it in one step (Mac)
@@ -120,6 +121,7 @@ Set `ZIIRA_ENV=production` to refuse that header and the development secret key.
 | `ziira remove <tenant> <unit>` | Drop a disabled unit's tables from that tenant's database |
 | `ziira drop-tenant <code> --confirm <code>` | Delete a tenant's database, login and record (cannot be undone) |
 | `ziira outbox-run [--once]` | Deliver committed events to after-commit subscribers |
+| `ziira verify [tenant] [--unit U] [--fix]` | Run units' integrity checks (exit 1 while problems remain); `ziira stock-verify` checks the stock ledger |
 
 ## Layout
 

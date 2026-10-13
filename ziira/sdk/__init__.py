@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from ziira.kernel import approvals, audit, company_settings, numbering, reasons
 from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
+from ziira.kernel.checks import IntegrityCheck
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext, get_context, set_context
 from ziira.kernel.db import tenant_session
@@ -40,11 +41,11 @@ from ziira.kernel.extensions import (
 from ziira.kernel.manifest import SDK_VERSION
 
 __all__ = [
-    "SDK_VERSION", "Conflict", "Event", "Forbidden", "NotFound", "RequestContext", "Session", "Unauthorized",
-    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_setting",
-    "current_context", "db_session", "define_extension_point", "define_validation_hook", "implementations", "money",
-    "next_document_number", "provides", "publish", "request_context", "require_permission",
-    "run_validators", "submit_for_approval", "subscribe", "subscribe_after", "validate",
+    "SDK_VERSION", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "RequestContext", "Session",
+    "Unauthorized", "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason",
+    "company_setting", "current_context", "db_session", "define_extension_point", "define_validation_hook",
+    "implementations", "money", "next_document_number", "provides", "publish", "request_context",
+    "require_permission", "run_validators", "submit_for_approval", "subscribe", "subscribe_after", "validate",
 ]
 
 

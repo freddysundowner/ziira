@@ -22,6 +22,10 @@ Use `ziira/modules/products` as the template.
 9. **Web screens** (optional): `frontend/src/modules/<unit>/`; see `docs/frontend.md`.
 10. **Tests**: domain unit tests in the module's `tests/`, API and database tests in `tests/`.
 
+Stock-like modules keep derived figures (balances, running totals). Keep them updated in the same transaction as
+the records they come from, and provide an integrity check (`kernel.integrity_check`, see `docs/extending-units.md`)
+that recomputes them, so `ziira verify` can find and rebuild any difference. Inventory is the example.
+
 ## Permissions, scope and kernel services
 
 Everything below comes from `ziira.sdk`. Products shows the pattern.
@@ -30,7 +34,8 @@ Everything below comes from `ziira.sdk`. Products shows the pattern.
 |---|---|
 | Reject users who lack a permission anywhere | route: `dependencies=[Depends(require_permission("stock.view"))]` |
 | Check the scope (which company or branch) | service: `current_context().require("stock.adjust", company_id=..., branch_id=...)` |
-| Show only records the user may see | service: `current_context().companies_with("stock.view")` (None = all) and filter |
+| Show only records the user may see | service: `current_context().companies_with("stock.view")` (None = all) and filter; for branch-level records use `scopes_with(...)` (a list of company and branch pairs, None = all) |
+| A company policy (negative stock, thresholds) | `company_setting(session, company_id, "negative_stock_allowed")`; settings live in `kernel/company_settings.py` and change through `PATCH /api/v1/companies/{id}/settings` |
 | Make sure a company or branch id belongs to this tenant | service: `check_company(session, company_id, branch_id)` before saving. Foreign keys are checked without row-level security, so they accept another tenant's id |
 | A human document number (ADJ-THK-000001) | `next_document_number(session, company_id=..., branch_id=..., doc_type="stock_adjustment", prefix="ADJ")` |
 | A required reason (voids, refunds, overrides, adjustments) | `check_reason(session, "stock_adjustment", reason_code_id, note)` |

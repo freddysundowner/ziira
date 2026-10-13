@@ -8,48 +8,43 @@ push (see the end-of-session steps in `CLAUDE.md`).
 
 | | |
 |---|---|
-| Phase | **1 (Foundation) done**, MFA and CD deferred · **next: phase 2, Inventory** |
+| Phase | **1 (Foundation) and 2 (Catalogue and inventory) done**, MFA and CD deferred · **next: phase 3, Ledger** |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 90 backend (PostgreSQL 16) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) |
+| Tests | 270 backend (PostgreSQL 16, incl. Hypothesis properties and concurrency) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) |
 | CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-13 |
 
 ## Start here (next session)
 
-Phase 2 · Catalogue and inventory. **Exit criterion (spec section 21): stock and costing
-invariants pass.** Engine rules are in spec section 08 (`docs/specs/Ziira_Core_1.0_Technical_Specification.txt`).
-Tables already exist in `ziira/modules/inventory/migrations/0001_init.up.sql`; the manifest already
-has default role grants and reason codes. Follow `ziira/modules/products` and `docs/adding-a-module.md`.
+Phase 3 · Ledger. **Exit criterion (spec section 21): trial balance always balances; postings reproducible.**
+Engine rules are in spec section 07 (`docs/specs/Ziira_Core_1.0_Technical_Specification.txt`, "Accounting engine").
+Tables already exist in `ziira/modules/finance/migrations/0001_init.up.sql` (`account`, `period`, `posting_rule`,
+`journal`, `journal_entry`, `journal_line`, `expense`, `bank_reconciliation`); the database already rejects
+unbalanced entries at commit and any change to posted entries. Follow `ziira/modules/inventory` (the most complete
+module) and `docs/adding-a-module.md`.
 
-- [ ] **2.0 Small kernel items first**
-  - [ ] Fill `audit_log.device_id` and `ip_address` (session device, request IP) — gap from phase 1.
-  - [ ] Company settings in `kernel.company.settings`: `negative_stock_allowed`, `count_variance_threshold`;
-        an SDK function to read them; a settings endpoint (`settings.manage`).
-- [ ] **2.1 Domain rules** (`inventory/domain/`, pure, unit-tested)
-  - [ ] Weighted average cost per company: new average = (existing value + receipt value) ÷ (existing qty + receipt qty).
-  - [ ] Outbound movements take the current average; value goes to cost of goods sold.
-  - [ ] Movement validation: quantity ≠ 0; reason required for adjustment, count_variance, write_off.
-  - [ ] Negative-stock policy (block, or allow and raise an exception for review).
-  - [ ] Batches: first-expiry-first-out picking.
-- [ ] **2.2 Locations**: create/list per branch (store, warehouse, transit, virtual).
-- [ ] **2.3 Stock ledger service**: post movements, lock balance rows per product and location,
-      update `stock_balance` and `product_cost` in the same transaction, publish `stock.moved`
-      and `stock.below_reorder`.
-- [ ] **2.4 Opening stock** (movement type `opening`).
-- [ ] **2.5 Adjustments**: draft → submit (reason + `submit_for_approval`, number `ADJ`) →
-      `@subscribe("approval.decided")` posts or rejects.
-- [ ] **2.6 Transfers**: dispatch to in-transit → receive at destination; differences need a reason
-      and approval (number `TRF`).
-- [ ] **2.7 Stock counts**: snapshot at start, count lines, variance against the right expected figure,
-      approval above the threshold, post `count_variance` movements (number `CNT`).
-- [ ] **2.8 Subscribers** for `sale.posted`, `sale.returned`, `goods.received`, tested with fake events
-      (POS and Purchasing do not exist yet).
-- [ ] **2.9 `public.py`**: stock on hand, average cost (for POS and Purchasing later).
-- [ ] **2.10 API and tests**: endpoints with permissions; permission tests per role; property tests
-      (add Hypothesis): balance always equals the sum of movements; costing stays correct across
-      receipts, returns, transfers and negative stock.
-- [ ] **2.11** `ziira stock-verify`: rebuild balances from movements and compare (the nightly check).
+- [ ] **3.1 Domain rules** (`finance/domain/`, pure, unit-tested): debits = credits per entry; money as Decimal;
+      posting-rule resolution (document type + line type -> accounts, company override over template default);
+      period status (open, soft-closed, locked) and back-dating policy.
+- [ ] **3.2 Chart of accounts**: Kenyan SME template seeded per company (assets, liabilities, equity, revenue, COGS,
+      expenses, VAT input/output, M-Pesa clearing, till cash, goods received not invoiced, inventory in transit,
+      shrinkage); create/list/deactivate accounts (`accounts.manage`).
+- [ ] **3.3 Periods**: monthly periods per company; soft-close and lock (`period.close`); period-close checklist.
+- [ ] **3.4 Posting engine**: `post_journal` (balanced entry, branch dimension, source document, immutable;
+      corrections by reversal), numbered, audited, publishes `journal.posted`; same transaction as the source.
+- [ ] **3.5 Posting rules as data** + subscribers: `stock.moved` (carries `value`, `movement_type`, `branch_id`,
+      `location_kind` for inventory, COGS, shrinkage, in-transit postings), `sale.posted`, `sale.returned`,
+      `goods.received`, `stock.adjusted`; tested with fake events (POS and Purchasing do not exist yet).
+- [ ] **3.6 Manual journals** with approval (`journal.post_manual`, `journal.approve`, kernel approval matrix).
+- [ ] **3.7 Reports**: trial balance (by company, branch, consolidated, any past date), general ledger detail.
+- [ ] **3.8 Sub-ledger control**: inventory valuation must equal the inventory control account; add it as a
+      `kernel.integrity_check` (`ziira verify`).
+- [ ] **3.9 API and tests**: endpoints with permissions; permission tests per role; property tests (trial balance
+      always balances; reversal restores the books; reports reproducible for past dates).
+
+Things phase 2 left for later phases (all in the deferred table): an exceptions inbox for `stock.negative`, expiry
+warnings, product edit and Inventory web screens, FEFO picking on transfers.
 
 ## What exists, and where
 
@@ -70,6 +65,9 @@ has default role grants and reason codes. Follow `ziira/modules/products` and `d
 | Products | Reference module: UoMs, tax codes, products with permissions and scope | `modules/products/` |
 | Sockets | Extension points and validation hooks between units; `[extends]` in manifests, checked at install | `kernel/extensions.py`, `docs/extending-units.md` |
 | Web app | Shell + modules mirroring backend units, slots, typed API client, English/Swahili: sign-in, Products (with SKU suggestions), Users, Roles, plugin widget and tab | `frontend/`, `docs/frontend.md` |
+| Inventory | Immutable stock ledger, locked balances, weighted average cost, locations, opening stock, adjustments, transfers via in-transit, counts, sale/return/receipt events, nightly check | `modules/inventory/` (README has the rules and endpoints) |
+| Company settings | Negative stock policy, count variance threshold; audit log records device and IP | `kernel/company_settings.py`, `kernel/audit.py` |
+| Integrity checks | `ziira verify` / `stock-verify`: units verify and rebuild their derived data | `kernel/checks.py`, `inventory/hooks.py` |
 | Other modules | Tables, manifests and folders only | `modules/*/` |
 
 Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business: workspace
@@ -80,8 +78,8 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | # | Phase | Status | Notes |
 |---|---|---|---|
 | 1 | Foundation: tenancy, auth, users, roles, scopes, audit, numbering, events and outbox, registry, SDK, CI/CD. Exit: isolation, permission and lifecycle tests pass | ✅ Done | MFA and CD deferred (below) |
-| 2 | Catalogue and inventory: costing, stock ledger, transfers, counts. Exit: stock and costing invariants pass | ⏳ Next | Plan above |
-| 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ⬜ | Tables exist; balance trigger works |
+| 2 | Catalogue and inventory: costing, stock ledger, transfers, counts. Exit: stock and costing invariants pass | ✅ Done | Property tests + concurrency tests; web screens later |
+| 3 | Ledger: chart of accounts, posting engine, periods, trial balance | ⏳ Next | Plan above; tables exist, balance trigger works |
 | 4 | POS and payments: offline POS, tills, STK push, C2B, matching, daily close | ⬜ | Needs idempotency keys, background jobs |
 | 5 | eTIMS: direct KRA integration, credit notes, retry | ⬜ | KRA integrator certification before live |
 | 6 | Customers and sales: CRM, credit, invoices, receivables | ⬜ | |
@@ -96,8 +94,11 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | Item | Why it waits | Target |
 |---|---|---|
 | Web app: product edit, Inventory screens, offline POS shell | Phase 2+ follows the backend | Per module |
-| Audit device and IP | Small gap found after phase 1 | Phase 2 (step 2.0) |
-| Company settings (negative stock, limits) | First needed by Inventory | Phase 2 (step 2.0) |
+| Exceptions inbox (review of `stock.negative`, count/transfer variances, offline sales) | Events are published; no inbox yet | Phase 4 (offline POS) or 10 |
+| Expiry warnings from batch dates | Needs the notification layer | Phase 10 |
+| FEFO picking on transfers (lines name their batch for now) | Simplicity | When asked |
+| Cancelling a dispatched transfer (receive with a reason instead) | Rare; reversal flow | When asked |
+| Inventory web screens; product edit screen | Backend first | With the POS web work |
 | MFA and one-time codes (spec 18) | Need an SMS/email gateway; **required before real customer data** | Phase 11 |
 | Rate limiting / lockout on sign-in | Failed sign-ins are audited meanwhile | Phase 11 |
 | Idempotency keys on create requests | Needed for POS offline sync | Phase 4 |
@@ -130,6 +131,7 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-13 (f) | **Phase 2 done.** Audit log records device and IP (`trust_forwarded_for` for proxies); company settings with API and `company_setting`. Inventory: pure domain rules (weighted average costing with negative stock, movement validation, FEFO, landed cost, transfers, counts), the immutable ledger (`post_movement`: locked cost and balance rows, events `stock.moved/negative/below_reorder`), locations, opening stock, adjustments with approval, transfers through in-transit with differences and approval, counts that compare against the system's figure at counting time (movement sequence numbers, share lock for the snapshot), cost visibility (`stock.cost`), subscribers for `sale.posted/returned`, `goods.received` (fake-event tests), `ziira verify` / `stock-verify` (new `kernel.integrity_check` extension point), demo opening stock. Tests 90 -> 270 (Hypothesis properties; a race test proven to fail without row locks). |
 | 2026-10-13 (e) | Finished and committed the work left uncommitted after (d): extension points and validation hooks (`kernel/extensions.py`, Products sockets, `catalog_stats` plugs in), `GET /companies`, UoM/tax-code lists, SKU suggestions; the `frontend/` web app. Verified in the browser (sign-in, widget, SKU suggestions, duplicate-name block, plugin tab). Fixed stale suggestions in the new-product form; added `make web*`/`api-types` and a CI web job; wrote `docs/extending-units.md` and `docs/frontend.md`. Tests 80 → 90 backend, 13 web. |
 | 2026-10-13 (d) | Clean-up: test runs now drop their databases; removed old shared databases (`ziira`, `ziira_test`) and the `ziira_app` login; updated decisions 0001/0002, module READMEs, guides; restructured this file with a phase 2 checklist. |
 | 2026-10-13 (c) | Switched to one database per tenant: master database, template, per-tenant logins with encrypted connection strings, provisioning with cleanup, per-tenant enable/remove, upgrades across tenant databases, CLI (`tenants`, `remove`, `drop-tenant`). Unknown tenants in credentials now give 401, not 404. Tests 75 → 80. |
