@@ -1,17 +1,33 @@
-"""Creating a tenant: the business, its first company and branch, default roles and the owner."""
+"""Tenants: each business gets its own database, recorded in the master database.
+
+Creating a tenant:
+1. Record it in the master database (status 'provisioning').
+2. Create its own database login and copy the kernel-only template into a new database.
+3. Store both connection strings (its login, and an owner login for migrations), encrypted.
+4. Inside the new database: the business, its first company and branch, default roles and owner.
+5. Mark it 'active'. If any step fails, the database, login and master record are removed.
+"""
 
 import re
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from sqlalchemy import text
+from sqlalchemy import make_url, text
 
 from ziira.kernel import audit
+from ziira.kernel.config import get_settings
 from ziira.kernel.context import system_context
-from ziira.kernel.db import admin_session, tenant_session
-from ziira.kernel.errors import Conflict, ValidationFailed
-from ziira.kernel.registry import Registry, seed_unit_defaults
-from ziira.kernel.security import hash_password
+from ziira.kernel.db import (
+    forget_tenant,
+    master_session,
+    server_database_url,
+    server_engine,
+    tenant_engine,
+    tenant_session,
+)
+from ziira.kernel.errors import Conflict, NotFound, ValidationFailed
+from ziira.kernel.registry import Registry, ensure_master, grant_unit, seed_unit_defaults
+from ziira.kernel.security import encrypt, hash_password, new_secret
 
 # Default roles from the specification (section 13). Owner always holds every permission;
 # units add permissions to the others through the [roles] table of their manifest.
@@ -28,28 +44,100 @@ class NewTenant:
     company_id: UUID
     branch_id: UUID
     owner_id: UUID
+    database: str
+
+
+@dataclass(frozen=True)
+class TenantRecord:
+    """A tenant as the master database knows it."""
+
+    id: UUID
+    code: str
+    name: str
+    status: str
+    db_name: str
+
+
+def _names(code: str) -> tuple[str, str]:
+    settings = get_settings()
+    suffix = code.replace("-", "_")
+    return f"{settings.tenant_db_prefix}{suffix}", f"{settings.tenant_role_prefix}{suffix}"
+
+
+def list_tenants() -> list[TenantRecord]:
+    """Every tenant in the master database."""
+    with master_session() as s:
+        rows = s.execute(text("select id, code, name, status, db_name from master.tenant order by code"))
+        return [TenantRecord(**r._mapping) for r in rows]
+
+
+def find_tenant(code_or_id: str) -> TenantRecord:
+    """A tenant by workspace code or id."""
+    for t in list_tenants():
+        if code_or_id in (t.code, str(t.id)):
+            return t
+    raise NotFound(f"Tenant '{code_or_id}' not found")
 
 
 def create_tenant(*, name: str, code: str, company: str, branch_code: str, branch_name: str,
                   owner_name: str, owner_email: str, owner_password: str, kra_pin: str | None = None,
                   vat_registered: bool = False, registry: Registry | None = None) -> NewTenant:
-    """Create a tenant ready to sign in to with the workspace code and the owner's email.
+    """Create a business with its own database, ready to sign in to with the workspace code.
 
     The owner gets the Owner role for the whole tenant.
     """
     code = code.strip().lower()
     if not CODE_PATTERN.match(code):
         raise ValidationFailed("Workspace code must be 2-40 lowercase letters, digits or '-'")
+    password_hash = hash_password(owner_password)          # validate before creating anything
+    reg = registry or Registry()
+    ensure_master()
+    reg.ensure_template()
+    db_name, role = _names(code)
     tenant_id, company_id, branch_id, owner_id = uuid4(), uuid4(), uuid4(), uuid4()
-    with admin_session() as s:
-        if s.execute(text("select 1 from kernel.tenant where code = :c"), {"c": code}).first():
+    role_password = new_secret()
+    app_url = make_url(get_settings().tenant_server_url).set(database=db_name, username=role,
+                                                             password=role_password)
+    with master_session() as s:
+        if s.execute(text("select 1 from master.tenant where code = :c or db_name = :d"),
+                     {"c": code, "d": db_name}).first():
             raise Conflict(f"Workspace code '{code}' is taken")
+        s.execute(text(
+            "insert into master.tenant (id, code, name, db_name, app_role, app_url_encrypted, admin_url_encrypted) "
+            "values (:i, :c, :n, :d, :r, :app, :adm)"),
+            {"i": str(tenant_id), "c": code, "n": name, "d": db_name, "r": role,
+             "app": encrypt(app_url.render_as_string(hide_password=False)),
+             "adm": encrypt(server_database_url(db_name))})
+    try:
+        with server_engine().connect() as conn:
+            # role_password is URL-safe base64, so it needs no escaping inside the quotes.
+            conn.exec_driver_sql(f"create role \"{role}\" login password '{role_password}'")
+            conn.exec_driver_sql(f'create database "{db_name}" template "{get_settings().template_database}"')
+            conn.exec_driver_sql(f'revoke all on database "{db_name}" from public')
+            conn.exec_driver_sql(f'grant connect, temporary on database "{db_name}" to "{role}"')
+        with tenant_engine(tenant_id, admin=True).begin() as conn:
+            grant_unit(conn, reg.get("kernel"), role)
+        _set_up_business(reg, tenant_id, company_id, branch_id, owner_id, name=name, code=code, company=company,
+                         branch_code=branch_code, branch_name=branch_name, owner_name=owner_name,
+                         owner_email=owner_email, password_hash=password_hash, kra_pin=kra_pin,
+                         vat_registered=vat_registered)
+        with master_session() as s:
+            s.execute(text("update master.tenant set status = 'active', updated_at = now() where id = :i"),
+                      {"i": str(tenant_id)})
+    except Exception:
+        drop_tenant(tenant_id)
+        raise
+    return NewTenant(tenant_id=tenant_id, company_id=company_id, branch_id=branch_id, owner_id=owner_id,
+                     database=db_name)
+
+
+def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id: UUID, owner_id: UUID, *,
+                     name: str, code: str, company: str, branch_code: str, branch_name: str, owner_name: str,
+                     owner_email: str, password_hash: str, kra_pin: str | None, vat_registered: bool) -> None:
+    system_context(tenant_id)
+    with tenant_session(tenant_id, admin=True) as s:
         s.execute(text("insert into kernel.tenant (id, name, code) values (:i, :n, :c)"),
                   {"i": str(tenant_id), "n": name, "c": code})
-
-    system_context(tenant_id)
-    password_hash = hash_password(owner_password)
-    with tenant_session(tenant_id, admin=True) as s:
         s.execute(text("insert into kernel.company (id, tenant_id, name, kra_pin, vat_registered) "
                        "values (:i, :t, :n, :p, :v)"),
                   {"i": str(company_id), "t": str(tenant_id), "n": company, "p": kra_pin, "v": vat_registered})
@@ -69,6 +157,20 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
         s.execute(text("insert into kernel.user_role (tenant_id, user_id, role_id, scope) "
                        "values (:t, :u, :r, 'tenant')"),
                   {"t": str(tenant_id), "u": str(owner_id), "r": str(role_ids["Owner"])})
-        seed_unit_defaults(s, (registry or Registry()).get("kernel"))
+        seed_unit_defaults(s, reg.get("kernel"))
         audit.record(s, "create", "kernel.tenant", tenant_id, {"name": name, "code": code, "owner": owner_email})
-    return NewTenant(tenant_id=tenant_id, company_id=company_id, branch_id=branch_id, owner_id=owner_id)
+
+
+def drop_tenant(tenant_id: UUID) -> None:
+    """Delete a tenant completely: its database, its login and its master record. Cannot be undone."""
+    with master_session() as s:
+        row = s.execute(text("select db_name, app_role from master.tenant where id = :i"),
+                        {"i": str(tenant_id)}).first()
+    if row is None:
+        raise NotFound("Tenant not found")
+    forget_tenant(tenant_id)
+    with server_engine().connect() as conn:
+        conn.exec_driver_sql(f'drop database if exists "{row.db_name}" with (force)')
+        conn.exec_driver_sql(f'drop role if exists "{row.app_role}"')
+    with master_session() as s:
+        s.execute(text("delete from master.tenant where id = :i"), {"i": str(tenant_id)})

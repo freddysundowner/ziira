@@ -3,6 +3,17 @@
 Modular ERP for Kenyan businesses, built as a small **kernel** with **pluggable modules** and **plugins**.
 Python 3.12+, FastAPI, SQLAlchemy 2, PostgreSQL 16.
 
+**Every business has its own database.** A master database lists the businesses (tenants) and
+holds each one's connection, encrypted. New tenant databases are copied from a template in about
+a second. See `docs/decisions/0004-database-per-tenant.md`.
+
+```
+ziira_master                 tenants, encrypted connection strings, units offered
+ziira_template               kernel only; copied for each new tenant
+ziira_t_pevma                Pevma's own database: kernel + the modules Pevma enabled
+ziira_t_mamamboga            another business, its own database and login
+```
+
 > **Status: foundation (build plan phase 1) complete.** The kernel (tenancy, sign-in, roles and scopes,
 > audit, numbering, reason codes, approvals, events and outbox), the module and plugin system, all
 > database tables and the Products module work and are tested. The other modules have their manifests,
@@ -12,11 +23,12 @@ Python 3.12+, FastAPI, SQLAlchemy 2, PostgreSQL 16.
 
 | Part | State |
 |---|---|
-| Kernel: tenancy, row-level security, events and outbox processor, audit hash chain | Working, tested |
+| Database per tenant: master database, template, provisioning, per-tenant logins | Working, tested |
+| Kernel: row-level security (second layer), events and outbox processor, audit hash chain | Working, tested |
 | Sign-in (workspace code + email/phone + password), device-bound refresh tokens, API keys | Working, tested |
 | Users, roles and scopes (tenant, company, branch, own); permission checks on every endpoint | Working, tested |
 | Document numbering, reason codes, approval matrix with separation of duties | Working, tested |
-| Module and plugin registry: install, enable, disable, uninstall with dependency rules | Working, tested |
+| Module and plugin registry: install, enable (creates tables in the tenant's database), disable, remove, uninstall | Working, tested |
 | CLI (`ziira ...`) | Working |
 | Database: 11 schemas, 110 tables, migrations per unit | Working, tested |
 | Products module (API, services, domain rules, repository) | Working, tested |
@@ -32,7 +44,8 @@ bash scripts/run_local.sh
 ```
 
 The script finds Python 3.12+, starts PostgreSQL (Docker Desktop if it is running, otherwise a
-PostgreSQL installed on the Mac), installs all tables, creates a demo tenant with sample products,
+PostgreSQL installed on the Mac), sets up the master database and template, creates a demo
+business in its own database with sample products,
 and starts the API. Open **http://localhost:8000/docs**. In development, requests without credentials
 act as the demo tenant with every permission, so you can try endpoints straight from that page.
 To sign in for real: workspace `demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`.
@@ -48,9 +61,9 @@ You need Python 3.12+ and either Docker Desktop or a local PostgreSQL 16.
 cd ziira-core
 make setup          # virtual environment + dependencies, creates .env
 make db-up          # PostgreSQL + Redis in Docker
-make install        # creates all schemas and tables
+make install        # master database, tenant template, units offered
 make lint           # ruff, mypy, import-linter
-make test           # all tests against a throwaway ziira_test database
+make test           # all tests (throwaway ziira_test_* databases)
 ```
 
 Without Docker (Homebrew `postgresql@16` or Postgres.app), run once as a superuser:
@@ -68,7 +81,7 @@ then `make install` and `make test` as above.
     --branch-name Thika --owner-name "Jane Wanjiru" --owner-email jane@pevma.co.ke
 # asks for the owner's password; prints tenant_id, company_id, branch_id, owner_id
 
-.venv/bin/ziira enable <tenant_id> products
+.venv/bin/ziira enable pevma products     # creates the Products tables in Pevma's database
 make run            # API on http://localhost:8000, interactive docs at /docs
 ```
 
@@ -94,12 +107,15 @@ Set `ZIIRA_ENV=production` to refuse that header and the development secret key.
 
 | Command | Does |
 |---|---|
-| `ziira units` | List units and whether they are installed |
-| `ziira install <unit>` / `--all` | Install units (and the units they require) |
-| `ziira uninstall <unit>` | Remove a unit's schema; refused if anything depends on it |
+| `ziira units` | List units and whether the platform offers them |
+| `ziira install <unit>` / `--all` | Offer units (and what they require); also upgrades every tenant database that has them |
+| `ziira uninstall <unit>` | Stop offering a unit; refused while any tenant database has it |
 | `ziira create-tenant NAME --code ... --company ... --branch-code ... --branch-name ... --owner-name ... --owner-email ...` | New tenant with a company, branch, default roles and its owner |
-| `ziira enable <tenant> <unit>` | Enable for a tenant (enables required units too) |
+| `ziira tenants` | List tenants and their databases |
+| `ziira enable <tenant> <unit>` | Enable for a tenant (creates its tables there; enables required units too) |
 | `ziira disable <tenant> <unit>` | Disable for a tenant; data is kept |
+| `ziira remove <tenant> <unit>` | Drop a disabled unit's tables from that tenant's database |
+| `ziira drop-tenant <code> --confirm <code>` | Delete a tenant's database, login and record (cannot be undone) |
 | `ziira outbox-run [--once]` | Deliver committed events to after-commit subscribers |
 
 ## Layout
@@ -130,7 +146,9 @@ See `docs/adding-a-module.md` and `docs/writing-a-plugin.md`.
 
 ## Database rules enforced by PostgreSQL
 
-- Row-level security on every tenant table; the app role cannot see or write other tenants' rows.
+- Each tenant's login can connect only to its own database.
+- Inside a tenant database, row-level security still applies to every table (a second layer), and the
+  tenant's login does not own the tables.
 - Stock movements, journal entries and lines, and the audit log cannot be updated or deleted.
 - Unbalanced journal entries are rejected at commit.
 - Stock adjustments, write-offs and voided sales require a reason code.

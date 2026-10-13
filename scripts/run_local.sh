@@ -36,8 +36,8 @@ say "Starting the database"
 # Port from .env (ZIIRA_DB_PORT), e.g. 5433 when another PostgreSQL already uses 5432
 DB_PORT="$(grep -E '^ZIIRA_DB_PORT=' .env 2>/dev/null | cut -d= -f2 || true)"
 DB_PORT="${DB_PORT:-5432}"
-ADMIN_URL="postgresql+psycopg://ziira:ziira@localhost:$DB_PORT/ziira"
-APP_URL="postgresql+psycopg://ziira_app:ziira_app@localhost:$DB_PORT/ziira"
+MASTER_URL="postgresql+psycopg://ziira:ziira@localhost:$DB_PORT/ziira_master"
+SERVER_URL="postgresql+psycopg://ziira:ziira@localhost:$DB_PORT/postgres"
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   echo "Using Docker"
   docker compose up -d db
@@ -50,25 +50,21 @@ elif command -v psql >/dev/null 2>&1; then
     sleep 3
   }
   pg_isready -h localhost -p "$DB_PORT" >/dev/null 2>&1 || fail "PostgreSQL is not running on port $DB_PORT. Start it (Postgres.app, or: brew services start postgresql@16)"
-  psql -h localhost -d postgres -v ON_ERROR_STOP=1 -q <<'SQL'
+  psql -h localhost -p "$DB_PORT" -d postgres -v ON_ERROR_STOP=1 -q <<'SQL'
 do $$ begin
   if not exists (select from pg_roles where rolname = 'ziira') then
-    create role ziira login password 'ziira' createdb; end if;
-  if not exists (select from pg_roles where rolname = 'ziira_app') then
-    create role ziira_app login password 'ziira_app'; end if;
+    create role ziira login password 'ziira' createdb createrole; end if;
 end $$;
 SQL
-  psql -h localhost -d postgres -tAc "select 1 from pg_database where datname = 'ziira'" | grep -q 1 \
-    || psql -h localhost -d postgres -q -c "create database ziira owner ziira"
 else
   fail "No database found. Either open Docker Desktop, or install PostgreSQL:  brew install postgresql@16 && brew services start postgresql@16"
 fi
 
 # ---------------------------------------------------------------- Settings
 [ -f .env ] || cp .env.example .env
-export ZIIRA_ADMIN_DATABASE_URL="$ADMIN_URL" ZIIRA_APP_DATABASE_URL="$APP_URL"
+export ZIIRA_MASTER_DATABASE_URL="$MASTER_URL" ZIIRA_TENANT_SERVER_URL="$SERVER_URL"
 
-say "Installing modules and tables"
+say "Setting up the master database and the tenant template"
 .venv/bin/ziira install --all
 
 say "Creating demo data"

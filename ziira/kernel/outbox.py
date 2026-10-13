@@ -21,7 +21,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ziira.kernel.context import system_context
-from ziira.kernel.db import app_engine, tenant_session
+from ziira.kernel.db import master_session, tenant_session
 from ziira.kernel.events import Event, after_commit_handlers
 
 log = logging.getLogger("ziira.outbox")
@@ -29,9 +29,9 @@ MAX_ATTEMPTS = 10
 
 
 def _active_tenants() -> list[UUID]:
-    """Active tenants (kernel.tenant is not tenant-scoped, so the app role can list them)."""
-    with app_engine().connect() as conn:
-        return list(conn.execute(text("select id from kernel.tenant where status = 'active' order by id")).scalars())
+    """Active tenants, from the master database. Each tenant's events are in its own database."""
+    with master_session() as s:
+        return list(s.execute(text("select id from master.tenant where status = 'active' order by id")).scalars())
 
 
 def _enabled_units(s: Session) -> set[str]:

@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEV_SECRET_KEY = "development-only-secret-change-me"
+DEV_CREDENTIALS_KEY = "development-only-credentials-key-change-me"
 
 
 class Settings(BaseSettings):
@@ -15,13 +16,22 @@ class Settings(BaseSettings):
 
     env: str = "development"
 
-    # Owner connection: used only for migrations and admin commands.
-    admin_database_url: str = "postgresql+psycopg://ziira:ziira@localhost:5432/ziira"
+    # Master database: the list of tenants and how to reach each tenant's own database,
+    # the platform's installed units, and migration status. Owner connection.
+    master_database_url: str = "postgresql+psycopg://ziira:ziira@localhost:5432/ziira_master"
 
-    # Application connection: a role that does NOT own the tables,
-    # so PostgreSQL row-level security applies to every query.
-    app_database_url: str = "postgresql+psycopg://ziira_app:ziira_app@localhost:5432/ziira"
-    app_db_role: str = "ziira_app"
+    # Server where new tenant databases are created: a role allowed to create databases and
+    # roles, connected to any existing database (e.g. postgres). Tenants can later be moved
+    # to other servers by changing their connection in the master database.
+    tenant_server_url: str = "postgresql+psycopg://ziira:ziira@localhost:5432/postgres"
+    # Names on that server: <prefix><workspace code> for databases and per-tenant logins,
+    # and the kernel-only template every new tenant database is copied from.
+    tenant_db_prefix: str = "ziira_t_"
+    tenant_role_prefix: str = "zt_"
+    template_database: str = "ziira_template"
+
+    # Encrypts tenant database credentials stored in the master database.
+    credentials_key: str = DEV_CREDENTIALS_KEY
 
     # Development only: take the tenant from the X-Tenant-ID header, with every permission.
     # Requests with a bearer token or API key are always authenticated properly.
@@ -47,6 +57,8 @@ class Settings(BaseSettings):
             raise RuntimeError("ZIIRA_DEV_TENANT_HEADER must be false in production")
         if self.secret_key == DEV_SECRET_KEY or len(self.secret_key) < 32:
             raise RuntimeError("Set ZIIRA_SECRET_KEY to a random value of at least 32 characters")
+        if self.credentials_key == DEV_CREDENTIALS_KEY or len(self.credentials_key) < 32:
+            raise RuntimeError("Set ZIIRA_CREDENTIALS_KEY to a random value of at least 32 characters")
 
 
 @lru_cache

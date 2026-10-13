@@ -1,8 +1,9 @@
-"""Password hashing, signed access tokens and random secrets (standard library only).
+"""Password hashing, signed access tokens, random secrets, and credential encryption.
 
 Passwords are hashed with scrypt. Access tokens are short-lived, HMAC-signed JSON:
 `<base64 payload>.<base64 signature>`. Refresh tokens and API keys are random secrets
-stored only as SHA-256 hashes.
+stored only as SHA-256 hashes. Tenant database credentials in the master database are
+encrypted with Fernet (AES + HMAC) using a key derived from ZIIRA_CREDENTIALS_KEY.
 """
 
 import base64
@@ -11,7 +12,10 @@ import hmac
 import json
 import secrets
 import time
+from functools import lru_cache
 from typing import Any
+
+from cryptography.fernet import Fernet, InvalidToken
 
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import Unauthorized, ValidationFailed
@@ -86,3 +90,22 @@ def read_token(token: str) -> dict[str, Any]:
     if payload.get("exp", 0) < time.time():
         raise Unauthorized("Token expired; refresh it or sign in again")
     return payload
+
+
+# --------------------------------------------------------------------------- credential encryption
+@lru_cache
+def _fernet(key: str) -> Fernet:
+    return Fernet(base64.urlsafe_b64encode(hashlib.sha256(key.encode()).digest()))
+
+
+def encrypt(plain: str) -> str:
+    """Encrypt a secret (e.g. a database connection string) for storage."""
+    return _fernet(get_settings().credentials_key).encrypt(plain.encode()).decode()
+
+
+def decrypt(token: str) -> str:
+    """Decrypt a value made by `encrypt`. Raises RuntimeError if the key is wrong."""
+    try:
+        return _fernet(get_settings().credentials_key).decrypt(token.encode()).decode()
+    except InvalidToken:
+        raise RuntimeError("Cannot decrypt stored credentials: check ZIIRA_CREDENTIALS_KEY") from None

@@ -1,31 +1,101 @@
-"""Database engines and tenant-scoped sessions.
+"""Database engines and tenant-scoped sessions (one database per tenant).
 
-Every application session runs inside one transaction with the tenant set
-through `app.tenant_id`, which PostgreSQL row-level security uses to hide
-and protect other tenants' rows.
+- The master database lists tenants and how to reach each tenant's own database.
+- Each tenant has its own database and its own login. Application work connects with that
+  login, which does not own the tables, so row-level security still applies inside the
+  tenant database as a second safety layer (`app.tenant_id` is set on every transaction).
+- Admin work (migrations, provisioning) uses an owner login to the tenant database.
 """
 
+import threading
 from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import lru_cache
 from uuid import UUID
 
-from sqlalchemy import Engine, create_engine, text
+from sqlalchemy import Engine, create_engine, make_url, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from ziira.kernel.config import get_settings
+from ziira.kernel.errors import NotFound
+from ziira.kernel.security import decrypt
 
 
 @lru_cache
-def app_engine() -> Engine:
-    """Engine for application queries (non-owner role, row-level security applies)."""
-    return create_engine(get_settings().app_database_url, pool_pre_ping=True)
+def master_engine() -> Engine:
+    """Engine for the master database (owner)."""
+    return create_engine(get_settings().master_database_url, pool_pre_ping=True)
+
+
+def ensure_master_database() -> None:
+    """Create the master database if it does not exist yet (same server and login as its URL)."""
+    url = make_url(get_settings().master_database_url)
+    engine = create_engine(url.set(database="postgres"), isolation_level="AUTOCOMMIT")
+    try:
+        with engine.connect() as conn:
+            if conn.execute(text("select 1 from pg_database where datname = :d"), {"d": url.database}).first() is None:
+                conn.exec_driver_sql(f'create database "{url.database}"')
+    finally:
+        engine.dispose()
 
 
 @lru_cache
-def admin_engine() -> Engine:
-    """Engine for migrations and admin commands (table owner)."""
-    return create_engine(get_settings().admin_database_url, pool_pre_ping=True)
+def server_engine() -> Engine:
+    """Autocommit engine on the tenant server, for CREATE/DROP DATABASE and roles."""
+    return create_engine(get_settings().tenant_server_url, isolation_level="AUTOCOMMIT", pool_pre_ping=True)
+
+
+def server_database_url(database: str) -> str:
+    """Owner URL for another database on the tenant server (e.g. the template)."""
+    return make_url(get_settings().tenant_server_url).set(database=database).render_as_string(hide_password=False)
+
+
+def _new_engine(url: str) -> Engine:
+    # Small pools: there is one pool per tenant database.
+    return create_engine(url, pool_pre_ping=True, pool_size=2, max_overflow=8, pool_recycle=1800)
+
+
+_engines: dict[tuple[UUID, bool], Engine] = {}
+_engines_lock = threading.Lock()
+
+
+def tenant_engine(tenant_id: UUID, *, admin: bool = False) -> Engine:
+    """Engine for one tenant's database: its own login, or the owner login when `admin`."""
+    key = (tenant_id, admin)
+    engine = _engines.get(key)
+    if engine is not None:
+        return engine
+    with _engines_lock:
+        if key not in _engines:
+            with master_engine().connect() as conn:
+                row = conn.execute(text(
+                    "select app_url_encrypted, admin_url_encrypted from master.tenant "
+                    "where id = :t and status in ('provisioning', 'active')"), {"t": str(tenant_id)}).first()
+            if row is None:
+                raise NotFound("Tenant not found or not active")
+            _engines[key] = _new_engine(decrypt(row.admin_url_encrypted if admin else row.app_url_encrypted))
+        return _engines[key]
+
+
+def forget_tenant(tenant_id: UUID) -> None:
+    """Close a tenant's connections (after it moves, is suspended or is dropped)."""
+    with _engines_lock:
+        for admin in (False, True):
+            engine = _engines.pop((tenant_id, admin), None)
+            if engine is not None:
+                engine.dispose()
+
+
+def forget_all() -> None:
+    """Close every cached connection (tests and settings changes)."""
+    with _engines_lock:
+        for engine in _engines.values():
+            engine.dispose()
+        _engines.clear()
+    for cached in (master_engine, server_engine):
+        if cached.cache_info().currsize:
+            cached().dispose()
+        cached.cache_clear()
 
 
 def _session_factory(engine: Engine) -> sessionmaker[Session]:
@@ -34,9 +104,8 @@ def _session_factory(engine: Engine) -> sessionmaker[Session]:
 
 @contextmanager
 def tenant_session(tenant_id: UUID, *, admin: bool = False) -> Iterator[Session]:
-    """Open a transaction scoped to one tenant; commit on success, roll back on error."""
-    engine = admin_engine() if admin else app_engine()
-    session = _session_factory(engine)()
+    """Open a transaction in the tenant's own database; commit on success, roll back on error."""
+    session = _session_factory(tenant_engine(tenant_id, admin=admin))()
     try:
         session.execute(
             text("select set_config('app.tenant_id', :tenant, true)"), {"tenant": str(tenant_id)}
@@ -51,9 +120,9 @@ def tenant_session(tenant_id: UUID, *, admin: bool = False) -> Iterator[Session]
 
 
 @contextmanager
-def admin_session() -> Iterator[Session]:
-    """Open an owner-level transaction with no tenant (platform administration only)."""
-    session = _session_factory(admin_engine())()
+def master_session() -> Iterator[Session]:
+    """Open a transaction in the master database (platform administration only)."""
+    session = _session_factory(master_engine())()
     try:
         yield session
         session.commit()

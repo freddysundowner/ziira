@@ -32,9 +32,11 @@ eTIMS integrates directly with KRA systems.
 ```bash
 bash scripts/run_local.sh     # one step: venv, database, tables, demo data, API on :8000
 make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT in .env)
-make test                     # all tests (creates/drops database ziira_test)
+make test                     # all tests (creates/drops ziira_test_master, _template, _t_* databases)
 make lint                     # ruff + mypy + import-linter
-.venv/bin/ziira units | install --all | enable <tenant> <unit> | disable ... | uninstall <unit>
+.venv/bin/ziira units | install --all | uninstall <unit>          # platform (master database)
+.venv/bin/ziira tenants | enable <tenant> <unit> | disable ... | remove ...   # <tenant> = code or id
+.venv/bin/ziira drop-tenant <code> --confirm <code>                # deletes the tenant's database
 .venv/bin/ziira create-tenant NAME --code CODE --company ... --branch-code ... --branch-name ... \
     --owner-name ... --owner-email ...      # owner password from prompt or ZIIRA_OWNER_PASSWORD
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
@@ -45,17 +47,23 @@ On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything
 
 ## Architecture rules (do not break)
 
+0. **One database per tenant** (decision 0004). The master database (`ziira_master`) lists tenants
+   and their encrypted connection strings; business data never goes there. Each tenant database is
+   copied from `ziira_template` (kernel only) and gets a unit's tables when the tenant enables it.
+   Each tenant has its own login. Code reaches a tenant only through `tenant_session(tenant_id)`.
 1. **Kernel + units.** `ziira/kernel` is always on. Modules (`ziira/modules/*`) and plugins
-   (`ziira/plugins/*`) are units: installed, enabled per tenant, disabled, uninstalled.
-2. **One PostgreSQL schema per unit** (`products`, `pos`, ...; plugins use `plg_<name>`).
+   (`ziira/plugins/*`) are units: installed on the platform, enabled per tenant (tables created in
+   that tenant's database), disabled, removed from a tenant, uninstalled.
+2. **One PostgreSQL schema per unit** inside each tenant database (`products`, `pos`, ...;
+   plugins use `plg_<name>`).
 3. **Foreign keys only to the kernel and to units listed in `requires`.** Links to optional units
    are plain UUIDs ("soft references").
 4. **Units import only `ziira.sdk`** (never `ziira.kernel`) and other units only via their
    `public.py`. Enforced by `tests/test_architecture.py` and import-linter.
 5. **Units communicate by events**: `publish(session, Event(...))` and `@subscribe("type")` in
    `events.py`. Subscribers run inside the publisher's transaction.
-6. **Every tenant table** has `tenant_id` with forced row-level security. The app connects as
-   `ziira_app` (non-owner). Tenant is set per transaction (`app.tenant_id`).
+6. **Every tenant table** still has `tenant_id` with forced row-level security (second layer). The app
+   connects with the tenant's own login (non-owner). Tenant is set per transaction (`app.tenant_id`).
 7. **Immutable records:** posted documents are never edited; correct with reversals.
    Stock movements, journal entries/lines and the audit log reject UPDATE/DELETE in the database.
 8. **Money is Decimal**, never float (`ziira.sdk.money`).

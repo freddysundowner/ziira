@@ -1,7 +1,10 @@
-"""Test setup: a fresh database `ziira_test`, all units installed, two tenants.
+"""Test setup: a fresh master database and template, all units installed, two tenants.
 
-Point the tests at your server with ZIIRA_TEST_ADMIN_URL (an owner/superuser URL
-for any existing database, e.g. the `postgres` database). Default matches docker-compose.
+Every tenant gets its own database (ziira_test_t_<code>) and login (ztest_<code>), as in
+production. Leftovers from earlier runs are dropped first.
+
+Point the tests at your server with ZIIRA_TEST_ADMIN_URL (a superuser URL for any existing
+database, e.g. the `postgres` database). Default matches docker-compose.
 """
 
 import os
@@ -15,42 +18,46 @@ from sqlalchemy.engine import make_url
 
 ADMIN_URL = make_url(os.environ.get(
     "ZIIRA_TEST_ADMIN_URL", "postgresql+psycopg://ziira:ziira@localhost:5432/postgres"))
-TEST_DB = "ziira_test"
-APP_ROLE, APP_PASSWORD = "ziira_app", "ziira_app"
+MASTER_DB, TEMPLATE_DB = "ziira_test_master", "ziira_test_template"
+TENANT_DB_PREFIX, TENANT_ROLE_PREFIX = "ziira_test_t_", "ztest_"
 OWNER_PASSWORD = "owner-pass-123"   # test-only password for every tenant's owner
 
 
-def _prepare_database() -> None:
+def _prepare_server() -> None:
+    """Drop what earlier runs left, create an empty master database, point settings at them."""
     engine = create_engine(ADMIN_URL, isolation_level="AUTOCOMMIT")
     with engine.connect() as c:
-        c.execute(text(
-            f"do $$ begin if not exists (select from pg_roles where rolname = '{APP_ROLE}') then "
-            f"create role {APP_ROLE} login password '{APP_PASSWORD}'; end if; end $$"))
-        c.execute(text(f"drop database if exists {TEST_DB} with (force)"))
-        c.execute(text(f"create database {TEST_DB}"))
+        old = c.execute(text("select datname from pg_database where datname like :p or datname in (:m, :t)"),
+                        {"p": TENANT_DB_PREFIX + "%", "m": MASTER_DB, "t": TEMPLATE_DB}).scalars().all()
+        for db in old:
+            c.execute(text(f'drop database "{db}" with (force)'))
+        for role in c.execute(text("select rolname from pg_roles where rolname like :p"),
+                              {"p": TENANT_ROLE_PREFIX + "%"}).scalars().all():
+            c.execute(text(f'drop role "{role}"'))
+        c.execute(text(f"create database {MASTER_DB}"))
     engine.dispose()
-    os.environ["ZIIRA_ADMIN_DATABASE_URL"] = ADMIN_URL.set(database=TEST_DB).render_as_string(
-        hide_password=False)
-    os.environ["ZIIRA_APP_DATABASE_URL"] = ADMIN_URL.set(
-        database=TEST_DB, username=APP_ROLE, password=APP_PASSWORD).render_as_string(hide_password=False)
-    os.environ["ZIIRA_APP_DB_ROLE"] = APP_ROLE
+    os.environ.update({
+        "ZIIRA_MASTER_DATABASE_URL": ADMIN_URL.set(database=MASTER_DB).render_as_string(hide_password=False),
+        "ZIIRA_TENANT_SERVER_URL": ADMIN_URL.render_as_string(hide_password=False),
+        "ZIIRA_TEMPLATE_DATABASE": TEMPLATE_DB,
+        "ZIIRA_TENANT_DB_PREFIX": TENANT_DB_PREFIX,
+        "ZIIRA_TENANT_ROLE_PREFIX": TENANT_ROLE_PREFIX,
+    })
 
 
 @pytest.fixture(scope="session")
 def registry() -> Iterator[object]:
-    _prepare_database()
+    _prepare_server()
     from ziira.kernel.config import get_settings
-    from ziira.kernel.db import admin_engine, app_engine
+    from ziira.kernel.db import forget_all
     from ziira.kernel.registry import Registry
 
     get_settings.cache_clear()
-    app_engine.cache_clear()
-    admin_engine.cache_clear()
+    forget_all()
     reg = Registry()
     reg.install_all()
     yield reg
-    app_engine().dispose()
-    admin_engine().dispose()
+    forget_all()
 
 
 def make_tenant(name: str) -> dict[str, UUID]:

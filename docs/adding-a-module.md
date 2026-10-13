@@ -66,7 +66,9 @@ migrations/0002_add_something.up.sql
 migrations/0002_add_something.down.sql
 ```
 
-`ziira install <module>` applies any migrations not yet recorded in `kernel.schema_migration`.
+`ziira install <module>` applies the new migrations in every tenant database that has the module
+(each database records what it applied in `kernel.schema_migration`). Each tenant has its own database,
+so a module's tables exist only where a tenant enabled it.
 Remember: foreign keys only to the kernel and to modules listed in `requires`; enable and force
 row-level security on new tenant tables.
 

@@ -21,8 +21,8 @@ from sqlalchemy.orm import Session
 from ziira.kernel import audit
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import Assignment, RequestContext, get_context, set_context
-from ziira.kernel.db import app_engine, tenant_session
-from ziira.kernel.errors import Unauthorized, ValidationFailed
+from ziira.kernel.db import master_session, tenant_engine, tenant_session
+from ziira.kernel.errors import NotFound, Unauthorized, ValidationFailed
 from ziira.kernel.security import hash_secret, new_secret, read_token, sign_token, verify_password
 
 CHANNELS = ("web", "pos", "api", "whatsapp")
@@ -55,11 +55,19 @@ def _split_secret(value: str, prefix: str) -> tuple[UUID, str]:
         raise Unauthorized("Malformed credential") from None
 
 
+def _require_active_tenant(tenant_id: UUID) -> None:
+    """Unauthorized (not 'not found') if the tenant in a credential does not exist or is not active."""
+    try:
+        tenant_engine(tenant_id)
+    except NotFound:
+        raise Unauthorized("Credentials are not valid") from None
+
+
 def tenant_by_code(code: str) -> UUID | None:
-    """Find a tenant by its workspace code (kernel.tenant is not tenant-scoped)."""
-    with app_engine().connect() as conn:
-        row = conn.execute(text("select id from kernel.tenant where code = :c and status = 'active'"),
-                           {"c": code.strip().lower()}).first()
+    """Find an active tenant by its workspace code in the master database."""
+    with master_session() as s:
+        row = s.execute(text("select id from master.tenant where code = :c and status = 'active'"),
+                        {"c": code.strip().lower()}).first()
     return row[0] if row else None
 
 
@@ -123,6 +131,7 @@ def refresh(refresh_token: str, device_id: str) -> Tokens:
     """
     tenant_id, _ = _split_secret(refresh_token, "zr")
     idle = timedelta(hours=get_settings().session_idle_hours)
+    _require_active_tenant(tenant_id)
     with tenant_session(tenant_id) as s:
         row = s.execute(text(
             "select s.id, s.user_id, s.device_id, s.expires_at, s.last_used_at, s.revoked_at, u.status "
@@ -188,6 +197,7 @@ def context_from_access_token(token: str) -> RequestContext:
     """Verify an access token and its session, and load the user's roles."""
     payload = read_token(token)
     tenant_id, user_id, session_id = UUID(payload["t"]), UUID(payload["u"]), UUID(payload["s"])
+    _require_active_tenant(tenant_id)
     with tenant_session(tenant_id) as s:
         row = s.execute(text(
             "select s.channel, s.revoked_at, s.expires_at, u.status from kernel.user_session s "
@@ -203,6 +213,7 @@ def context_from_access_token(token: str) -> RequestContext:
 def context_from_api_key(key: str) -> RequestContext:
     """Verify an API key; its scopes become a tenant-wide set of permissions."""
     tenant_id, _ = _split_secret(key, "zk")
+    _require_active_tenant(tenant_id)
     with tenant_session(tenant_id) as s:
         row = s.execute(text(
             "select id, scopes, expires_at, revoked_at from kernel.api_key where key_hash = :h"),

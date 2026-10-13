@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: ziira          # owner: migrations and admin commands
       POSTGRES_PASSWORD: ziira
-      POSTGRES_DB: ziira
+      POSTGRES_DB: ziira_master   # master database; tenant databases are created per tenant
     ports:
       - "${ZIIRA_DB_PORT:-5432}:5432"   # set ZIIRA_DB_PORT=5433 if another PostgreSQL uses 5432
     volumes:

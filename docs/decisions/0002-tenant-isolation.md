@@ -1,6 +1,6 @@
 # 0002 · Tenant isolation with row-level security
 
-**Status:** accepted · October 2026
+**Status:** accepted · October 2026 · the shared database is replaced by one database per tenant (0004); row-level security stays inside each tenant database
 
 ## Decision
 

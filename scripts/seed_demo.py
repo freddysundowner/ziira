@@ -13,7 +13,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from ziira.kernel.context import system_context
-from ziira.kernel.db import admin_session, tenant_session
+from ziira.kernel.db import master_session, tenant_session
 from ziira.kernel.registry import Registry, load_event_handlers
 from ziira.kernel.tenants import create_tenant
 from ziira.modules.products.services.create_product import create_product
@@ -35,8 +35,9 @@ def main() -> None:
     load_event_handlers()
     if STATE.exists():
         tenant_id = UUID(STATE.read_text().strip())
-        with admin_session() as s:
-            found = s.execute(text("select 1 from kernel.tenant where id = :t"), {"t": str(tenant_id)}).first()
+        with master_session() as s:
+            found = s.execute(text("select 1 from master.tenant where id = :t and status = 'active'"),
+                              {"t": str(tenant_id)}).first()
         if found:
             print(tenant_id)
             return

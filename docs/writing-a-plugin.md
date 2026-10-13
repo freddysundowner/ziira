@@ -38,8 +38,9 @@ The registry discovers it on start. In 1.0 only plugins built and signed by Ziir
 ## Lifecycle
 
 ```bash
-ziira install <name>                # creates plg_<name>, registers permissions
-ziira enable <tenant> <name>
+ziira install <name>                # offers it on the platform (master database)
+ziira enable <tenant> <name>        # creates plg_<name> in that tenant's database
 ziira disable <tenant> <name>       # data kept
-ziira uninstall <name>              # refused while any tenant has it enabled
+ziira remove <tenant> <name>        # drops plg_<name> from that tenant's database (after disable)
+ziira uninstall <name>              # refused while any tenant database still has it
 ```

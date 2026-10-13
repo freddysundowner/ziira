@@ -1,12 +1,18 @@
 """Command-line tool for administering Ziira Core.
 
-    ziira units                         list units and whether they are installed
-    ziira install <unit> | --all        install units (and what they require)
-    ziira uninstall <unit>              remove a unit's tables (refused if in use)
+Every business (tenant) has its own database; the master database lists them.
+<tenant> is a workspace code or a tenant id.
+
+    ziira units                         list units and whether the platform offers them
+    ziira install <unit> | --all        offer units (and what they require); upgrades existing ones
+    ziira uninstall <unit>              stop offering a unit (refused while any tenant has it)
     ziira create-tenant NAME --code CODE --company NAME --branch-code CODE --branch-name NAME
                         --owner-name NAME --owner-email EMAIL   (password asked, or ZIIRA_OWNER_PASSWORD)
-    ziira enable <tenant-id> <unit>     enable a unit for a tenant
-    ziira disable <tenant-id> <unit>    disable a unit for a tenant (data kept)
+    ziira tenants                       list tenants and their databases
+    ziira enable <tenant> <unit>        enable a unit (creates its tables in the tenant's database)
+    ziira disable <tenant> <unit>       disable a unit for a tenant (data kept)
+    ziira remove <tenant> <unit>        drop a disabled unit's tables from the tenant's database
+    ziira drop-tenant <code> --confirm <code>   delete a tenant's database and login (cannot be undone)
     ziira outbox-run [--once]           deliver committed events to after-commit subscribers
 """
 
@@ -20,7 +26,11 @@ from uuid import UUID
 from ziira.kernel import outbox
 from ziira.kernel.errors import ZiiraError
 from ziira.kernel.registry import Registry, load_event_handlers
-from ziira.kernel.tenants import create_tenant
+from ziira.kernel.tenants import create_tenant, drop_tenant, find_tenant, list_tenants
+
+
+def _tenant(value: str) -> UUID:
+    return find_tenant(value).id
 
 
 def cmd_units(reg: Registry, _: argparse.Namespace) -> None:
@@ -50,6 +60,23 @@ def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
           f"owner_id   = {t.owner_id}")
 
 
+def cmd_tenants(_: Registry, __: argparse.Namespace) -> None:
+    for t in list_tenants():
+        print(f"{t.code:<24} {t.status:<12} {t.db_name:<32} {t.id}")
+
+
+def cmd_remove(reg: Registry, a: argparse.Namespace) -> None:
+    reg.remove_from_tenant(_tenant(a.tenant), a.unit)
+    print(f"Removed {a.unit} from {a.tenant} (its tables and data are gone)")
+
+
+def cmd_drop_tenant(_: Registry, a: argparse.Namespace) -> None:
+    if a.confirm != a.code:
+        raise ZiiraError("Repeat the workspace code with --confirm to delete the tenant")
+    drop_tenant(_tenant(a.code))
+    print(f"Dropped tenant {a.code}: database, login and master record deleted")
+
+
 def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
     logging.basicConfig(level=logging.INFO)
     load_event_handlers(reg.units)
@@ -60,12 +87,12 @@ def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
 
 
 def cmd_enable(reg: Registry, a: argparse.Namespace) -> None:
-    done = reg.enable(UUID(a.tenant), a.unit)
+    done = reg.enable(_tenant(a.tenant), a.unit)
     print("Enabled: " + (", ".join(done) if done else "already enabled"))
 
 
 def cmd_disable(reg: Registry, a: argparse.Namespace) -> None:
-    reg.disable(UUID(a.tenant), a.unit)
+    reg.disable(_tenant(a.tenant), a.unit)
     print(f"Disabled: {a.unit} (data kept)")
 
 
@@ -91,10 +118,15 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--kra-pin")
     s.add_argument("--vat-registered", action="store_true")
     s.set_defaults(fn=cmd_create_tenant)
+    sub.add_parser("tenants").set_defaults(fn=cmd_tenants)
+    s = sub.add_parser("drop-tenant")
+    s.add_argument("code")
+    s.add_argument("--confirm", required=True)
+    s.set_defaults(fn=cmd_drop_tenant)
     s = sub.add_parser("outbox-run")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_outbox_run)
-    for name, fn in (("enable", cmd_enable), ("disable", cmd_disable)):
+    for name, fn in (("enable", cmd_enable), ("disable", cmd_disable), ("remove", cmd_remove)):
         s = sub.add_parser(name)
         s.add_argument("tenant")
         s.add_argument("unit")
