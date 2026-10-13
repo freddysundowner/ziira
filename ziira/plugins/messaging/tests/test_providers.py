@@ -7,7 +7,7 @@ from uuid import uuid4
 import httpx
 import pytest
 
-from ziira.plugins.messaging.providers import AfricasTalkingSms, FakeSms, SmtpEmail, WhatsAppCloud
+from ziira.plugins.messaging.providers import AfricasTalkingSms, BlessedTextsSms, FakeSms, SmtpEmail, WhatsAppCloud
 from ziira.sdk import Outgoing
 
 MESSAGE = Outgoing(uuid4(), uuid4(), "254712345678", "Invoice due", "Your invoice INV-1 of KES 116 is due.")
@@ -177,3 +177,39 @@ def test_the_fake_channel_records_and_can_be_scripted() -> None:
         FakeSms().send(MESSAGE, {}, {})
     assert FakeSms().send(MESSAGE, {}, {}).accepted
     FakeSms.sent.clear()
+
+
+# --------------------------------------------------------------------------- BlessedTexts
+def blessed(handler: Any, **config: Any):  # type: ignore[no-untyped-def]
+    BlessedTextsSms.client_factory = staticmethod(lambda: gateway(handler))
+    return BlessedTextsSms().send(MESSAGE, {"api_key": "KEY"}, {"sender_id": "23107", **config})
+
+
+def test_blessedtexts_sms_is_sent_as_documented() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=[{"status_code": "1000", "status_desc": "Success",
+                                          "message_id": "6496cc3d541ef109508440", "phone": "254712345678",
+                                          "message_cost": "0.5"}])
+
+    result = blessed(handler)
+    assert result.accepted and result.provider_ref == "6496cc3d541ef109508440"
+    request = seen[0]
+    assert str(request.url) == "https://sms.blessedtexts.com/api/sms/v1/sendsms"
+    assert request.method == "POST" and request.headers["accept"] == "application/json"
+    import json
+    assert json.loads(request.content) == {"api_key": "KEY", "sender_id": "23107", "message": MESSAGE.body,
+                                           "phone": "254712345678"}
+
+
+def test_blessedtexts_refusals_are_permanent_and_outages_are_retried() -> None:
+    refused = blessed(lambda r: httpx.Response(200, json=[{"status_code": "1001", "status_desc": "Invalid sender"}]))
+    assert not refused.accepted and refused.permanent_failure and "Invalid sender" in refused.message
+    single = blessed(lambda r: httpx.Response(200, json={"status_code": "1002", "status_desc": "No credit"}))
+    assert not single.accepted and "No credit" in single.message
+    garbage = blessed(lambda r: httpx.Response(200, text="<html>no</html>"))
+    assert not garbage.accepted and garbage.permanent_failure
+    with pytest.raises(httpx.HTTPStatusError):
+        blessed(lambda r: httpx.Response(503, text="down"))

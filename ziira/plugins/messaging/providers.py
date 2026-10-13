@@ -105,6 +105,33 @@ class AfricasTalkingSms(_HttpChannel):
                           permanent_failure=True)
 
 
+class BlessedTextsSms(_HttpChannel):
+    """SMS through BlessedTexts. Secret: {api_key}. Config: {sender_id}. One JSON POST per message; a reply is a list
+    with one entry per phone, and status_code "1000" means accepted."""
+
+    channel = "sms"
+    name = "blessedtexts"
+    url = "https://sms.blessedtexts.com/api/sms/v1/sendsms"
+
+    def send(self, message: Outgoing, secret: dict[str, Any], config: dict[str, Any]) -> SendResult:
+        payload = {"api_key": str(secret["api_key"]), "sender_id": str(config.get("sender_id", "")),
+                   "message": message.body, "phone": message.recipient}
+        with self.client_factory() as client:
+            response = client.post(self.url, json=payload, headers={"Accept": "application/json"})
+        if self.server_failed(response):
+            response.raise_for_status()
+        try:
+            body = response.json()
+            first = body[0] if isinstance(body, list) else body
+            code, description = str(first["status_code"]), str(first.get("status_desc", "not sent"))
+        except (ValueError, KeyError, IndexError, TypeError):
+            return SendResult(False, message=f"Unexpected reply from BlessedTexts ({response.status_code})",
+                              permanent_failure=response.status_code < 500)
+        if code == "1000":
+            return SendResult(True, provider_ref=first.get("message_id"))
+        return SendResult(False, message=f"BlessedTexts: {description}"[:300], permanent_failure=True)
+
+
 class WhatsAppCloud(_HttpChannel):
     """WhatsApp through the Cloud API. Secret: {access_token}. Config: {phone_number_id, api_version?, template?,
     language?}. A business may start a conversation only with an approved *template*; give its name in the config and

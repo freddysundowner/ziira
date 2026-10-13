@@ -2,6 +2,7 @@
 
 from ziira.plugins.messaging.providers import (
     AfricasTalkingSms,
+    BlessedTextsSms,
     FakeEmail,
     FakeSms,
     FakeWhatsApp,
@@ -10,5 +11,5 @@ from ziira.plugins.messaging.providers import (
 )
 from ziira.sdk import provides
 
-for provider in (SmtpEmail, AfricasTalkingSms, WhatsAppCloud, FakeEmail, FakeSms, FakeWhatsApp):
+for provider in (SmtpEmail, BlessedTextsSms, AfricasTalkingSms, WhatsAppCloud, FakeEmail, FakeSms, FakeWhatsApp):
     provides("kernel.notification_channel")(provider)

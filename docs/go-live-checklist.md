@@ -8,7 +8,9 @@ service**. Tick each off (with the date and who did it) before a customer relies
 
 - [ ] **Safaricom Daraja** (M-Pesa): STK push, STK query, C2B register/confirmation/validation URLs, callbacks reaching
       our public URL. Code: `ziira/modules/payments/providers.py`. Check real response shapes and error codes.
-- [ ] **Africa's Talking SMS**: sender id approved, delivery reports, cost per message. Code: `ziira/plugins/messaging/`.
+- [ ] **BlessedTexts SMS** (provider `blessedtexts`): send a real message with the live key and approved sender id; check
+      the error codes it returns for a bad key, bad sender and no credit (only "1000" is known to mean success).
+      Africa's Talking (`africastalking`) is also built but unused. Code: `ziira/plugins/messaging/`.
 - [ ] **WhatsApp Cloud API**: business verified, message templates approved (reminders and alerts need templates outside
       the 24-hour window), opt-in captured. Code: `ziira/plugins/messaging/`.
 - [ ] **Email (SMTP)**: sending domain with SPF/DKIM, bounce handling.

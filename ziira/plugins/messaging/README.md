@@ -19,6 +19,7 @@ PUT /api/v1/notifications/channels/sms
 | Channel | Provider | Secret | Config |
 |---|---|---|---|
 | email | `smtp` | host, port, username, password | from_address, from_name, starttls |
+| sms | `blessedtexts` | api_key | sender_id |
 | sms | `africastalking` | api_key | username, sender_id, sandbox |
 | whatsapp | `whatsapp_cloud` | access_token | phone_number_id, template, language, api_version |
 | any | `fake` | any (development only) | |
