@@ -1,13 +1,20 @@
 # CLAUDE.md · Ziira Core
 
 Read this first in every session, then read `docs/PROGRESS.md` to see where work stands.
-At the end of every session, update `docs/PROGRESS.md` (status, next step, session log).
+
+**At the end of every session (always, without being asked):**
+1. Run `make lint` and `make test`; record the result.
+2. Update `docs/PROGRESS.md`: current state, phase table, next steps, session log line.
+3. Update this file if commands, rules or conventions changed.
+4. Commit everything and push to `origin` (https://github.com/freddysundowner/ziira.git).
+   Never commit `.env` or other secrets (they are gitignored).
 
 ## What this is
 
 Ziira Core is a modular ERP for Kenyan SMEs (first customers: multi-branch retail and distribution).
 It pairs with **Ziira Intelligence**, a layer that checks business data daily and alerts owners on
-WhatsApp. Product and technical specifications are in `docs/specs/`:
+WhatsApp. Product and technical specifications are in `docs/specs/` (each PDF has a `.txt` copy
+with the same name; read the `.txt`, since the PDFs need extra tools to read):
 
 - `Ziira_Core_1.0.pdf`: the 12 modules and 1.0 scope
 - `Ziira_Intelligence_1.0.pdf`: what Intelligence does
@@ -24,10 +31,17 @@ eTIMS integrates directly with KRA systems.
 
 ```bash
 bash scripts/run_local.sh     # one step: venv, database, tables, demo data, API on :8000
+make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT in .env)
 make test                     # all tests (creates/drops database ziira_test)
-make lint                     # ruff + import-linter
+make lint                     # ruff + mypy + import-linter
 .venv/bin/ziira units | install --all | enable <tenant> <unit> | disable ... | uninstall <unit>
+.venv/bin/ziira create-tenant NAME --code CODE --company ... --branch-code ... --branch-name ... \
+    --owner-name ... --owner-email ...      # owner password from prompt or ZIIRA_OWNER_PASSWORD
+.venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
 ```
+
+On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything at Docker on 5433.
+`make test` loads `.env`; running pytest directly needs `set -a; . ./.env; set +a` first.
 
 ## Architecture rules (do not break)
 
@@ -45,6 +59,10 @@ make lint                     # ruff + import-linter
 7. **Immutable records:** posted documents are never edited; correct with reversals.
    Stock movements, journal entries/lines and the audit log reject UPDATE/DELETE in the database.
 8. **Money is Decimal**, never float (`ziira.sdk.money`).
+9. **Every endpoint checks access.** Routes declare `require_permission(...)`; services check scope with
+   `current_context().require(perm, company_id=..., branch_id=...)` and filter lists with `companies_with`.
+10. **Check tenant ownership of ids.** Foreign keys ignore row-level security, so call
+   `check_company(session, company_id, branch_id)` before saving records that name a company or branch.
 
 ## Module layout (copy `ziira/modules/products`)
 
@@ -67,7 +85,11 @@ tests/             unit tests for domain rules
 - Reason codes required for voids, refunds, discounts above policy, price overrides, stock adjustments.
 - Record creator and approver separately; enforce separation of duties where configured.
 - Statutory payroll rates live in `people.statutory_rate_table` (effective-dated data), never in code.
-- Development auth: tenant from `X-Tenant-ID` header or `ZIIRA_DEV_DEFAULT_TENANT`. Real auth is a later phase.
+- Kernel services for modules (via `ziira.sdk`): `next_document_number`, `check_reason`, `submit_for_approval`
+  (+ `@subscribe("approval.decided")`), `@subscribe_after`. See `docs/adding-a-module.md`.
+- Auth: sign-in with workspace code + email/phone + password; bearer tokens; API keys (`X-API-Key`).
+  Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
+- Permission tests sign in as real users (`tests/conftest.py`: `make_tenant`, `sign_in`), never the dev header.
 
 ## Working style for this project
 

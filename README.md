@@ -3,22 +3,26 @@
 Modular ERP for Kenyan businesses, built as a small **kernel** with **pluggable modules** and **plugins**.
 Python 3.12+, FastAPI, SQLAlchemy 2, PostgreSQL 16.
 
-> **Status: foundation (build plan phase 1).** The kernel, module and plugin system, all 110 database
-> tables and the Products module work and are tested. The other modules have their manifests,
+> **Status: foundation (build plan phase 1) complete.** The kernel (tenancy, sign-in, roles and scopes,
+> audit, numbering, reason codes, approvals, events and outbox), the module and plugin system, all
+> database tables and the Products module work and are tested. The other modules have their manifests,
 > migrations and folders in place, and are built next using Products as the template.
 
 ## What works today
 
 | Part | State |
 |---|---|
-| Kernel: tenancy, row-level security, sessions, events and outbox, audit hash chain | Working, tested |
+| Kernel: tenancy, row-level security, events and outbox processor, audit hash chain | Working, tested |
+| Sign-in (workspace code + email/phone + password), device-bound refresh tokens, API keys | Working, tested |
+| Users, roles and scopes (tenant, company, branch, own); permission checks on every endpoint | Working, tested |
+| Document numbering, reason codes, approval matrix with separation of duties | Working, tested |
 | Module and plugin registry: install, enable, disable, uninstall with dependency rules | Working, tested |
 | CLI (`ziira ...`) | Working |
 | Database: 11 schemas, 110 tables, migrations per unit | Working, tested |
 | Products module (API, services, domain rules, repository) | Working, tested |
 | Example plugin `catalog_stats` (own schema, event subscriber, API) | Working, tested |
 | Inventory, POS, Payments, CRM, Purchasing, Finance, People, Command Center | Tables, manifests and folders only |
-| Authentication | Not yet: development uses the `X-Tenant-ID` header |
+| MFA and one-time codes | Not yet (phase 11, needs an SMS/email gateway) |
 
 ## Run it in one step (Mac)
 
@@ -29,8 +33,12 @@ bash scripts/run_local.sh
 
 The script finds Python 3.12+, starts PostgreSQL (Docker Desktop if it is running, otherwise a
 PostgreSQL installed on the Mac), installs all tables, creates a demo tenant with sample products,
-and starts the API. Open **http://localhost:8000/docs**. In development, requests without an
-`X-Tenant-ID` header use the demo tenant, so you can try endpoints straight from that page.
+and starts the API. Open **http://localhost:8000/docs**. In development, requests without credentials
+act as the demo tenant with every permission, so you can try endpoints straight from that page.
+To sign in for real: workspace `demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`.
+
+If another PostgreSQL already uses port 5432, set `ZIIRA_DB_PORT=5433` in `.env` (and use 5433 in the
+database URLs there); Docker then publishes the database on that port.
 
 ## Quick start, step by step (Mac)
 
@@ -41,7 +49,8 @@ cd ziira-core
 make setup          # virtual environment + dependencies, creates .env
 make db-up          # PostgreSQL + Redis in Docker
 make install        # creates all schemas and tables
-make test           # 27 tests against a throwaway ziira_test database
+make lint           # ruff, mypy, import-linter
+make test           # all tests against a throwaway ziira_test database
 ```
 
 Without Docker (Homebrew `postgresql@16` or Postgres.app), run once as a superuser:
@@ -55,19 +64,31 @@ then `make install` and `make test` as above.
 ### Create a tenant and try the API
 
 ```bash
-.venv/bin/ziira create-tenant "Pevma" --company "Pevma Hardware" --branch-code THK --branch-name Thika
-# prints tenant_id, company_id, branch_id
+.venv/bin/ziira create-tenant "Pevma" --code pevma --company "Pevma Hardware" --branch-code THK \
+    --branch-name Thika --owner-name "Jane Wanjiru" --owner-email jane@pevma.co.ke
+# asks for the owner's password; prints tenant_id, company_id, branch_id, owner_id
 
 .venv/bin/ziira enable <tenant_id> products
 make run            # API on http://localhost:8000, interactive docs at /docs
 ```
 
-Every request sends `X-Tenant-ID: <tenant_id>`. In the docs page, set it on each call.
+Sign in, then send the access token on every request:
 
 ```bash
-curl -X POST localhost:8000/api/v1/products/uoms -H "X-Tenant-ID: <tenant_id>" \
+curl -X POST localhost:8000/api/v1/auth/sign-in -H "Content-Type: application/json" \
+     -d '{"workspace":"pevma","login":"jane@pevma.co.ke","password":"<password>","device_id":"my-laptop"}'
+# returns access_token (15 minutes) and refresh_token (use /api/v1/auth/refresh before it expires)
+
+curl -X POST localhost:8000/api/v1/products/uoms -H "Authorization: Bearer <access_token>" \
      -H "Content-Type: application/json" -d '{"code":"BAG","name":"Bag"}'
 ```
+
+The owner then creates users (`POST /api/v1/users`) and gives them roles over the whole business,
+a company or a branch (`POST /api/v1/users/{id}/roles`). Integrations use API keys
+(`POST /api/v1/api-keys`, header `X-API-Key`).
+
+In development only, `X-Tenant-ID: <tenant_id>` acts as that tenant with every permission.
+Set `ZIIRA_ENV=production` to refuse that header and the development secret key.
 
 ## Commands
 
@@ -76,20 +97,22 @@ curl -X POST localhost:8000/api/v1/products/uoms -H "X-Tenant-ID: <tenant_id>" \
 | `ziira units` | List units and whether they are installed |
 | `ziira install <unit>` / `--all` | Install units (and the units they require) |
 | `ziira uninstall <unit>` | Remove a unit's schema; refused if anything depends on it |
-| `ziira create-tenant NAME --company ... --branch-code ... --branch-name ...` | New tenant with a company and branch |
+| `ziira create-tenant NAME --code ... --company ... --branch-code ... --branch-name ... --owner-name ... --owner-email ...` | New tenant with a company, branch, default roles and its owner |
 | `ziira enable <tenant> <unit>` | Enable for a tenant (enables required units too) |
 | `ziira disable <tenant> <unit>` | Disable for a tenant; data is kept |
+| `ziira outbox-run [--once]` | Deliver committed events to after-commit subscribers |
 
 ## Layout
 
 ```
 ziira/
-  kernel/        tenancy, database, registry, events, audit, app, CLI   (modules never import this)
+  kernel/        tenancy, auth, users and roles, registry, events, outbox, audit, numbering,
+                 reason codes, approvals, app, CLI   (modules never import this)
   sdk/           the only kernel interface modules and plugins may use
   modules/       one folder per module: manifest.toml, migrations/, api/, services/,
                  domain/, repository/, events.py, public.py, tests/
   plugins/       one folder per plugin, same layout, own schema plg_<name>
-tests/           kernel, lifecycle, database-rule, API and architecture tests
+tests/           kernel, auth, permission, lifecycle, database-rule, API and architecture tests
 docs/            how to add a module or plugin, decisions, specifications
 ```
 
@@ -100,7 +123,8 @@ docs/            how to add a module or plugin, decisions, specifications
 3. Units import the kernel only through `ziira.sdk`, and other units only through their `public.py`.
    `tests/test_architecture.py` fails the build if this is broken.
 4. Units talk to each other through events (`publish` / `@subscribe`), not by calling internals.
-5. Every unit declares itself in `manifest.toml`: version, requires, optional, permissions, events, API prefix.
+5. Every unit declares itself in `manifest.toml`: version, requires, optional, permissions, default role
+   grants, reason codes, events, API prefix.
 
 See `docs/adding-a-module.md` and `docs/writing-a-plugin.md`.
 
@@ -114,4 +138,4 @@ See `docs/adding-a-module.md` and `docs/writing-a-plugin.md`.
 ## Specifications
 
 `docs/specs/` holds the Ziira Core 1.0 product document, the Ziira Intelligence document and the
-technical specification (with the full database schema in Appendix A).
+technical specification (with the full database schema in Appendix A), each as PDF and as plain text.

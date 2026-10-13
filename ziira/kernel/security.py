@@ -1,0 +1,88 @@
+"""Password hashing, signed access tokens and random secrets (standard library only).
+
+Passwords are hashed with scrypt. Access tokens are short-lived, HMAC-signed JSON:
+`<base64 payload>.<base64 signature>`. Refresh tokens and API keys are random secrets
+stored only as SHA-256 hashes.
+"""
+
+import base64
+import hashlib
+import hmac
+import json
+import secrets
+import time
+from typing import Any
+
+from ziira.kernel.config import get_settings
+from ziira.kernel.errors import Unauthorized, ValidationFailed
+
+_SCRYPT_N, _SCRYPT_R, _SCRYPT_P = 2**14, 8, 1
+
+
+def _b64(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _unb64(text: str) -> bytes:
+    return base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
+
+
+# --------------------------------------------------------------------------- passwords
+def hash_password(password: str) -> str:
+    """Return a salted scrypt hash, e.g. `scrypt$16384$8$1$<salt>$<hash>`."""
+    if len(password) < 8:
+        raise ValidationFailed("Password must be at least 8 characters")
+    salt = secrets.token_bytes(16)
+    digest = hashlib.scrypt(password.encode(), salt=salt, n=_SCRYPT_N, r=_SCRYPT_R, p=_SCRYPT_P)
+    return f"scrypt${_SCRYPT_N}${_SCRYPT_R}${_SCRYPT_P}${_b64(salt)}${_b64(digest)}"
+
+
+def verify_password(password: str, stored: str | None) -> bool:
+    """True if the password matches the stored hash. Takes similar time when there is no hash."""
+    if not stored:
+        # Spend the same effort so response time does not reveal whether the user exists.
+        hashlib.scrypt(password.encode(), salt=b"0" * 16, n=_SCRYPT_N, r=_SCRYPT_R, p=_SCRYPT_P)
+        return False
+    try:
+        _, n, r, p, salt, digest = stored.split("$")
+        actual = hashlib.scrypt(password.encode(), salt=_unb64(salt), n=int(n), r=int(r), p=int(p))
+    except ValueError:
+        return False
+    return hmac.compare_digest(actual, _unb64(digest))
+
+
+# --------------------------------------------------------------------------- secrets
+def new_secret() -> str:
+    """A random URL-safe secret (256 bits)."""
+    return secrets.token_urlsafe(32)
+
+
+def hash_secret(secret: str) -> str:
+    """SHA-256 of a refresh token or API key, as stored in the database."""
+    return hashlib.sha256(secret.encode()).hexdigest()
+
+
+# --------------------------------------------------------------------------- access tokens
+def _signature(body: str) -> str:
+    key = get_settings().secret_key.encode()
+    return _b64(hmac.new(key, body.encode(), hashlib.sha256).digest())
+
+
+def sign_token(payload: dict[str, Any], minutes: int) -> str:
+    """Sign a payload that expires after `minutes`."""
+    body = _b64(json.dumps({**payload, "exp": int(time.time()) + minutes * 60}).encode())
+    return f"{body}.{_signature(body)}"
+
+
+def read_token(token: str) -> dict[str, Any]:
+    """Check the signature and expiry and return the payload. Raises Unauthorized."""
+    try:
+        body, signature = token.split(".")
+    except ValueError:
+        raise Unauthorized("Malformed token") from None
+    if not hmac.compare_digest(signature, _signature(body)):
+        raise Unauthorized("Invalid token")
+    payload: dict[str, Any] = json.loads(_unb64(body))
+    if payload.get("exp", 0) < time.time():
+        raise Unauthorized("Token expired; refresh it or sign in again")
+    return payload

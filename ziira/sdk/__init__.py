@@ -4,26 +4,37 @@ Modules and plugins must import from `ziira.sdk`, never from `ziira.kernel`
 (enforced by import-linter). This keeps units independent of kernel internals.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from decimal import ROUND_HALF_UP, Decimal
 from uuid import UUID
 
 from fastapi import Depends, Header
+from fastapi.concurrency import run_in_threadpool
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit
+from ziira.kernel import approvals, audit, numbering, reasons
+from ziira.kernel.auth import context_from_access_token, context_from_api_key
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext, get_context, set_context
 from ziira.kernel.db import tenant_session
-from ziira.kernel.errors import Conflict, NotFound, ValidationFailed, ZiiraError
-from ziira.kernel.events import Event, publish, subscribe
+from ziira.kernel.errors import (
+    Conflict,
+    Forbidden,
+    NotFound,
+    Unauthorized,
+    ValidationFailed,
+    ZiiraError,
+)
+from ziira.kernel.events import Event, publish, subscribe, subscribe_after
+from ziira.kernel.manifest import SDK_VERSION
 
 __all__ = [
-    "Conflict", "Event", "NotFound", "Session", "ValidationFailed", "ZiiraError",
-    "audit_record", "current_context", "db_session", "request_context", "money", "publish", "subscribe",
+    "SDK_VERSION", "Conflict", "Event", "Forbidden", "NotFound", "RequestContext", "Session", "Unauthorized",
+    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "current_context",
+    "db_session", "money", "next_document_number", "publish", "request_context", "require_permission",
+    "submit_for_approval", "subscribe", "subscribe_after",
 ]
-
-SDK_VERSION = "1.0"
 
 
 def money(value: Decimal | int | str) -> Decimal:
@@ -32,7 +43,10 @@ def money(value: Decimal | int | str) -> Decimal:
 
 
 def current_context() -> RequestContext:
-    """Tenant, user and channel of the current request."""
+    """Tenant, user, channel and permissions of the current request.
+
+    Check scope inside services with `current_context().require("stock.adjust", company_id=..., branch_id=...)`.
+    """
     return get_context()
 
 
@@ -42,21 +56,70 @@ def audit_record(session: Session, action: str, entity_type: str, entity_id: UUI
     audit.record(session, action, entity_type, entity_id, changes)
 
 
-async def request_context(
-    x_tenant_id: UUID | None = Header(default=None, description="Tenant ID (development; replaced by authentication)"),
-    x_user_id: UUID | None = Header(default=None),
-) -> RequestContext:
-    """FastAPI dependency: set who is acting for which tenant.
+# --------------------------------------------------------------------------- kernel services
+def check_company(session: Session, company_id: UUID, branch_id: UUID | None = None) -> None:
+    """Raise ValidationFailed unless the company (and branch, if given) belong to the current tenant.
 
-    Async on purpose: it runs in the request's own task, so the context it sets is
-    copied into the threads that run synchronous dependencies and endpoints.
+    Call it before saving any record that names a company or branch: foreign keys are checked
+    by PostgreSQL without row-level security, so they would accept another tenant's id.
     """
-    if not get_settings().dev_tenant_header:
-        raise ZiiraError("Tenant header is disabled; authentication is required")
-    tenant_id = x_tenant_id or get_settings().dev_default_tenant
-    if tenant_id is None:
-        raise ValidationFailed("Send the X-Tenant-ID header")
-    ctx = RequestContext(tenant_id=tenant_id, user_id=x_user_id, channel="api")
+    if session.execute(text("select 1 from kernel.company where id = :c"), {"c": str(company_id)}).first() is None:
+        raise ValidationFailed("Company not found")
+    if branch_id is not None and session.execute(
+            text("select 1 from kernel.branch where id = :b and company_id = :c"),
+            {"b": str(branch_id), "c": str(company_id)}).first() is None:
+        raise ValidationFailed("Branch not found in that company")
+
+
+def next_document_number(session: Session, *, company_id: UUID, branch_id: UUID | None, doc_type: str,
+                         prefix: str) -> str:
+    """Take the next human document number, e.g. ADJ-THK-000001. See kernel/numbering.py."""
+    return numbering.next_document_number(session, company_id=company_id, branch_id=branch_id,
+                                          doc_type=doc_type, prefix=prefix)
+
+
+def check_reason(session: Session, category: str, reason_code_id: UUID | None, note: str | None = None) -> None:
+    """Raise ValidationFailed unless a valid, active reason of `category` was given (with a note if needed)."""
+    reasons.check_reason(session, category, reason_code_id, note)
+
+
+def submit_for_approval(session: Session, *, company_id: UUID, doc_type: str, doc_id: UUID,
+                        amount: Decimal = Decimal("0")) -> str:
+    """Start approval of a document. Returns 'approved' (no approval needed) or 'pending'.
+
+    When pending, subscribe to 'approval.decided' (aggregate_type == doc_type) to post or reject
+    the document; event.payload["status"] is 'approved' or 'rejected'.
+    """
+    return approvals.submit_for_approval(session, company_id=company_id, doc_type=doc_type, doc_id=doc_id,
+                                         amount=amount).status
+
+
+# --------------------------------------------------------------------------- FastAPI dependencies
+async def request_context(
+    authorization: str | None = Header(default=None, description="Bearer <access token>"),
+    x_api_key: str | None = Header(default=None, description="API key for server-to-server integrations"),
+    x_tenant_id: UUID | None = Header(default=None, description="Development only: act as this tenant"),
+) -> RequestContext:
+    """FastAPI dependency: authenticate the request and set who is acting.
+
+    Order: bearer token, then API key, then (development only) the X-Tenant-ID header,
+    which acts with every permission. Async on purpose: it runs in the request's own task,
+    so the context it sets is copied into the threads that run sync dependencies and endpoints.
+    """
+    settings = get_settings()
+    if authorization:
+        scheme, _, token = authorization.partition(" ")
+        if scheme.lower() != "bearer" or not token:
+            raise Unauthorized("Use 'Authorization: Bearer <token>'")
+        ctx = await run_in_threadpool(context_from_access_token, token.strip())
+    elif x_api_key:
+        ctx = await run_in_threadpool(context_from_api_key, x_api_key.strip())
+    elif settings.dev_tenant_header and (x_tenant_id or settings.dev_default_tenant):
+        tenant_id = x_tenant_id or settings.dev_default_tenant
+        assert tenant_id is not None
+        ctx = RequestContext(tenant_id=tenant_id, channel="api", all_permissions=True)
+    else:
+        raise Unauthorized("Sign in first")
     set_context(ctx)
     return ctx
 
@@ -65,3 +128,18 @@ def db_session(ctx: RequestContext = Depends(request_context)) -> Iterator[Sessi
     """FastAPI dependency: one transaction scoped to the request's tenant."""
     with tenant_session(ctx.tenant_id) as session:
         yield session
+
+
+def require_permission(permission: str) -> Callable[[RequestContext], RequestContext]:
+    """FastAPI dependency: reject the request unless the actor holds `permission` somewhere.
+
+    Endpoints that act on a company or branch must also check the scope in the service:
+    `current_context().require(permission, company_id=..., branch_id=...)`.
+    """
+
+    def check(ctx: RequestContext = Depends(request_context)) -> RequestContext:
+        if not ctx.has_anywhere(permission):
+            raise Forbidden(f"You do not have permission '{permission}'")
+        return ctx
+
+    return check

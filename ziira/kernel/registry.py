@@ -9,6 +9,9 @@ Rules:
 - A unit cannot be disabled while an enabled unit requires it.
 - A unit cannot be uninstalled while any tenant has it enabled, or another installed unit requires it.
 - Disabling keeps all data. Uninstalling runs the unit's down migrations.
+- Installing again applies any new migrations of an installed unit (an upgrade).
+- Enabling seeds the unit's defaults for the tenant: its permissions for the default roles
+  (the Owner role receives all of them) and its reason codes.
 """
 
 import json
@@ -22,7 +25,7 @@ from sqlalchemy.orm import Session
 from ziira.kernel.config import get_settings
 from ziira.kernel.db import admin_engine, admin_session, tenant_session
 from ziira.kernel.errors import DependencyError, NotFound
-from ziira.kernel.manifest import Manifest, load_manifest
+from ziira.kernel.manifest import SDK_VERSION, Manifest, load_manifest, sdk_compatible
 
 ZIIRA_ROOT = Path(__file__).resolve().parent.parent
 ENTRY_POINT_GROUP = "ziira.units"
@@ -66,9 +69,12 @@ def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
     import contextlib
     import importlib
 
+    from ziira.kernel.events import register_unit_package
+
     for m in (units or discover()).values():
         if m.core:
             continue
+        register_unit_package(m.package, m.name)
         with contextlib.suppress(ModuleNotFoundError):
             importlib.import_module(f"{m.package}.events")
 
@@ -114,6 +120,33 @@ def _run_script(conn: "Connection", sql: str) -> None:
         cur.execute(sql)
 
 
+def seed_unit_defaults(s: Session, m: Manifest) -> None:
+    """Give the tenant's default roles this unit's permissions and add its reason codes.
+
+    Safe to run again (re-enabling keeps what the tenant changed and adds what is missing).
+    The session must be scoped to the tenant.
+    """
+    s.execute(text(
+        "insert into kernel.role_permission (tenant_id, role_id, permission_code) "
+        "select r.tenant_id, r.id, p.code from kernel.role r cross join kernel.permission p "
+        "where r.tenant_id = kernel.current_tenant() and r.is_system and r.name = 'Owner' "
+        "and p.unit_name = :n on conflict (role_id, permission_code) do nothing"), {"n": m.name})
+    for role_name, permission_codes in m.roles.items():
+        for code in permission_codes:
+            s.execute(text(
+                "insert into kernel.role_permission (tenant_id, role_id, permission_code) "
+                "select r.tenant_id, r.id, :c from kernel.role r "
+                "where r.tenant_id = kernel.current_tenant() and r.is_system and r.name = :r "
+                "on conflict (role_id, permission_code) do nothing"), {"c": code, "r": role_name})
+    for category, codes in m.reason_codes.items():
+        for code, label in codes.items():
+            s.execute(text(
+                "insert into kernel.reason_code (tenant_id, category, code, label) "
+                "values (kernel.current_tenant(), :cat, :code, :label) "
+                "on conflict (tenant_id, category, code) do nothing"),
+                {"cat": category, "code": code, "label": label})
+
+
 # --------------------------------------------------------------------------- platform level
 class Registry:
     """Installs and removes units, and enables or disables them per tenant."""
@@ -148,11 +181,19 @@ class Registry:
 
     # ---- install / uninstall (platform)
     def install(self, name: str) -> list[str]:
-        """Install a unit and any units it requires. Returns the units newly installed."""
+        """Install a unit and any units it requires. Returns the units newly installed.
+
+        Units already installed get any new migrations and an updated registration.
+        """
         done: list[str] = []
         installed = self.installed()
         for unit_name in install_order(self.units, [name]):
+            m = self.units[unit_name]
+            if not sdk_compatible(m.sdk):
+                raise DependencyError(f"'{unit_name}' needs SDK {m.sdk}; this kernel provides {SDK_VERSION}")
             if unit_name in installed:
+                self._apply_migrations(m)
+                self._register(m)
                 continue
             self._apply_migrations(self.units[unit_name])
             self._register(self.units[unit_name])
@@ -246,6 +287,7 @@ class Registry:
                     "values (:t, :n, 'enabled', now()) on conflict (tenant_id, unit_name) "
                     "do update set status = 'enabled', enabled_at = now(), disabled_at = null"),
                     {"t": str(tenant_id), "n": unit_name})
+                seed_unit_defaults(s, self.units[unit_name])
                 enabled.add(unit_name)
                 newly.append(unit_name)
         return newly

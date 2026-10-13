@@ -3,20 +3,24 @@
     ziira units                         list units and whether they are installed
     ziira install <unit> | --all        install units (and what they require)
     ziira uninstall <unit>              remove a unit's tables (refused if in use)
-    ziira create-tenant NAME --company NAME --branch-code CODE --branch-name NAME
+    ziira create-tenant NAME --code CODE --company NAME --branch-code CODE --branch-name NAME
+                        --owner-name NAME --owner-email EMAIL   (password asked, or ZIIRA_OWNER_PASSWORD)
     ziira enable <tenant-id> <unit>     enable a unit for a tenant
     ziira disable <tenant-id> <unit>    disable a unit for a tenant (data kept)
+    ziira outbox-run [--once]           deliver committed events to after-commit subscribers
 """
 
 import argparse
+import getpass
+import logging
+import os
 import sys
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from sqlalchemy import text
-
-from ziira.kernel.db import admin_session, tenant_session
+from ziira.kernel import outbox
 from ziira.kernel.errors import ZiiraError
-from ziira.kernel.registry import Registry
+from ziira.kernel.registry import Registry, load_event_handlers
+from ziira.kernel.tenants import create_tenant
 
 
 def cmd_units(reg: Registry, _: argparse.Namespace) -> None:
@@ -37,21 +41,22 @@ def cmd_uninstall(reg: Registry, a: argparse.Namespace) -> None:
     print(f"Uninstalled: {a.unit}")
 
 
-def cmd_create_tenant(_: Registry, a: argparse.Namespace) -> None:
-    tenant_id, company_id, branch_id = uuid4(), uuid4(), uuid4()
-    with admin_session() as s:
-        s.execute(text("insert into kernel.tenant (id, name) values (:i, :n)"),
-                  {"i": str(tenant_id), "n": a.name})
-    with tenant_session(tenant_id, admin=True) as s:
-        s.execute(text("insert into kernel.company (id, tenant_id, name, kra_pin, vat_registered) "
-                       "values (:i, :t, :n, :p, :v)"),
-                  {"i": str(company_id), "t": str(tenant_id), "n": a.company, "p": a.kra_pin,
-                   "v": a.vat_registered})
-        s.execute(text("insert into kernel.branch (id, tenant_id, company_id, code, name) "
-                       "values (:i, :t, :c, :code, :n)"),
-                  {"i": str(branch_id), "t": str(tenant_id), "c": str(company_id),
-                   "code": a.branch_code, "n": a.branch_name})
-    print(f"tenant_id  = {tenant_id}\ncompany_id = {company_id}\nbranch_id  = {branch_id}")
+def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
+    password = os.environ.get("ZIIRA_OWNER_PASSWORD") or getpass.getpass("Owner password: ")
+    t = create_tenant(name=a.name, code=a.code, company=a.company, branch_code=a.branch_code,
+                      branch_name=a.branch_name, owner_name=a.owner_name, owner_email=a.owner_email,
+                      owner_password=password, kra_pin=a.kra_pin, vat_registered=a.vat_registered, registry=reg)
+    print(f"tenant_id  = {t.tenant_id}\ncompany_id = {t.company_id}\nbranch_id  = {t.branch_id}\n"
+          f"owner_id   = {t.owner_id}")
+
+
+def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
+    logging.basicConfig(level=logging.INFO)
+    load_event_handlers(reg.units)
+    if a.once:
+        print(f"Delivered {outbox.process_all()} event(s)")
+    else:
+        outbox.run_forever()
 
 
 def cmd_enable(reg: Registry, a: argparse.Namespace) -> None:
@@ -77,12 +82,18 @@ def main(argv: list[str] | None = None) -> int:
     s.set_defaults(fn=cmd_uninstall)
     s = sub.add_parser("create-tenant")
     s.add_argument("name")
+    s.add_argument("--code", required=True, help="workspace code used to sign in, e.g. demo-hardware")
     s.add_argument("--company", required=True)
     s.add_argument("--branch-code", required=True)
     s.add_argument("--branch-name", required=True)
+    s.add_argument("--owner-name", required=True)
+    s.add_argument("--owner-email", required=True)
     s.add_argument("--kra-pin")
     s.add_argument("--vat-registered", action="store_true")
     s.set_defaults(fn=cmd_create_tenant)
+    s = sub.add_parser("outbox-run")
+    s.add_argument("--once", action="store_true", help="one pass, then stop")
+    s.set_defaults(fn=cmd_outbox_run)
     for name, fn in (("enable", cmd_enable), ("disable", cmd_disable)):
         s = sub.add_parser(name)
         s.add_argument("tenant")

@@ -4,6 +4,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from ziira.modules.products.domain import rules
+from ziira.modules.products.permissions import PRODUCTS_MANAGE
 from ziira.modules.products.repository import products_repo
 from ziira.modules.products.repository.models import Product
 from ziira.sdk import (
@@ -12,6 +13,7 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    check_company,
     current_context,
     publish,
 )
@@ -22,6 +24,8 @@ def create_product(session: Session, *, company_id: UUID, sku: str, name: str,
                    is_batch_tracked: bool = False, reorder_level: Decimal | None = None,
                    etims_item_class: str | None = None) -> Product:
     """Validate, save, audit and publish `product.created` in one transaction."""
+    current_context().require(PRODUCTS_MANAGE, company_id=company_id)
+    check_company(session, company_id)
     sku = rules.normalise_sku(sku)
     rules.check_product_type(product_type, is_batch_tracked)
     rules.check_reorder_level(reorder_level, product_type)

@@ -12,3 +12,7 @@ subscribes = ["product.created"]
 
 [permissions]
 "catalog_stats.view" = "View catalog statistics"
+
+[roles]
+"Branch Manager" = ["catalog_stats.view"]
+"Accountant" = ["catalog_stats.view"]

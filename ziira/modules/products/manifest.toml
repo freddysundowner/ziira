@@ -16,3 +16,12 @@ subscribes = []
 "products.view" = "View products and prices"
 "products.manage" = "Create and edit products"
 "prices.manage" = "Change prices"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["products.view", "prices.manage"]
+"Branch Manager" = ["products.view", "products.manage"]
+"Cashier" = ["products.view"]
+"Storekeeper" = ["products.view"]
+"Sales Rep" = ["products.view"]
+"Accountant" = ["products.view"]

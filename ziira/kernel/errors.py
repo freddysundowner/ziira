@@ -12,6 +12,20 @@ class ZiiraError(Exception):
         self.message = message
 
 
+class Unauthorized(ZiiraError):
+    """No valid credentials: sign in again."""
+
+    status = 401
+    code = "unauthorized"
+
+
+class Forbidden(ZiiraError):
+    """Signed in, but without the permission or scope for this action."""
+
+    status = 403
+    code = "forbidden"
+
+
 class NotFound(ZiiraError):
     """The requested record does not exist for this tenant."""
 

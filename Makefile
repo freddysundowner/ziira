@@ -24,8 +24,9 @@ run:              ## start the API on http://localhost:8000 (docs at /docs)
 test:             ## run all tests (creates and drops the ziira_test database)
 	set -a; [ -f .env ] && . ./.env; set +a; .venv/bin/pytest -q
 
-lint:
+lint:             ## style, types and module boundaries
 	.venv/bin/ruff check ziira tests
+	.venv/bin/mypy ziira
 	.venv/bin/lint-imports
 
 check: lint test

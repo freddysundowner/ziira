@@ -1,0 +1,219 @@
+Ziira
+Ziira Intelligence
+The layer that checks a business every day and tells owners
+what needs attention, on any system.
+SIMPLIFY. CONNECT. GROW.
+Version 1.0 · October 2026 Confidential
+OVERVIEW
+What Ziira Intelligence is
+Ziira Intelligence is the analysis and alerting layer of Ziira. It connects to a business's
+systems, checks the data every day, and delivers findings and recommended actions to
+owners and managers on WhatsApp and in the Command Center.
+What it does
+Function Description
+Detect Finds losses, errors and risks: money not received, stock not accounted for, unusual
+entries, late payers, cost increases, missed deadlines.
+Explain States the cause, linking areas of the business, and shows the records behind every
+finding.
+Recommend and
+act
+Lists options ranked by importance, and sends follow-ups, reminders and approval
+requests within permissions the business sets.
+Deployment
+Mode Description
+Inside Ziira Core Built into the ERP and its Command Center. Live access to all 12 modules; can prepare
+actions in Core for approval.
+Standalone Runs on top of existing systems: Odoo, Zoho, QuickBooks, ERPNext, SAP Business One,
+POS systems, M-Pesa and bank statements. The business keeps its current system. This
+is the market entry point; businesses can later move to Ziira Core.
+What it adds to an existing ERP
+Left to people in an ERP Handled by Ziira Intelligence
+Reports must be opened to find problems Problems are found daily and sent to the right person
+Each module reports separately Areas are analysed together to identify causes
+M-Pesa, bank and other POS sit outside the
+ERP
+Brought in and matched against ERP records
+Entries are accepted as entered Unusual or high-risk entries are flagged
+Used at a desk by trained staff Used on WhatsApp by owners and managers
+Target customers
+Businesses where staff handle money or stock without direct owner supervision, and where losses cost
+more than the subscription: multi-branch retailers, distributors, absent-owner outlets, and high-volume cash businesses.
+Ziira Intelligence · Confidential Page 1
+01 · DATA ACCESS
+Can Ziira read the data?
+Yes, for most systems. The data belongs to the business, and most modern systems let
+the business give an approved app read access. Some add conditions or costs.
+System Access What to know
+Ziira Core Full Built in, live, no limits.
+Zoho Yes The business approves Ziira with one click. Daily limits depend on
+its Zoho plan.
+ERPNext Yes API key; no extra cost.
+Odoo Depends on plan Self-hosted Odoo: yes. Odoo's hosted service: only on the
+Custom plan; otherwise daily exports.
+QuickBooks Online Yes, fees at scale The business approves Ziira. Intuit charges apps for reading data
+above a free monthly allowance.
+SAP Business One Via partner Usually set up by the business's SAP partner.
+Sage, older POS Exports Older versions often have no usable API; scheduled report
+exports work instead.
+M-Pesa Yes, with limits Live payment notices through Safaricom's API if the number's
+notification link is free; history from M-Pesa statements.
+Banks Varies Some banks offer APIs; otherwise statements by email or upload.
+Access terms change by version and plan, so each business is checked before onboarding.
+How Ziira gets in
+1. Ziira is registered
+Once, as an approved app
+with each vendor: Odoo, Zoho,
+Intuit, Safaricom and others.
+2. The business approves
+The owner clicks "Allow" or
+creates an access key. No
+passwords are shared.
+3. Ziira reads
+Only what was allowed, read-only by default. Access can be
+withdrawn at any time.
+Where official access is not available, Ziira uses scheduled report exports, forwarded M-Pesa and
+bank statements, or closing reports staff send to the Ziira WhatsApp number. These work for any
+business, including one with no system, with daily rather than live data.
+Ziira Intelligence · Confidential Page 2
+02 · HOW IT WORKS
+How it works
+Ziira runs a four-step cycle every day.
+1. Connect
+ERP, POS, M-Pesa,
+bank, staff reports
+2. Check
+Records vs money,
+normal vs unusual
+3. Tell
+Briefs, alerts and
+answers on WhatsApp
+4. Act
+Owner replies,
+Ziira follows up
+Repeated every day, learning what is normal for the business
+1. Connect: collect the latest data from every connected source.
+2. Check: compare records (what staff entered: sales, stock moves, expenses, closing reports) with
+evidence (what is hard to change: M-Pesa, bank, supplier invoices, stock counts), and compare
+today with what is normal.
+3. Tell: send a short message, most important items first, with the records behind each finding.
+4. Act: on the owner's reply, Ziira asks staff to explain, sends reminders, or prepares approvals.
+Numbers come from the records, not AI guesses. Totals and gaps are calculated directly from
+the data. AI explains, ranks and answers questions in English or Swahili.
+Example findings
+Finding Evidence Recommended action
+Branch sales exceed money
+received by 4,400
+Two cash sales with no matching cash or
+M-Pesa receipt
+Ask the cashier to explain
+Product margin fell from 9% to
+4%
+Supplier cost up 6%; selling price
+unchanged
+Update the selling price
+Cash shortfall of 600,000 in
+two weeks
+Payroll and a supplier payment due
+together; two customers 45 days late
+Chase the customers; ask the
+supplier to split payment
+Credit order from an overdue
+customer
+Balance of 680,000, 45 days late Pause credit or require part
+payment
+Values are illustrative.
+Ziira Intelligence · Confidential Page 3
+03 · COVERAGE
+What Ziira checks
+Coverage depends on the data connected. On Ziira Core or a full ERP, it covers every
+area of the business and links them together.
+Area Examples of what Ziira flags
+Cash and sales Sales without matching M-Pesa, cash or bank; sales falling by branch, product or
+staff
+Customers and credit Late payers; customers paying slower; credit given to overdue customers
+Suppliers and
+purchasing
+Price rises not passed on; orders above usual price; goods paid but not received
+Stock Stock missing without a sale; stockouts; slow or expiring stock
+Cash planning Weeks when payments due exceed expected cash
+Books Unusual journal entries; margin changes and their causes; unreconciled accounts
+People and payroll Overtime trends; new names, pay or bank changes before payroll approval
+Projects and assets Work not invoiced; jobs over budget; vehicle costs rising (where the data exists)
+Tax Invoices missing from eTIMS; VAT, PAYE and statutory deadlines
+Control checks
+An ERP accepts any valid entry. Ziira checks the entries themselves, every day:
+Manual stock adjustments
+Price and discount overrides
+Voided sales, refunds and credit notes
+Back-dated or late entries
+Changes at unusual times
+One person creating and approving
+Changed supplier bank details
+Possible duplicate bills or payments
+The most valuable findings combine areas, such as a cash shortfall explained by payroll timing, a
+supplier payment and late customer payments.
+Flags are questions, not accusations. Most have a good explanation. Ziira shows the evidence
+and records each answer, which protects honest staff as well as the business.
+Ziira Intelligence · Confidential Page 4
+04 · PEOPLE AND ACTIONS
+Who receives what, and what they can do
+In a small business the owner may be the only user. In a larger one, each role receives
+what is relevant, within permissions the owner sets.
+Role Receives
+Owner or director Daily or weekly brief across the business, urgent alerts, answers to any question
+Finance manager Cash forecast, reconciliation gaps, receivables, payables, control flags, tax deadlines
+Branch manager Their branch only: sales against money, stock issues, staff flags
+Accountant or auditor Reconciled figures and open flags with explanations, with the owner's permission
+Four levels of action
+Level What Ziira does Example
+1 · Read only Reports findings; changes nothing Daily brief and alerts
+2 · Follow up Sends messages on the owner's instruction Asks a manager to explain a
+gap
+3 · Prepare Creates drafts for a person to approve Draft purchase order or price
+update
+4 · Act within limits Carries out agreed routine actions Reminders to customers over
+30 days late
+Every business starts at Level 1, and moving up is its choice. Nothing involving money, prices or
+customers changes without approval unless the owner has set a rule. Every action is recorded, and
+Ziira never moves money.
+What changes by system
+M-Pesa, POS, staff
+reports Other ERPs Ziira Core
+Coverage Cash, sales, basic
+stock
+Most areas the ERP holds All 12 modules
+Freshness Daily Depends on connection Live
+Control checks Limited Depends on what the API
+exposes
+Full, including change
+history
+Actions Levels 1–2 Levels 1–4 where the API
+allows
+Levels 1–4
+Ziira Intelligence · Confidential Page 5
+05 · TRUST AND START
+Trust, limits and rollout
+How Ziira protects trust
+Read-only by default, through a dedicated key the business can withdraw.
+Role-based visibility: a branch manager does not see payroll.
+Evidence with every finding, linked to the records behind it.
+Data protection: compliance with Kenya's Data Protection Act, with clear consent and clarity on
+where data is stored and which AI services process it.
+Limits
+It cannot see what is never recorded anywhere.
+It shows gaps; it does not prove wrongdoing.
+Some alerts will be wrong, especially in the first weeks, until it learns the business.
+On other systems, what it can read and do depends on their access terms.
+It does not replace an accountant, auditor or tax adviser.
+Onboarding
+When What happens
+Day 1 Connect the system, M-Pesa and bank; confirm the system, version and plan
+Days 2–5 Map branches, staff, accounts and payment methods; read past months so Ziira learns
+what is normal
+Week 2 First briefs, plus a one-off review of past records showing what Ziira would have caught
+Weeks 3–4 Adjust alerts with the owner; add managers who should receive briefs
+Validation
+Before full launch, Ziira runs a 30-day pilot with 5 to 6 businesses, some on an ERP and some without.
+Success criteria: most pilot businesses pay to continue, and Ziira identifies problems they were not
+aware of.
+Ziira Intelligence · Confidential Page 6

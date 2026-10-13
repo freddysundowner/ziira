@@ -17,9 +17,12 @@ ziira/plugins/<name>/
 
 - Use only `ziira.sdk` and other units' `public.py`.
 - Keep all tables in your own schema `plg_<name>`; enable and force row-level security on them.
-- Declare permissions in the manifest.
-- Handlers run inside the publisher's transaction: keep them small. An exception rolls back the
-  original operation, so only raise to block an operation deliberately.
+- Declare permissions in the manifest, give default roles theirs under `[roles]`, and protect every
+  route with `Depends(require_permission("<name>.view"))`.
+- `@subscribe` handlers run inside the publisher's transaction: keep them small. An exception rolls
+  back the original operation, so only raise to block an operation deliberately.
+- Slow or external work (webhooks, messages) goes in `@subscribe_after` handlers, which run after
+  commit (via `ziira outbox-run`), are retried on failure, and must be safe to run twice.
 
 ## Third-party plugins (later)
 

@@ -1,18 +1,21 @@
 """Create a demo tenant with sample products (development only).
 
+Workspace code: demo-hardware · owner: owner@demo-hardware.test · password: demo-pass-123
+
 Prints the tenant ID. Safe to run more than once: reuses the tenant stored in .demo_tenant.
 """
 
 import sys
 from decimal import Decimal
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from sqlalchemy import text
 
-from ziira.kernel.context import RequestContext, set_context
+from ziira.kernel.context import system_context
 from ziira.kernel.db import admin_session, tenant_session
 from ziira.kernel.registry import Registry, load_event_handlers
+from ziira.kernel.tenants import create_tenant
 from ziira.modules.products.services.create_product import create_product
 from ziira.modules.products.services.create_tax_code import create_tax_code
 from ziira.modules.products.services.create_uom import create_uom
@@ -38,20 +41,16 @@ def main() -> None:
             print(tenant_id)
             return
 
-    tenant_id, company_id, branch_id = uuid4(), uuid4(), uuid4()
-    with admin_session() as s:
-        s.execute(text("insert into kernel.tenant (id, name) values (:i, 'Demo Hardware')"), {"i": str(tenant_id)})
-    with tenant_session(tenant_id, admin=True) as s:
-        s.execute(text("insert into kernel.company (id, tenant_id, name, vat_registered) "
-                       "values (:i, :t, 'Demo Hardware Ltd', true)"), {"i": str(company_id), "t": str(tenant_id)})
-        s.execute(text("insert into kernel.branch (id, tenant_id, company_id, code, name) "
-                       "values (:i, :t, :c, 'THK', 'Thika')"),
-                  {"i": str(branch_id), "t": str(tenant_id), "c": str(company_id)})
+    demo = create_tenant(name="Demo Hardware", code="demo-hardware", company="Demo Hardware Ltd",
+                         branch_code="THK", branch_name="Thika", owner_name="Demo Owner",
+                         owner_email="owner@demo-hardware.test", owner_password="demo-pass-123",
+                         vat_registered=True)
+    tenant_id, company_id = demo.tenant_id, demo.company_id
 
     Registry().enable(tenant_id, "pos")             # also enables products, inventory, payments
     Registry().enable(tenant_id, "catalog_stats")
 
-    set_context(RequestContext(tenant_id=tenant_id, channel="system"))
+    system_context(tenant_id)
     with tenant_session(tenant_id) as s:
         uoms = {code: create_uom(s, code, name).id
                 for code, name in (("BAG", "Bag"), ("PCS", "Pieces"), ("KG", "Kilogram"))}

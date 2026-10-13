@@ -1,0 +1,210 @@
+Ziira
+Ziira Core 1.0
+Module architecture and MVP scope. Run the business,
+powered by Ziira Intelligence.
+SIMPLIFY. CONNECT. GROW.
+Version 1.0 · October 2026 Confidential
+OVERVIEW
+Core and Intelligence
+Ziira Core runs the business. Ziira Intelligence checks it every day and tells owners what
+needs attention, on screen and on WhatsApp.
+Ziira Core
+Our ERP. Runs sales, stock, purchasing,
+payments, accounting, HR and payroll for every
+branch, and lets people act.
+Ziira Intelligence
+Reads the business's data, matches records
+against money and stock, explains what changed,
+and recommends what to do.
+Intelligence works in two ways. It is built into Ziira Core, where it has full, live access. It also runs on
+its own on top of systems businesses already use: Odoo, Zoho, QuickBooks, ERPNext, POS systems,
+M-Pesa and bank statements. We lead in the market with Intelligence, because it needs no switching.
+Businesses that trust it, or have no system yet, move to Ziira Core.
+Who Ziira Core 1.0 is for
+Retail and distribution businesses where staff handle money and stock while the owner is away:
+Multi-branch shops: hardware, agrovets, pharmacies, wines and spirits, mini-marts
+Distributors and wholesalers selling on credit
+Single-outlet businesses with an absent owner or high cash volume
+Version 1.0 is designed for this one segment. Service and project businesses follow in 1.x.
+The 1.0 business lifecycle
+Win
+CRM
+→
+Buy
+Purchasing
+→
+Receive
+Inventory
+→
+Sell
+POS and sales
+→
+Get paid
+M-Pesa, cash, credit
+→
+Match money
+Reconciliation
+→
+Post to books
+Ledger
+→
+Close the day
+Per branch
+→
+Check and tell
+Intelligence
+→
+Act
+Owner, on WhatsApp
+Ziira Core 1.0 · Confidential Page 1
+01 · MODULE STACK
+Ziira Core 1.0: 12 modules
+The first release covers how a retail or distribution business finds customers, buys,
+stocks, sells, gets paid, keeps its books and manages and pays its people across
+branches, with clean, connected data for Intelligence.
+01 Command Center
+The owner's front door, on screen and on WhatsApp.
+Business pulse by branch
+What needs attention
+Daily brief and alerts on WhatsApp
+Ask Ziira; approvals from the phone
+02 Point of Sale and Sales
+Counter sales and orders, online or offline.
+POS per branch and cashier, with till sessions
+Sales orders and simple quotations
+Returns, voids and discounts, each with a reason
+Credit sales within limits
+03 CRM and Customers
+Winning, keeping and managing customers.
+Leads, sources and follow-ups
+Customer profiles and history
+Credit limits, terms and statements
+Payment reminders
+04 Products and Pricing
+One catalogue used everywhere.
+Products, SKUs, categories, units
+Price lists by branch or customer
+Barcodes
+Tax and eTIMS item codes
+05 Inventory and Branches
+Stock per branch and its movement.
+Stock on hand per branch or store
+Transfers between branches
+Adjustments with reason and approval
+Stock counts; batches and expiry
+06 Purchasing and Suppliers
+From order to goods received and supplier bill.
+Suppliers and purchase orders
+Goods received against orders
+Supplier bills
+Cost and price history
+07 Payments and Reconciliation
+Matching money to sales, every day.
+M-Pesa Till, Paybill and STK push
+Cash sessions and daily branch close
+Bank deposits and statements
+Automatic matching; unmatched items flagged
+08 Finance and Accounting
+The books, kept automatically.
+General ledger and chart of accounts
+Invoices, receivables, payables, expenses
+Profit and loss, balance sheet, cash position
+VAT and eTIMS; accountant export
+09 People, HR and Payroll
+Staff, attendance and pay, posted to the books.
+Employees, departments, leave, attendance
+Payroll: PAYE, SHIF, NSSF, Housing Levy
+Payslips, P9 and statutory returns
+Salary payment by bank or M-Pesa
+10 Users, Roles and Approvals
+Who can do what, where, and up to what amount.
+Roles and branch-level access
+Approval limits by amount and action
+Separation of duties (create vs approve)
+Rules, notifications and escalations
+11 Audit and Activity
+Traceability across important actions.
+Record changes
+Approvals and overrides
+Security events
+Financial history
+12 Integrations
+Connection to payments and other systems.
+REST API and webhooks
+M-Pesa, banks and eTIMS
+Imports and exports (data migration)
+Accounting and POS connectors
+Ziira Core 1.0 · Confidential Page 2
+02 · COMMAND CENTER
+The Command Center
+The Command Center is a Core module; its intelligence comes from Ziira Intelligence. It is
+the first screen for owners and managers, and it also reaches them on WhatsApp.
+Part What it shows or does
+Business pulse Sales, cash received, stock, receivables, payables and expenses, per branch
+What needs attention Unmatched sales, stock losses, overdue customers, unusual voids or discounts,
+pending approvals
+Insights What changed and why, across sales, stock, purchasing and cash
+Recommendations What to consider doing next, with the evidence behind it
+Ask Ziira Questions in English or Swahili, on screen or on WhatsApp
+Source records From any finding to the records behind it
+On WhatsApp Daily brief, urgent alerts, answers and one-reply approvals
+Principle: Core supplies the records; Intelligence checks and interprets them; the Command
+Center brings what matters to the owner, wherever they are; Core lets them act.
+What Intelligence checks in 1.0
+Money: sales against M-Pesa, cash and bank, per branch and cashier
+Stock: movements that sales do not explain; stockouts; expiry
+Controls: voids, refunds, discounts, price overrides and stock adjustments above normal; one
+person creating and approving
+Credit: late payers; credit given to overdue customers
+Suppliers: price rises not passed on; duplicate bills
+Cash, books and tax: weeks when payments exceed expected cash; unusual journal entries;
+invoices missing from eTIMS
+People and payroll: sales by staff absent that day; overtime trends; new names, pay changes or
+bank changes before payroll is approved
+Ziira Core 1.0 · Confidential Page 3
+03 · DATA DESIGN
+Intelligence-ready by design
+Ziira Core is not an ERP with intelligence added later. Its data model makes daily
+checking possible from the first transaction.
+Every important record has a unique identifier.
+Every transaction carries a timestamp, branch, source, status and user.
+Every payment carries its method and external reference, such as the M-Pesa code.
+Voids, refunds, discounts, price overrides and stock adjustments require a reason code.
+Who created and who approved are recorded separately.
+Nothing is hard-deleted; cancelled records stay visible.
+Customers, suppliers, products, payments, orders and stock movements are linked.
+Stock movements connect to the sale, purchase, transfer or adjustment that caused them.
+History is retained, so Intelligence understands what is normal and what changed.
+The same structured data is exposed through APIs, so Intelligence works the same way in Core and
+on other systems.
+Accounting and payroll
+Version 1.0 includes a general ledger. Every sale, purchase, payment, expense and stock movement
+posts to the books automatically, so the business gets a profit and loss statement, balance sheet and
+VAT figures without anyone entering data twice. Accountants who prefer their own software can still
+receive an export.
+Payroll posts to the ledger too, and its statutory deductions (PAYE, SHIF, NSSF and the Housing Levy)
+are kept as rate tables that can be updated when the law changes, without changing code.
+Because errors here are costly, the ledger and payroll are tested heavily before launch, checked by an
+accountant against official calculations, and the ledger is checked daily against the Payments and
+Reconciliation module.
+Ziira Core 1.0 · Confidential Page 4
+04 · SCOPE
+What stays out of 1.0
+Version 1.0 focuses on retail and distribution. The items below follow once Core and
+Intelligence are proven with paying customers.
+Deferred Why, and when
+Projects and tasks For service and project firms. Planned for 1.x.
+Customer support tickets Not core for retail. Planned for 1.x.
+Manufacturing, MRP, advanced
+warehousing, supply-chain planning
+Different customers. Not planned yet.
+Recruitment, learning, marketing
+automation, niche verticals
+Not planned yet.
+Roadmap outline
+Version Adds
+1.0 The 12 modules for retail and distribution, with Intelligence built in
+1.x Projects and support tickets, for service businesses
+2.0 Deeper modules, such as manufacturing or advanced warehousing, if customers need them
+Each step goes ahead only when paying customers ask for it.
+Ziira Core 1.0 · Confidential Page 5

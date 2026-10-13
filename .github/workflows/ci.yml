@@ -1,0 +1,37 @@
+# Lint and test every push and pull request against PostgreSQL 16.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ziira
+          POSTGRES_PASSWORD: ziira
+          POSTGRES_DB: ziira
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ziira" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ZIIRA_TEST_ADMIN_URL: postgresql+psycopg://ziira:ziira@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -U pip
+          .venv/bin/pip install -e ".[dev]"
+      - name: Lint (ruff, mypy, import-linter)
+        run: make lint
+      - name: Test
+        run: .venv/bin/pytest -q

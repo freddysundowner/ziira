@@ -6,7 +6,7 @@ core = true
 version = "1.0.0"
 
 [provides]
-publishes = []
+publishes = ["approval.decided"]
 
 [permissions]
 "users.manage" = "Create users and assign roles"
@@ -14,3 +14,12 @@ publishes = []
 "units.manage" = "Enable and disable modules and plugins"
 "audit.view" = "View the audit trail"
 "approvals.decide" = "Approve or reject requests"
+"approvals.manage" = "Set up the approval matrix"
+"settings.manage" = "Manage document numbering and reason codes"
+"api_keys.manage" = "Create and revoke API keys for integrations"
+
+# Owner receives every permission automatically.
+[roles]
+"Finance Manager" = ["approvals.decide", "audit.view"]
+"Branch Manager" = ["approvals.decide"]
+"Accountant" = ["audit.view"]

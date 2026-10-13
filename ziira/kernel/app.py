@@ -14,6 +14,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from ziira.kernel.api.routes import router as kernel_router
+from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
 from ziira.kernel.registry import discover, load_event_handlers
 from ziira.sdk import db_session
@@ -36,7 +38,9 @@ def require_unit(name: str) -> Callable[[Session], None]:
 
 def create_app() -> FastAPI:
     """Build the application with all discovered units mounted."""
+    get_settings().check_safe_for_production()
     app = FastAPI(title="Ziira Core", version="1.0.0.dev0")
+    app.include_router(kernel_router)
     units = discover()
     load_event_handlers(units)
 

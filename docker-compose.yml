@@ -1,13 +1,13 @@
 # Local development services. Production hosting is configured separately.
 services:
   db:
-    image: postgres:16
+    image: postgres:16-alpine
     environment:
       POSTGRES_USER: ziira          # owner: migrations and admin commands
       POSTGRES_PASSWORD: ziira
       POSTGRES_DB: ziira
     ports:
-      - "5432:5432"
+      - "${ZIIRA_DB_PORT:-5432}:5432"   # set ZIIRA_DB_PORT=5433 if another PostgreSQL uses 5432
     volumes:
       - ziira_db:/var/lib/postgresql/data
       - ./docker/init:/docker-entrypoint-initdb.d:ro

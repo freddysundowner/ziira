@@ -18,3 +18,32 @@ subscribes = ["sale.posted", "sale.returned", "goods.received"]
 "stock.transfer" = "Transfer stock"
 "stock.count" = "Run stock counts"
 "stock.approve" = "Approve adjustments and count variances"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Branch Manager" = ["stock.view", "stock.adjust", "stock.transfer", "stock.count", "stock.approve"]
+"Storekeeper" = ["stock.view", "stock.adjust", "stock.transfer", "stock.count"]
+"Cashier" = ["stock.view"]
+"Sales Rep" = ["stock.view"]
+"Accountant" = ["stock.view"]
+
+# Reason codes seeded for the tenant when the module is enabled; tenants can add their own.
+[reason_codes.stock_adjustment]
+DAMAGED = "Damaged"
+EXPIRED = "Expired"
+THEFT = "Theft or loss"
+FOUND = "Found stock"
+DATA_ERROR = "Correction of a data entry error"
+
+[reason_codes.write_off]
+DAMAGED = "Damaged beyond sale"
+EXPIRED = "Expired"
+
+[reason_codes.transfer_variance]
+SHORT_SHIPPED = "Sent less than recorded"
+DAMAGED_IN_TRANSIT = "Damaged in transit"
+
+[reason_codes.count_variance]
+COUNT_ERROR = "Earlier count was wrong"
+UNRECORDED_SALE = "Sale not recorded"
+THEFT = "Theft or loss"

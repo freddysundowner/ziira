@@ -33,8 +33,11 @@ say "Installing Python packages"
 
 # ---------------------------------------------------------------- PostgreSQL
 say "Starting the database"
-ADMIN_URL="postgresql+psycopg://ziira:ziira@localhost:5432/ziira"
-APP_URL="postgresql+psycopg://ziira_app:ziira_app@localhost:5432/ziira"
+# Port from .env (ZIIRA_DB_PORT), e.g. 5433 when another PostgreSQL already uses 5432
+DB_PORT="$(grep -E '^ZIIRA_DB_PORT=' .env 2>/dev/null | cut -d= -f2 || true)"
+DB_PORT="${DB_PORT:-5432}"
+ADMIN_URL="postgresql+psycopg://ziira:ziira@localhost:$DB_PORT/ziira"
+APP_URL="postgresql+psycopg://ziira_app:ziira_app@localhost:$DB_PORT/ziira"
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   echo "Using Docker"
   docker compose up -d db
@@ -42,11 +45,11 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   docker compose exec -T db pg_isready -U ziira >/dev/null 2>&1 || fail "PostgreSQL in Docker did not start"
 elif command -v psql >/dev/null 2>&1; then
   echo "Using the PostgreSQL installed on this Mac"
-  pg_isready -h localhost -p 5432 >/dev/null 2>&1 || {
+  pg_isready -h localhost -p "$DB_PORT" >/dev/null 2>&1 || {
     command -v brew >/dev/null 2>&1 && brew services start postgresql@16 >/dev/null 2>&1 || true
     sleep 3
   }
-  pg_isready -h localhost -p 5432 >/dev/null 2>&1 || fail "PostgreSQL is not running on port 5432. Start it (Postgres.app, or: brew services start postgresql@16)"
+  pg_isready -h localhost -p "$DB_PORT" >/dev/null 2>&1 || fail "PostgreSQL is not running on port $DB_PORT. Start it (Postgres.app, or: brew services start postgresql@16)"
   psql -h localhost -d postgres -v ON_ERROR_STOP=1 -q <<'SQL'
 do $$ begin
   if not exists (select from pg_roles where rolname = 'ziira') then

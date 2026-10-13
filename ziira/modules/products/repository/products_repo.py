@@ -40,8 +40,12 @@ def get_product(session: Session, product_id: UUID) -> Product | None:
     return session.get(Product, product_id)
 
 
-def list_products(session: Session, search: str | None, limit: int, offset: int) -> list[Product]:
+def list_products(session: Session, search: str | None, limit: int, offset: int,
+                  company_ids: set[UUID] | None = None) -> list[Product]:
+    """Products by name; `company_ids` limits the companies (None = all)."""
     query = select(Product).order_by(Product.name).limit(limit).offset(offset)
+    if company_ids is not None:
+        query = query.where(Product.company_id.in_(company_ids))
     if search:
         pattern = f"%{search}%"
         query = query.where(Product.name.ilike(pattern) | Product.sku.ilike(pattern))

@@ -1,17 +1,94 @@
-"""Request context: which tenant and user the current work is for."""
+"""Request context: which tenant and user the current work is for, and what they may do."""
 
 from contextvars import ContextVar
 from dataclasses import dataclass
 from uuid import UUID
 
+from ziira.kernel.errors import Forbidden
+
+
+@dataclass(frozen=True)
+class Assignment:
+    """A role granted to the user, with the permissions it carries and where it applies.
+
+    scope: 'tenant' (everything), 'company' (one company), 'branch' (one branch),
+    or 'own' (only records the user created). A null company_id or branch_id means "all".
+    """
+
+    role_id: UUID | None
+    role_name: str
+    scope: str
+    company_id: UUID | None
+    branch_id: UUID | None
+    permissions: frozenset[str]
+
+    def covers(self, company_id: UUID | None, branch_id: UUID | None, owner_id: UUID | None,
+               user_id: UUID | None) -> bool:
+        """True if this assignment reaches the given company, branch and record owner.
+
+        A company-level action (no branch) needs an assignment for the whole company;
+        a tenant-level action (no company) needs a tenant-wide assignment.
+        """
+        if self.scope == "own":
+            return owner_id is not None and owner_id == user_id
+        if self.company_id is not None and self.company_id != company_id:
+            return False
+        return self.branch_id is None or self.branch_id == branch_id
+
 
 @dataclass(frozen=True)
 class RequestContext:
-    """Who is acting, for which tenant, through which channel."""
+    """Who is acting, for which tenant, through which channel, with which roles.
+
+    all_permissions is for system jobs, scripts and the development tenant header only.
+    """
 
     tenant_id: UUID
     user_id: UUID | None = None
     channel: str = "api"
+    session_id: UUID | None = None
+    assignments: tuple[Assignment, ...] = ()
+    all_permissions: bool = False
+
+    def can(self, permission: str, *, company_id: UUID | None = None, branch_id: UUID | None = None,
+            owner_id: UUID | None = None) -> bool:
+        """True if the actor holds `permission` with a scope covering the target."""
+        if self.all_permissions:
+            return True
+        return any(permission in a.permissions and a.covers(company_id, branch_id, owner_id, self.user_id)
+                   for a in self.assignments)
+
+    def require(self, permission: str, *, company_id: UUID | None = None, branch_id: UUID | None = None,
+                owner_id: UUID | None = None) -> None:
+        """Raise Forbidden unless `can(...)`."""
+        if not self.can(permission, company_id=company_id, branch_id=branch_id, owner_id=owner_id):
+            raise Forbidden(f"You do not have permission '{permission}' here")
+
+    def has_anywhere(self, permission: str) -> bool:
+        """True if the actor holds `permission` in at least one scope (used for endpoint access)."""
+        return self.all_permissions or any(permission in a.permissions for a in self.assignments)
+
+    def companies_with(self, permission: str) -> set[UUID] | None:
+        """Companies where the actor holds `permission` at any level; None means all companies.
+
+        Use it to filter lists: a branch-level grant still lets the user read company records.
+        """
+        if self.all_permissions:
+            return None
+        found: set[UUID] = set()
+        for a in self.assignments:
+            if permission not in a.permissions:
+                continue
+            if a.company_id is None:
+                return None
+            found.add(a.company_id)
+        return found
+
+    def has_role(self, role_id: UUID, *, company_id: UUID | None = None,
+                 branch_id: UUID | None = None) -> bool:
+        """True if the actor holds this role with a scope covering the company or branch."""
+        return any(a.role_id == role_id and a.covers(company_id, branch_id, None, self.user_id)
+                   for a in self.assignments)
 
 
 _current: ContextVar[RequestContext | None] = ContextVar("ziira_request_context", default=None)
@@ -27,4 +104,11 @@ def get_context() -> RequestContext:
     ctx = _current.get()
     if ctx is None:
         raise RuntimeError("No tenant context is set for this operation")
+    return ctx
+
+
+def system_context(tenant_id: UUID) -> RequestContext:
+    """Context for jobs, scripts and the CLI: acts as the system with every permission."""
+    ctx = RequestContext(tenant_id=tenant_id, channel="system", all_permissions=True)
+    set_context(ctx)
     return ctx
