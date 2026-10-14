@@ -48,6 +48,20 @@ class Conflict(ZiiraError):
     code = "conflict"
 
 
+class TooManyRequests(ZiiraError):
+    """Too many attempts: try again later."""
+
+    status = 429
+    code = "too_many_requests"
+
+
+class Unavailable(ZiiraError):
+    """The platform cannot do this right now (for example, no way to send email): try again later."""
+
+    status = 503
+    code = "unavailable"
+
+
 class ChooseBusiness(ZiiraError):
     """The credentials are right for more than one business: say which one (the reply lists them)."""
 

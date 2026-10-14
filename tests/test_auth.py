@@ -144,5 +144,8 @@ def test_production_refuses_development_shortcuts() -> None:
         Settings(env="production", dev_tenant_header=False).check_safe_for_production()
     with pytest.raises(RuntimeError, match="CREDENTIALS_KEY"):
         Settings(env="production", dev_tenant_header=False, secret_key="x" * 40).check_safe_for_production()
-    Settings(env="production", dev_tenant_header=False, secret_key="x" * 40,
-             credentials_key="y" * 40).check_safe_for_production()
+    with pytest.raises(RuntimeError, match="PLATFORM_EMAIL"):  # open registration needs a way to send the link
+        Settings(env="production", dev_tenant_header=False, secret_key="x" * 40,
+                 credentials_key="y" * 40).check_safe_for_production()
+    Settings(env="production", dev_tenant_header=False, secret_key="x" * 40, credentials_key="y" * 40,
+             registration_mode="closed").check_safe_for_production()

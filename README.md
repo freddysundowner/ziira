@@ -27,7 +27,7 @@ ziira_t_mamamboga            another business, its own database and login
 |---|---|
 | Database per tenant: master database, template, provisioning, per-tenant logins | Working, tested |
 | Kernel: row-level security (second layer), events and outbox processor, audit hash chain | Working, tested |
-| Sign-in (email/phone + password; the login directory finds the business), device-bound refresh tokens, API keys | Working, tested |
+| Self-service registration (verify email -> own database created -> signed in), sign-in with email/phone + password (the login directory finds the business), device-bound refresh tokens, API keys | Working, tested |
 | Users, roles and scopes (tenant, company, branch, own); permission checks on every endpoint | Working, tested |
 | Document numbering, reason codes, approval matrix with separation of duties | Working, tested |
 | Module and plugin registry: install, enable (creates tables in the tenant's database), disable, remove, uninstall | Working, tested |

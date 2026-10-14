@@ -53,6 +53,22 @@ class Settings(BaseSettings):
     # X-Forwarded-For, which the proxy appends. Leave false unless a proxy you control sets it.
     trust_forwarded_for: bool = False
 
+    # Self-service registration (kernel/registration.py). Mode: "open" (anyone may register a business), "invite" (only
+    # with an invitation code from `ziira invite create`) or "closed" (businesses are created by an operator only).
+    registration_mode: str = "open"
+    # Units switched on for every new business, comma separated (what they require comes along).
+    registration_units: str = "pos,finance"
+    registration_per_email_per_hour: int = 3
+    registration_per_ip_per_hour: int = 10
+    registration_token_hours: int = 24
+    # Where the emailed verification link points (the web app), and how the platform sends that email: a provider name
+    # from the messaging plugin (smtp, brevo, resend, sendgrid) with its secret and config as JSON. Empty provider:
+    # development and tests use a fake one; production refuses to start with open registration and no way to send mail.
+    public_web_url: str = "http://localhost:5173"
+    platform_email_provider: str = ""
+    platform_email_secret: str = ""
+    platform_email_config: str = ""
+
     # Signs access tokens. Must be set to a long random value outside development.
     secret_key: str = DEV_SECRET_KEY
     access_token_minutes: int = 15
@@ -70,6 +86,11 @@ class Settings(BaseSettings):
             raise RuntimeError("Set ZIIRA_SECRET_KEY to a random value of at least 32 characters")
         if self.credentials_key == DEV_CREDENTIALS_KEY or len(self.credentials_key) < 32:
             raise RuntimeError("Set ZIIRA_CREDENTIALS_KEY to a random value of at least 32 characters")
+        if self.registration_mode not in ("open", "invite", "closed"):
+            raise RuntimeError("ZIIRA_REGISTRATION_MODE must be open, invite or closed")
+        if self.registration_mode != "closed" and not self.platform_email_provider:
+            raise RuntimeError("Registration needs ZIIRA_PLATFORM_EMAIL_PROVIDER (and its secret) to send the "
+                               "verification email; or set ZIIRA_REGISTRATION_MODE=closed")
 
 
 @lru_cache

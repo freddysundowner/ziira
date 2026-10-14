@@ -6,10 +6,38 @@
     "login": "Email or phone",
     "password": "Password",
     "submit": "Sign in",
-    "working": "Signing in…"
+    "working": "Signing in…",
+    "createBusiness": "Create a business"
+  },
+  "register": {
+    "businessName": "Business name",
+    "ownerName": "Your name",
+    "email": "Email",
+    "password": "Password (at least 8 characters)",
+    "currency": "Currency",
+    "submit": "Create business",
+    "working": "Sending…",
+    "haveAccount": "I already have a business: sign in",
+    "checkEmail": "Check your email",
+    "sent": "We sent a link to {{email}}. Open it to finish creating your business.",
+    "backToSignIn": "Back to sign in",
+    "creating": "Creating your business…",
+    "badLink": "This link is not valid.",
+    "country": "Country",
+    "chooseCountry": "Choose your country",
+    "phoneNote": "Phone numbers will be read with the calling code +{{code}}.",
+    "next": "Continue",
+    "back": "Back",
+    "startAgain": "Register again",
+    "devOnly": "Development only: no email is sent here.",
+    "devLink": "Open the verification link"
   },
   "signOut": "Sign out",
-  "home": { "menu": "Home", "title": "Today", "noWidgets": "Nothing to show yet. Widgets appear here as modules are enabled." },
+  "home": {
+    "menu": "Home",
+    "title": "Today",
+    "noWidgets": "Nothing to show yet. Widgets appear here as modules are enabled."
+  },
   "loading": "Loading…",
   "notFound": "This page does not exist, or you do not have access to it.",
   "language": "Language"

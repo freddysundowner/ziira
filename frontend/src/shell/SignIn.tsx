@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Button, ErrorText, Field, Input, useSession, useTranslation } from "@/sdk";
 import type { Business } from "@/sdk/session";
@@ -48,6 +49,7 @@ export function SignIn() {
           </div>
         )}
         <Button type="submit" disabled={busy} className="w-full">{busy ? t("signIn.working") : t("signIn.submit")}</Button>
+        <p className="text-center text-sm"><Link className="text-brand underline" to="/register">{t("signIn.createBusiness")}</Link></p>
       </form>
     </main>
   );

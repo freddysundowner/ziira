@@ -6,10 +6,38 @@
     "login": "Barua pepe au simu",
     "password": "Nenosiri",
     "submit": "Ingia",
-    "working": "Inaingia…"
+    "working": "Inaingia…",
+    "createBusiness": "Fungua biashara"
+  },
+  "register": {
+    "businessName": "Jina la biashara",
+    "ownerName": "Jina lako",
+    "email": "Barua pepe",
+    "password": "Nenosiri (angalau herufi 8)",
+    "currency": "Sarafu",
+    "submit": "Fungua biashara",
+    "working": "Inatuma…",
+    "haveAccount": "Nina biashara tayari: ingia",
+    "checkEmail": "Angalia barua pepe yako",
+    "sent": "Tumetuma kiungo kwa {{email}}. Kifungue ukamilishe kufungua biashara yako.",
+    "backToSignIn": "Rudi kwenye kuingia",
+    "creating": "Inafungua biashara yako…",
+    "badLink": "Kiungo hiki si sahihi.",
+    "country": "Nchi",
+    "chooseCountry": "Chagua nchi yako",
+    "phoneNote": "Namba za simu zitasomwa kwa msimbo wa nchi +{{code}}.",
+    "next": "Endelea",
+    "back": "Rudi",
+    "startAgain": "Jisajili tena",
+    "devOnly": "Kwa maendeleo tu: barua pepe haitumwi hapa.",
+    "devLink": "Fungua kiungo cha uthibitisho"
   },
   "signOut": "Toka",
-  "home": { "menu": "Mwanzo", "title": "Leo", "noWidgets": "Hakuna cha kuonyesha bado. Vipengele vitaonekana hapa moduli zikiwashwa." },
+  "home": {
+    "menu": "Mwanzo",
+    "title": "Leo",
+    "noWidgets": "Hakuna cha kuonyesha bado. Vipengele vitaonekana hapa moduli zikiwashwa."
+  },
   "loading": "Inapakia…",
   "notFound": "Ukurasa huu haupo, au huna ruhusa ya kuuona.",
   "language": "Lugha"

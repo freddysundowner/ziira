@@ -25,6 +25,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register
+         * @description Ask for a business of your own. Nothing is created until the emailed link is used; the answer is the same
+         *     whatever the address.
+         */
+        post: operations["register_api_v1_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/register/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register Verify
+         * @description Use the emailed link: the business and its own database are created and the owner is signed in.
+         */
+        post: operations["register_verify_api_v1_register_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/refresh": {
         parameters: {
             query?: never;
@@ -9520,6 +9561,95 @@ export interface components {
             /** Owed Back */
             owed_back: string;
         };
+        /** RegisterIn */
+        RegisterIn: {
+            /** Business Name */
+            business_name: string;
+            /** Owner Name */
+            owner_name: string;
+            /** Email */
+            email: string;
+            /**
+             * Password
+             * @description At least 8 characters
+             */
+            password: string;
+            /**
+             * Currency
+             * @description The business's base currency
+             */
+            currency: string;
+            /**
+             * Phone Country Code
+             * @description Calling code used to read national phone numbers
+             * @default
+             */
+            phone_country_code: string;
+            /**
+             * Country
+             * @description The business's country (two-letter code)
+             */
+            country?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
+            /**
+             * Invite Code
+             * @description Needed when registration is by invitation
+             */
+            invite_code?: string | null;
+        };
+        /** RegisterOut */
+        RegisterOut: {
+            /** Message */
+            message: string;
+            /**
+             * Dev Token
+             * @description Outside production only: the token the email carries
+             */
+            dev_token?: string | null;
+        };
+        /** RegisterVerifyIn */
+        RegisterVerifyIn: {
+            /** Token */
+            token: string;
+            /** Device Id */
+            device_id: string;
+            /** Device Name */
+            device_name?: string | null;
+        };
+        /** RegisteredOut */
+        RegisteredOut: {
+            /** Access Token */
+            access_token: string;
+            /** Refresh Token */
+            refresh_token: string;
+            /**
+             * Token Type
+             * @default bearer
+             */
+            token_type: string;
+            /** Expires In */
+            expires_in: number;
+            /**
+             * Session Id
+             * Format: uuid
+             */
+            session_id: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Tenant Id
+             * Format: uuid
+             */
+            tenant_id: string;
+            /** Workspace */
+            workspace: string;
+            /** Business Name */
+            business_name: string;
+        };
         /** RejectIn */
         RejectIn: {
             /** Note */
@@ -12645,6 +12775,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokensOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_api_v1_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_verify_api_v1_register_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterVerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisteredOut"];
                 };
             };
             /** @description Validation Error */

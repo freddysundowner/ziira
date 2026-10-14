@@ -35,6 +35,14 @@ service**. Tick each off (with the date and who did it) before a customer relies
 - [ ] **Bank reconciliation** with a real statement: upload its CSV to the suggestions endpoint and check the column names
       the bank uses are understood (`domain/reconciliation.py: ALIASES`).
 
+## Registration
+
+- [ ] `ZIIRA_PLATFORM_EMAIL_PROVIDER` / `_SECRET` / `_CONFIG` set to a real provider with a verified sender, and a real
+      registration tried end to end (the email arrives, the link works from the web app: `ZIIRA_PUBLIC_WEB_URL`).
+- [ ] `ZIIRA_REGISTRATION_MODE` chosen (`open`, `invite` or `closed`), `ZIIRA_REGISTRATION_UNITS` set to what a new
+      business should get, rate limits reviewed; a CAPTCHA decided on before opening to the public.
+- [ ] Capacity: every registration creates a database; watch connections (PgBouncer) and disk, and have a way to remove abandoned trials.
+
 ## Payroll
 
 - [ ] **Each business's statutory rules** (taxes, contributions, levies) are entered from the official notices, then verified by

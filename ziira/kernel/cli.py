@@ -59,7 +59,8 @@ def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
     t = create_tenant(name=a.name, code=a.code, company=a.company, branch_code=a.branch_code,
                       branch_name=a.branch_name, owner_name=a.owner_name, owner_email=a.owner_email,
                       owner_password=password, tax_id=a.tax_id, currency=a.currency,
-                      phone_country_code=a.phone_country_code, vat_registered=a.vat_registered, registry=reg)
+                      phone_country_code=a.phone_country_code, country=a.country,
+                      vat_registered=a.vat_registered, registry=reg)
     print(f"tenant_id  = {t.tenant_id}\ncompany_id = {t.company_id}\nbranch_id  = {t.branch_id}\n"
           f"owner_id   = {t.owner_id}")
 
@@ -117,6 +118,13 @@ def cmd_index_logins(reg: Registry, a: argparse.Namespace) -> None:
     print(f"Registered {done} login(s) in the login directory")
 
 
+def cmd_invite(reg: Registry, a: argparse.Namespace) -> None:
+    from ziira.kernel import registration
+
+    code = registration.create_invite(uses=a.uses, days=a.days or None, note=a.note)
+    print(f"Invitation code (shown once): {code}   uses: {a.uses}")
+
+
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
     from ziira.kernel import jobs, notifications  # noqa: F401 - notifications registers its send job
 
@@ -133,6 +141,9 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
         if time.monotonic() - purged_at > 3600:
             purged_at = time.monotonic()
             _purge_idempotency_keys(reg)
+            from ziira.kernel import registration
+
+            registration.purge()
         if busy == 0:
             time.sleep(2.0)
 
@@ -181,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--owner-email", required=True)
     s.add_argument("--tax-id")
     s.add_argument("--currency", required=True, help="Base currency code, such as USD")
+    s.add_argument("--country", help="Two-letter country code, such as GB")
     s.add_argument("--phone-country-code", default="", help="Calling code of the business's phone numbers, such as 44")
     s.add_argument("--vat-registered", action="store_true")
     s.set_defaults(fn=cmd_create_tenant)
@@ -195,6 +207,11 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_worker)
+    s = sub.add_parser("invite", help="make an invitation code for registration mode 'invite'")
+    s.add_argument("--uses", type=int, default=1)
+    s.add_argument("--days", type=int, default=30, help="valid for this many days (0: no expiry)")
+    s.add_argument("--note")
+    s.set_defaults(fn=cmd_invite)
     s = sub.add_parser("index-logins", help="rebuild the login directory used to sign in without a workspace code")
     s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
     s.set_defaults(fn=cmd_index_logins)

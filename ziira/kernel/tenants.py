@@ -82,23 +82,30 @@ def find_tenant(code_or_id: str) -> TenantRecord:
 
 
 def create_tenant(*, name: str, code: str, company: str, branch_code: str, branch_name: str,
-                  owner_name: str, owner_email: str, owner_password: str, currency: str, tax_id: str | None = None,
-                  phone_country_code: str = "", vat_registered: bool = False,
+                  owner_name: str, owner_email: str, currency: str, owner_password: str | None = None,
+                  owner_password_hash: str | None = None, tax_id: str | None = None, phone_country_code: str = "",
+                  country: str | None = None, vat_registered: bool = False,
                   registry: Registry | None = None) -> NewTenant:
     """Create a business with its own database, ready to sign in to with the workspace code.
 
     The owner gets the Owner role for the whole tenant. `currency` is the company's base currency (a three-letter code
     such as USD or KES); `phone_country_code` is its calling code (such as 44 or 254), used to read national phone
-    numbers. Nothing about a country is assumed: both are chosen here.
+    numbers. Nothing about a country is assumed: both are chosen here. The owner's password is given as text or, when
+    it was already hashed (self-service registration), as `owner_password_hash`.
     """
     currency = currency.strip().upper()
     if not re.fullmatch(r"[A-Z]{3}", currency):
         raise ValidationFailed("Currency is a three-letter code such as USD")
     phone_country_code = check_calling_code(phone_country_code)
+    country = country.strip().upper() if country and country.strip() else None
+    if country is not None and not re.fullmatch(r"[A-Z]{2}", country):
+        raise ValidationFailed("Country is a two-letter code such as GB")
     code = code.strip().lower()
     if not CODE_PATTERN.match(code):
         raise ValidationFailed("Workspace code must be 2-40 lowercase letters, digits or '-'")
-    password_hash = hash_password(owner_password)          # validate before creating anything
+    if (owner_password is None) == (owner_password_hash is None):
+        raise ValidationFailed("Give the owner's password (or its hash)")
+    password_hash = owner_password_hash or hash_password(str(owner_password))   # validate before creating anything
     reg = registry or Registry()
     ensure_master()
     reg.ensure_template()
@@ -129,7 +136,8 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
         _set_up_business(reg, tenant_id, company_id, branch_id, owner_id, name=name, code=code, company=company,
                          branch_code=branch_code, branch_name=branch_name, owner_name=owner_name,
                          owner_email=owner_email, password_hash=password_hash, tax_id=tax_id,
-                         vat_registered=vat_registered, currency=currency, phone_country_code=phone_country_code)
+                         vat_registered=vat_registered, currency=currency, phone_country_code=phone_country_code,
+                         country=country)
         with master_session() as s:
             s.execute(text("update master.tenant set status = 'active', updated_at = now() where id = :i"),
                       {"i": str(tenant_id)})
@@ -143,16 +151,16 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
 def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id: UUID, owner_id: UUID, *,
                      name: str, code: str, company: str, branch_code: str, branch_name: str, owner_name: str,
                      owner_email: str, password_hash: str, tax_id: str | None, vat_registered: bool, currency: str,
-                     phone_country_code: str) -> None:
+                     phone_country_code: str, country: str | None) -> None:
     system_context(tenant_id)
     with tenant_session(tenant_id, admin=True) as s:
         s.execute(text("insert into kernel.tenant (id, name, code) values (:i, :n, :c)"),
                   {"i": str(tenant_id), "n": name, "c": code})
         settings = {"phone_country_code": phone_country_code} if phone_country_code else {}
         s.execute(text("insert into kernel.company (id, tenant_id, name, tax_id, vat_registered, base_currency, "
-                       "settings) values (:i, :t, :n, :p, :v, :cur, cast(:s as jsonb))"),
+                       "country, settings) values (:i, :t, :n, :p, :v, :cur, :ctry, cast(:s as jsonb))"),
                   {"i": str(company_id), "t": str(tenant_id), "n": company, "p": tax_id, "v": vat_registered,
-                   "cur": currency, "s": json.dumps(settings)})
+                   "cur": currency, "ctry": country, "s": json.dumps(settings)})
         s.execute(text("insert into kernel.branch (id, tenant_id, company_id, code, name) "
                        "values (:i, :t, :c, :code, :n)"),
                   {"i": str(branch_id), "t": str(tenant_id), "c": str(company_id), "code": branch_code.upper(),

@@ -20,7 +20,9 @@ import {
 
 import { Home } from "./Home";
 import { Layout } from "./Layout";
+import { Register } from "./Register";
 import { SignIn } from "./SignIn";
+import { VerifyRegistration } from "./VerifyRegistration";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
 addModuleTranslations(allModules);
@@ -50,7 +52,15 @@ function Gate() {
   const { status } = useSession();
   const { t } = useTranslation();
   if (status === "loading") return <p className="p-6 text-sm text-slate-500">{t("loading")}</p>;
-  if (status === "signed-out") return <SignIn />;
+  if (status === "signed-out") {
+    return (
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/register/verify" element={<VerifyRegistration />} />
+        <Route path="*" element={<SignIn />} />
+      </Routes>
+    );
+  }
   return (
     <ModulesProvider all={allModules}>
       <ModuleRoutes />

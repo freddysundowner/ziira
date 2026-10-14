@@ -162,6 +162,16 @@ def sign_in(workspace: str | None, login: str, password: str, *, device_id: str,
                          {"businesses": named})
 
 
+def open_session_for(tenant_id: UUID, user_id: UUID, *, device_id: str, device_name: str | None = None,
+                     channel: str = "web", ip_address: str | None = None) -> Tokens:
+    """Open a session for a user who has just proved who they are in some other way (the owner who verified their email
+    when registering). Not for passwords: use `sign_in`."""
+    if channel not in CHANNELS:
+        raise ValidationFailed(f"Channel must be one of: {', '.join(CHANNELS)}")
+    with tenant_session(tenant_id) as s:
+        return _open_session(s, tenant_id, user_id, channel, device_id, device_name, ip_address)
+
+
 def _open_session(s: Session, tenant_id: UUID, user_id: UUID, channel: str, device_id: str,
                   device_name: str | None, ip_address: str | None = None) -> Tokens:
     settings = get_settings()

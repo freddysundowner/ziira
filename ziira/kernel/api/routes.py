@@ -10,7 +10,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request, Response, status
 from sqlalchemy import text
 
-from ziira.kernel import approvals, audit, auth, company_settings, exceptions_inbox, numbering, reasons, users
+from ziira.kernel import (
+    approvals,
+    audit,
+    auth,
+    company_settings,
+    exceptions_inbox,
+    numbering,
+    reasons,
+    registration,
+    users,
+)
 from ziira.kernel.api import schemas as sc
 from ziira.kernel.context import RequestContext
 from ziira.kernel.errors import Forbidden, NotFound, Unauthorized
@@ -50,6 +60,30 @@ def sign_in(body: sc.SignInIn, request: Request) -> object:
     more than one business (the reply then lists them and the client asks again with the chosen one)."""
     return auth.sign_in(body.workspace, body.login, body.password, device_id=body.device_id,
                         device_name=body.device_name, channel=body.channel, ip_address=auth.client_ip(request))
+
+
+@router.post("/register", response_model=sc.RegisterOut, status_code=status.HTTP_202_ACCEPTED, tags=["Registration"])
+def register(body: sc.RegisterIn, request: Request) -> object:
+    """Ask for a business of your own. Nothing is created until the emailed link is used; the answer is the same
+    whatever the address."""
+    started = registration.register(
+        business_name=body.business_name, owner_name=body.owner_name, email=body.email, password=body.password,
+        currency=body.currency, phone_country_code=body.phone_country_code, country=body.country,
+        tax_id=body.tax_id,
+        invite_code=body.invite_code, ip_address=auth.client_ip(request))
+    return sc.RegisterOut(message="Check your email for a link to finish creating your business.",
+                          dev_token=started.dev_token)
+
+
+@router.post("/register/verify", response_model=sc.RegisteredOut, tags=["Registration"])
+def register_verify(body: sc.RegisterVerifyIn, request: Request) -> object:
+    """Use the emailed link: the business and its own database are created and the owner is signed in."""
+    done = registration.complete(body.token, device_id=body.device_id, device_name=body.device_name,
+                                 ip_address=auth.client_ip(request))
+    t = done.tokens
+    return sc.RegisteredOut(access_token=t.access_token, refresh_token=t.refresh_token, expires_in=t.expires_in,
+                            session_id=t.session_id, user_id=t.user_id, tenant_id=t.tenant_id,
+                            workspace=done.workspace, business_name=done.business_name)
 
 
 @router.post("/auth/refresh", response_model=sc.TokensOut, tags=["Auth"])

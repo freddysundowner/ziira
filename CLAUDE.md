@@ -44,6 +44,9 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira create-tenant NAME --code CODE --company ... --branch-code ... --branch-name ... \
     --owner-name ... --owner-email ... --currency USD [--phone-country-code 44] [--tax-id ...]
                                             # owner password from prompt or ZIIRA_OWNER_PASSWORD
+                                            # (businesses normally register themselves: docs/registration.md)
+.venv/bin/ziira invite create [--uses N --days D]   # invitation code for ZIIRA_REGISTRATION_MODE=invite
+.venv/bin/ziira index-logins [tenant]      # rebuild the login directory (sign-in without a workspace code)
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
 .venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + purge of old keys/jobs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
@@ -153,7 +156,7 @@ tests/             unit tests for domain rules
 
 ## Where things are
 
-`docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/registration.md` (how businesses join) · `docs/localisation.md` · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

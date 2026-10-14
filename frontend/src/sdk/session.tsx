@@ -17,6 +17,21 @@ export interface Session {
    *  again with the chosen workspace code). */
   signIn: (login: string, password: string, workspace?: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
+  /** Asks for a business of your own; the person must then use the link emailed to them. */
+  register: (input: RegisterInput) => Promise<{ error: string | null; devToken?: string }>;
+  /** Uses the emailed link: creates the business and signs the owner in. */
+  completeRegistration: (token: string) => Promise<string | null>;
+}
+
+export interface RegisterInput {
+  business_name: string;
+  owner_name: string;
+  email: string;
+  password: string;
+  country: string;
+  currency: string;
+  phone_country_code: string;
+  invite_code?: string;
 }
 
 export interface Business {
@@ -72,6 +87,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [load],
   );
 
+  const register = useCallback(async (input: RegisterInput) => {
+    const { data, error, response } = await api.POST("/api/v1/register", {
+      body: { ...input, invite_code: input.invite_code || null },
+    });
+    return { error: response.ok ? null : errorMessage(error), devToken: data?.dev_token ?? undefined };
+  }, []);
+
+  const completeRegistration = useCallback(
+    async (token: string) => {
+      const { data, error } = await api.POST("/api/v1/register/verify", {
+        body: { token, device_id: deviceId(), device_name: navigator.userAgent.slice(0, 60) },
+      });
+      if (!data) return errorMessage(error);
+      setTokens(data.access_token, data.refresh_token);
+      await load();
+      return null;
+    },
+    [load],
+  );
+
   const signOut = useCallback(async () => {
     await api.POST("/api/v1/auth/sign-out");
     setTokens(null, null);
@@ -81,8 +116,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Session>(() => {
     const permissions = new Set(me?.roles.flatMap((r) => r.permissions) ?? []);
-    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, signOut };
-  }, [status, me, units, signIn, signOut]);
+    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, signOut, register, completeRegistration };
+  }, [status, me, units, signIn, signOut, register, completeRegistration]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

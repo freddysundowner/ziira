@@ -40,6 +40,37 @@ class TokensOut(Out):
     tenant_id: UUID
 
 
+class RegisterIn(BaseModel):
+    business_name: str = Field(min_length=2, max_length=120, examples=["Acme Traders"])
+    owner_name: str = Field(min_length=2, max_length=120, examples=["Jane Doe"])
+    email: str = Field(max_length=200, examples=["jane@acme.test"])
+    password: str = Field(max_length=200, description="At least 8 characters")
+    currency: str = Field(min_length=3, max_length=3, examples=["USD"], description="The business's base currency")
+    phone_country_code: str = Field(default="", max_length=4, examples=["44"],
+                                    description="Calling code used to read national phone numbers")
+    country: str | None = Field(default=None, min_length=2, max_length=2, examples=["GB"],
+                                description="The business's country (two-letter code)")
+    tax_id: str | None = Field(default=None, max_length=40)
+    invite_code: str | None = Field(default=None, max_length=40,
+                                    description="Needed when registration is by invitation")
+
+
+class RegisterOut(BaseModel):
+    message: str
+    dev_token: str | None = Field(default=None, description="Outside production only: the token the email carries")
+
+
+class RegisterVerifyIn(BaseModel):
+    token: str = Field(max_length=200)
+    device_id: str = Field(min_length=1, max_length=200)
+    device_name: str | None = Field(default=None, max_length=200)
+
+
+class RegisteredOut(TokensOut):
+    workspace: str
+    business_name: str
+
+
 class AssignmentOut(Out):
     role_id: UUID | None
     role_name: str

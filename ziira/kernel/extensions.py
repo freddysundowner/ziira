@@ -162,6 +162,15 @@ def implementations(session: Session, name: str) -> list[Any]:
     return [impl() for unit, impl in _points[name].implementations if unit in enabled]
 
 
+def provider_named(point: str, name: str) -> type | None:
+    """The implementation of an extension point with this `name` attribute, from any unit (platform-level code, with no
+    business to look at, uses this: a tenant's enabled units do not apply)."""
+    found = _points.get(point)
+    if found is None:
+        return None
+    return next((impl for _, impl in found.implementations if getattr(impl, "name", None) == name), None)
+
+
 def run_validators(session: Session, name: str, subject: Any) -> None:
     """Run every validator of `name` from units enabled for this tenant. Raises ValidationFailed to block."""
     if name not in _hooks:
