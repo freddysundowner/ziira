@@ -53,9 +53,11 @@ from ziira.kernel.jobs import enqueue, job, periodic
 from ziira.kernel.manifest import SDK_VERSION
 from ziira.kernel.notifications import NotificationChannel, Outgoing, SendResult
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
+from ziira.kernel.phone import check_calling_code, normalise_phone
 from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
 __all__ = [
+    "check_calling_code", "normalise_phone",
     "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
     "Quantity", "Rate", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized", "UnitCost",
     "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_setting",

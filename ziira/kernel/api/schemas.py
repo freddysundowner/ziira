@@ -96,6 +96,7 @@ class CompanySettingsOut(Out):
     reminder_channel: Literal["off", "sms", "email"]
     reminder_min_days_overdue: int
     reminder_repeat_days: int
+    phone_country_code: str
     receipt_footer: str
     invoice_footer: str
 
@@ -111,6 +112,7 @@ class CompanySettingsIn(BaseModel):
     reminder_channel: Literal["off", "sms", "email"] | None = None
     reminder_min_days_overdue: Annotated[int, Field(ge=0, le=365)] | None = None
     reminder_repeat_days: Annotated[int, Field(ge=0, le=365)] | None = None
+    phone_country_code: Annotated[str, Field(max_length=4, pattern=r"^\+?[0-9]{0,3}$")] | None = None
     receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
     invoice_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
 

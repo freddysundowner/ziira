@@ -20,3 +20,13 @@ subscribes = ["till.opened", "till.closed"]
 "leave.approve" = "Approve leave"
 "payroll.prepare" = "Prepare payroll"
 "payroll.approve" = "Approve payroll"
+"payroll.view" = "See payroll runs and payslips"
+"payroll.pay" = "Pay salaries and download payment files"
+"payroll.rates" = "Manage and verify statutory rate tables"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"HR" = ["employees.view", "employees.manage", "attendance.manage", "leave.approve", "employee.pay_edit"]
+"Finance Manager" = ["employees.view", "employee.pay_edit", "payroll.prepare", "payroll.view", "payroll.pay", "payroll.rates"]
+"Accountant" = ["employees.view", "payroll.view", "payroll.rates"]
+"Branch Manager" = ["employees.view", "attendance.manage", "leave.approve"]

@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from ziira.kernel import audit
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import NotFound, ValidationFailed
+from ziira.kernel.phone import check_calling_code
 
 log = logging.getLogger("ziira.settings")
 
@@ -82,6 +83,12 @@ def _footer(value: Any) -> str:
     return value.strip()
 
 
+def _calling_code(value: Any) -> str:
+    if not isinstance(value, str):
+        raise ValidationFailed("Expected the country calling code as text, such as '44'")
+    return check_calling_code(value)
+
+
 def _late_posting(value: Any) -> str:
     if value not in ("redirect", "reject"):
         raise ValidationFailed("Expected 'redirect' or 'reject'")
@@ -105,6 +112,8 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "An invoice is chased once it is this many days past its due date"),
     Setting("reminder_repeat_days", 7, _days(365),
             "A customer is not chased about the same invoice more often than this"),
+    Setting("phone_country_code", "", _calling_code,
+            "The country calling code of the business's phone numbers (such as 44): national numbers are read with it"),
     Setting("receipt_footer", "Thank you for shopping with us", _footer,
             "The line printed at the bottom of till receipts and payment receipts"),
     Setting("invoice_footer", "", _footer,
