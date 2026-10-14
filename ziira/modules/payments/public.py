@@ -91,7 +91,7 @@ def cash_account_for_branch(session: Session, company_id: UUID, branch_id: UUID)
     return account_id
 
 
-_KINDS = {"cash": ("cash",), "mpesa": ("mpesa_till", "mpesa_paybill"), "card": ("card",), "bank": ("bank",)}
+_KINDS = {"cash": ("cash",), "mobile_money": ("mobile_money",), "card": ("card",), "bank": ("bank",)}
 
 
 def account_for_method(session: Session, company_id: UUID, branch_id: UUID | None, method: str) -> UUID | None:

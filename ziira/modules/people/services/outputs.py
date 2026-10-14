@@ -22,9 +22,9 @@ from ziira.sdk import Conflict, NotFound, Session, ValidationFailed, audit_recor
 
 
 def _header(session: Session, company_id: UUID) -> list[str]:
-    row = session.execute(text("select name, kra_pin from kernel.company where id = :c"),
+    row = session.execute(text("select name, tax_id from kernel.company where id = :c"),
                           {"c": str(company_id)}).first()
-    return [x for x in ((row.name, f"Tax number {row.kra_pin}" if row.kra_pin else None) if row else ()) if x]
+    return [x for x in ((row.name, f"Tax number {row.tax_id}" if row.tax_id else None) if row else ()) if x]
 
 
 def payslip_document(session: Session, payslip_id: UUID, *, copy: bool = False) -> PayslipDocument:

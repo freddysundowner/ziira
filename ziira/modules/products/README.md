@@ -17,7 +17,7 @@
 | Method | Path | Does | Needs |
 |---|---|---|---|
 | POST | `/uoms` | Create a unit of measure | `products.manage`, whole tenant |
-| POST | `/tax-codes` | Create a VAT / eTIMS tax code | `products.manage`, whole tenant |
+| POST | `/tax-codes` | Create a tax code (rate, and the tax authority's own code if it has one) | `products.manage`, whole tenant |
 | POST | `/products` | Create a product | `products.manage` for that company |
 | GET | `/products?search=` | List products (only companies the user may see) | `products.view` |
 | GET | `/products/{id}` | Get one product (404 if out of scope) | `products.view` |

@@ -24,9 +24,9 @@ from ziira.sdk import (
     publish,
 )
 
-METHODS = ("cash", "mpesa", "bank", "card", "cheque", "other")
-KIND_FOR_METHOD = {"cash": ("cash",), "mpesa": ("mpesa_till", "mpesa_paybill"), "bank": ("bank",), "card": ("card",),
-                   "cheque": ("bank", "cash"), "other": ("bank", "cash", "card", "mpesa_till", "mpesa_paybill")}
+METHODS = ("cash", "mobile_money", "bank", "card", "cheque", "other")
+KIND_FOR_METHOD = {"cash": ("cash",), "mobile_money": ("mobile_money",), "bank": ("bank",), "card": ("card",),
+                   "cheque": ("bank", "cash"), "other": ("bank", "cash", "card", "mobile_money")}
 PARTY_TYPES = ("customer", "supplier", "employee", "other")
 NAIROBI = timezone(timedelta(hours=3))
 
@@ -70,7 +70,7 @@ def record_payment(session: Session, *, company_id: UUID, branch_id: UUID | None
     reference = external_ref.strip().upper() if external_ref and external_ref.strip() else None
     if reference and len(reference) > 60:
         raise ValidationFailed("The reference is too long")
-    if reference and method in ("mpesa", "card", "bank"):
+    if reference and method in ("mobile_money", "card", "bank"):
         for earlier in payments_repo.list_payments(session, None, external_ref=reference, limit=50):
             if earlier.payment_account_id == account.id and earlier.status == "posted" \
                     and earlier.amount == amount and earlier.direction == direction:
@@ -106,7 +106,7 @@ def record_payment(session: Session, *, company_id: UUID, branch_id: UUID | None
         "company_id": company_id, "branch_id": branch_id, "number": payment.number, "method": method,
         "amount": amount, "business_date": day, "party_type": party_type, "party_id": party_id,
         "payment_account_id": account.id}))
-    if method in ("mpesa", "card", "bank"):
+    if method in ("mobile_money", "card", "bank"):
         request_matching(session, account.id)
     return payment
 

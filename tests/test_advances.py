@@ -116,16 +116,16 @@ def test_applying_to_named_invoices_and_limits(client, shop) -> None:  # type: i
 
 def test_giving_an_advance_back(client, shop) -> None:  # type: ignore[no-untyped-def]
     cust = credit_customer(client, shop, name="Wants Money Back", limit="1000")
-    receipt = pay(client, shop, cust, "800.00", method="mpesa", hold_balance=True, external_ref="ADV1MPESA").json()
+    receipt = pay(client, shop, cust, "800.00", method="mobile_money", hold_balance=True, external_ref="ADV1MPESA").json()
     before = {c: balance(shop, c) for c in ("1030", "1100")}
     path = f"{POS}/receipts/{receipt['id']}/refund"
-    for body in ({"amount": "900", "method": "mpesa", "reason": "x"}, {"amount": "0", "method": "mpesa", "reason": "x"},
-                 {"amount": "100", "method": "card", "reason": "x"}, {"amount": "100", "method": "mpesa", "reason": " "},
+    for body in ({"amount": "900", "method": "mobile_money", "reason": "x"}, {"amount": "0", "method": "mobile_money", "reason": "x"},
+                 {"amount": "100", "method": "card", "reason": "x"}, {"amount": "100", "method": "mobile_money", "reason": " "},
                  {"amount": "100", "method": "cash", "reason": "x"}):                            # no open till
         assert client.post(path, headers=shop["fm"], json=body).status_code == 422, body
-    assert client.post(path, headers=shop["storekeeper"], json={"amount": "100", "method": "mpesa",
+    assert client.post(path, headers=shop["storekeeper"], json={"amount": "100", "method": "mobile_money",
                                                                  "reason": "x"}).status_code == 403
-    r = client.post(path, headers=shop["fm"], json={"amount": "300.00", "method": "mpesa", "reason": "Cancelled order",
+    r = client.post(path, headers=shop["fm"], json={"amount": "300.00", "method": "mobile_money", "reason": "Cancelled order",
                                                     "external_ref": "REFUND1"})
     assert r.status_code == 201, r.text
     refund = r.json()

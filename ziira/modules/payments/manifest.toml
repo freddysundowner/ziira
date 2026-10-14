@@ -23,8 +23,8 @@ implements = ["payments.provider"]
 "recon.match" = "Match transactions manually"
 "close.submit" = "Submit daily close"
 "close.reopen" = "Reopen a locked day"
-"payments.manage" = "Manage payment accounts and M-Pesa credentials"
-"payments.collect" = "Ask customers to pay by M-Pesa"
+"payments.manage" = "Manage payment accounts and provider credentials"
+"payments.collect" = "Ask customers to pay by mobile money"
 
 # Default roles that receive these permissions when the module is enabled (Owner gets all).
 [roles]

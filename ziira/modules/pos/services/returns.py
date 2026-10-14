@@ -32,7 +32,7 @@ from ziira.sdk import (
 
 DOC_TYPE = "sales_return"
 RETURN_REASONS = "sale_return"
-REFUND_METHODS = ("cash", "mpesa", "exchange", "credit_note")
+REFUND_METHODS = ("cash", "mobile_money", "exchange", "credit_note")
 
 
 @dataclass
@@ -252,5 +252,5 @@ def _check_credit_refund(invoice: SalesInvoice | None, method: str, total: Decim
         if total > invoices.outstanding(invoice):
             raise ValidationFailed(f"The customer owes {invoices.outstanding(invoice)} on this sale: a credit note "
                                    "cannot be for more. Refund the rest in cash or M-Pesa once it is paid")
-    elif invoice is not None and method in ("cash", "mpesa") and invoices.outstanding(invoice) > 0:
+    elif invoice is not None and method in ("cash", "mobile_money") and invoices.outstanding(invoice) > 0:
         raise ValidationFailed("This sale was left on account and is still owed: give a credit note instead")

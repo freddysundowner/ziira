@@ -34,7 +34,7 @@ class Customer(Audited, Base):
     kind: Mapped[str] = mapped_column(server_default=text("'business'"))
     phone: Mapped[str | None]
     email: Mapped[str | None]
-    kra_pin: Mapped[str | None]
+    tax_id: Mapped[str | None]
     customer_group: Mapped[str | None]
     credit_limit: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     payment_terms_days: Mapped[int] = mapped_column(server_default=text("0"))

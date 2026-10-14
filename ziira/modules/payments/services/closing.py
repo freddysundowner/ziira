@@ -81,7 +81,7 @@ def compute_totals(session: Session, company_id: UUID, branch_id: UUID, day: dat
         problems.append(f"{open_sessions} till session(s) are still open")
     figures: dict[str, Any] = {}
     unmatched_takings = Decimal(0)
-    for method in ("mpesa", "card"):
+    for method in ("mobile_money", "card"):
         taken = amount("in", method) - amount("out", method)
         matched = payments_repo.matched_total_for_branch(session, branch_id, day, method)
         figures[method] = {"taken": str(taken), "matched": str(matched), "unmatched": str(taken - matched)}

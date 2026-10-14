@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from ziira.modules.payments.permissions import PAYMENTS_MANAGE
+from ziira.modules.payments.public import PROVIDER_EXTENSION
 from ziira.modules.payments.repository import payments_repo
 from ziira.modules.payments.repository.models import PaymentAccount
 from ziira.modules.payments.services.access import can_view, view_scopes
@@ -18,21 +19,22 @@ from ziira.sdk import (
     check_company,
     current_context,
     hash_secret,
+    implementations,
     is_production,
     new_secret,
     read_credential,
     store_credential,
 )
 
-KINDS = ("cash", "mpesa_till", "mpesa_paybill", "bank", "card")
-SHORTCODE = re.compile(r"^\d{4,10}$")
+KINDS = ("cash", "mobile_money", "bank", "card")
+SHORTCODE = re.compile(r"^[A-Za-z0-9]{3,20}$")
 ENVIRONMENTS = ("sandbox", "production")
 
 
 def create_account(session: Session, *, company_id: UUID, kind: str, name: str, branch_id: UUID | None = None,
                    shortcode: str | None = None, bank_account_masked: str | None = None,
                    ledger_account_id: UUID | None = None, provider: str = "daraja",
-                   environment: str = "sandbox") -> PaymentAccount:
+                   environment: str = "sandbox", provider_config: dict[str, str] | None = None) -> PaymentAccount:
     """Add a payment account. Needs 'payments.manage' for the company (and branch)."""
     ctx = current_context()
     check_company(session, company_id, branch_id)
@@ -44,16 +46,17 @@ def create_account(session: Session, *, company_id: UUID, kind: str, name: str, 
         raise ValidationFailed("A name is required (at most 200 characters)")
     if kind in ("cash",) and branch_id is None:
         raise ValidationFailed("A till cash account belongs to a branch")
-    if kind.startswith("mpesa"):
+    if kind == "mobile_money":
         if not shortcode or not SHORTCODE.match(shortcode.strip()):
-            raise ValidationFailed("An M-Pesa account needs its till or paybill number (4-10 digits)")
+            raise ValidationFailed("A mobile money account needs its merchant number (3-20 letters/digits)")
         shortcode = shortcode.strip()
         if environment not in ENVIRONMENTS:
             raise ValidationFailed(f"Environment must be one of: {', '.join(ENVIRONMENTS)}")
     else:
         shortcode = None
-    if provider not in ("daraja", "fake"):
-        raise ValidationFailed("Provider must be 'daraja' (or 'fake', for development)")
+    known = sorted({getattr(p, "name", "") for p in implementations(session, PROVIDER_EXTENSION)})
+    if provider not in known:
+        raise ValidationFailed(f"Provider must be one of: {', '.join(known)}")
     if provider == "fake" and is_production():
         raise ValidationFailed("The fake provider is for development only")
     if bank_account_masked is not None and len(bank_account_masked) > 40:
@@ -61,7 +64,8 @@ def create_account(session: Session, *, company_id: UUID, kind: str, name: str, 
     account = PaymentAccount(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, branch_id=branch_id, kind=kind,
         name=name, shortcode=shortcode, bank_account_masked=bank_account_masked, ledger_account_id=ledger_account_id,
-        provider=provider, config={"environment": environment} if kind.startswith("mpesa") else {})
+        provider=provider, config={"environment": environment, **(provider_config or {})}
+        if kind == "mobile_money" else {})
     payments_repo.add(session, account)
     audit_record(session, "create", "payments.payment_account", account.id, {"kind": kind, "name": name})
     return account
@@ -123,21 +127,21 @@ def update_account(session: Session, account_id: UUID, *, name: str | None = Non
 
 
 def set_credentials(session: Session, account_id: UUID, secret: dict[str, str]) -> PaymentAccount:
-    """Store the account's Daraja credentials (consumer key and secret, STK passkey), encrypted. They are never shown
+    """Store the account's provider credentials (Daraja: consumer key, secret, STK passkey), encrypted. Never shown
     again. Needs 'payments.manage'."""
     account = payments_repo.get_account(session, account_id)
     if account is None:
         raise NotFound("Payment account not found")
     current_context().require(PAYMENTS_MANAGE, company_id=account.company_id, branch_id=account.branch_id)
-    if not account.kind.startswith("mpesa"):
-        raise ValidationFailed("Only M-Pesa accounts have Daraja credentials")
-    missing = [k for k in ("consumer_key", "consumer_secret", "passkey") if not str(secret.get(k, "")).strip()]
-    if missing:
-        raise ValidationFailed(f"Missing: {', '.join(missing)}")
+    if account.kind != "mobile_money":
+        raise ValidationFailed("Only mobile money accounts have provider credentials")
+    required = ("consumer_key", "consumer_secret", "passkey") if account.provider == "daraja" else ()
+    missing = [k for k in required if not str(secret.get(k, "")).strip()]
+    if missing or not secret:
+        raise ValidationFailed(f"Missing: {', '.join(missing) or 'the credentials'}")
     account.credential_id = store_credential(
-        session, company_id=account.company_id, branch_id=account.branch_id, provider="daraja",
-        label=f"Daraja - {account.name}", secret={k: str(secret[k]).strip() for k in
-                                                  ("consumer_key", "consumer_secret", "passkey")},
+        session, company_id=account.company_id, branch_id=account.branch_id, provider=account.provider,
+        label=f"{account.provider} - {account.name}", secret={k: str(v).strip() for k, v in secret.items()},
         config={"shortcode": account.shortcode}, replace=account.credential_id)
     session.flush()
     audit_record(session, "set_credentials", "payments.payment_account", account.id)
@@ -145,22 +149,22 @@ def set_credentials(session: Session, account_id: UUID, secret: dict[str, str]) 
 
 
 def credentials_of(session: Session, account: PaymentAccount) -> dict[str, str]:
-    """The decrypted Daraja credentials, for the code about to call Safaricom."""
+    """The decrypted provider credentials, for the code about to call the provider."""
     if account.credential_id is None:
-        raise ValidationFailed(f"{account.name} has no M-Pesa credentials yet")
+        raise ValidationFailed(f"{account.name} has no provider credentials yet")
     return {k: str(v) for k, v in read_credential(session, account.credential_id).items()}
 
 
 def rotate_callback_token(session: Session, account_id: UUID) -> str:
     """Make a new secret for the account's callback URLs and return the full token, once. Register the URLs built
-    from it with Safaricom; the previous token stops working. Needs 'payments.manage'."""
+    from it with the provider; the previous token stops working. Needs 'payments.manage'."""
     account = payments_repo.get_account(session, account_id)
     if account is None:
         raise NotFound("Payment account not found")
     ctx = current_context()
     ctx.require(PAYMENTS_MANAGE, company_id=account.company_id, branch_id=account.branch_id)
-    if not account.kind.startswith("mpesa"):
-        raise ValidationFailed("Only M-Pesa accounts receive callbacks")
+    if account.kind != "mobile_money":
+        raise ValidationFailed("Only mobile money accounts receive callbacks")
     token = f"{ctx.tenant_id.hex}.{new_secret()}"
     account.callback_token_hash = hash_secret(token)
     session.flush()

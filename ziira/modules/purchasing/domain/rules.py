@@ -14,7 +14,7 @@ CENT = Decimal("0.01")
 MAX_COST = Decimal("100000000")
 MAX_QUANTITY = Decimal("10000000")
 CODE_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9\-_.]{0,19}$")
-KRA_PIN_PATTERN = re.compile(r"^[AP]\d{9}[A-Z]$")
+TAX_ID_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9/\-. ]{2,29}$")
 INVOICE_NO_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 \-_./]{0,59}$")
 AGEING_BUCKETS = ("not_due", "1_30", "31_60", "61_90", "over_90")
 CONFIRMATION_METHODS = ("phone_callback", "in_person", "signed_letter")
@@ -43,12 +43,13 @@ def check_name(name: str, label: str = "Name") -> str:
     return value
 
 
-def check_kra_pin(pin: str | None) -> str | None:
-    if pin is None or not pin.strip():
+def check_tax_id(number: str | None) -> str | None:
+    """A tax number as the tax authority writes it: 3 to 30 letters, digits, '-', '/' or '.'; None when empty."""
+    if number is None or not number.strip():
         return None
-    value = pin.strip().upper()
-    if not KRA_PIN_PATTERN.match(value):
-        raise ValidationFailed("A KRA PIN is a letter, nine digits and a letter, for example P051234567A")
+    value = " ".join(number.strip().upper().split())
+    if not TAX_ID_PATTERN.match(value):
+        raise ValidationFailed("A tax number is 3 to 30 letters, digits, '-', '/' or '.'")
     return value
 
 
@@ -150,7 +151,7 @@ def mask_account(number: str) -> str:
 
 def check_account_number(method: str, number: str) -> str:
     value = re.sub(r"[\s-]", "", number)
-    if method == "mpesa":
+    if method == "mobile_money":
         if not re.fullmatch(r"(?:\+?254|0)?[17]\d{8}", value):
             raise ValidationFailed("An M-Pesa number looks like 0712345678")
         return value

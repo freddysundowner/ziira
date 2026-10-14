@@ -90,7 +90,7 @@ def test_the_whole_business_flow(client, shop) -> None:  # type: ignore[no-untyp
 
     # the customer pays the first invoice by M-Pesa and the second part by bank, oldest first
     pay = client.post(f"{POS}/receipts", headers=shop["fm"], json={
-        "customer_id": cust["id"], "amount": "417.60", "method": "mpesa", "branch_id": str(shop["branch_id"]),
+        "customer_id": cust["id"], "amount": "417.60", "method": "mobile_money", "branch_id": str(shop["branch_id"]),
         "external_ref": "KAMAU001"})
     assert pay.status_code == 201 and pay.json()["allocations"][0]["invoice_id"] == inv["id"]
     assert client.get(f"{POS}/invoices/{inv['id']}", headers=shop["fm"]).json()["status"] == "paid"

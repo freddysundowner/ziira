@@ -112,14 +112,14 @@ def test_the_x_and_z_reports(client, shop) -> None:  # type: ignore[no-untyped-d
     till = open_till(client, shop, "piet", float_="1000.00").json()["id"]
     sell(client, shop, who="piet", till=till, lines=[line(shop, "cement", "2")],
          payments=[{"method": "cash", "amount": "300.00"}])                                    # 232 cash
-    sell(client, shop, who="piet", till=till, payments=[{"method": "mpesa", "amount": "116", "external_ref": "XRPT1"}])
+    sell(client, shop, who="piet", till=till, payments=[{"method": "mobile_money", "amount": "116", "external_ref": "XRPT1"}])
     voided = sell(client, shop, who="piet", till=till).json()
     assert client.post(f"{POS}/sales/{voided['id']}/void", headers=shop["manager"],
                        json={"reason_code_id": shop["reasons"]["void"]}).status_code == 200
     x = client.get(f"{POS}/tills/{till}/report", headers=shop["piet"]).json()
     assert x["status"] == "open" and x["sales_count"] == 2 and Dec(x["sales_total"]) == 348
     assert x["voided_count"] == 1 and Dec(x["voided_total"]) == 116 and Dec(x["tax_total"]) == 48
-    assert {k: Dec(v) for k, v in x["takings_by_method"].items()} == {"cash": Dec(232), "mpesa": Dec(116)}
+    assert {k: Dec(v) for k, v in x["takings_by_method"].items()} == {"cash": Dec(232), "mobile_money": Dec(116)}
     assert Dec(x["expected_cash"]) == 1232 and x["counted_cash"] is None
     # the drawer holds exactly the expected cash: no variance, no reason needed
     z = client.post(f"{POS}/tills/{till}/close", headers=shop["piet"], json={"counted_cash": "1232.00"})
@@ -170,7 +170,7 @@ def test_sales_reach_the_books_and_a_void_reverses_them(client, shop) -> None:  
     codes = ("1010", "1030", "4000", "4100", "2200", "5000", "1200")
     before = {c: balance(shop, c) for c in codes}
     sale = sell(client, shop, who="sven", till=till, lines=[line(shop, "cement", "2")],
-                payments=[{"method": "cash", "amount": "100"}, {"method": "mpesa", "amount": "132", "external_ref": "BKS1"}]
+                payments=[{"method": "cash", "amount": "100"}, {"method": "mobile_money", "amount": "132", "external_ref": "BKS1"}]
                 ).json()
     after = {c: balance(shop, c) for c in codes}
     assert after["1010"] - before["1010"] == 100 and after["1030"] - before["1030"] == 132

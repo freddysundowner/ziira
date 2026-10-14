@@ -35,6 +35,14 @@ service**. Tick each off (with the date and who did it) before a customer relies
 - [ ] **Bank reconciliation** with a real statement: upload its CSV to the suggestions endpoint and check the column names
       the bank uses are understood (`domain/reconciliation.py: ALIASES`).
 
+## Payroll
+
+- [ ] **Each business's statutory rules** (taxes, contributions, levies) are entered from the official notices, then verified by
+      a second person; an accountant checks a few payslips against an independent calculation before the first real run.
+- [ ] **Returns**: the per-rule CSV (`/payroll-runs/{id}/returns/{code}?format=csv`) matched to the form each authority
+      asks for; adapt the columns before first filing.
+- [ ] The bank's bulk payment upload format against the payment file; payslip email/SMS tried with a test employee.
+
 ## Business decisions
 
 - [ ] Chart of accounts, tax codes and VAT rates entered for each company (taxes are entered by hand for now).

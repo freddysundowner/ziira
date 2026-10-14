@@ -231,7 +231,7 @@ def test_a_prompt_is_validated(client, shop) -> None:  # type: ignore[no-untyped
 
 def test_an_account_without_credentials_cannot_prompt(client, shop) -> None:  # type: ignore[no-untyped-def]
     other = client.post(f"{PAY}/accounts", headers=shop["owner"], json={
-        "company_id": str(shop["company_id"]), "branch_id": str(shop["branch_id"]), "kind": "mpesa_paybill",
+        "company_id": str(shop["company_id"]), "branch_id": str(shop["branch_id"]), "kind": "mobile_money",
         "name": "No keys", "shortcode": "888880", "provider": "fake"}).json()
     r = client.post(f"{PAY}/intents", headers=shop["owner"], json={"payment_account_id": other["id"], "amount": "10",
                                                                    "phone": "0712345678"})

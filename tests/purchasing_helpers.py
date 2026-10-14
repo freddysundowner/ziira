@@ -16,7 +16,7 @@ def make_purchasing_shop(client, registry, name: str, *, finance: bool = True): 
     registry.enable(shop["tenant_id"], "purchasing")
     owner, co = shop["owner"], str(shop["company_id"])
     sup = client.post(f"{PUR}/suppliers", headers=owner, json={
-        "company_id": co, "code": "TOTAL01", "name": "Total Supplies", "kra_pin": "P051234567A",
+        "company_id": co, "code": "TOTAL01", "name": "Total Supplies", "tax_id": "P051234567A",
         "payment_terms_days": 30})
     assert sup.status_code == 201, sup.text
     shop.update({"supplier": sup.json()["id"], "buyer": shop["manager"],

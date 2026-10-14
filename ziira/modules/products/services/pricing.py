@@ -9,6 +9,8 @@ from decimal import Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from sqlalchemy import text
+
 from ziira.modules.products.permissions import PRICES_MANAGE, PRODUCTS_VIEW
 from ziira.modules.products.repository import products_repo
 from ziira.modules.products.repository.models import PriceList, PriceListItem
@@ -49,8 +51,10 @@ def create_price_list(session: Session, *, company_id: UUID, name: str, branch_i
     if is_default and any(x.branch_id == branch_id for x in products_repo.lists_for_branch(session, company_id,
                                                                                          branch_id)):
         raise Conflict("There is already a default price list for that company or branch")
+    currency = session.execute(text("select base_currency from kernel.company where id = :c"),
+                               {"c": str(company_id)}).scalar_one()
     price_list = PriceList(tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, name=name,
-                           branch_id=branch_id, is_default=is_default, customer_group=group)
+                           branch_id=branch_id, is_default=is_default, customer_group=group, currency=currency)
     products_repo.add_price(session, price_list)
     audit_record(session, "create", "products.price_list", price_list.id, {"name": name, "default": is_default})
     return price_list

@@ -20,7 +20,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     s = make_books_shop(client, registry, "Engine Co")
     co2 = uuid4()
     with system(s) as db:
-        db.execute(text("insert into kernel.company (id, tenant_id, name) values (:i, :t, 'Other Ltd')"),
+        db.execute(text("insert into kernel.company (id, tenant_id, name, base_currency) values (:i, :t, 'Other Ltd', 'USD')"),
                    {"i": str(co2), "t": str(s["tenant_id"])})
         books.ensure_books(db, s["company_id"])
         books.ensure_books(db, co2)

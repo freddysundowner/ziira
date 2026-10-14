@@ -12,7 +12,8 @@ Read this first in every session, then read `docs/PROGRESS.md`: "Current state" 
 
 ## What this is
 
-Ziira Core is a modular ERP for Kenyan SMEs (first customers: multi-branch retail and distribution).
+Ziira Core is a modular ERP for small and medium businesses (first customers: multi-branch retail and distribution
+in Kenya). **It is used worldwide: nothing in the platform assumes a country** (see rule 15 and `docs/localisation.md`).
 It pairs with **Ziira Intelligence**, a layer that checks business data daily and alerts owners by
 message. Product and technical specifications are in `docs/specs/` (each PDF has a `.txt` copy
 with the same name; read the `.txt`, since the PDFs need extra tools to read):
@@ -26,7 +27,7 @@ with the same name; read the `.txt`, since the PDFs need extra tools to read):
 
 Python 3.12+, FastAPI, SQLAlchemy 2, Pydantic v2, PostgreSQL 16, Redis (later, for jobs),
 React + TypeScript + Vite web app in `frontend/` (POS later). Hosting is a VPS (do not document hosting details).
-eTIMS integrates directly with KRA systems.
+Country-specific integrations (Kenya's eTIMS, M-Pesa, ...) are plugins or providers behind extension points.
 
 ## Commands
 
@@ -41,7 +42,8 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira tenants | enable <tenant> <unit> | disable ... | remove ...   # <tenant> = code or id
 .venv/bin/ziira drop-tenant <code> --confirm <code>                # deletes the tenant's database
 .venv/bin/ziira create-tenant NAME --code CODE --company ... --branch-code ... --branch-name ... \
-    --owner-name ... --owner-email ...      # owner password from prompt or ZIIRA_OWNER_PASSWORD
+    --owner-name ... --owner-email ... --currency USD [--phone-country-code 44] [--tax-id ...]
+                                            # owner password from prompt or ZIIRA_OWNER_PASSWORD
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
 .venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + purge of old keys/jobs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
@@ -94,6 +96,11 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
 14. **Journal entries are made only by Finance's posting engine** (`finance/services/posting.py: post_entry`), from events
    (`stock.moved`, `sale.posted`, `sale.returned`), in the operation's own transaction. Units never write finance tables.
    Which account a line uses is a posting rule (data), not code. Control accounts are never posted by hand.
+
+15. **No country in code.** Currency, phone calling code, tax numbers, statutory deductions (payroll taxes, contributions,
+   levies), tax codes and the chart of accounts are *data a business enters*, never constants in code or a default
+   that only fits one country. Country-specific services (a payment provider, a tax authority's submission system)
+   are providers or plugins behind extension points. Tests may use any country's values as *fixtures*, never as logic.
 
 ## Module layout (copy `ziira/modules/products`)
 

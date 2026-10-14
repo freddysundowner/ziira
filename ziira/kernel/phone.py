@@ -9,6 +9,7 @@ import re
 from ziira.kernel.errors import ValidationFailed
 
 MIN_DIGITS, MAX_DIGITS = 8, 15              # E.164 allows at most 15 digits in all
+MIN_SUBSCRIBER = 6                          # the number after the country code has at least this many digits
 CALLING_CODE = re.compile(r"^[1-9]\d{0,2}$")
 
 
@@ -43,4 +44,6 @@ def normalise_phone(value: str | None, country_code: str | None) -> str | None:
         digits = code + text
     if not MIN_DIGITS <= len(digits) <= MAX_DIGITS or digits.startswith("0"):
         raise ValidationFailed("That does not look like a phone number")
+    if code and digits.startswith(code) and len(digits) - len(code) < MIN_SUBSCRIBER:
+        raise ValidationFailed("That number is too short")
     return digits

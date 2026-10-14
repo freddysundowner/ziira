@@ -258,7 +258,7 @@ def post_bill(body: sc.BillIn, session: Session = Depends(db_session)) -> object
     """Enter a supplier's invoice as a draft."""
     return _bill_out(bills.create_bill(
         session, supplier_id=body.supplier_id, supplier_invoice_no=body.supplier_invoice_no, bill_date=body.bill_date,
-        lines=_bill_lines(body.lines), due_date=body.due_date, etims_ref=body.etims_ref))
+        lines=_bill_lines(body.lines), due_date=body.due_date, authority_ref=body.authority_ref))
 
 
 @router.get("/bills", response_model=list[sc.BillSummaryOut], dependencies=VIEW)

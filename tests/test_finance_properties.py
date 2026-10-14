@@ -89,7 +89,7 @@ def apply(shop, product: UUID, op: str, place: int, quantity: int, cost: int) ->
                                                  ("credit", t - (t / 2).quantize(Decimal("0.01")))])))
             else:                                                       # a return of something never sold: at average
                 publish(s, Event("sale.returned", "pos.sale_return", uuid4(), {
-                    **sale(lambda t: [("mpesa", t)]),
+                    **sale(lambda t: [("mobile_money", t)]),
                     "lines": [{"line_id": uuid4(), "product_id": product, "quantity": str(qty)}]}))
     except (ValidationFailed, Conflict):
         pass
@@ -173,7 +173,7 @@ def test_simultaneous_sales_keep_every_figure_in_step(client, shop) -> None:  # 
             with tenant_session(shop["tenant_id"]) as s:
                 publish(s, Event("sale.posted", "pos.sale", uuid4(), {
                     "company_id": shop["company_id"], "branch_id": shop["branch_id"], "location_id": shop["main"],
-                    "net": "50", "tax": "8", "payments": [{"method": "mpesa", "amount": "58"}],
+                    "net": "50", "tax": "8", "payments": [{"method": "mobile_money", "amount": "58"}],
                     "lines": [{"line_id": uuid4(), "product_id": product, "quantity": "5"}]}))
             return "sold"
         except ValidationFailed:

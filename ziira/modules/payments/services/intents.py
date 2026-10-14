@@ -63,7 +63,7 @@ def start_stk_push(session: Session, *, account_id: UUID, amount: Decimal, phone
     check_company(session, account.company_id, account.branch_id)
     ctx.require(PAYMENTS_COLLECT, company_id=account.company_id, branch_id=account.branch_id)
     accounts.check_active(account)
-    if not account.kind.startswith("mpesa"):
+    if account.kind != "mobile_money":
         raise ValidationFailed("Only an M-Pesa account can send a payment prompt")
     if account.credential_id is None:
         raise ValidationFailed(f"{account.name} has no M-Pesa credentials yet")
@@ -101,7 +101,7 @@ def send(session: Session, intent_id: UUID, encrypted_phone: str) -> None:
         _finish(session, intent, "timeout", "expired", "The prompt expired before it could be sent")
         return
     response = provider_for(session, account.provider).stk_push(StkRequest(
-        shortcode=account.shortcode or "", till_type="till" if account.kind == "mpesa_till" else "paybill",
+        shortcode=account.shortcode or "", till_type=str(account.config.get("till_type", "paybill")),
         amount=intent.amount, msisdn=decrypt_text(encrypted_phone),
         callback_url=callback_url(session_tenant(), intent.id),
         account_reference=intent.account_reference or "Payment", description="Payment",

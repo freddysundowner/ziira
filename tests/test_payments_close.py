@@ -78,12 +78,12 @@ def test_a_variance_must_be_explained_and_is_flagged(client, shop) -> None:  # t
 
 def test_unmatched_mpesa_shows_in_the_preview_and_counts_as_variance(client, shop) -> None:  # type: ignore[no-untyped-def]
     day = "2026-09-04"
-    record(client, shop, method="mpesa", amount="200.00", business_date=day, external_ref="NOTSEEN1")
+    record(client, shop, method="mobile_money", amount="200.00", business_date=day, external_ref="NOTSEEN1")
     p = client.get(f"{PAY}/closes/preview", headers=shop["manager"], params={
         "company_id": str(shop["company_id"]), "branch_id": str(shop["branch_id"]), "business_date": day,
         "cash_banked": "0"})
     assert p.status_code == 200
-    assert any("mpesa" in problem for problem in p.json()["problems"])
+    assert any("mobile_money" in problem for problem in p.json()["problems"])
     assert Dec(p.json()["totals"]["variance"]) == 200
     assert submit(client, shop, day, "0.00").status_code == 422                  # needs an explanation
     ok = submit(client, shop, day, "0.00", explanation="Safaricom statement not yet imported")
@@ -162,7 +162,7 @@ def test_a_settlement_moves_mpesa_money_to_the_bank_and_posts(client, shop) -> N
     assert balance(shop, "1030") == before["1030"] - 10000
     payments = client.get(f"{PAY}/payments", headers=shop["owner"], params={"business_date": "2026-09-10"}).json()
     assert {(p["method"], p["direction"], Dec(p["amount"])) for p in payments} >= {
-        ("mpesa", "out", Dec("10000")), ("bank", "in", Dec("9900"))}
+        ("mobile_money", "out", Dec("10000")), ("bank", "in", Dec("9900"))}
     assert any(e[1] == "settlement" for e in entries(shop))
 
 

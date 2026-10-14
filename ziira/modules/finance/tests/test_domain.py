@@ -147,7 +147,7 @@ def test_every_default_rule_points_at_a_template_account_with_a_sensible_side() 
         for value in (D("5"), D("-5")):
             for kind in ("store", "transit"):
                 asked |= {("stock_movement", x.role) for x in recipes.stock_movement(movement, value, kind)}
-    for lines, doc in ((recipes.sale(D("100"), D("16"), [("cash", D("50")), ("mpesa", D("30")), ("card", D("10")),
+    for lines, doc in ((recipes.sale(D("100"), D("16"), [("cash", D("50")), ("mobile_money", D("30")), ("card", D("10")),
                                                          ("credit", D("20")), ("voucher", D("6"))]), "sale"),
                        (recipes.sale_return(D("100"), D("16"), [("cash", D("116"))]), "sale_return")):
         asked |= {(doc, x.role) for x in lines}
@@ -204,9 +204,9 @@ def test_a_cash_sale() -> None:
 
 def test_a_sale_paid_several_ways_and_partly_on_credit() -> None:
     customer = uuid4()
-    lines = recipes.sale(D("200"), D("32"), [("cash", D("100")), ("mpesa", D("82")), ("credit", D("50"))],
+    lines = recipes.sale(D("200"), D("32"), [("cash", D("100")), ("mobile_money", D("82")), ("credit", D("50"))],
                          party=customer)
-    assert [(x.role, x.amount) for x in lines[:3]] == [("cash", D("100")), ("mpesa", D("82")), ("credit", D("50"))]
+    assert [(x.role, x.amount) for x in lines[:3]] == [("cash", D("100")), ("mobile_money", D("82")), ("credit", D("50"))]
     credit = lines[2]
     assert credit.party_type == "customer" and credit.party_id == customer
     assert lines[0].party_id is None
@@ -236,9 +236,9 @@ def test_a_free_sale_posts_nothing() -> None:
 
 
 def test_a_return_is_the_sale_the_other_way_round() -> None:
-    sale = recipes.sale(D("100"), D("16"), [("mpesa", D("116"))])
-    back = recipes.sale_return(D("100"), D("16"), [("mpesa", D("116"))])
-    assert shape(back) == [("mpesa", "credit", D("116")), ("sales_returns", "debit", D("100")),
+    sale = recipes.sale(D("100"), D("16"), [("mobile_money", D("116"))])
+    back = recipes.sale_return(D("100"), D("16"), [("mobile_money", D("116"))])
+    assert shape(back) == [("mobile_money", "credit", D("116")), ("sales_returns", "debit", D("100")),
                            ("vat_output", "debit", D("16"))]
     assert {x.amount for x in sale} == {x.amount for x in back}
 
@@ -252,7 +252,7 @@ def test_every_sale_recipe_balances(net: Decimal, tax: Decimal, parts: int) -> N
     if total == 0:
         return
     share = (total / parts).quantize(D("0.01"))
-    money = [("cash", share)] * (parts - 1) + [("mpesa", total - share * (parts - 1))]
+    money = [("cash", share)] * (parts - 1) + [("mobile_money", total - share * (parts - 1))]
     if any(amount <= 0 for _, amount in money):
         return
     for lines in (recipes.sale(net, tax, money), recipes.sale_return(net, tax, money)):

@@ -9,7 +9,7 @@ from ziira.modules.crm.domain import rules
 from ziira.modules.crm.permissions import CUSTOMERS_MANAGE, LEADS_MANAGE
 from ziira.modules.crm.repository import crm_repo as repo
 from ziira.modules.crm.repository.models import Activity, Customer, Lead, LeadSource
-from ziira.modules.crm.services import access, customers
+from ziira.modules.crm.services import access, customers, phones
 from ziira.sdk import (
     Conflict,
     Event,
@@ -75,7 +75,7 @@ def create_lead(session: Session, *, company_id: UUID, name: str, business_name:
         raise ValidationFailed("The owner was not found")
     if customer_kind not in (None, "individual", "business"):
         raise ValidationFailed("Kind must be 'individual' or 'business'")
-    clean_phone, clean_mail = rules.normalise_phone(phone), rules.clean_email(email)
+    clean_phone, clean_mail = phones.clean(session, company_id, phone), rules.clean_email(email)
     if clean_phone is None and clean_mail is None:
         raise ValidationFailed("Give a phone number or an email address to reach the lead")
     lead = Lead(tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, name=rules.clean_name(name),
@@ -103,7 +103,7 @@ def update_lead(session: Session, lead_id: UUID, *, name: str | None = None, bus
     if business_name is not None:
         lead.business_name = business_name.strip()[:200] or None
     if phone is not None:
-        lead.phone = rules.normalise_phone(phone)
+        lead.phone = phones.clean(session, lead.company_id, phone)
     if email is not None:
         lead.email = rules.clean_email(email)
     if owner_user_id is not None:

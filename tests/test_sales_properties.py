@@ -150,7 +150,7 @@ def test_random_trading_on_account_keeps_every_ledger_in_agreement(client, shop)
             if owing > 0:
                 amount = min(owing, Dec(rng.choice(["50", "100", "500"])))
                 r = client.post(f"{POS}/receipts", headers=shop["fm"], json={
-                    "customer_id": cust["id"], "amount": str(amount), "method": rng.choice(["cash", "mpesa", "bank"]),
+                    "customer_id": cust["id"], "amount": str(amount), "method": rng.choice(["cash", "mobile_money", "bank"]),
                     "branch_id": str(shop["branch_id"]), "external_ref": f"RND{step}{uuid4().hex[:4].upper()}"})
                 assert r.status_code == 201, r.text
         elif action == "order":

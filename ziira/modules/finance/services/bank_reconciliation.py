@@ -30,7 +30,7 @@ from ziira.sdk import (
     publish,
 )
 
-ACCOUNT_SUBTYPES = ("bank", "mpesa_clearing", "card_clearing")
+ACCOUNT_SUBTYPES = ("bank", "mobile_money_clearing", "card_clearing")
 MAX_LINES_SHOWN = 2000
 
 

@@ -22,7 +22,7 @@ class CustomerView:
     name: str
     phone: str | None
     email: str | None
-    kra_pin: str | None
+    tax_id: str | None
     customer_group: str | None
     credit_limit: Decimal
     payment_terms_days: int
@@ -30,7 +30,7 @@ class CustomerView:
 
 
 def _view(c: Customer) -> CustomerView:
-    return CustomerView(c.id, c.company_id, c.code, c.name, c.phone, c.email, c.kra_pin, c.customer_group,
+    return CustomerView(c.id, c.company_id, c.code, c.name, c.phone, c.email, c.tax_id, c.customer_group,
                         c.credit_limit, c.payment_terms_days, c.status)
 
 

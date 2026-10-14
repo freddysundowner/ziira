@@ -63,7 +63,7 @@ def test_the_refund_arrives_in_parts(client, shop) -> None:  # type: ignore[no-u
     assert pay["direction"] == "in" and pay["method"] == "bank" and Dec(pay["amount"]) == 100
     due = {d["bill_id"]: d for d in client.get(f"{PUR}/refunds-due", headers=shop["fm"]).json()}
     assert Dec(due[bill["id"]]["owed_back"]) == 132
-    rest = client.post(path, headers=shop["fm"], json={"amount": "132.00", "method": "mpesa", "external_ref": "SUPPL1MP"})
+    rest = client.post(path, headers=shop["fm"], json={"amount": "132.00", "method": "mobile_money", "external_ref": "SUPPL1MP"})
     assert rest.status_code == 201, rest.text
     assert bill["id"] not in {d["bill_id"] for d in client.get(f"{PUR}/refunds-due", headers=shop["fm"]).json()}
     assert moved(before, snapshot(shop)) == {"1020": Dec(100), "2000": Dec(-232)}
@@ -81,7 +81,7 @@ def test_refund_rules(client, shop) -> None:  # type: ignore[no-untyped-def]
     path = f"{PUR}/bills/{bill['id']}/refund"
     for body in ({"amount": "233", "method": "cash"}, {"amount": "0", "method": "cash"},
                  {"amount": "10.005", "method": "cash"}, {"amount": "10", "method": "bitcoin"},
-                 {"amount": "10", "method": "mpesa", "payment_account_id": shop["bank"]},
+                 {"amount": "10", "method": "mobile_money", "payment_account_id": shop["bank"]},
                  {"amount": "10", "method": "bank", "payment_account_id": str(uuid4())}):
         assert client.post(path, headers=shop["fm"], json=body).status_code == 422, body
     ok = {"amount": "10", "method": "cash"}

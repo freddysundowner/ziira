@@ -15,13 +15,16 @@ Money = Annotated[Amount, Field(gt=0)]
 class AccountIn(BaseModel):
     company_id: UUID
     branch_id: UUID | None = None
-    kind: Literal["cash", "mpesa_till", "mpesa_paybill", "bank", "card"]
+    kind: Literal["cash", "mobile_money", "bank", "card"]
     name: str = Field(min_length=1, max_length=200)
-    shortcode: str | None = Field(default=None, max_length=10, description="The till or paybill number (M-Pesa)")
+    shortcode: str | None = Field(default=None, max_length=20, description="The merchant or collection number")
     bank_account_masked: str | None = Field(default=None, max_length=40, examples=["****4821"])
     ledger_account_id: UUID | None = Field(default=None, description="The Finance account this one posts to")
     environment: Literal["sandbox", "production"] = "sandbox"
-    provider: Literal["daraja", "fake"] = Field(default="daraja", description="'fake' is for development only")
+    provider: str = Field(default="daraja", max_length=40,
+                          description="A registered payment provider; 'fake' is for development only")
+    provider_config: dict[str, str] | None = Field(
+        default=None, description="Provider settings, e.g. {'till_type': 'till'} for Daraja")
 
 
 class AccountUpdateIn(BaseModel):
@@ -58,7 +61,7 @@ class CallbackTokenOut(BaseModel):
 class PaymentIn(BaseModel):
     company_id: UUID
     branch_id: UUID | None = None
-    method: Literal["cash", "mpesa", "bank", "card", "cheque", "other"]
+    method: Literal["cash", "mobile_money", "bank", "card", "cheque", "other"]
     direction: Literal["in", "out"] = "in"
     amount: Money
     payment_account_id: UUID | None = None

@@ -314,7 +314,7 @@ class ExpenseIn(BaseModel):
     account_id: UUID = Field(description="An expense account of the chart")
     amount: Annotated[Amount, Field(gt=0)] = Field(description="Everything paid, VAT included")
     tax_amount: Annotated[Amount, Field(ge=0)] = Field(default=Decimal(0), description="The VAT inside the amount")
-    paid_from: Literal["cash", "bank", "mpesa", "card", "other"]
+    paid_from: Literal["cash", "bank", "mobile_money", "card", "other"]
     payee: str | None = Field(default=None, max_length=200)
     receipt_ref: str | None = Field(default=None, max_length=100, description="The receipt's number or file name")
 

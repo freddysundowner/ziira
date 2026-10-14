@@ -116,7 +116,7 @@ def test_optional_units_are_really_optional(client, registry) -> None:  # type: 
     owner = sign_in(client, "optional-co", "owner@optional-co.test").headers
     uom = client.post("/api/v1/products/uoms", headers=owner, json={"code": "PCS", "name": "Pieces"}).json()["id"]
     tax = client.post("/api/v1/products/tax-codes", headers=owner, json={
-        "code": "V", "name": "VAT", "vat_rate": "16", "etims_tax_type": "B"}).json()["id"]
+        "code": "V", "name": "VAT", "vat_rate": "16", "authority_code": "B"}).json()["id"]
     r = client.post("/api/v1/products/products", headers=owner, json={
         "company_id": str(t["company_id"]), "sku": "ALONE", "name": "Alone", "base_uom_id": uom, "tax_code_id": tax})
     assert r.status_code == 201

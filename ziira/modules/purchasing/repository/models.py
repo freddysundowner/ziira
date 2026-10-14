@@ -37,7 +37,7 @@ class Supplier(Audited, Base):
     company_id: Mapped[UUID]
     code: Mapped[str]
     name: Mapped[str]
-    kra_pin: Mapped[str | None]
+    tax_id: Mapped[str | None]
     phone: Mapped[str | None]
     email: Mapped[str | None]
     payment_terms_days: Mapped[int] = mapped_column(server_default=text("0"))
@@ -164,7 +164,7 @@ class SupplierBill(Audited, Base):
     total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     amount_paid: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     match_status: Mapped[str] = mapped_column(server_default=text("'pending'"))
-    etims_ref: Mapped[str | None]
+    authority_ref: Mapped[str | None]
     status: Mapped[str] = mapped_column(server_default=text("'draft'"))
     approved_by: Mapped[UUID | None]
     match_notes: Mapped[list[Any]] = mapped_column(JSONB, server_default=text("'[]'"))

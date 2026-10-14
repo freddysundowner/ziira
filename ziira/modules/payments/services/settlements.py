@@ -25,7 +25,7 @@ def record_settlement(session: Session, *, from_account_id: UUID, to_account_id:
     target = accounts.check_active(payments_repo.get_account(session, to_account_id), source.company_id)
     ctx = current_context()
     ctx.require(PAYMENTS_RECORD, company_id=source.company_id, branch_id=source.branch_id)
-    if not source.kind.startswith("mpesa") or target.kind != "bank":
+    if source.kind != "mobile_money" or target.kind != "bank":
         raise ValidationFailed("A settlement goes from an M-Pesa account to a bank account")
     amount = mpesa.parse_amount(amount, "Settlement amount")
     if fee < 0 or fee != fee.quantize(Decimal("0.01")):
@@ -33,7 +33,7 @@ def record_settlement(session: Session, *, from_account_id: UUID, to_account_id:
     if not reference.strip():
         raise ValidationFailed("A reference is required")
     day = business_date or today()
-    paid_out = record_payment(session, company_id=source.company_id, branch_id=source.branch_id, method="mpesa",
+    paid_out = record_payment(session, company_id=source.company_id, branch_id=source.branch_id, method="mobile_money",
                               direction="out", amount=amount + fee, payment_account_id=source.id, business_date=day,
                               external_ref=reference, party_type="other",
                               allocations=[("settlement", target.id, amount + fee)])

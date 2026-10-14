@@ -135,7 +135,7 @@ def test_a_customer_pays_the_oldest_invoices_first(client, shop) -> None:  # typ
     pay = client.get(f"{PAY}/payments/{receipt['payment_id']}", headers=shop["fm"]).json()
     assert pay["direction"] == "in" and pay["method"] == "cash" and Dec(pay["amount"]) == 300
     rest = client.post(f"{POS}/receipts", headers=shop["fm"], json={
-        "customer_id": cust["id"], "amount": "48.00", "method": "mpesa", "branch_id": str(shop["branch_id"]),
+        "customer_id": cust["id"], "amount": "48.00", "method": "mobile_money", "branch_id": str(shop["branch_id"]),
         "external_ref": "RCT9MPESA"})
     assert rest.status_code == 201, rest.text
     assert owed(shop, cust) == 0

@@ -504,14 +504,22 @@ def test_command_line_commands_and_errors(registry, capsys, monkeypatch) -> None
 
     monkeypatch.setenv("ZIIRA_OWNER_PASSWORD", "cli-owner-pass-1")
     code, out, _ = run("create-tenant", "Cli Co", "--code", "cli-co", "--company", "Cli Ltd", "--branch-code", "C1",
-                       "--branch-name", "Main", "--owner-name", "Cli Owner", "--owner-email", "owner@cli-co.test")
+                       "--branch-name", "Main", "--owner-name", "Cli Owner", "--owner-email", "owner@cli-co.test",
+                       "--currency", "usd", "--phone-country-code", "44")
     assert code == 0 and "tenant_id" in out
     code, _, err = run("create-tenant", "Cli Co", "--code", "cli-co", "--company", "x", "--branch-code", "C1",
-                       "--branch-name", "x", "--owner-name", "x", "--owner-email", "x@y.zz")
+                       "--branch-name", "x", "--owner-name", "x", "--owner-email", "x@y.zz", "--currency", "USD")
     assert code == 1 and "taken" in err
     code, _, err = run("create-tenant", "Bad", "--code", "Bad Code!", "--company", "x", "--branch-code", "C1",
-                       "--branch-name", "x", "--owner-name", "x", "--owner-email", "x@y.zz")
+                       "--branch-name", "x", "--owner-name", "x", "--owner-email", "x@y.zz", "--currency", "USD")
     assert code == 1 and "Workspace code" in err
+    code, _, err = run("create-tenant", "Money", "--code", "money-co", "--company", "x", "--branch-code", "C1",
+                       "--branch-name", "x", "--owner-name", "x", "--owner-email", "x@y.zz", "--currency", "dollars")
+    assert code == 1 and "three-letter" in err
+    code, _, err = run("create-tenant", "Phone", "--code", "phone-co", "--company", "x", "--branch-code", "C1",
+                       "--branch-name", "x", "--owner-name", "x", "--owner-email", "x@y.zz", "--currency", "USD",
+                       "--phone-country-code", "9999")
+    assert code == 1 and "calling code" in err
 
     code, out, _ = run("tenants")
     assert code == 0 and "cli-co" in out

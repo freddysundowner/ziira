@@ -42,8 +42,8 @@ def test_quantities_prices_and_discounts_are_limited() -> None:
 def test_cash_change_is_given_only_on_cash() -> None:
     legs = rules.settle(D("116"), [("cash", D("200"))])
     assert [(x.method, x.amount, x.change) for x in legs] == [("cash", D("116"), D("84"))]
-    split = rules.settle(D("500"), [("mpesa", D("300")), ("cash", D("1000"))])
-    assert [(x.method, x.amount, x.change) for x in split] == [("mpesa", D("300"), D("0")), ("cash", D("200"),
+    split = rules.settle(D("500"), [("mobile_money", D("300")), ("cash", D("1000"))])
+    assert [(x.method, x.amount, x.change) for x in split] == [("mobile_money", D("300"), D("0")), ("cash", D("200"),
                                                                                            D("800"))]
     exact = rules.settle(D("500"), [("cash", D("200")), ("card", D("300"))])
     assert {x.method: x.amount for x in exact} == {"card": D("300"), "cash": D("200")}
@@ -54,9 +54,9 @@ def test_payments_must_cover_the_total_exactly() -> None:
     with pytest.raises(ValidationFailed, match="short"):
         rules.settle(D("116"), [("cash", D("100"))])
     with pytest.raises(ValidationFailed, match="more than is still owed"):
-        rules.settle(D("116"), [("mpesa", D("200"))])
+        rules.settle(D("116"), [("mobile_money", D("200"))])
     with pytest.raises(ValidationFailed, match="more than is still owed"):
-        rules.settle(D("116"), [("mpesa", D("100")), ("card", D("100"))])
+        rules.settle(D("116"), [("mobile_money", D("100")), ("card", D("100"))])
     for bad in ([], [("bitcoin", D("116"))], [("cash", D("0"))], [("cash", D("-5"))], [("cash", D("1.005"))]):
         with pytest.raises(ValidationFailed):
             rules.settle(D("116"), bad)
@@ -69,8 +69,8 @@ def test_payments_must_cover_the_total_exactly() -> None:
        share=st.decimals(min_value="0", max_value="1", places=2))
 def test_whatever_is_handed_over_the_applied_money_equals_the_total(total: D, extra: D, share: D) -> None:
     mpesa = (total * share).quantize(D("0.01"))
-    offered = ([("mpesa", mpesa)] if mpesa > 0 else []) + [("cash", total - mpesa + extra)] \
-        if total - mpesa + extra > 0 else [("mpesa", mpesa)]
+    offered = ([("mobile_money", mpesa)] if mpesa > 0 else []) + [("cash", total - mpesa + extra)] \
+        if total - mpesa + extra > 0 else [("mobile_money", mpesa)]
     legs = rules.settle(total, offered)
     assert sum(x.amount for x in legs) == total
     assert all(x.change == 0 for x in legs if x.method != "cash")

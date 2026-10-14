@@ -62,7 +62,7 @@ def test_an_expense_is_drafted_then_posted(client, shop) -> None:  # type: ignor
 
 
 def test_the_money_comes_from_where_it_was_paid(client, shop) -> None:  # type: ignore[no-untyped-def]
-    for method, code in (("bank", "1020"), ("mpesa", "1030"), ("card", "1040"), ("other", "1020")):
+    for method, code in (("bank", "1020"), ("mobile_money", "1030"), ("card", "1040"), ("other", "1020")):
         before = balance(shop, code)
         spend(client, shop, amount="116.00", tax="16.00", paid_from=method, code="6300")
         assert balance(shop, code) == before - 116, method

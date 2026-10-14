@@ -23,7 +23,7 @@ def make_payments_shop(client, registry, name: str, *, finance: bool = False):  
     cash = client.post(f"{PAY}/accounts", headers=owner, json={
         "company_id": co, "branch_id": str(shop["branch_id"]), "kind": "cash", "name": "HQ till cash"}).json()
     till = client.post(f"{PAY}/accounts", headers=owner, json={
-        "company_id": co, "branch_id": str(shop["branch_id"]), "kind": "mpesa_till", "name": "HQ M-Pesa till",
+        "company_id": co, "branch_id": str(shop["branch_id"]), "kind": "mobile_money", "provider_config": {"till_type": "till"}, "name": "HQ M-Pesa till",
         "shortcode": SHORTCODE, "provider": "fake"})
     assert till.status_code == 201, till.text
     till = till.json()
@@ -83,7 +83,7 @@ def due_now(shop) -> None:  # type: ignore[no-untyped-def]
 
 def record(client, shop, **kw):  # type: ignore[no-untyped-def]
     """Record a payment through the API (defaults: an M-Pesa payment of 116 at HQ)."""
-    body = {"company_id": str(shop["company_id"]), "branch_id": str(shop["branch_id"]), "method": "mpesa",
+    body = {"company_id": str(shop["company_id"]), "branch_id": str(shop["branch_id"]), "method": "mobile_money",
             "amount": "116.00", "payment_account_id": shop["till"], **kw}
     return client.post(f"{PAY}/payments", headers=kw.pop("headers", None) or shop["owner"], json={
         k: v for k, v in body.items() if k != "headers"})

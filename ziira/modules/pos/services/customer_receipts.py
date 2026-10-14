@@ -34,7 +34,7 @@ from ziira.sdk import (
     publish,
 )
 
-METHODS = ("cash", "mpesa", "bank", "card", "cheque", "other")
+METHODS = ("cash", "mobile_money", "bank", "card", "cheque", "other")
 
 
 @dataclass
@@ -333,7 +333,7 @@ def refund_advance(session: Session, receipt_id: UUID, *, amount: Decimal, metho
     ctx.require(RECEIVABLES_MANAGE, company_id=receipt.company_id, branch_id=receipt.branch_id)
     if receipt.status != "posted":
         raise Conflict("This payment was reversed")
-    if method not in ("cash", "mpesa", "bank"):
+    if method not in ("cash", "mobile_money", "bank"):
         raise ValidationFailed("A refund is paid in cash, M-Pesa or by bank")
     if amount <= 0 or amount != amount.quantize(Decimal("0.01")):
         raise ValidationFailed("A refund is more than zero with at most 2 decimal places")

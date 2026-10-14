@@ -16,7 +16,7 @@ from ziira.modules.crm.domain import rules
 from ziira.modules.crm.permissions import CREDIT_APPROVE, CUSTOMERS_MANAGE
 from ziira.modules.crm.repository import crm_repo as repo
 from ziira.modules.crm.repository.models import CreditVersion, Customer, CustomerContact
-from ziira.modules.crm.services import access
+from ziira.modules.crm.services import access, phones
 from ziira.sdk import (
     Conflict,
     Event,
@@ -57,7 +57,7 @@ def list_customers(session: Session, *, search: str | None = None, status: str |
 
 def create_customer(session: Session, *, company_id: UUID, name: str, code: str | None = None,
                     kind: str = "business", phone: str | None = None, email: str | None = None,
-                    kra_pin: str | None = None, customer_group: str | None = None, payment_terms_days: int = 0,
+                    tax_id: str | None = None, customer_group: str | None = None, payment_terms_days: int = 0,
                     owner_user_id: UUID | None = None) -> Customer:
     """Add a customer with no credit (give credit with `request_credit_change`). The code is made for you when left
     out. Needs 'customers.manage'."""
@@ -75,8 +75,9 @@ def create_customer(session: Session, *, company_id: UUID, name: str, code: str 
         raise Conflict(f"There is already a customer with code {customer_code}")
     customer = Customer(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, code=customer_code,
-        name=rules.clean_name(name), kind=kind, phone=rules.normalise_phone(phone), email=rules.clean_email(email),
-        kra_pin=rules.clean_kra_pin(kra_pin), customer_group=rules.clean_group(customer_group),
+        name=rules.clean_name(name), kind=kind, phone=phones.clean(session, company_id, phone),
+        email=rules.clean_email(email),
+        tax_id=rules.clean_tax_id(tax_id), customer_group=rules.clean_group(customer_group),
         payment_terms_days=payment_terms_days, owner_user_id=owner_user_id or ctx.user_id)
     repo.add(session, customer)
     repo.add(session, CreditVersion(
@@ -90,7 +91,7 @@ def create_customer(session: Session, *, company_id: UUID, name: str, code: str 
 
 
 def update_customer(session: Session, customer_id: UUID, *, name: str | None = None, phone: str | None = None,
-                    email: str | None = None, kra_pin: str | None = None, customer_group: str | None = None,
+                    email: str | None = None, tax_id: str | None = None, customer_group: str | None = None,
                     owner_user_id: UUID | None = None, status: str | None = None,
                     kind: str | None = None) -> Customer:
     """Change a customer's details or put it on hold. Credit is changed with `request_credit_change`. Needs
@@ -105,13 +106,13 @@ def update_customer(session: Session, customer_id: UUID, *, name: str | None = N
         customer.name = rules.clean_name(name)
         changes["name"] = customer.name
     if phone is not None:
-        customer.phone = rules.normalise_phone(phone)
+        customer.phone = phones.clean(session, customer.company_id, phone)
         changes["phone"] = customer.phone
     if email is not None:
         customer.email = rules.clean_email(email)
-    if kra_pin is not None:
-        customer.kra_pin = rules.clean_kra_pin(kra_pin)
-        changes["kra_pin"] = customer.kra_pin
+    if tax_id is not None:
+        customer.tax_id = rules.clean_tax_id(tax_id)
+        changes["tax_id"] = customer.tax_id
     if customer_group is not None:
         customer.customer_group = rules.clean_group(customer_group)
         changes["customer_group"] = customer.customer_group
@@ -146,7 +147,7 @@ def add_contact(session: Session, customer_id: UUID, *, name: str, phone: str | 
     customer = get_customer(session, customer_id)
     access.require(CUSTOMERS_MANAGE, customer.company_id)
     contact = CustomerContact(tenant_id=current_context().tenant_id, customer_id=customer.id,
-                              name=rules.clean_name(name), phone=rules.normalise_phone(phone),
+                              name=rules.clean_name(name), phone=phones.clean(session, customer.company_id, phone),
                               email=rules.clean_email(email), role=(role or "").strip()[:60] or None)
     repo.add(session, contact)
     audit_record(session, "add_contact", "crm.customer", customer.id, {"contact": contact.name})

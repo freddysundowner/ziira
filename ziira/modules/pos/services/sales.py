@@ -242,10 +242,10 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
             session.add(payment_rows[-1])
             continue
         reference = given.external_ref.strip().upper() if given.external_ref and given.external_ref.strip() else None
-        if leg.method == "mpesa" and reference is None:
+        if leg.method == "mobile_money" and reference is None:
             if not offline:
                 raise ValidationFailed("An M-Pesa payment needs the M-Pesa code")
-            warnings.append("mpesa_without_code")
+            warnings.append("mobile_money_without_code")
         account_id = given.payment_account_id
         if account_id is None and leg.method != "cash":
             account_id = account_for_method(session, company_id, till.branch_id, leg.method)
@@ -290,7 +290,8 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
 WARNING_TEXT = {
     "till_closed": ("offline_late_sale", "medium", "was made offline on a till that was closed before it synced"),
     "closed_day": ("offline_closed_day", "medium", "belongs to a day that was already closed: booked today instead"),
-    "mpesa_without_code": ("offline_mpesa_no_code", "medium", "has an M-Pesa payment without its code"),
+    "mobile_money_without_code": ("offline_mobile_money_no_code", "medium",
+                                  "has a mobile money payment without its reference"),
 }
 
 

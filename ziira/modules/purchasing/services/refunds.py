@@ -31,7 +31,7 @@ from ziira.sdk import (
     publish,
 )
 
-METHODS = ("cash", "mpesa", "bank", "cheque", "other")
+METHODS = ("cash", "mobile_money", "bank", "cheque", "other")
 
 
 @dataclass

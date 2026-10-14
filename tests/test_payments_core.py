@@ -34,9 +34,9 @@ def test_accounts_are_validated(client, shop) -> None:  # type: ignore[no-untype
         return client.post(f"{PAY}/accounts", headers=owner, json={"company_id": co, "kind": "bank", "name": "x", **kw})
 
     assert create(kind="cash").status_code == 422                                    # a till belongs to a branch
-    assert create(kind="mpesa_till", name="No code").status_code == 422
-    assert create(kind="mpesa_till", shortcode="12").status_code == 422
-    assert create(kind="mpesa_till", shortcode="123456", name="Bad env", environment="mars").status_code == 422
+    assert create(kind="mobile_money", name="No code").status_code == 422
+    assert create(kind="mobile_money", shortcode="12").status_code == 422
+    assert create(kind="mobile_money", shortcode="123456", name="Bad env", environment="mars").status_code == 422
     assert create(kind="gadget").status_code == 422
     assert create(name="  ").status_code == 422
     assert create(name="x" * 201).status_code == 422
@@ -94,7 +94,7 @@ def test_payment_validation(client, shop) -> None:  # type: ignore[no-untyped-de
 
     def pay(**kw):  # type: ignore[no-untyped-def]
         return client.post(f"{PAY}/payments", headers=owner, json={
-            "company_id": co, "branch_id": hq, "method": "mpesa", "amount": "10", "payment_account_id": shop["till"],
+            "company_id": co, "branch_id": hq, "method": "mobile_money", "amount": "10", "payment_account_id": shop["till"],
             **kw})
 
     assert pay(amount="0").status_code == 422 and pay(amount="-5").status_code == 422
@@ -122,7 +122,7 @@ def test_payments_can_be_listed_read_and_reversed(client, shop) -> None:  # type
     owner = shop["owner"]
     p = record(client, shop, external_ref=fresh_ref(), amount="33").json()
     assert client.get(f"{PAY}/payments/{p['id']}", headers=owner).json()["number"] == p["number"]
-    assert p["id"] in {x["id"] for x in client.get(f"{PAY}/payments", headers=owner, params={"method": "mpesa"}).json()}
+    assert p["id"] in {x["id"] for x in client.get(f"{PAY}/payments", headers=owner, params={"method": "mobile_money"}).json()}
     assert client.get(f"{PAY}/payments/{uuid4()}", headers=owner).status_code == 404
     assert client.post(f"{PAY}/payments/{p['id']}/reverse", headers=owner, json={"reason": " "}).status_code == 422
     r = client.post(f"{PAY}/payments/{p['id']}/reverse", headers=owner, json={"reason": "Typed twice"})

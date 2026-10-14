@@ -34,14 +34,14 @@ def rule(client, shop, doc_type, min_amount="0"):  # type: ignore[no-untyped-def
 # --------------------------------------------------------------------------- suppliers
 def test_creating_and_changing_suppliers(client, shop) -> None:  # type: ignore[no-untyped-def]
     co, owner = str(shop["company_id"]), shop["owner"]
-    body = {"company_id": co, "code": "kenol-1", "name": "  Kenol   Fuels ", "kra_pin": "p000111222z",
+    body = {"company_id": co, "code": "kenol-1", "name": "  Kenol   Fuels ", "tax_id": "p000111222z",
             "phone": "0711000111", "email": "sales@kenol.test", "payment_terms_days": 14}
     r = client.post(f"{PUR}/suppliers", headers=owner, json=body)
     assert r.status_code == 201, r.text
     sup = r.json()
-    assert sup["code"] == "KENOL-1" and sup["name"] == "Kenol Fuels" and sup["kra_pin"] == "P000111222Z"
+    assert sup["code"] == "KENOL-1" and sup["name"] == "Kenol Fuels" and sup["tax_id"] == "P000111222Z"
     assert client.post(f"{PUR}/suppliers", headers=owner, json=body).status_code == 409
-    for bad in ({"code": "a b"}, {"code": ""}, {"name": " "}, {"kra_pin": "12345"}, {"payment_terms_days": -1},
+    for bad in ({"code": "a b"}, {"code": ""}, {"name": " "}, {"tax_id": "!!"}, {"payment_terms_days": -1},
                 {"payment_terms_days": 400}, {"company_id": str(uuid4())}):
         assert client.post(f"{PUR}/suppliers", headers=owner, json={**body, "code": "OK2", **bad}).status_code in (
             403, 404, 422), bad
@@ -49,7 +49,7 @@ def test_creating_and_changing_suppliers(client, shop) -> None:  # type: ignore[
         "name": "Kenol Kobil", "payment_terms_days": 45, "status": "on_hold"}).json()
     assert changed["name"] == "Kenol Kobil" and changed["payment_terms_days"] == 45 and changed["status"] == "on_hold"
     assert client.patch(f"{PUR}/suppliers/{sup['id']}", headers=owner, json={"status": "gone"}).status_code == 422
-    assert client.patch(f"{PUR}/suppliers/{sup['id']}", headers=owner, json={"kra_pin": "bad"}).status_code == 422
+    assert client.patch(f"{PUR}/suppliers/{sup['id']}", headers=owner, json={"tax_id": "!"}).status_code == 422
     listed = client.get(f"{PUR}/suppliers", headers=owner, params={"search": "kenol"}).json()
     assert [s["code"] for s in listed] == ["KENOL-1"]
     assert client.get(f"{PUR}/suppliers", headers=owner, params={"status": "on_hold"}).json()[0]["id"] == sup["id"]
@@ -83,7 +83,7 @@ def test_bank_details_need_a_second_person_and_are_never_shown_in_full(client, s
     assert "01234567" not in secret and secret != "012345678901"                  # stored encrypted
     # nothing changes yet; only one change at a time
     assert client.get(path, headers=shop["fm"]).json()[0]["status"] == "pending_confirmation"
-    again = client.post(path, headers=shop["fm"], json={"method": "mpesa", "account_no": "0712345678"})
+    again = client.post(path, headers=shop["fm"], json={"method": "mobile_money", "account_no": "0712345678"})
     assert again.status_code == 409
     confirm = f"{PUR}/bank-accounts/{bank['id']}/confirm"
     body = {"confirmation_method": "phone_callback", "note": "Called the number on file"}
@@ -101,7 +101,7 @@ def test_changing_details_again_keeps_history_and_can_need_approval(client, shop
     sup = shop["supplier"]
     path = f"{PUR}/suppliers/{sup}/bank-accounts"
     rule(client, shop, "supplier_bank_change")
-    new = client.post(path, headers=shop["fm"], json={"method": "mpesa", "account_no": "0733445566"}).json()
+    new = client.post(path, headers=shop["fm"], json={"method": "mobile_money", "account_no": "0733445566"}).json()
     assert client.post(f"{PUR}/bank-accounts/{new['id']}/confirm", headers=shop["fm2"],
                        json={"confirmation_method": "in_person"}).json()["status"] == "pending_approval"
     active = [b for b in client.get(path, headers=shop["fm"]).json() if b["status"] == "active"]
@@ -115,12 +115,12 @@ def test_changing_details_again_keeps_history_and_can_need_approval(client, shop
 def test_proposed_details_can_be_withdrawn_and_are_validated(client, shop) -> None:  # type: ignore[no-untyped-def]
     path = f"{PUR}/suppliers/{shop['supplier']}/bank-accounts"
     for bad in ({"method": "bank", "account_no": "12"}, {"method": "bank", "account_no": "123456789"},
-                {"method": "mpesa", "account_no": "12345"}, {"method": "card", "account_no": "123456"},
+                {"method": "mobile_money", "account_no": "12345"}, {"method": "card", "account_no": "123456"},
                 {"method": "bank", "account_no": "ab;cd1234", "bank_name": "KCB"}):
         assert client.post(path, headers=shop["fm"], json=bad).status_code == 422, bad
-    assert client.post(path, headers=shop["clerk"], json={"method": "mpesa", "account_no": "0700111222"}
+    assert client.post(path, headers=shop["clerk"], json={"method": "mobile_money", "account_no": "0700111222"}
                        ).status_code == 403                                                # needs supplier.bank_edit
-    mine = client.post(path, headers=shop["fm"], json={"method": "mpesa", "account_no": "0700111222"}).json()
+    mine = client.post(path, headers=shop["fm"], json={"method": "mobile_money", "account_no": "0700111222"}).json()
     assert client.post(f"{PUR}/bank-accounts/{mine['id']}/reject", headers=shop["cashier"]).status_code == 403
     r = client.post(f"{PUR}/bank-accounts/{mine['id']}/reject", headers=shop["fm2"])
     assert r.status_code == 200 and r.json()["status"] == "rejected"

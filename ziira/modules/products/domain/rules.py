@@ -52,7 +52,6 @@ def check_reorder_level(level: Decimal | None, product_type: str) -> None:
         raise ValidationFailed("Reorder level cannot be negative")
 
 
-ETIMS_TAX_TYPES = ("A", "B", "C", "D", "E")      # KRA eTIMS: A exempt, B 16%, C zero-rated, D non-VAT, E 8%
 MAX_NAME_LENGTH = 200
 
 
@@ -66,11 +65,13 @@ def check_name(name: str, what: str = "Name") -> str:
     return value
 
 
-def check_etims_tax_type(tax_type: str) -> str:
-    """eTIMS tax types are the letters A to E."""
-    value = tax_type.strip().upper()
-    if value not in ETIMS_TAX_TYPES:
-        raise ValidationFailed(f"eTIMS tax type must be one of: {', '.join(ETIMS_TAX_TYPES)}")
+def check_authority_code(code: str | None) -> str | None:
+    """The code a tax authority uses for this tax, if there is one: up to 20 letters, digits, '-', '_' or '.'."""
+    if code is None or not code.strip():
+        return None
+    value = code.strip().upper()
+    if not re.match(r"^[A-Z0-9][A-Z0-9_.-]{0,19}$", value):
+        raise ValidationFailed("An authority code is up to 20 letters, digits, '-', '_' or '.'")
     return value
 
 

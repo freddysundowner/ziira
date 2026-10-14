@@ -171,7 +171,7 @@ def _write(session: Session, bill: SupplierBill, built: list[Prepared]) -> None:
 
 
 def create_bill(session: Session, *, supplier_id: UUID, supplier_invoice_no: str, bill_date: date,
-                lines: list[BillLineIn], due_date: date | None = None, etims_ref: str | None = None) -> BillView:
+                lines: list[BillLineIn], due_date: date | None = None, authority_ref: str | None = None) -> BillView:
     """Enter a supplier's invoice as a draft. Goods lines name the receipt line they bill; other costs name an expense
     account. Needs 'bills.manage' for the company (and branch of the goods)."""
     ctx = current_context()
@@ -199,7 +199,7 @@ def create_bill(session: Session, *, supplier_id: UUID, supplier_invoice_no: str
         number=next_document_number(session, company_id=company_id, branch_id=branch_id, doc_type="supplier_bill",
                                     prefix="BILL"), supplier_id=supplier.id, supplier_invoice_no=invoice_no,
         bill_date=bill_date, due_date=due_date, subtotal=Decimal(0), tax_total=Decimal(0), total=Decimal(0),
-        etims_ref=(etims_ref or "").strip() or None)
+        authority_ref=(authority_ref or "").strip() or None)
     repo.add(session, bill)
     _write(session, bill, built)
     audit_record(session, "create", "purchasing.supplier_bill", bill.id,

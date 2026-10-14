@@ -1,11 +1,13 @@
-"""Integration credentials (Daraja keys, bank API keys, ...): stored encrypted, read only by the code that needs them.
+"""Integration credentials (a payment provider's keys, a bank's API key, ...): stored encrypted, read only by the
+code that needs them.
 
-A secret is a small JSON object (for example {"consumer_key": ..., "consumer_secret": ..., "passkey": ...}). It is
+A secret is a small JSON object (for example {"api_key": ..., "api_secret": ...}). It is
 encrypted with the platform's credentials key before it reaches the database, never logged, and never returned by an
 API.
 """
 
 import json
+import re
 from typing import Any
 from uuid import UUID
 
@@ -17,15 +19,15 @@ from ziira.kernel.context import get_context
 from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.kernel.security import decrypt, encrypt
 
-PROVIDERS = ("daraja", "bank", "etims", "email", "sms")
+PROVIDER = re.compile(r"^[a-z][a-z0-9_]{1,39}$")
 
 
 def store_secret(s: Session, *, company_id: UUID, provider: str, label: str, secret: dict[str, Any],
                  config: dict[str, Any] | None = None, branch_id: UUID | None = None,
                  replace: UUID | None = None) -> UUID:
     """Save a secret (replacing an earlier one if `replace` is given). Returns the credential's id."""
-    if provider not in PROVIDERS:
-        raise ValidationFailed(f"Provider must be one of: {', '.join(PROVIDERS)}")
+    if not PROVIDER.match(provider):
+        raise ValidationFailed("A provider is a short lower-case name such as 'email' (letters, digits and '_')")
     if not label.strip():
         raise ValidationFailed("A label is required")
     if not secret:

@@ -17,9 +17,9 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
 # --------------------------------------------------------------------------- customers
 def test_a_customer_is_created_with_a_code_and_no_credit(client, shop) -> None:  # type: ignore[no-untyped-def]
     c = new_customer(client, shop, name="  Mama  Mboga ", phone="0722 111 222", email="Mama@Mboga.ke",
-                     kra_pin="a123456789z", customer_group="Retail", kind="individual", payment_terms_days=14)
+                     tax_id="a123456789z", customer_group="Retail", kind="individual", payment_terms_days=14)
     assert c["code"].startswith("CUS-") and c["name"] == "Mama Mboga" and c["phone"] == "254722111222"
-    assert c["email"] == "mama@mboga.ke" and c["kra_pin"] == "A123456789Z" and c["status"] == "active"
+    assert c["email"] == "mama@mboga.ke" and c["tax_id"] == "A123456789Z" and c["status"] == "active"
     assert Dec(c["credit_limit"]) == 0 and c["payment_terms_days"] == 14 and c["owner_user_id"]
     second = new_customer(client, shop, name="Another")
     assert second["code"] != c["code"]
@@ -33,7 +33,7 @@ def test_a_customer_is_created_with_a_code_and_no_credit(client, shop) -> None: 
 
 def test_customer_validation_and_permissions(client, shop) -> None:  # type: ignore[no-untyped-def]
     base = {"company_id": str(shop["company_id"]), "name": "Valid"}
-    for bad in ({"name": " "}, {"phone": "123"}, {"email": "nope"}, {"kra_pin": "X1"}, {"payment_terms_days": 400},
+    for bad in ({"name": " "}, {"phone": "123"}, {"email": "nope"}, {"tax_id": "X1"}, {"payment_terms_days": 400},
                 {"kind": "alien"}, {"code": "bad code"}, {"owner_user_id": str(uuid4())},
                 {"company_id": str(uuid4())}):
         assert client.post(f"{CRM}/customers", headers=shop["owner"], json={**base, **bad}).status_code in (

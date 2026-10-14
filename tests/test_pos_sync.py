@@ -115,7 +115,7 @@ def day_offline(shop):  # type: ignore[no-untyped-def]
         op_open(till),
         op_sale(till, at=hours_ago(4.5)),
         op_sale(till, lines=[line(shop, "cement", "2", unit_price="116.00"), line(shop, "delivery", "1")],
-                payments=[{"method": "mpesa", "amount": "290.00", "external_ref": f"OFF{uuid4().hex[:7].upper()}"}],
+                payments=[{"method": "mobile_money", "amount": "290.00", "external_ref": f"OFF{uuid4().hex[:7].upper()}"}],
                 at=hours_ago(4)),
         op_sale(till, payments=[{"method": "cash", "amount": "200.00"}], at=hours_ago(3)),
         op_close(till, "1232.00"),                                         # 1000 float + 116 + 116 cash
@@ -281,11 +281,11 @@ def test_an_unauthorised_discount_offline_is_recorded_and_raised(client, shop) -
 
 def test_an_mpesa_payment_without_a_code_is_accepted_and_flagged(client, shop) -> None:  # type: ignore[no-untyped-def]
     till = str(uuid4())
-    sale = op_sale(till, payments=[{"method": "mpesa", "amount": "116.00"}])
+    sale = op_sale(till, payments=[{"method": "mobile_money", "amount": "116.00"}])
     sale["lines"] = [line(shop, "cement", "1", unit_price="116.00")]
     r = upload(client, shop, [op_open(till), sale])
-    assert statuses(r) == ["ok", "ok"] and "mpesa_without_code" in r.json()["results"][1]["warnings"]
-    assert "offline_mpesa_no_code" in kinds(client, shop)
+    assert statuses(r) == ["ok", "ok"] and "mobile_money_without_code" in r.json()["results"][1]["warnings"]
+    assert "offline_mobile_money_no_code" in kinds(client, shop)
     upload(client, shop, [op_close(till, "1000.00")])
 
 

@@ -26,7 +26,7 @@ FORMATS = ("json", "text", "html")
 
 
 def _header(session: Session, company_id: UUID, branch_id: UUID | None) -> list[str]:
-    company = session.execute(text("select name, kra_pin from kernel.company where id = :c"),
+    company = session.execute(text("select name, tax_id from kernel.company where id = :c"),
                               {"c": str(company_id)}).first()
     rows = [company.name] if company else []
     if branch_id is not None:
@@ -34,8 +34,8 @@ def _header(session: Session, company_id: UUID, branch_id: UUID | None) -> list[
                                  {"b": str(branch_id)}).first()
         if branch:
             rows += [x for x in (branch.name, branch.address, f"Tel {branch.phone}" if branch.phone else None) if x]
-    if company and company.kra_pin:
-        rows.append(f"PIN {company.kra_pin}")
+    if company and company.tax_id:
+        rows.append(f"PIN {company.tax_id}")
     return rows
 
 

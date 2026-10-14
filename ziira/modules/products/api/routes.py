@@ -52,7 +52,7 @@ def get_tax_codes(session: Session = Depends(db_session)) -> object:
 
 @router.post("/tax-codes", response_model=TaxCodeOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE)
 def post_tax_code(body: TaxCodeIn, session: Session = Depends(db_session)) -> object:
-    return create_tax_code(session, body.code, body.name, body.vat_rate, body.etims_tax_type)
+    return create_tax_code(session, body.code, body.name, body.vat_rate, body.authority_code)
 
 
 @router.post("/products", response_model=ProductOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE)

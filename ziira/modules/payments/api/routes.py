@@ -76,7 +76,7 @@ def post_account(body: sc.AccountIn, session: Session = Depends(db_session)) -> 
                                    name=body.name, shortcode=body.shortcode,
                                    bank_account_masked=body.bank_account_masked,
                                    ledger_account_id=body.ledger_account_id, environment=body.environment,
-                                   provider=body.provider)
+                                   provider=body.provider, provider_config=body.provider_config)
 
 
 @router.get("/accounts", response_model=list[sc.AccountOut], dependencies=VIEW)

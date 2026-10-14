@@ -174,7 +174,7 @@ def open_payments(session: Session, account_id: UUID | None, limit: int = 2000) 
                .group_by(Match.payment_id).subquery())
     query = (select(Payment, Payment.amount - func.coalesce(applied.c.m, 0))
              .outerjoin(applied, applied.c.payment_id == Payment.id)
-             .where(Payment.status == "posted", Payment.method.in_(("mpesa", "card", "bank")),
+             .where(Payment.status == "posted", Payment.method.in_(("mobile_money", "card", "bank")),
                     Payment.amount - func.coalesce(applied.c.m, 0) > 0)
              .order_by(Payment.created_at).limit(limit))
     if account_id:

@@ -58,7 +58,8 @@ def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
     password = os.environ.get("ZIIRA_OWNER_PASSWORD") or getpass.getpass("Owner password: ")
     t = create_tenant(name=a.name, code=a.code, company=a.company, branch_code=a.branch_code,
                       branch_name=a.branch_name, owner_name=a.owner_name, owner_email=a.owner_email,
-                      owner_password=password, kra_pin=a.kra_pin, vat_registered=a.vat_registered, registry=reg)
+                      owner_password=password, tax_id=a.tax_id, currency=a.currency,
+                      phone_country_code=a.phone_country_code, vat_registered=a.vat_registered, registry=reg)
     print(f"tenant_id  = {t.tenant_id}\ncompany_id = {t.company_id}\nbranch_id  = {t.branch_id}\n"
           f"owner_id   = {t.owner_id}")
 
@@ -171,7 +172,9 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--branch-name", required=True)
     s.add_argument("--owner-name", required=True)
     s.add_argument("--owner-email", required=True)
-    s.add_argument("--kra-pin")
+    s.add_argument("--tax-id")
+    s.add_argument("--currency", required=True, help="Base currency code, such as USD")
+    s.add_argument("--phone-country-code", default="", help="Calling code of the business's phone numbers, such as 44")
     s.add_argument("--vat-registered", action="store_true")
     s.set_defaults(fn=cmd_create_tenant)
     sub.add_parser("tenants").set_defaults(fn=cmd_tenants)

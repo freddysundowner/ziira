@@ -98,7 +98,7 @@ class SaleLineIn(BaseModel):
 
 
 class SalePaymentIn(BaseModel):
-    method: Literal["cash", "mpesa", "card", "other", "credit"]
+    method: Literal["cash", "mobile_money", "card", "other", "credit"]
     amount: Money = Field(description="What was handed over. Cash may be more than is due: the rest is change")
     external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code or card slip number")
     payment_account_id: UUID | None = None
@@ -175,7 +175,7 @@ class ReturnLineIn(BaseModel):
 class ReturnIn(BaseModel):
     lines: Annotated[list[ReturnLineIn], Field(min_length=1, max_length=200)]
     reason_code_id: UUID
-    refund_method: Literal["cash", "mpesa", "exchange", "credit_note"]
+    refund_method: Literal["cash", "mobile_money", "exchange", "credit_note"]
     note: str | None = Field(default=None, max_length=500)
     restock_location_id: UUID | None = None
 
@@ -370,7 +370,7 @@ class AllocationIn(BaseModel):
 class ReceiptIn(BaseModel):
     customer_id: UUID
     amount: Money
-    method: Literal["cash", "mpesa", "bank", "card", "cheque", "other"]
+    method: Literal["cash", "mobile_money", "bank", "card", "cheque", "other"]
     branch_id: UUID | None = None
     payment_account_id: UUID | None = None
     external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code, bank ref, cheque no.")
@@ -498,7 +498,7 @@ class InvoiceReturnLineIn(BaseModel):
 class InvoiceReturnIn(BaseModel):
     lines: Annotated[list[InvoiceReturnLineIn], Field(min_length=1, max_length=200)]
     reason_code_id: UUID
-    refund_method: Literal["credit_note", "cash", "mpesa", "exchange"]
+    refund_method: Literal["credit_note", "cash", "mobile_money", "exchange"]
     note: str | None = Field(default=None, max_length=500)
     restock_location_id: UUID | None = None
 
@@ -596,7 +596,7 @@ class AppliedOut(BaseModel):
 
 class RefundIn(BaseModel):
     amount: Money
-    method: Literal["cash", "mpesa", "bank"]
+    method: Literal["cash", "mobile_money", "bank"]
     reason: str = Field(min_length=1, max_length=300)
     payment_account_id: UUID | None = None
     external_ref: str | None = Field(default=None, max_length=60)

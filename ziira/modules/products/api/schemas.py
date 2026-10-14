@@ -24,7 +24,8 @@ class TaxCodeIn(BaseModel):
     code: str = Field(max_length=20, examples=["VAT16"])
     name: str = Field(max_length=200, examples=["Standard VAT"])
     vat_rate: Annotated[Rate, Field(ge=0, le=100, examples=["16"])]
-    etims_tax_type: str = Field(examples=["B"])
+    authority_code: str | None = Field(default=None, max_length=20, examples=["B"],
+                                       description="The code the tax authority uses for this tax, if there is one")
 
 
 class TaxCodeOut(TaxCodeIn):
@@ -41,7 +42,7 @@ class ProductIn(BaseModel):
     product_type: Literal["stock", "non_stock", "service"] = "stock"
     is_batch_tracked: bool = False
     reorder_level: Quantity | None = None
-    etims_item_class: str | None = Field(default=None, max_length=20)
+    authority_item_class: str | None = Field(default=None, max_length=20)
 
 
 class ProductOut(BaseModel):

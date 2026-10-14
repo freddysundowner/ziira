@@ -335,4 +335,4 @@ def test_default_rules_for_a_new_kind_of_document_are_added_but_removed_rules_st
         assert s.execute(text(count + " and line_role = 'card'"), {"d": "sale"}).scalar_one() == 0   # a removal stays
         s.execute(text("insert into finance.posting_rule (tenant_id, company_id, doc_type, line_role, account_id, side) "
                        "select tenant_id, company_id, 'sale', 'card', account_id, side from finance.posting_rule "
-                       "where doc_type = 'sale' and line_role = 'mpesa' limit 1"))
+                       "where doc_type = 'sale' and line_role = 'mobile_money' limit 1"))

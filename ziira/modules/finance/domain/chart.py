@@ -1,4 +1,5 @@
-"""The chart of accounts template for a Kenyan small business, and the default posting rules. Pure data.
+"""A general chart of accounts template for a small business, and the default posting rules (a business edits
+both). Pure data.
 
 Accounts: (code, name, type, subtype, is_control). A control account is kept by a sub-ledger (stock, customers,
 suppliers, mobile money), so people cannot post to it by hand.
@@ -18,7 +19,7 @@ class TemplateAccount(NamedTuple):
 CHART: tuple[TemplateAccount, ...] = (
     TemplateAccount("1010", "Till cash", "asset", "cash"),
     TemplateAccount("1020", "Bank", "asset", "bank"),
-    TemplateAccount("1030", "M-Pesa clearing", "asset", "mpesa_clearing", True),
+    TemplateAccount("1030", "Mobile money clearing", "asset", "mobile_money_clearing", True),
     TemplateAccount("1040", "Card clearing", "asset", "card_clearing"),
     TemplateAccount("1100", "Accounts receivable", "asset", "receivable", True),
     TemplateAccount("1200", "Inventory", "asset", "inventory", True),
@@ -44,7 +45,7 @@ CHART: tuple[TemplateAccount, ...] = (
     TemplateAccount("6110", "Employer payroll costs", "expense", "payroll_employer_costs"),
     TemplateAccount("6200", "Utilities", "expense", "utilities"),
     TemplateAccount("6300", "Transport", "expense", "transport"),
-    TemplateAccount("6400", "Bank and M-Pesa charges", "expense", "bank_charges"),
+    TemplateAccount("6400", "Bank and mobile money charges", "expense", "bank_charges"),
     TemplateAccount("6500", "Cash shortages and overages", "expense", "till_variance"),
     TemplateAccount("6900", "Other expenses", "expense", "other_expense"),
 )
@@ -65,14 +66,14 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("stock_movement", "shrinkage", "5100", "debit"),
     ("stock_movement", "transfer_clearing", "2900", "credit"),
     ("sale", "cash", "1010", "debit"),
-    ("sale", "mpesa", "1030", "debit"),
+    ("sale", "mobile_money", "1030", "debit"),
     ("sale", "card", "1040", "debit"),
     ("sale", "credit", "1100", "debit"),
     ("sale", "other", "1020", "debit"),
     ("sale", "sales", "4000", "credit"),
     ("sale", "vat_output", "2200", "credit"),
     ("sale_return", "cash", "1010", "credit"),
-    ("sale_return", "mpesa", "1030", "credit"),
+    ("sale_return", "mobile_money", "1030", "credit"),
     ("sale_return", "card", "1040", "credit"),
     ("sale_return", "credit", "1100", "credit"),
     ("sale_return", "other", "1020", "credit"),
@@ -80,7 +81,7 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("sale_return", "vat_output", "2200", "debit"),
     ("settlement", "bank", "1020", "debit"),
     ("settlement", "bank_charges", "6400", "debit"),
-    ("settlement", "mpesa_clearing", "1030", "credit"),
+    ("settlement", "mobile_money_clearing", "1030", "credit"),
     ("cash_deposit", "bank", "1020", "debit"),
     ("cash_deposit", "cash", "1010", "credit"),
     ("till_variance", "cash", "1010", "debit"),
@@ -92,7 +93,7 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("supplier_payment", "payable", "2000", "debit"),
     ("supplier_payment", "cash", "1010", "credit"),
     ("supplier_payment", "bank", "1020", "credit"),
-    ("supplier_payment", "mpesa", "1030", "credit"),
+    ("supplier_payment", "mobile_money", "1030", "credit"),
     ("supplier_payment", "card", "1040", "credit"),
     ("supplier_payment", "other", "1020", "credit"),
     ("supplier_credit_note", "payable", "2000", "debit"),
@@ -102,7 +103,7 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("customer_payment", "receivable", "1100", "credit"),
     ("customer_payment", "cash", "1010", "debit"),
     ("customer_payment", "bank", "1020", "debit"),
-    ("customer_payment", "mpesa", "1030", "debit"),
+    ("customer_payment", "mobile_money", "1030", "debit"),
     ("customer_payment", "card", "1040", "debit"),
     ("customer_payment", "other", "1020", "debit"),
     ("payroll", "salaries", "6100", "debit"),
@@ -118,7 +119,7 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("expense", "vat_input", "1300", "debit"),
     ("expense", "cash", "1010", "credit"),
     ("expense", "bank", "1020", "credit"),
-    ("expense", "mpesa", "1030", "credit"),
+    ("expense", "mobile_money", "1030", "credit"),
     ("expense", "card", "1040", "credit"),
     ("expense", "other", "1020", "credit"),
 )

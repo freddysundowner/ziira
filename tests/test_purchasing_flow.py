@@ -316,7 +316,7 @@ def test_payment_rules(client, shop) -> None:  # type: ignore[no-untyped-def]
     for body in ({"amount": "0", "method": "cash"}, {"amount": "-5", "method": "cash"},
                  {"amount": "1.005", "method": "cash"}, {"amount": "116.01", "method": "cash"},
                  {"amount": "10", "method": "bitcoin"}, {"amount": "10", "method": "bank"},      # needs an account
-                 {"amount": "10", "method": "mpesa", "payment_account_id": shop["bank"]}):
+                 {"amount": "10", "method": "mobile_money", "payment_account_id": shop["bank"]}):
         assert client.post(pay, headers=shop["fm"], json=body).status_code == 422, body
     ok = {"amount": "10", "method": "cash"}
     assert client.post(pay, headers=shop["clerk"], json=ok).status_code == 403            # an accountant does not pay

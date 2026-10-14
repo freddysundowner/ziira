@@ -1,6 +1,6 @@
 # Ziira Core
 
-Modular ERP for Kenyan businesses, built as a small **kernel** with **pluggable modules** and **plugins**.
+Modular ERP for small and medium businesses anywhere (the first customers are in Kenya), built as a small **kernel** with **pluggable modules** and **plugins**.
 Python 3.12+, FastAPI, SQLAlchemy 2, PostgreSQL 16.
 
 **Every business has its own database.** A master database lists the businesses (tenants) and

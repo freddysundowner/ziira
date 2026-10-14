@@ -23,18 +23,18 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit, credentials, exceptions_inbox
+from ziira.kernel import audit, company_settings, credentials, exceptions_inbox
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.kernel.extensions import define_extension_point, implementations
 from ziira.kernel.jobs import enqueue, job
+from ziira.kernel.phone import normalise_phone
 
 log = logging.getLogger("ziira.notifications")
 CHANNELS = ("email", "sms")
 NOTIFICATION_CHANNEL = "kernel.notification_channel"
 MAX_ATTEMPTS = 5
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-PHONE = re.compile(r"^254[17]\d{8}$")
 MAX_BODY = {"email": 20000, "sms": 1000}
 
 
@@ -75,8 +75,9 @@ define_extension_point(NOTIFICATION_CHANNEL, NotificationChannel,
                        "A way to send a message: email or SMS through a gateway.")
 
 
-def check_recipient(channel: str, recipient: str) -> str:
-    """The recipient in the form the channel needs: a lower-case email, or a phone as 2547XXXXXXXX."""
+def check_recipient(channel: str, recipient: str, country_code: str = "") -> str:
+    """The recipient in the form the channel needs: a lower-case email, or a phone as international digits (national
+    numbers are read with the company's calling code)."""
     if channel not in CHANNELS:
         raise ValidationFailed(f"Channel must be one of: {', '.join(CHANNELS)}")
     value = recipient.strip()
@@ -85,12 +86,14 @@ def check_recipient(channel: str, recipient: str) -> str:
         if len(value) > 200 or not EMAIL.match(value):
             raise ValidationFailed("That email address does not look right")
         return value
-    digits = re.sub(r"[\s\-()+]", "", value)
-    if digits.startswith("0") and len(digits) == 10:
-        digits = "254" + digits[1:]
-    if not PHONE.match(digits):
-        raise ValidationFailed("A phone number looks like 0712345678 or +254712345678")
-    return digits
+    phone = normalise_phone(value, country_code)
+    if phone is None:
+        raise ValidationFailed("A phone number is required")
+    return phone
+
+
+def calling_code(session: Session, company_id: UUID) -> str:
+    return str(company_settings.get_setting(session, company_id, "phone_country_code"))
 
 
 def mask(recipient: str) -> str:
@@ -113,7 +116,7 @@ def queue(session: Session, *, company_id: UUID, channel: str, recipient: str, b
           dedupe_key: str | None = None) -> UUID | None:
     """Record a message and have it sent in the background. Returns its id, or None when the same `dedupe_key` was
     already queued. A recipient who asked not to be contacted gets a record marked skipped, and nothing is sent."""
-    to = check_recipient(channel, recipient)
+    to = check_recipient(channel, recipient, calling_code(session, company_id))
     clean = body.strip()
     if not clean or len(clean) > MAX_BODY[channel]:
         raise ValidationFailed(f"A {channel} message has between 1 and {MAX_BODY[channel]} characters")
@@ -203,7 +206,8 @@ def opt_out(session: Session, *, company_id: UUID, recipient: str, channel: str 
     """Record that a person asked not to be contacted (on one channel, or on all of them)."""
     if channel is not None and channel not in CHANNELS:
         raise ValidationFailed(f"Channel must be one of: {', '.join(CHANNELS)}")
-    to = check_recipient(channel or ("email" if "@" in recipient else "sms"), recipient)
+    kind = channel or ("email" if "@" in recipient else "sms")
+    to = check_recipient(kind, recipient, calling_code(session, company_id))
     ctx = get_context()
     row = session.execute(text(
         "insert into kernel.notification_optout (tenant_id, created_by, company_id, recipient, channel, reason) "

@@ -4,6 +4,9 @@
 (each product's tax code and VAT rate) and to build eTIMS later, **as an installable plugin**, once the arrangements with
 KRA are settled. Nothing in the core waits for it. Take this file out of `parked/` when work on it starts.
 
+*(The core columns were renamed to neutral names so the core carries no country: see `docs/localisation.md`. The unused
+`kernel.etims_*` tables were dropped; the plugin creates its own.)*
+
 ## What the plugin will be
 
 `ziira/plugins/etims`, installed and removed per business like any plugin (`ziira install etims`, `ziira enable <tenant>
@@ -16,7 +19,7 @@ not change to carry any of this.
 * **Offline sales** are queued and submitted on reconnection, within the period the eTIMS rules allow (spec section 11).
 * **Credit notes** for returns and for cancelled invoices.
 * **Purchases:** pull the business's supplier invoices from eTIMS and match them to supplier bills (`purchasing`'s
-  `supplier_bill.etims_ref` exists for the link); mark bills that have no eTIMS invoice.
+  `supplier_bill.authority_ref` exists for the link); mark bills that have no eTIMS invoice.
 * **Credentials** (the business's KRA PIN, branch and device details, keys): `store_credential(provider="etims")` (the
   provider name is already allowed), set up through an endpoint like the messaging channels.
 * **Backlog:** everything sold before the plugin was installed is submitted in order when it is switched on, nothing numbered
@@ -26,9 +29,9 @@ not change to carry any of this.
 
 | Need | Where |
 |---|---|
-| Tax type per tax code, item class per product | `products.tax_code.etims_tax_type`, `products.product.etims_item_class` |
+| Tax type per tax code, item class per product | `products.tax_code.authority_code`, `products.product.authority_item_class` |
 | KRA PINs | `kernel.company.kra_pin`, `crm.customer.kra_pin`, `purchasing.supplier.kra_pin` (validated) |
-| Link from a supplier bill to its eTIMS invoice | `purchasing.supplier_bill.etims_ref` |
+| Link from a supplier bill to its eTIMS invoice | `purchasing.supplier_bill.authority_ref` |
 | Events to listen to | `sale.posted`, `sale.returned`, `invoice.issued`, `invoice.cancelled` (payloads documented in POS) |
 | Background work and retry | `@job` / `enqueue`, `ziira worker` |
 | Encrypted credentials | `store_credential` / `read_credential` |

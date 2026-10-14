@@ -13,7 +13,7 @@ def test_create_and_read_product(client, tenants) -> None:  # type: ignore[no-un
     assert uom.status_code == 201, uom.text
     assert uom.json()["code"] == "BAG"
     tax = client.post("/api/v1/products/tax-codes", headers=h(a),
-                      json={"code": "VAT16", "name": "Standard VAT", "vat_rate": "16", "etims_tax_type": "B"})
+                      json={"code": "VAT16", "name": "Standard VAT", "vat_rate": "16", "authority_code": "B"})
     assert tax.status_code == 201, tax.text
     body = {"company_id": str(a["company_id"]), "sku": "cem-50kg", "name": "Cement 50kg",
             "base_uom_id": uom.json()["id"], "tax_code_id": tax.json()["id"], "reorder_level": "20"}

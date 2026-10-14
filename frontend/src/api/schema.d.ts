@@ -2383,6 +2383,845 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/people/departments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Departments */
+        get: operations["get_departments_api_v1_people_departments_get"];
+        put?: never;
+        /** Post Department */
+        post: operations["post_department_api_v1_people_departments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Employees */
+        get: operations["get_employees_api_v1_people_employees_get"];
+        put?: never;
+        /** Post Employee */
+        post: operations["post_employee_api_v1_people_employees_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Employee */
+        get: operations["get_employee_api_v1_people_employees__employee_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Employee */
+        patch: operations["patch_employee_api_v1_people_employees__employee_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}/terminate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Terminate */
+        post: operations["post_terminate_api_v1_people_employees__employee_id__terminate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/pay-components": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Components */
+        get: operations["get_components_api_v1_people_pay_components_get"];
+        put?: never;
+        /** Post Component */
+        post: operations["post_component_api_v1_people_pay_components_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}/terms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Terms */
+        get: operations["get_terms_api_v1_people_employees__employee_id__terms_get"];
+        put?: never;
+        /**
+         * Post Terms
+         * @description Propose basic pay from a date; someone else approves it.
+         */
+        post: operations["post_terms_api_v1_people_employees__employee_id__terms_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/terms/{terms_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Approve Terms */
+        post: operations["post_approve_terms_api_v1_people_terms__terms_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/terms/{terms_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Reject Terms */
+        post: operations["post_reject_terms_api_v1_people_terms__terms_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}/pay-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Pay Items */
+        get: operations["get_pay_items_api_v1_people_employees__employee_id__pay_items_get"];
+        put?: never;
+        /** Post Pay Item */
+        post: operations["post_pay_item_api_v1_people_employees__employee_id__pay_items_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/pay-items/{item_id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post End Pay Item */
+        post: operations["post_end_pay_item_api_v1_people_pay_items__item_id__end_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}/bank-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Banks */
+        get: operations["get_banks_api_v1_people_employees__employee_id__bank_accounts_get"];
+        put?: never;
+        /**
+         * Post Bank
+         * @description Propose where the salary is paid; someone else approves it.
+         */
+        post: operations["post_bank_api_v1_people_employees__employee_id__bank_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/bank-accounts/{bank_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Approve Bank */
+        post: operations["post_approve_bank_api_v1_people_bank_accounts__bank_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/bank-accounts/{bank_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Reject Bank */
+        post: operations["post_reject_bank_api_v1_people_bank_accounts__bank_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Rules */
+        get: operations["get_rules_api_v1_people_rules_get"];
+        put?: never;
+        /**
+         * Post Rule
+         * @description Define a tax, contribution or levy (or a new version of one from a date). Saved unverified.
+         */
+        post: operations["post_rule_api_v1_people_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Rule */
+        get: operations["get_rule_api_v1_people_rules__rule_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Rule */
+        delete: operations["delete_rule_api_v1_people_rules__rule_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/rules/{rule_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Verify Rule
+         * @description Confirm the rule matches the official notice (someone other than the person who entered it).
+         */
+        post: operations["post_verify_rule_api_v1_people_rules__rule_id__verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/shifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Shifts */
+        get: operations["get_shifts_api_v1_people_shifts_get"];
+        put?: never;
+        /** Post Shift */
+        post: operations["post_shift_api_v1_people_shifts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Attendance */
+        get: operations["get_attendance_api_v1_people_attendance_get"];
+        put?: never;
+        /**
+         * Post Attendance
+         * @description Record that an employee worked on a day (clock times, or the hours; overtime from the shift).
+         */
+        post: operations["post_attendance_api_v1_people_attendance_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/attendance/{attendance_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Attendance */
+        patch: operations["patch_attendance_api_v1_people_attendance__attendance_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/people/attendance/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Attendance Summary
+         * @description Days present, hours and overtime per employee in a period.
+         */
+        get: operations["get_attendance_summary_api_v1_people_attendance_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/leave-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Leave Types */
+        get: operations["get_leave_types_api_v1_people_leave_types_get"];
+        put?: never;
+        /** Post Leave Type */
+        post: operations["post_leave_type_api_v1_people_leave_types_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/leave-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Leave Requests */
+        get: operations["get_leave_requests_api_v1_people_leave_requests_get"];
+        put?: never;
+        /**
+         * Post Leave
+         * @description Ask for leave: for yourself, or (with the right permission) for an employee.
+         */
+        post: operations["post_leave_api_v1_people_leave_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/me/leave-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Leave */
+        get: operations["get_my_leave_api_v1_people_me_leave_requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/leave-requests/{leave_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Leave Request */
+        get: operations["get_leave_request_api_v1_people_leave_requests__leave_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/leave-requests/{leave_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Approve Leave */
+        post: operations["post_approve_leave_api_v1_people_leave_requests__leave_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/leave-requests/{leave_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Reject Leave */
+        post: operations["post_reject_leave_api_v1_people_leave_requests__leave_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/leave-requests/{leave_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Cancel Leave */
+        post: operations["post_cancel_leave_api_v1_people_leave_requests__leave_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}/leave-balances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Leave Balances
+         * @description Days taken and left of each kind of leave in a year (this year by default).
+         */
+        get: operations["get_leave_balances_api_v1_people_employees__employee_id__leave_balances_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Runs */
+        get: operations["get_runs_api_v1_people_payroll_runs_get"];
+        put?: never;
+        /**
+         * Post Run
+         * @description Start a payroll run for a period.
+         */
+        post: operations["post_run_api_v1_people_payroll_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Run */
+        get: operations["get_run_api_v1_people_payroll_runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Calculate
+         * @description Work out every payslip and list what needs reviewing.
+         */
+        post: operations["post_calculate_api_v1_people_payroll_runs__run_id__calculate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Submit Run */
+        post: operations["post_submit_run_api_v1_people_payroll_runs__run_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Approve Run
+         * @description Approve a submitted run (not the person who prepared it); Finance posts it.
+         */
+        post: operations["post_approve_run_api_v1_people_payroll_runs__run_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Reject Run */
+        post: operations["post_reject_run_api_v1_people_payroll_runs__run_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Cancel Run */
+        post: operations["post_cancel_run_api_v1_people_payroll_runs__run_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Pay Run
+         * @description Record that the salaries were paid; Finance moves the net pay out of the bank.
+         */
+        post: operations["post_pay_run_api_v1_people_payroll_runs__run_id__pay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Run Payslips */
+        get: operations["get_run_payslips_api_v1_people_payroll_runs__run_id__payslips_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/payment-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Payment File
+         * @description Who to pay, how and how much, with full account numbers (audited). `format=csv` for the bank's upload.
+         */
+        get: operations["get_payment_file_api_v1_people_payroll_runs__run_id__payment_file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payslips/{payslip_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Payslip
+         * @description A payslip: for payroll staff, or for the employee it belongs to once the run is approved.
+         */
+        get: operations["get_payslip_api_v1_people_payslips__payslip_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/me/payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get My Payslips
+         * @description The signed-in employee's own payslips from approved runs.
+         */
+        get: operations["get_my_payslips_api_v1_people_me_payslips_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payslips/{payslip_id}/print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Print Payslip
+         * @description A payslip ready to print: data, plain text, or HTML.
+         */
+        get: operations["print_payslip_api_v1_people_payslips__payslip_id__print_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/employees/{employee_id}/tax-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Tax Card
+         * @description An employee's pay and what each rule took from it, month by month, for a year of approved runs.
+         */
+        get: operations["get_tax_card_api_v1_people_employees__employee_id__tax_card_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Returns
+         * @description What the run owes under each rule: the totals for the returns to file.
+         */
+        get: operations["get_returns_api_v1_people_payroll_runs__run_id__returns_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/returns/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Return
+         * @description One rule's return, employee by employee, with registration numbers (`format=csv` for a spreadsheet).
+         */
+        get: operations["get_return_api_v1_people_payroll_runs__run_id__returns__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people/payroll-runs/{run_id}/send-payslips": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Send Payslips
+         * @description Queue each employee's payslip by email, or a short SMS notice with the net pay.
+         */
+        post: operations["post_send_payslips_api_v1_people_payroll_runs__run_id__send_payslips_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pos/devices": {
         parameters: {
             query?: never;
@@ -4578,6 +5417,93 @@ export interface components {
             /** Permissions */
             permissions: string[];
         };
+        /** AttendanceIn */
+        AttendanceIn: {
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /**
+             * Work Date
+             * Format: date
+             */
+            work_date: string;
+            /** Clock In */
+            clock_in?: string | null;
+            /** Clock Out */
+            clock_out?: string | null;
+            /** Hours */
+            hours?: number | string | null;
+            /** Overtime Hours */
+            overtime_hours?: number | string | null;
+            /** Shift Id */
+            shift_id?: string | null;
+        };
+        /** AttendanceOut */
+        AttendanceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /**
+             * Work Date
+             * Format: date
+             */
+            work_date: string;
+            /** Shift Id */
+            shift_id: string | null;
+            /** Clock In */
+            clock_in: string | null;
+            /** Clock Out */
+            clock_out: string | null;
+            /** Hours */
+            hours: string | null;
+            /** Overtime Hours */
+            overtime_hours: string;
+            /** Source */
+            source: string;
+        };
+        /** AttendanceSummaryOut */
+        AttendanceSummaryOut: {
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Employee No */
+            employee_no: string;
+            /** Full Name */
+            full_name: string;
+            /** Days */
+            days: number;
+            /** Hours */
+            hours: string;
+            /** Overtime Hours */
+            overtime_hours: string;
+        };
+        /**
+         * AttendanceUpdateIn
+         * @description Only the fields sent are changed.
+         */
+        AttendanceUpdateIn: {
+            /** Clock In */
+            clock_in?: string | null;
+            /** Clock Out */
+            clock_out?: string | null;
+            /** Hours */
+            hours?: number | string | null;
+            /** Overtime Hours */
+            overtime_hours?: number | string | null;
+        };
         /** BalanceSheetOut */
         BalanceSheetOut: {
             /**
@@ -4621,58 +5547,6 @@ export interface components {
             /** Note */
             note?: string | null;
         };
-        /** BankIn */
-        BankIn: {
-            /**
-             * Method
-             * @enum {string}
-             */
-            method: "bank" | "mpesa";
-            /** Account No */
-            account_no: string;
-            /** Bank Name */
-            bank_name?: string | null;
-            /** Account Name */
-            account_name?: string | null;
-        };
-        /** BankOut */
-        BankOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Supplier Id
-             * Format: uuid
-             */
-            supplier_id: string;
-            /** Method */
-            method: string;
-            /** Bank Name */
-            bank_name: string | null;
-            /** Account Name */
-            account_name: string | null;
-            /** Account No Masked */
-            account_no_masked: string | null;
-            /** Status */
-            status: string;
-            /**
-             * Valid From
-             * Format: date-time
-             */
-            valid_from: string;
-            /** Valid To */
-            valid_to: string | null;
-            /** Created By */
-            created_by: string | null;
-            /** Confirmed By */
-            confirmed_by: string | null;
-            /** Confirmation Method */
-            confirmation_method: string | null;
-            /** Approved By */
-            approved_by: string | null;
-        };
         /** BillIn */
         BillIn: {
             /**
@@ -4689,8 +5563,8 @@ export interface components {
             bill_date: string;
             /** Due Date */
             due_date?: string | null;
-            /** Etims Ref */
-            etims_ref?: string | null;
+            /** Authority Ref */
+            authority_ref?: string | null;
             /** Lines */
             lines: components["schemas"]["BillLineIn"][];
         };
@@ -4916,6 +5790,33 @@ export interface components {
             urls: {
                 [key: string]: string;
             };
+        };
+        /** CardRowOut */
+        CardRowOut: {
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Gross Pay */
+            gross_pay: string;
+            /** Benefits */
+            benefits: string;
+            /** Taxable Pay */
+            taxable_pay: string;
+            /** By Rule */
+            by_rule: {
+                [key: string]: string;
+            };
+            /** Total Deductions */
+            total_deductions: string;
+            /** Net Pay */
+            net_pay: string;
         };
         /** CashDepositIn */
         CashDepositIn: {
@@ -5176,6 +6077,16 @@ export interface components {
             reminder_min_days_overdue?: number | null;
             /** Reminder Repeat Days */
             reminder_repeat_days?: number | null;
+            /** Phone Country Code */
+            phone_country_code?: string | null;
+            /** Weekend Days */
+            weekend_days?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[] | null;
+            /** Payroll Unpaid Day Divisor */
+            payroll_unpaid_day_divisor?: number | null;
+            /** Overtime Multiplier */
+            overtime_multiplier?: number | string | null;
+            /** Overtime Hours Per Month */
+            overtime_hours_per_month?: number | string | null;
             /** Receipt Footer */
             receipt_footer?: string | null;
             /** Invoice Footer */
@@ -5203,10 +6114,63 @@ export interface components {
             reminder_min_days_overdue: number;
             /** Reminder Repeat Days */
             reminder_repeat_days: number;
+            /** Phone Country Code */
+            phone_country_code: string;
+            /** Weekend Days */
+            weekend_days: string[];
+            /** Payroll Unpaid Day Divisor */
+            payroll_unpaid_day_divisor: number;
+            /** Overtime Multiplier */
+            overtime_multiplier: string;
+            /** Overtime Hours Per Month */
+            overtime_hours_per_month: string;
             /** Receipt Footer */
             receipt_footer: string;
             /** Invoice Footer */
             invoice_footer: string;
+        };
+        /** ComponentIn */
+        ComponentIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "earning" | "deduction" | "benefit" | "employer_contribution";
+            /**
+             * Is Taxable
+             * @default true
+             */
+            is_taxable: boolean;
+        };
+        /** ComponentOut */
+        ComponentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Is Taxable */
+            is_taxable: boolean;
         };
         /** ContactIn */
         ContactIn: {
@@ -5625,8 +6589,8 @@ export interface components {
             phone?: string | null;
             /** Email */
             email?: string | null;
-            /** Kra Pin */
-            kra_pin?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
             /**
              * Customer Group
              * @description Used by price lists
@@ -5662,8 +6626,8 @@ export interface components {
             phone: string | null;
             /** Email */
             email: string | null;
-            /** Kra Pin */
-            kra_pin: string | null;
+            /** Tax Id */
+            tax_id: string | null;
             /** Customer Group */
             customer_group: string | null;
             /** Credit Limit */
@@ -5685,8 +6649,8 @@ export interface components {
             phone?: string | null;
             /** Email */
             email?: string | null;
-            /** Kra Pin */
-            kra_pin?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
             /** Customer Group */
             customer_group?: string | null;
             /** Owner User Id */
@@ -5722,6 +6686,31 @@ export interface components {
             order_line_id: string;
             /** Quantity */
             quantity: number | string;
+        };
+        /** DepartmentIn */
+        DepartmentIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+        };
+        /** DepartmentOut */
+        DepartmentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
         };
         /** DeviceIn */
         DeviceIn: {
@@ -5963,6 +6952,151 @@ export interface components {
             /** Valid Until */
             valid_until?: string | null;
         };
+        /** EmployeeIn */
+        EmployeeIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Hire Date
+             * Format: date
+             */
+            hire_date: string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Department Id */
+            department_id?: string | null;
+            /**
+             * User Id
+             * @description The system or POS user this person signs in as
+             */
+            user_id?: string | null;
+            /**
+             * Employee No
+             * @description Generated when left out
+             */
+            employee_no?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /**
+             * Tax Id
+             * @description The employee's tax number
+             */
+            tax_id?: string | null;
+            /**
+             * Registrations
+             * @description Numbers by rule code, {'PENSION': '123'}
+             */
+            registrations?: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Exempt Rules
+             * @description Rule codes that do not apply
+             */
+            exempt_rules?: string[] | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /**
+             * Residency
+             * @default resident
+             * @enum {string}
+             */
+            residency: "resident" | "non_resident";
+            /**
+             * Is Director
+             * @default false
+             */
+            is_director: boolean;
+        };
+        /** EmployeeOut */
+        EmployeeOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Department Id */
+            department_id: string | null;
+            /** User Id */
+            user_id: string | null;
+            /** Employee No */
+            employee_no: string;
+            /** Full Name */
+            full_name: string;
+            /** National Id Masked */
+            national_id_masked: string | null;
+            /** Tax Id */
+            tax_id: string | null;
+            /** Registrations */
+            registrations: {
+                [key: string]: string;
+            };
+            /** Exempt Rules */
+            exempt_rules: string[];
+            /** Phone */
+            phone: string | null;
+            /** Email */
+            email: string | null;
+            /**
+             * Hire Date
+             * Format: date
+             */
+            hire_date: string;
+            /** Termination Date */
+            termination_date: string | null;
+            /** Status */
+            status: string;
+            /** Residency */
+            residency: string;
+            /** Is Director */
+            is_director: boolean;
+        };
+        /**
+         * EmployeeUpdateIn
+         * @description Only the fields sent are changed.
+         */
+        EmployeeUpdateIn: {
+            /** Full Name */
+            full_name?: string | null;
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Department Id */
+            department_id?: string | null;
+            /** User Id */
+            user_id?: string | null;
+            /** National Id */
+            national_id?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
+            /** Registrations */
+            registrations?: {
+                [key: string]: string;
+            } | null;
+            /** Exempt Rules */
+            exempt_rules?: string[] | null;
+            /** Phone */
+            phone?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Residency */
+            residency?: ("resident" | "non_resident") | null;
+            /** Is Director */
+            is_director?: boolean | null;
+        };
         /** EntryLineOut */
         EntryLineOut: {
             /**
@@ -6120,6 +7254,22 @@ export interface components {
             /** Resolved At */
             resolved_at: string | null;
         };
+        /** ExceptionOut */
+        ExceptionOut: {
+            /** Code */
+            code: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "blocker" | "warning" | "info";
+            /** Message */
+            message: string;
+            /** Employee Id */
+            employee_id?: string | null;
+            /** Employee No */
+            employee_no?: string | null;
+        };
         /** ExceptionRejectIn */
         ExceptionRejectIn: {
             /** Note */
@@ -6172,7 +7322,7 @@ export interface components {
              * Paid From
              * @enum {string}
              */
-            paid_from: "cash" | "bank" | "mpesa" | "card" | "other";
+            paid_from: "cash" | "bank" | "mobile_money" | "card" | "other";
             /** Payee */
             payee?: string | null;
             /**
@@ -6557,7 +7707,7 @@ export interface components {
              * Refund Method
              * @enum {string}
              */
-            refund_method: "credit_note" | "cash" | "mpesa" | "exchange";
+            refund_method: "credit_note" | "cash" | "mobile_money" | "exchange";
             /** Note */
             note?: string | null;
             /** Restock Location Id */
@@ -6714,6 +7864,133 @@ export interface components {
             owner_user_id?: string | null;
             /** Source Id */
             source_id?: string | null;
+        };
+        /** LeaveBalanceOut */
+        LeaveBalanceOut: {
+            /**
+             * Leave Type Id
+             * Format: uuid
+             */
+            leave_type_id: string;
+            /** Leave Type */
+            leave_type: string;
+            /** Is Paid */
+            is_paid: boolean;
+            /** Days Per Year */
+            days_per_year: string | null;
+            /** Taken */
+            taken: string;
+            /** Left */
+            left: string | null;
+        };
+        /** LeaveDecisionIn */
+        LeaveDecisionIn: {
+            /** Note */
+            note?: string | null;
+        };
+        /** LeaveIn */
+        LeaveIn: {
+            /**
+             * Employee Id
+             * @description Left out: the person's own employee record
+             */
+            employee_id?: string | null;
+            /**
+             * Leave Type Id
+             * Format: uuid
+             */
+            leave_type_id: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Days
+             * @description Left out: the working days from start to end. Half days allowed.
+             */
+            days?: number | string | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** LeaveOut */
+        LeaveOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /**
+             * Leave Type Id
+             * Format: uuid
+             */
+            leave_type_id: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Days */
+            days: string;
+            /** Status */
+            status: string;
+            /** Approved By */
+            approved_by: string | null;
+            /** Reason */
+            reason: string | null;
+            /** Decided Note */
+            decided_note: string | null;
+        };
+        /** LeaveTypeIn */
+        LeaveTypeIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /** Days Per Year */
+            days_per_year?: number | string | null;
+            /**
+             * Is Paid
+             * @default true
+             */
+            is_paid: boolean;
+        };
+        /** LeaveTypeOut */
+        LeaveTypeOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Name */
+            name: string;
+            /** Days Per Year */
+            days_per_year: string | null;
+            /** Is Paid */
+            is_paid: boolean;
         };
         /** LedgerLineOut */
         LedgerLineOut: {
@@ -7342,13 +8619,84 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "bank" | "card" | "cheque" | "other";
+            method: "cash" | "mobile_money" | "bank" | "card" | "cheque" | "other";
             /** Payment Account Id */
             payment_account_id?: string | null;
             /** External Ref */
             external_ref?: string | null;
             /** Paid On */
             paid_on?: string | null;
+        };
+        /** PayIn */
+        PayIn: {
+            /**
+             * Paid On
+             * @description Left out: today
+             */
+            paid_on?: string | null;
+        };
+        /** PayItemEndIn */
+        PayItemEndIn: {
+            /**
+             * Valid To
+             * Format: date
+             */
+            valid_to: string;
+        };
+        /** PayItemIn */
+        PayItemIn: {
+            /**
+             * Component Id
+             * Format: uuid
+             */
+            component_id: string;
+            /** Amount */
+            amount: number | string;
+            /**
+             * Valid From
+             * Format: date
+             */
+            valid_from: string;
+            /**
+             * Recurring
+             * @default true
+             */
+            recurring: boolean;
+            /** Valid To */
+            valid_to?: string | null;
+            /** Description */
+            description?: string | null;
+        };
+        /** PayItemOut */
+        PayItemOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /**
+             * Component Id
+             * Format: uuid
+             */
+            component_id: string;
+            /** Amount */
+            amount: string;
+            /** Recurring */
+            recurring: boolean;
+            /**
+             * Valid From
+             * Format: date
+             */
+            valid_from: string;
+            /** Valid To */
+            valid_to: string | null;
+            /** Description */
+            description: string | null;
         };
         /** PayablesOut */
         PayablesOut: {
@@ -7381,7 +8729,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "bank" | "card" | "cheque" | "other";
+            method: "cash" | "mobile_money" | "bank" | "card" | "cheque" | "other";
             /**
              * Direction
              * @default in
@@ -7448,6 +8796,152 @@ export interface components {
             status: string;
             /** Till Session Id */
             till_session_id: string | null;
+        };
+        /** PaymentRowOut */
+        PaymentRowOut: {
+            /** Employee No */
+            employee_no: string;
+            /** Name */
+            name: string;
+            /** Method */
+            method: string;
+            /** Bank Name */
+            bank_name: string;
+            /** Account No */
+            account_no: string;
+            /** Amount */
+            amount: string;
+            /** Reference */
+            reference: string;
+        };
+        /** PayslipLineOut */
+        PayslipLineOut: {
+            /** Code */
+            code: string;
+            /** Description */
+            description: string | null;
+            /** Kind */
+            kind: string;
+            /** Amount */
+            amount: string;
+        };
+        /** PayslipOut */
+        PayslipOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Employee No */
+            employee_no: string;
+            /** Full Name */
+            full_name: string;
+            /** Gross Pay */
+            gross_pay: string;
+            /** Taxable Pay */
+            taxable_pay: string;
+            /** Total Deductions */
+            total_deductions: string;
+            /** Net Pay */
+            net_pay: string;
+            /** Employer Cost */
+            employer_cost: string;
+            /** Status */
+            status: string;
+            /** Pay Method */
+            pay_method: string | null;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Pay Date
+             * Format: date
+             */
+            pay_date: string;
+            /** Benefits */
+            benefits: string;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            };
+            /** Lines */
+            lines: components["schemas"]["PayslipLineOut"][];
+        };
+        /** PayslipPrintOut */
+        PayslipPrintOut: {
+            /** Header */
+            header: string[];
+            /** Title */
+            title: string;
+            /** Period */
+            period: string;
+            /** Employee */
+            employee: string[][];
+            /** Earnings */
+            earnings: components["schemas"]["ziira__modules__people__api__schemas__PrintLineOut"][];
+            /** Benefits */
+            benefits: components["schemas"]["ziira__modules__people__api__schemas__PrintLineOut"][];
+            /** Deductions */
+            deductions: components["schemas"]["ziira__modules__people__api__schemas__PrintLineOut"][];
+            /** Totals */
+            totals: components["schemas"]["ziira__modules__people__api__schemas__PrintLineOut"][];
+            /** Notes */
+            notes: string[];
+            /** Is Copy */
+            is_copy: boolean;
+        };
+        /** PayslipSummaryOut */
+        PayslipSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Employee No */
+            employee_no: string;
+            /** Full Name */
+            full_name: string;
+            /** Gross Pay */
+            gross_pay: string;
+            /** Taxable Pay */
+            taxable_pay: string;
+            /** Total Deductions */
+            total_deductions: string;
+            /** Net Pay */
+            net_pay: string;
+            /** Employer Cost */
+            employer_cost: string;
+            /** Status */
+            status: string;
+            /** Pay Method */
+            pay_method: string | null;
         };
         /** PeriodOpenIn */
         PeriodOpenIn: {
@@ -7573,17 +9067,6 @@ export interface components {
             /** Amount */
             amount: string;
         };
-        /** PrintLineOut */
-        PrintLineOut: {
-            /** Description */
-            description: string;
-            /** Quantity */
-            quantity: string;
-            /** Unit Price */
-            unit_price: string;
-            /** Amount */
-            amount: string;
-        };
         /**
          * PrintOut
          * @description A document ready to print. `format=text` or `html` returns the same thing as ready-made text.
@@ -7598,7 +9081,7 @@ export interface components {
             /** Meta */
             meta: string[][];
             /** Lines */
-            lines: components["schemas"]["PrintLineOut"][];
+            lines: components["schemas"]["ziira__modules__pos__api__schemas__PrintLineOut"][];
             /** Vat */
             vat: components["schemas"]["PrintVatOut"][];
             /** Totals */
@@ -7655,8 +9138,8 @@ export interface components {
             is_batch_tracked: boolean;
             /** Reorder Level */
             reorder_level?: number | string | null;
-            /** Etims Item Class */
-            etims_item_class?: string | null;
+            /** Authority Item Class */
+            authority_item_class?: string | null;
         };
         /** ProductOut */
         ProductOut: {
@@ -8036,6 +9519,11 @@ export interface components {
             /** Owed Back */
             owed_back: string;
         };
+        /** RejectIn */
+        RejectIn: {
+            /** Note */
+            note: string;
+        };
         /** RejectionOut */
         RejectionOut: {
             /**
@@ -8225,6 +9713,23 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** ReturnRowOut */
+        ReturnRowOut: {
+            /** Employee No */
+            employee_no: string;
+            /** Name */
+            name: string;
+            /** Tax Id */
+            tax_id: string | null;
+            /** Registration No */
+            registration_no: string | null;
+            /** Base */
+            base: string;
+            /** Employee Amount */
+            employee_amount: string;
+            /** Employer Amount */
+            employer_amount: string;
+        };
         /** ReversePaymentIn */
         ReversePaymentIn: {
             /**
@@ -8268,6 +9773,79 @@ export interface components {
              * Format: uuid
              */
             account_id: string;
+        };
+        /** RunIn */
+        RunIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Pay Date
+             * Format: date
+             */
+            pay_date: string;
+        };
+        /** RunOut */
+        RunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Pay Date
+             * Format: date
+             */
+            pay_date: string;
+            /** Status */
+            status: string;
+            /** Totals */
+            totals: {
+                [key: string]: unknown;
+            };
+            /** Exceptions */
+            exceptions: components["schemas"]["ExceptionOut"][];
+            /** Prepared By */
+            prepared_by: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Submitted At */
+            submitted_at: string | null;
+            /** Approved At */
+            approved_at: string | null;
+            /** Paid At */
+            paid_at: string | null;
+            /** Reject Note */
+            reject_note: string | null;
+            /** Journal Entry Id */
+            journal_entry_id: string | null;
         };
         /** SaleIn */
         SaleIn: {
@@ -8456,7 +10034,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "card" | "other" | "credit";
+            method: "cash" | "mobile_money" | "card" | "other" | "credit";
             /**
              * Amount
              * @description What was handed over. Cash may be more than is due: the rest is change
@@ -8532,6 +10110,23 @@ export interface components {
             status: string;
             /** Synced Offline */
             synced_offline: boolean;
+        };
+        /** SendPayslipsIn */
+        SendPayslipsIn: {
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "email" | "sms";
+        };
+        /** SendPayslipsOut */
+        SendPayslipsOut: {
+            /** Queued */
+            queued: number;
+            /** Already Sent */
+            already_sent: number;
+            /** Without Contact */
+            without_contact: number;
         };
         /** SendReminderIn */
         SendReminderIn: {
@@ -8645,6 +10240,55 @@ export interface components {
             business_date?: string | null;
             /** Reference */
             reference: string;
+        };
+        /** ShiftIn */
+        ShiftIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+        };
+        /** ShiftOut */
+        ShiftOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
         };
         /** SignInIn */
         SignInIn: {
@@ -8913,8 +10557,8 @@ export interface components {
             code: string;
             /** Name */
             name: string;
-            /** Kra Pin */
-            kra_pin?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
             /** Phone */
             phone?: string | null;
             /** Email */
@@ -8941,8 +10585,8 @@ export interface components {
             code: string;
             /** Name */
             name: string;
-            /** Kra Pin */
-            kra_pin: string | null;
+            /** Tax Id */
+            tax_id: string | null;
             /** Phone */
             phone: string | null;
             /** Email */
@@ -8956,8 +10600,8 @@ export interface components {
         SupplierUpdate: {
             /** Name */
             name?: string | null;
-            /** Kra Pin */
-            kra_pin?: string | null;
+            /** Tax Id */
+            tax_id?: string | null;
             /** Phone */
             phone?: string | null;
             /** Email */
@@ -8967,6 +10611,27 @@ export interface components {
             /** Status */
             status?: ("active" | "on_hold" | "inactive") | null;
         };
+        /** TaxCardOut */
+        TaxCardOut: {
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Employee No */
+            employee_no: string;
+            /** Full Name */
+            full_name: string;
+            /** Tax Id */
+            tax_id: string | null;
+            /** Year */
+            year: number;
+            /** Rules */
+            rules: string[];
+            /** Rows */
+            rows: components["schemas"]["CardRowOut"][];
+            totals: components["schemas"]["CardRowOut"] | null;
+        };
         /** TaxCodeIn */
         TaxCodeIn: {
             /** Code */
@@ -8975,8 +10640,11 @@ export interface components {
             name: string;
             /** Vat Rate */
             vat_rate: number | string;
-            /** Etims Tax Type */
-            etims_tax_type: string;
+            /**
+             * Authority Code
+             * @description The code the tax authority uses for this tax, if there is one
+             */
+            authority_code?: string | null;
         };
         /** TaxCodeOut */
         TaxCodeOut: {
@@ -8986,13 +10654,68 @@ export interface components {
             name: string;
             /** Vat Rate */
             vat_rate: string;
-            /** Etims Tax Type */
-            etims_tax_type: string;
+            /**
+             * Authority Code
+             * @description The code the tax authority uses for this tax, if there is one
+             */
+            authority_code?: string | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+        };
+        /** TerminateIn */
+        TerminateIn: {
+            /**
+             * Termination Date
+             * Format: date
+             */
+            termination_date: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** TermsIn */
+        TermsIn: {
+            /** Basic Pay */
+            basic_pay: number | string;
+            /**
+             * Valid From
+             * Format: date
+             */
+            valid_from: string;
+            /** Note */
+            note?: string | null;
+        };
+        /** TermsOut */
+        TermsOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Basic Pay */
+            basic_pay: string;
+            /**
+             * Valid From
+             * Format: date
+             */
+            valid_from: string;
+            /** Valid To */
+            valid_to: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Rejected */
+            rejected: boolean;
+            /** Note */
+            note: string | null;
+            /** Created By */
+            created_by: string | null;
         };
         /** TestIn */
         TestIn: {
@@ -9498,6 +11221,11 @@ export interface components {
             /** Input By Source */
             input_by_source: components["schemas"]["LabelAmountOut"][];
         };
+        /** VerifyIn */
+        VerifyIn: {
+            /** Note */
+            note?: string | null;
+        };
         /** VoidIn */
         VoidIn: {
             /**
@@ -9789,12 +11517,12 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "cash" | "mpesa_till" | "mpesa_paybill" | "bank" | "card";
+            kind: "cash" | "mobile_money" | "bank" | "card";
             /** Name */
             name: string;
             /**
              * Shortcode
-             * @description The till or paybill number (M-Pesa)
+             * @description The merchant or collection number
              */
             shortcode?: string | null;
             /** Bank Account Masked */
@@ -9812,11 +11540,17 @@ export interface components {
             environment: "sandbox" | "production";
             /**
              * Provider
-             * @description 'fake' is for development only
+             * @description A registered payment provider; 'fake' is for development only
              * @default daraja
-             * @enum {string}
              */
-            provider: "daraja" | "fake";
+            provider: string;
+            /**
+             * Provider Config
+             * @description Provider settings, e.g. {'till_type': 'till'} for Daraja
+             */
+            provider_config?: {
+                [key: string]: string;
+            } | null;
         };
         /** AccountOut */
         ziira__modules__payments__api__schemas__AccountOut: {
@@ -9881,6 +11615,175 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** BankIn */
+        ziira__modules__people__api__schemas__BankIn: {
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "bank" | "mobile_money";
+            /**
+             * Account No
+             * @description The account or mobile money number
+             */
+            account_no: string;
+            /** Bank Name */
+            bank_name?: string | null;
+        };
+        /** BankOut */
+        ziira__modules__people__api__schemas__BankOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Employee Id
+             * Format: uuid
+             */
+            employee_id: string;
+            /** Method */
+            method: string;
+            /** Bank Name */
+            bank_name: string | null;
+            /** Account No Masked */
+            account_no_masked: string | null;
+            /**
+             * Valid From
+             * Format: date-time
+             */
+            valid_from: string;
+            /** Valid To */
+            valid_to: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Rejected */
+            rejected: boolean;
+            /** Created By */
+            created_by: string | null;
+        };
+        /** PrintLineOut */
+        ziira__modules__people__api__schemas__PrintLineOut: {
+            /** Label */
+            label: string;
+            /** Amount */
+            amount: string;
+        };
+        /** ReturnOut */
+        ziira__modules__people__api__schemas__ReturnOut: {
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /** Employee Total */
+            employee_total: string;
+            /** Employer Total */
+            employer_total: string;
+            /** Rows */
+            rows: components["schemas"]["ReturnRowOut"][];
+        };
+        /** ReturnSummaryOut */
+        ziira__modules__people__api__schemas__ReturnSummaryOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Employee */
+            employee: string;
+            /** Employer */
+            employer: string;
+            /** Payable Account Id */
+            payable_account_id: string | null;
+        };
+        /** RuleIn */
+        ziira__modules__people__api__schemas__RuleIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+            /** Effective To */
+            effective_to?: string | null;
+            /**
+             * Definition
+             * @description See the rule format in the people README
+             */
+            definition: {
+                [key: string]: unknown;
+            };
+            /**
+             * Source Reference
+             * @description The law or notice it comes from
+             */
+            source_reference: string;
+            /**
+             * Payable Account Id
+             * @description The ledger account the amount is owed through
+             */
+            payable_account_id?: string | null;
+        };
+        /** RuleOut */
+        ziira__modules__people__api__schemas__RuleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+            /**
+             * Effective From
+             * Format: date
+             */
+            effective_from: string;
+            /** Effective To */
+            effective_to: string | null;
+            /** Definition */
+            definition: {
+                [key: string]: unknown;
+            };
+            /** Source Reference */
+            source_reference: string;
+            /** Payable Account Id */
+            payable_account_id: string | null;
+            /** Is Verified */
+            is_verified: boolean;
+            /** Verified By */
+            verified_by: string | null;
+            /** Verified At */
+            verified_at: string | null;
+            /** Created By */
+            created_by: string | null;
+        };
         /** BalanceOut */
         ziira__modules__pos__api__schemas__BalanceOut: {
             /**
@@ -9926,6 +11829,17 @@ export interface components {
             /** Notes */
             notes?: string | null;
         };
+        /** PrintLineOut */
+        ziira__modules__pos__api__schemas__PrintLineOut: {
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: string;
+            /** Unit Price */
+            unit_price: string;
+            /** Amount */
+            amount: string;
+        };
         /** ReasonIn */
         ziira__modules__pos__api__schemas__ReasonIn: {
             /** Reason */
@@ -9944,7 +11858,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "bank" | "card" | "cheque" | "other";
+            method: "cash" | "mobile_money" | "bank" | "card" | "cheque" | "other";
             /** Branch Id */
             branch_id?: string | null;
             /** Payment Account Id */
@@ -10065,7 +11979,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "bank";
+            method: "cash" | "mobile_money" | "bank";
             /** Reason */
             reason: string;
             /** Payment Account Id */
@@ -10128,7 +12042,7 @@ export interface components {
              * Refund Method
              * @enum {string}
              */
-            refund_method: "cash" | "mpesa" | "exchange" | "credit_note";
+            refund_method: "cash" | "mobile_money" | "exchange" | "credit_note";
             /** Note */
             note?: string | null;
             /** Restock Location Id */
@@ -10271,6 +12185,58 @@ export interface components {
             valid_from: string;
             /** Valid To */
             valid_to: string | null;
+        };
+        /** BankIn */
+        ziira__modules__purchasing__api__schemas__BankIn: {
+            /**
+             * Method
+             * @enum {string}
+             */
+            method: "bank" | "mobile_money";
+            /** Account No */
+            account_no: string;
+            /** Bank Name */
+            bank_name?: string | null;
+            /** Account Name */
+            account_name?: string | null;
+        };
+        /** BankOut */
+        ziira__modules__purchasing__api__schemas__BankOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+            /** Method */
+            method: string;
+            /** Bank Name */
+            bank_name: string | null;
+            /** Account Name */
+            account_name: string | null;
+            /** Account No Masked */
+            account_no_masked: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Valid From
+             * Format: date-time
+             */
+            valid_from: string;
+            /** Valid To */
+            valid_to: string | null;
+            /** Created By */
+            created_by: string | null;
+            /** Confirmed By */
+            confirmed_by: string | null;
+            /** Confirmation Method */
+            confirmation_method: string | null;
+            /** Approved By */
+            approved_by: string | null;
         };
         /** OrderIn */
         ziira__modules__purchasing__api__schemas__OrderIn: {
@@ -10418,7 +12384,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "cash" | "mpesa" | "bank" | "cheque" | "other";
+            method: "cash" | "mobile_money" | "bank" | "cheque" | "other";
             /** Payment Account Id */
             payment_account_id?: string | null;
             /** External Ref */
@@ -16999,6 +18965,2354 @@ export interface operations {
             };
         };
     };
+    get_departments_api_v1_people_departments_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartmentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_department_api_v1_people_departments_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DepartmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DepartmentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_employees_api_v1_people_employees_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                branch_id?: string | null;
+                department_id?: string | null;
+                status?: string | null;
+                search?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_employee_api_v1_people_employees_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmployeeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_employee_api_v1_people_employees__employee_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_employee_api_v1_people_employees__employee_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmployeeUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_terminate_api_v1_people_employees__employee_id__terminate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TerminateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_components_api_v1_people_pay_components_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComponentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_component_api_v1_people_pay_components_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComponentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComponentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_terms_api_v1_people_employees__employee_id__terms_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_terms_api_v1_people_employees__employee_id__terms_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TermsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_approve_terms_api_v1_people_terms__terms_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                terms_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reject_terms_api_v1_people_terms__terms_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                terms_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TermsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_pay_items_api_v1_people_employees__employee_id__pay_items_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayItemOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_pay_item_api_v1_people_employees__employee_id__pay_items_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayItemIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_end_pay_item_api_v1_people_pay_items__item_id__end_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayItemEndIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayItemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_banks_api_v1_people_employees__employee_id__bank_accounts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__BankOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_bank_api_v1_people_employees__employee_id__bank_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__people__api__schemas__BankIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__BankOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_approve_bank_api_v1_people_bank_accounts__bank_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                bank_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__BankOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reject_bank_api_v1_people_bank_accounts__bank_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                bank_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__BankOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rules_api_v1_people_rules_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                code?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RuleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_rule_api_v1_people_rules_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__people__api__schemas__RuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rule_api_v1_people_rules__rule_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_rule_api_v1_people_rules__rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_verify_rule_api_v1_people_rules__rule_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_shifts_api_v1_people_shifts_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShiftOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_shift_api_v1_people_shifts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShiftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShiftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_attendance_api_v1_people_attendance_get: {
+        parameters: {
+            query?: {
+                employee_id?: string | null;
+                branch_id?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_attendance_api_v1_people_attendance_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_attendance_api_v1_people_attendance__attendance_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                attendance_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_attendance_summary_api_v1_people_attendance_summary_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                date_from: string;
+                date_to: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_leave_types_api_v1_people_leave_types_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveTypeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_leave_type_api_v1_people_leave_types_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaveTypeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveTypeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_leave_requests_api_v1_people_leave_requests_get: {
+        parameters: {
+            query?: {
+                employee_id?: string | null;
+                status?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_leave_api_v1_people_leave_requests_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_leave_api_v1_people_me_leave_requests_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_leave_request_api_v1_people_leave_requests__leave_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                leave_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_approve_leave_api_v1_people_leave_requests__leave_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                leave_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaveDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reject_leave_api_v1_people_leave_requests__leave_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                leave_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaveDecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cancel_leave_api_v1_people_leave_requests__leave_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                leave_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_leave_balances_api_v1_people_employees__employee_id__leave_balances_get: {
+        parameters: {
+            query?: {
+                year?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeaveBalanceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_runs_api_v1_people_payroll_runs_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_run_api_v1_people_payroll_runs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_run_api_v1_people_payroll_runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_calculate_api_v1_people_payroll_runs__run_id__calculate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_submit_run_api_v1_people_payroll_runs__run_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_approve_run_api_v1_people_payroll_runs__run_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reject_run_api_v1_people_payroll_runs__run_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cancel_run_api_v1_people_payroll_runs__run_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_pay_run_api_v1_people_payroll_runs__run_id__pay_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_run_payslips_api_v1_people_payroll_runs__run_id__payslips_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_payment_file_api_v1_people_payroll_runs__run_id__payment_file_get: {
+        parameters: {
+            query?: {
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentRowOut"][];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_payslip_api_v1_people_payslips__payslip_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                payslip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_payslips_api_v1_people_me_payslips_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    print_payslip_api_v1_people_payslips__payslip_id__print_get: {
+        parameters: {
+            query?: {
+                format?: string;
+                /** @description Characters across for text: 32, 40, 48 or 80 */
+                width?: number;
+                copy?: boolean;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                payslip_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipPrintOut"];
+                    "text/plain": unknown;
+                    "text/html": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tax_card_api_v1_people_employees__employee_id__tax_card_get: {
+        parameters: {
+            query: {
+                year: number;
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxCardOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_returns_api_v1_people_payroll_runs__run_id__returns_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__ReturnSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_return_api_v1_people_payroll_runs__run_id__returns__code__get: {
+        parameters: {
+            query?: {
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__ReturnOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_send_payslips_api_v1_people_payroll_runs__run_id__send_payslips_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendPayslipsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendPayslipsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_devices_api_v1_pos_devices_get: {
         parameters: {
             query?: {
@@ -20001,7 +24315,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BankOut"][];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__BankOut"][];
                 };
             };
             /** @description Validation Error */
@@ -20033,7 +24347,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BankIn"];
+                "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__BankIn"];
             };
         };
         responses: {
@@ -20043,7 +24357,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BankOut"];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__BankOut"];
                 };
             };
             /** @description Validation Error */
@@ -20085,7 +24399,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BankOut"];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__BankOut"];
                 };
             };
             /** @description Validation Error */
@@ -20123,7 +24437,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BankOut"];
+                    "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__BankOut"];
                 };
             };
             /** @description Validation Error */

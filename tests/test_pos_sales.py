@@ -57,13 +57,13 @@ def test_cash_change_is_not_recorded_as_takings(client, shop) -> None:  # type: 
 
 
 def test_an_mpesa_sale_needs_its_code_and_reaches_the_matching_queue(client, shop) -> None:  # type: ignore[no-untyped-def]
-    assert sell(client, shop, payments=[{"method": "mpesa", "amount": "116.00"}]).status_code == 422
+    assert sell(client, shop, payments=[{"method": "mobile_money", "amount": "116.00"}]).status_code == 422
     ref = fresh_ref()
-    r = sell(client, shop, payments=[{"method": "mpesa", "amount": "116.00", "external_ref": ref}])
+    r = sell(client, shop, payments=[{"method": "mobile_money", "amount": "116.00", "external_ref": ref}])
     assert r.status_code == 201, r.text
     [pay] = payments_of(client, shop, r.json())
-    assert pay["method"] == "mpesa" and pay["external_ref"] == ref and pay["payment_account_id"] == shop["till"]
-    again = sell(client, shop, payments=[{"method": "mpesa", "amount": "116.00", "external_ref": ref}])
+    assert pay["method"] == "mobile_money" and pay["external_ref"] == ref and pay["payment_account_id"] == shop["till"]
+    again = sell(client, shop, payments=[{"method": "mobile_money", "amount": "116.00", "external_ref": ref}])
     assert again.status_code == 409                                       # the same code cannot pay twice
 
 
@@ -103,7 +103,7 @@ def test_a_sale_is_validated(client, shop) -> None:  # type: ignore[no-untyped-d
         {"lines": [line(shop)], "payments": [{"method": "credit", "amount": "116"}]},
         {"lines": [line(shop)], "payments": [{"method": "cash", "amount": "0"}]},
         {"lines": [line(shop)], "payments": [{"method": "cash", "amount": "116.005"}]},
-        {"lines": [line(shop)], "payments": [{"method": "mpesa", "amount": "500", "external_ref": "X"}]},   # over
+        {"lines": [line(shop)], "payments": [{"method": "mobile_money", "amount": "500", "external_ref": "X"}]},   # over
         {"lines": [line(shop)] * 201, "payments": [{"method": "cash", "amount": "99999"}]},
     ]
     for body in bad:

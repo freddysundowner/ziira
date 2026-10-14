@@ -52,10 +52,11 @@ def test_names_and_codes() -> None:
         with pytest.raises(ValidationFailed):
             rules.check_name(bad)
     assert rules.check_name("x" * 200) == "x" * 200
-    assert [rules.check_etims_tax_type(c) for c in ("a", "B", " e ")] == ["A", "B", "E"]
-    for bad in ("", "F", "BB", "1"):
+    assert [rules.check_authority_code(c) for c in ("a", "B", " e ", "VAT-1.5", None, "  ")] == [
+        "A", "B", "E", "VAT-1.5", None, None]
+    for bad in ("-x", "a b", "x" * 21, "!!"):
         with pytest.raises(ValidationFailed):
-            rules.check_etims_tax_type(bad)
+            rules.check_authority_code(bad)
     assert rules.check_tax_code(" vat-16 ") == "VAT-16"
     for bad in ("", "-x", "a b", "x" * 21):
         with pytest.raises(ValidationFailed):
@@ -93,7 +94,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     owner = sign_in(client, "product-co", "owner@product-co.test").headers
     uom = client.post(f"{P}/uoms", headers=owner, json={"code": "PCS", "name": "Pieces"}).json()["id"]
     tax = client.post(f"{P}/tax-codes", headers=owner,
-                      json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "etims_tax_type": "B"}).json()["id"]
+                      json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "authority_code": "B"}).json()["id"]
     return {**t, "owner": owner, "uom": uom, "tax": tax}
 
 
@@ -109,12 +110,12 @@ def test_units_and_tax_codes_are_unique_and_validated(client, shop) -> None:  # 
     assert client.post(f"{P}/uoms", headers=owner, json={"code": "KG", "name": "  "}).status_code == 422
     assert client.post(f"{P}/uoms", headers=owner, json={"code": "k g", "name": "x"}).status_code == 422
     assert client.post(f"{P}/tax-codes", headers=owner, json={
-        "code": "vat16", "name": "x", "vat_rate": "16", "etims_tax_type": "B"}).status_code == 409
-    for body in ({"code": "X", "name": "x", "vat_rate": "101", "etims_tax_type": "B"},
-                 {"code": "X", "name": "x", "vat_rate": "-1", "etims_tax_type": "B"},
-                 {"code": "X", "name": "x", "vat_rate": "8", "etims_tax_type": "Z"},
-                 {"code": "X", "name": " ", "vat_rate": "8", "etims_tax_type": "B"},
-                 {"code": "bad code", "name": "x", "vat_rate": "8", "etims_tax_type": "B"}):
+        "code": "vat16", "name": "x", "vat_rate": "16", "authority_code": "B"}).status_code == 409
+    for body in ({"code": "X", "name": "x", "vat_rate": "101", "authority_code": "B"},
+                 {"code": "X", "name": "x", "vat_rate": "-1", "authority_code": "B"},
+                 {"code": "X", "name": "x", "vat_rate": "8", "authority_code": "!!"},
+                 {"code": "X", "name": " ", "vat_rate": "8", "authority_code": "B"},
+                 {"code": "bad code", "name": "x", "vat_rate": "8", "authority_code": "B"}):
         assert client.post(f"{P}/tax-codes", headers=owner, json=body).status_code == 422, body
     assert {u["code"] for u in client.get(f"{P}/uoms", headers=owner).json()} >= {"PCS"}
     assert {x["code"] for x in client.get(f"{P}/tax-codes", headers=owner).json()} >= {"VAT16"}
@@ -141,7 +142,7 @@ def test_one_company_may_reuse_anothers_sku(client, shop) -> None:  # type: igno
 
     other = uuid4()
     with system(shop) as s:
-        s.execute(text("insert into kernel.company (id, tenant_id, name) values (:i, :t, 'Other')"),
+        s.execute(text("insert into kernel.company (id, tenant_id, name, base_currency) values (:i, :t, 'Other', 'USD')"),
                   {"i": str(other), "t": str(shop["tenant_id"])})
     assert create(client, shop, sku="SHARED").status_code == 201
     assert create(client, shop, sku="SHARED", company_id=str(other)).status_code == 201

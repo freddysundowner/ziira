@@ -17,7 +17,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     # A second company of the same business, with its own branch, location, product and manager
     co2, br2 = uuid4(), uuid4()
     with system(s) as db:
-        db.execute(text("insert into kernel.company (id, tenant_id, name) values (:i, :t, 'Second Ltd')"),
+        db.execute(text("insert into kernel.company (id, tenant_id, name, base_currency) values (:i, :t, 'Second Ltd', 'USD')"),
                    {"i": str(co2), "t": str(s["tenant_id"])})
         db.execute(text("insert into kernel.branch (id, tenant_id, company_id, code, name) "
                         "values (:i, :t, :c, 'S1', 'Second shop')"), {"i": str(br2), "t": str(s["tenant_id"]),

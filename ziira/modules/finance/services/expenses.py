@@ -33,7 +33,7 @@ from ziira.sdk import (
 )
 
 DOC_TYPE = "expense"
-METHODS = ("cash", "bank", "mpesa", "card", "other")
+METHODS = ("cash", "bank", "mobile_money", "card", "other")
 
 
 def _scopes() -> list[tuple[UUID | None, UUID | None]] | None:

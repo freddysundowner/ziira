@@ -19,7 +19,7 @@ class SupplierIn(BaseModel):
     company_id: UUID
     code: str = Field(min_length=1, max_length=20, examples=["TOTAL01"])
     name: str = Field(min_length=1, max_length=200)
-    kra_pin: str | None = Field(default=None, max_length=11, examples=["P051234567A"])
+    tax_id: str | None = Field(default=None, max_length=11, examples=["P051234567A"])
     phone: str | None = Field(default=None, max_length=30)
     email: str | None = Field(default=None, max_length=200)
     payment_terms_days: int = Field(default=0, ge=0, le=365)
@@ -27,7 +27,7 @@ class SupplierIn(BaseModel):
 
 class SupplierUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
-    kra_pin: str | None = Field(default=None, max_length=11)
+    tax_id: str | None = Field(default=None, max_length=11)
     phone: str | None = Field(default=None, max_length=30)
     email: str | None = Field(default=None, max_length=200)
     payment_terms_days: int | None = Field(default=None, ge=0, le=365)
@@ -40,7 +40,7 @@ class SupplierOut(BaseModel):
     company_id: UUID
     code: str
     name: str
-    kra_pin: str | None
+    tax_id: str | None
     phone: str | None
     email: str | None
     payment_terms_days: int
@@ -48,7 +48,7 @@ class SupplierOut(BaseModel):
 
 
 class BankIn(BaseModel):
-    method: Literal["bank", "mpesa"]
+    method: Literal["bank", "mobile_money"]
     account_no: str = Field(min_length=1, max_length=40)
     bank_name: str | None = Field(default=None, max_length=100)
     account_name: str | None = Field(default=None, max_length=200)
@@ -241,7 +241,7 @@ class BillIn(BaseModel):
     supplier_invoice_no: str = Field(min_length=1, max_length=60)
     bill_date: date
     due_date: date | None = None
-    etims_ref: str | None = Field(default=None, max_length=60)
+    authority_ref: str | None = Field(default=None, max_length=60)
     lines: Annotated[list[BillLineIn], Field(min_length=1, max_length=200)]
 
 
@@ -261,7 +261,7 @@ class ExceptionRejectIn(BaseModel):
 
 class PayBillIn(BaseModel):
     amount: Money
-    method: Literal["cash", "mpesa", "bank", "card", "cheque", "other"]
+    method: Literal["cash", "mobile_money", "bank", "card", "cheque", "other"]
     payment_account_id: UUID | None = None
     external_ref: str | None = Field(default=None, max_length=60)
     paid_on: date | None = None
@@ -422,7 +422,7 @@ class CreditNoteOut(CreditNoteSummaryOut):
 
 class RefundIn(BaseModel):
     amount: Money
-    method: Literal["cash", "mpesa", "bank", "cheque", "other"]
+    method: Literal["cash", "mobile_money", "bank", "cheque", "other"]
     payment_account_id: UUID | None = None
     external_ref: str | None = Field(default=None, max_length=60)
     received_on: date | None = None

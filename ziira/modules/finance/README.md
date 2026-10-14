@@ -28,7 +28,7 @@ company), **expenses** with approval, and **bank reconciliation**. Payroll posti
   and `events.py` turns them into entries in the *same transaction*, so a sale, its stock and its books stand or fall
   together. If posting fails (no posting rule, a locked period with `late_posting = reject`), the whole operation fails.
 - **Posting rules are data.** `domain/recipes.py` decides the shape of an entry (which roles on which side);
-  `finance.posting_rule` says which account each role uses, seeded from `domain/chart.py` (a Kenyan SME chart) and
+  `finance.posting_rule` says which account each role uses, seeded from `domain/chart.py` (a general small-business chart that each business edits) and
   changeable per company. A rule with conditions (for example only for `write_off`) beats a general one.
 - **Branch dimension.** Every line carries the branch, so reports can be per branch.
 - **Control accounts** (inventory, in transit, receivables, payables, M-Pesa clearing, goods received not invoiced, transfer

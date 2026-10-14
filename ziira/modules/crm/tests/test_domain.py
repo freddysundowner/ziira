@@ -5,17 +5,20 @@ from decimal import Decimal as D  # noqa: N817
 import pytest
 
 from ziira.modules.crm.domain import rules
-from ziira.sdk import ValidationFailed
+from ziira.sdk import ValidationFailed, normalise_phone
 
 
-def test_phone_numbers_are_normalised() -> None:
+def test_phone_numbers_are_read_with_the_calling_code_of_the_company() -> None:
     for given in ("0712345678", "+254712345678", "254712345678", "712345678", "0712 345 678", "(0712)-345-678"):
-        assert rules.normalise_phone(given) == "254712345678", given
-    assert rules.normalise_phone("0112345678") == "254112345678"
-    assert rules.normalise_phone(None) is None and rules.normalise_phone("  ") is None
-    for bad in ("12345", "0212345678", "254812345678", "07123456789", "abc", "+1 202 555 0100"):
+        assert normalise_phone(given, "254") == "254712345678", given
+    assert normalise_phone("07911 123456", "44") == "447911123456"                 # another country, same function
+    assert normalise_phone("+1 415 555 2671", "254") == "14155552671"              # written in full: left as it is
+    assert normalise_phone(None, "254") is None and normalise_phone("  ", "254") is None
+    for bad in ("12345", "abc", "0", "+0123456789", "1234567890123456"):
         with pytest.raises(ValidationFailed):
-            rules.normalise_phone(bad)
+            normalise_phone(bad, "254")
+    with pytest.raises(ValidationFailed):
+        normalise_phone("0712345678", "")                                            # no code set: write it in full
 
 
 def test_other_fields_are_cleaned() -> None:
@@ -27,9 +30,11 @@ def test_other_fields_are_cleaned() -> None:
     for bad in ("nope", "a@b", "a b@c.d"):
         with pytest.raises(ValidationFailed):
             rules.clean_email(bad)
-    assert rules.clean_kra_pin("p051234567a") == "P051234567A"
-    with pytest.raises(ValidationFailed):
-        rules.clean_kra_pin("12345")
+    assert rules.clean_tax_id("p051234567a") == "P051234567A" and rules.clean_tax_id("GB 123 456 789") == "GB 123 456 789"
+    assert rules.clean_tax_id("12-345/6") == "12-345/6" and rules.clean_tax_id(" ") is None   # any country's format
+    for bad in ("12", "!!!", "x" * 31):
+        with pytest.raises(ValidationFailed):
+            rules.clean_tax_id(bad)
     assert rules.normalise_code(" cus-01 ") == "CUS-01"
     with pytest.raises(ValidationFailed):
         rules.normalise_code("a b")

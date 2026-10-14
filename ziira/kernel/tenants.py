@@ -8,6 +8,7 @@ Creating a tenant:
 5. Mark it 'active'. If any step fails, the database, login and master record are removed.
 """
 
+import json
 import re
 from dataclasses import dataclass
 from uuid import UUID, uuid4
@@ -26,6 +27,7 @@ from ziira.kernel.db import (
     tenant_session,
 )
 from ziira.kernel.errors import Conflict, NotFound, ValidationFailed
+from ziira.kernel.phone import check_calling_code
 from ziira.kernel.registry import Registry, ensure_master, grant_unit, seed_unit_defaults
 from ziira.kernel.security import encrypt, hash_password, new_secret
 
@@ -80,12 +82,19 @@ def find_tenant(code_or_id: str) -> TenantRecord:
 
 
 def create_tenant(*, name: str, code: str, company: str, branch_code: str, branch_name: str,
-                  owner_name: str, owner_email: str, owner_password: str, kra_pin: str | None = None,
-                  vat_registered: bool = False, registry: Registry | None = None) -> NewTenant:
+                  owner_name: str, owner_email: str, owner_password: str, currency: str, tax_id: str | None = None,
+                  phone_country_code: str = "", vat_registered: bool = False,
+                  registry: Registry | None = None) -> NewTenant:
     """Create a business with its own database, ready to sign in to with the workspace code.
 
-    The owner gets the Owner role for the whole tenant.
+    The owner gets the Owner role for the whole tenant. `currency` is the company's base currency (a three-letter code
+    such as USD or KES); `phone_country_code` is its calling code (such as 44 or 254), used to read national phone
+    numbers. Nothing about a country is assumed: both are chosen here.
     """
+    currency = currency.strip().upper()
+    if not re.fullmatch(r"[A-Z]{3}", currency):
+        raise ValidationFailed("Currency is a three-letter code such as USD")
+    phone_country_code = check_calling_code(phone_country_code)
     code = code.strip().lower()
     if not CODE_PATTERN.match(code):
         raise ValidationFailed("Workspace code must be 2-40 lowercase letters, digits or '-'")
@@ -119,8 +128,8 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
             grant_unit(conn, reg.get("kernel"), role)
         _set_up_business(reg, tenant_id, company_id, branch_id, owner_id, name=name, code=code, company=company,
                          branch_code=branch_code, branch_name=branch_name, owner_name=owner_name,
-                         owner_email=owner_email, password_hash=password_hash, kra_pin=kra_pin,
-                         vat_registered=vat_registered)
+                         owner_email=owner_email, password_hash=password_hash, tax_id=tax_id,
+                         vat_registered=vat_registered, currency=currency, phone_country_code=phone_country_code)
         with master_session() as s:
             s.execute(text("update master.tenant set status = 'active', updated_at = now() where id = :i"),
                       {"i": str(tenant_id)})
@@ -133,14 +142,17 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
 
 def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id: UUID, owner_id: UUID, *,
                      name: str, code: str, company: str, branch_code: str, branch_name: str, owner_name: str,
-                     owner_email: str, password_hash: str, kra_pin: str | None, vat_registered: bool) -> None:
+                     owner_email: str, password_hash: str, tax_id: str | None, vat_registered: bool, currency: str,
+                     phone_country_code: str) -> None:
     system_context(tenant_id)
     with tenant_session(tenant_id, admin=True) as s:
         s.execute(text("insert into kernel.tenant (id, name, code) values (:i, :n, :c)"),
                   {"i": str(tenant_id), "n": name, "c": code})
-        s.execute(text("insert into kernel.company (id, tenant_id, name, kra_pin, vat_registered) "
-                       "values (:i, :t, :n, :p, :v)"),
-                  {"i": str(company_id), "t": str(tenant_id), "n": company, "p": kra_pin, "v": vat_registered})
+        settings = {"phone_country_code": phone_country_code} if phone_country_code else {}
+        s.execute(text("insert into kernel.company (id, tenant_id, name, tax_id, vat_registered, base_currency, "
+                       "settings) values (:i, :t, :n, :p, :v, :cur, cast(:s as jsonb))"),
+                  {"i": str(company_id), "t": str(tenant_id), "n": company, "p": tax_id, "v": vat_registered,
+                   "cur": currency, "s": json.dumps(settings)})
         s.execute(text("insert into kernel.branch (id, tenant_id, company_id, code, name) "
                        "values (:i, :t, :c, :code, :n)"),
                   {"i": str(branch_id), "t": str(tenant_id), "c": str(company_id), "code": branch_code.upper(),

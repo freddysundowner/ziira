@@ -91,10 +91,11 @@ def test_validation_of_codes_pins_numbers_and_accounts() -> None:
     for bad in ("", "a b", "x" * 21, "-x", "a;b"):
         with pytest.raises(ValidationFailed):
             rules.normalise_code(bad)
-    assert rules.check_kra_pin("p051234567a") == "P051234567A" and rules.check_kra_pin(" ") is None
-    for bad in ("12345", "P05123456A", "X051234567A", "P051234567"):
+    assert rules.check_tax_id("p051234567a") == "P051234567A" and rules.check_tax_id(" ") is None
+    assert rules.check_tax_id("GB 123 456 789") == "GB 123 456 789"                       # any country's format
+    for bad in ("12", "!!!", "x" * 31, "a;b"):
         with pytest.raises(ValidationFailed):
-            rules.check_kra_pin(bad)
+            rules.check_tax_id(bad)
     assert rules.check_invoice_no(" INV/2026-001 ") == "INV/2026-001"
     for bad in ("", "  ", "x" * 61, "<script>"):
         with pytest.raises(ValidationFailed):
@@ -104,8 +105,8 @@ def test_validation_of_codes_pins_numbers_and_accounts() -> None:
             rules.check_terms(days)
     assert rules.mask_account("0123 4567 8901") == "********8901"
     assert rules.check_account_number("bank", "0123-4567 89") == "0123456789"
-    assert rules.check_account_number("mpesa", "0712 345 678") == "0712345678"
-    for method, bad in (("bank", "12"), ("bank", "ab;c"), ("mpesa", "12345"), ("mpesa", "0212345678")):
+    assert rules.check_account_number("mobile_money", "0712 345 678") == "0712345678"
+    for method, bad in (("bank", "12"), ("bank", "ab;c"), ("mobile_money", "12345"), ("mobile_money", "0212345678")):
         with pytest.raises(ValidationFailed):
             rules.check_account_number(method, bad)
 

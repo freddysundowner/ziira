@@ -192,7 +192,8 @@ def post_opt_out(body: OptOutIn, ctx: RequestContext = Depends(staff), session: 
     check_company(session, body.company_id)
     optout_id = notifications.opt_out(session, company_id=body.company_id, recipient=body.recipient,
                                       channel=body.channel, reason=body.reason)
-    to = notifications.check_recipient(body.channel or ("email" if "@" in body.recipient else "sms"), body.recipient)
+    to = notifications.check_recipient(body.channel or ("email" if "@" in body.recipient else "sms"), body.recipient,
+                                       notifications.calling_code(session, body.company_id))
     return OptOutOut(id=optout_id, company_id=body.company_id, recipient=notifications.mask(to), channel=body.channel,
                      reason=body.reason)
 

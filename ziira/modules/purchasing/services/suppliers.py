@@ -38,7 +38,7 @@ BANK_DOC_TYPE = "supplier_bank_change"
 STATUSES = ("active", "on_hold", "inactive")
 
 
-def create_supplier(session: Session, *, company_id: UUID, code: str, name: str, kra_pin: str | None = None,
+def create_supplier(session: Session, *, company_id: UUID, code: str, name: str, tax_id: str | None = None,
                     phone: str | None = None, email: str | None = None, payment_terms_days: int = 0) -> Supplier:
     """Add a supplier. Needs 'suppliers.manage' for the company."""
     ctx = current_context()
@@ -49,7 +49,7 @@ def create_supplier(session: Session, *, company_id: UUID, code: str, name: str,
         raise Conflict(f"There is already a supplier with code {code}")
     supplier = Supplier(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, code=code,
-        name=rules.check_name(name), kra_pin=rules.check_kra_pin(kra_pin), phone=(phone or "").strip() or None,
+        name=rules.check_name(name), tax_id=rules.check_tax_id(tax_id), phone=(phone or "").strip() or None,
         email=(email or "").strip() or None, payment_terms_days=rules.check_terms(payment_terms_days))
     repo.add(session, supplier)
     audit_record(session, "create", "purchasing.supplier", supplier.id, {"code": code, "name": supplier.name})
@@ -69,7 +69,7 @@ def list_suppliers(session: Session, *, search: str | None = None, status: str |
                                offset=offset)
 
 
-def update_supplier(session: Session, supplier_id: UUID, *, name: str | None = None, kra_pin: str | None = None,
+def update_supplier(session: Session, supplier_id: UUID, *, name: str | None = None, tax_id: str | None = None,
                     phone: str | None = None, email: str | None = None, payment_terms_days: int | None = None,
                     status: str | None = None) -> Supplier:
     """Change a supplier's details or put it on hold. Bank details are not changed here. Needs 'suppliers.manage'."""
@@ -81,9 +81,9 @@ def update_supplier(session: Session, supplier_id: UUID, *, name: str | None = N
     if name is not None:
         supplier.name = rules.check_name(name)
         changes["name"] = supplier.name
-    if kra_pin is not None:
-        supplier.kra_pin = rules.check_kra_pin(kra_pin)
-        changes["kra_pin"] = supplier.kra_pin
+    if tax_id is not None:
+        supplier.tax_id = rules.check_tax_id(tax_id)
+        changes["tax_id"] = supplier.tax_id
     if phone is not None:
         supplier.phone = phone.strip() or None
     if email is not None:
@@ -119,7 +119,7 @@ def propose_bank_account(session: Session, supplier_id: UUID, *, method: str, ac
         raise NotFound("Supplier not found")
     ctx = current_context()
     ctx.require(SUPPLIER_BANK_EDIT, company_id=supplier.company_id)
-    if method not in ("bank", "mpesa"):
+    if method not in ("bank", "mobile_money"):
         raise ValidationFailed("Method must be 'bank' or 'mpesa'")
     number = rules.check_account_number(method, account_no)
     if method == "bank" and not (bank_name and bank_name.strip()):

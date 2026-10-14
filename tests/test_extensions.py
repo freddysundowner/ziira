@@ -78,7 +78,7 @@ def shops(client, registry):  # type: ignore[no-untyped-def]
         headers = sign_in(client, code, f"owner@{code}.test").headers
         uom = client.post(f"{P}/uoms", headers=headers, json={"code": "PCS", "name": "Pieces"}).json()
         tax = client.post(f"{P}/tax-codes", headers=headers,
-                          json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "etims_tax_type": "B"}).json()
+                          json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "authority_code": "B"}).json()
         out[name] = {**t, "headers": headers, "uom": uom["id"], "tax": tax["id"]}
     return out
 

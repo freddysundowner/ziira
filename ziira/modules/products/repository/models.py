@@ -38,7 +38,7 @@ class TaxCode(TenantColumns, Base):
     code: Mapped[str]
     name: Mapped[str]
     vat_rate: Mapped[Decimal] = mapped_column(Numeric(5, 2))
-    etims_tax_type: Mapped[str]
+    authority_code: Mapped[str | None]
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
 
 
@@ -53,7 +53,7 @@ class Product(TenantColumns, Base):
     product_type: Mapped[str]
     base_uom_id: Mapped[UUID]
     tax_code_id: Mapped[UUID]
-    etims_item_class: Mapped[str | None]
+    authority_item_class: Mapped[str | None]
     is_batch_tracked: Mapped[bool]
     reorder_level: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))

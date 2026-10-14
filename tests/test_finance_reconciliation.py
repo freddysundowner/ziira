@@ -117,7 +117,7 @@ def test_ticks_can_be_taken_off_and_everything_up_to_a_date_cleared(client, shop
 
 def test_an_mpesa_account_is_reconciled_too(client, shop) -> None:  # type: ignore[no-untyped-def]
     publish_sale(shop, net="1000", tax="160", business_date="2026-10-04",
-                 payments=[{"method": "mpesa", "amount": "1160.00"}])
+                 payments=[{"method": "mobile_money", "amount": "1160.00"}])
     d = start(client, shop, code="1030", day="2026-10-31", balance="1160.00")
     assert d.status_code == 201, d.text
     done = client.post(f"{BR}/{d.json()['id']}/clear", headers=shop["accountant"], json={"until": "2026-10-31"}).json()

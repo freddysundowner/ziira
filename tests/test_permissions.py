@@ -27,7 +27,7 @@ def setup(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(t["tenant_id"], "products")
     co2, br2 = uuid4(), uuid4()
     with tenant_session(t["tenant_id"], admin=True) as s:
-        s.execute(text("insert into kernel.company (id, tenant_id, name) values (:i, :t, 'Other Ltd')"),
+        s.execute(text("insert into kernel.company (id, tenant_id, name, base_currency) values (:i, :t, 'Other Ltd', 'USD')"),
                   {"i": str(co2), "t": str(t["tenant_id"])})
         s.execute(text("insert into kernel.branch (id, tenant_id, company_id, code, name) "
                        "values (:i, :t, :c, 'JUJA', 'Juja')"),
@@ -36,7 +36,7 @@ def setup(client, registry):  # type: ignore[no-untyped-def]
     roles = {r["name"]: r for r in client.get("/api/v1/roles", headers=owner).json()}
     uom = client.post(f"{P}/uoms", headers=owner, json={"code": "PCS", "name": "Pieces"}).json()
     tax = client.post(f"{P}/tax-codes", headers=owner,
-                      json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "etims_tax_type": "B"}).json()
+                      json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "authority_code": "B"}).json()
 
     def user(name: str, role: str | None, scope: str = "tenant", company: UUID | None = None,
              branch: UUID | None = None) -> dict[str, str]:
@@ -211,7 +211,7 @@ def test_a_valid_token_never_reaches_another_tenant(client, setup, registry) -> 
     theirs_owner = sign_in(client, "neighbour-co", "owner@neighbour-co.test").headers
     uom = client.post(f"{P}/uoms", headers=theirs_owner, json={"code": "PCS", "name": "Pieces"}).json()
     tax = client.post(f"{P}/tax-codes", headers=theirs_owner,
-                      json={"code": "VAT0", "name": "Zero", "vat_rate": "0", "etims_tax_type": "A"}).json()
+                      json={"code": "VAT0", "name": "Zero", "vat_rate": "0", "authority_code": "A"}).json()
     theirs = client.post(f"{P}/products", headers=theirs_owner,
                          json={"company_id": str(other["company_id"]), "sku": "THEIRS-1", "name": "Theirs",
                                "base_uom_id": uom["id"], "tax_code_id": tax["id"]}).json()

@@ -74,7 +74,7 @@ def test_a_cash_sale_with_its_cost_of_goods(shop) -> None:  # type: ignore[no-un
 def test_a_sale_paid_several_ways_with_credit_to_a_customer(shop) -> None:  # type: ignore[no-untyped-def]
     customer, sale = uuid4(), uuid4()
     publish_sale(shop, sale_id=sale, net="200", tax="32", customer=customer, payments=[
-        {"method": "cash", "amount": "100"}, {"method": "mpesa", "amount": "82"}, {"method": "card", "amount": "20"},
+        {"method": "cash", "amount": "100"}, {"method": "mobile_money", "amount": "82"}, {"method": "card", "amount": "20"},
         {"method": "credit", "amount": "30"}])
     entry = entries(shop, source_type="sale", source_id=sale)[0]
     assert {c for c, _, _ in shape(entry)} == {"1010", "1030", "1040", "1100", "4000", "2200"}
@@ -93,7 +93,7 @@ def test_a_sale_must_be_paid_for_exactly_and_failure_rolls_everything_back(shop)
         entries_before = s.execute(text("select count(*) from finance.journal_entry")).scalar_one()
     stock_line = [{"line_id": uuid4(), "product_id": shop["cement"], "quantity": "5"}]
     for kwargs, message in (({"payments": [{"method": "cash", "amount": "100"}]}, "add up to 100"),
-                            ({"payments": [{"method": "cash", "amount": "-116"}, {"method": "mpesa", "amount": "232"}]},
+                            ({"payments": [{"method": "cash", "amount": "-116"}, {"method": "mobile_money", "amount": "232"}]},
                              "positive"),
                             ({"payments": "cash"}, "payments are required"),
                             ({"net": "NaN"}, "not a number"),

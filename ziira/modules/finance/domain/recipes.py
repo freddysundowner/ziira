@@ -15,16 +15,16 @@ from ziira.sdk import ValidationFailed
 DOC_ROLES: dict[str, tuple[str, ...]] = {
     "stock_movement": ("inventory", "inventory_in_transit", "cogs", "grni", "opening_equity", "shrinkage",
                        "transfer_clearing"),
-    "sale": ("cash", "mpesa", "card", "credit", "other", "sales", "vat_output"),
-    "sale_return": ("cash", "mpesa", "card", "credit", "other", "sales_returns", "vat_output"),
-    "settlement": ("bank", "bank_charges", "mpesa_clearing"),
+    "sale": ("cash", "mobile_money", "card", "credit", "other", "sales", "vat_output"),
+    "sale_return": ("cash", "mobile_money", "card", "credit", "other", "sales_returns", "vat_output"),
+    "settlement": ("bank", "bank_charges", "mobile_money_clearing"),
     "cash_deposit": ("bank", "cash"),
     "till_variance": ("cash", "till_variance"),
     "supplier_bill": ("grni", "purchase_variance", "vat_input", "payable"),
-    "supplier_payment": ("payable", "cash", "bank", "mpesa", "card", "other"),
+    "supplier_payment": ("payable", "cash", "bank", "mobile_money", "card", "other"),
     "supplier_credit_note": ("payable", "grni", "purchase_variance", "vat_input"),
-    "customer_payment": ("receivable", "cash", "bank", "mpesa", "card", "other"),
-    "expense": ("vat_input", "cash", "bank", "mpesa", "card", "other"),
+    "customer_payment": ("receivable", "cash", "bank", "mobile_money", "card", "other"),
+    "expense": ("vat_input", "cash", "bank", "mobile_money", "card", "other"),
     "payroll": ("salaries", "employer_costs", "net_pay", "statutory_payable", "other_deductions"),
     "payroll_payment": ("net_pay", "bank", "mobile_money", "cash", "other"),
 }
@@ -109,7 +109,7 @@ def _sale_lines(net: Decimal, tax: Decimal, money: list[tuple[str, Decimal]], pa
     if total == 0:
         return []
     sides = ("credit", "debit") if returned else ("debit", "credit")
-    lines = [RecipeLine(method if method in ("cash", "mpesa", "card", "credit") else "other", sides[0], amount,
+    lines = [RecipeLine(method if method in ("cash", "mobile_money", "card", "credit") else "other", sides[0], amount,
                         party_type="customer" if method == "credit" and party else None,
                         party_id=party if method == "credit" else None, description=description)
              for method, amount in money]
@@ -129,7 +129,7 @@ def settlement(amount: Decimal, fee: Decimal, *, description: str | None = None)
     lines = [RecipeLine("bank", "debit", amount, description=description)]
     if fee:
         lines.append(RecipeLine("bank_charges", "debit", fee, description=description))
-    lines.append(RecipeLine("mpesa_clearing", "credit", amount + fee, description=description))
+    lines.append(RecipeLine("mobile_money_clearing", "credit", amount + fee, description=description))
     return lines
 
 
@@ -194,7 +194,7 @@ def supplier_payment(method: str, amount: Decimal, *, party: Any = None, descrip
     """Paying a supplier: Dr accounts payable  Cr cash / bank / M-Pesa / card (reversed: the other way round)."""
     if amount <= 0:
         raise ValidationFailed("A payment must be more than nothing")
-    role = method if method in ("cash", "mpesa", "card", "bank") else "other"
+    role = method if method in ("cash", "mobile_money", "card", "bank") else "other"
     lines = [RecipeLine("payable", "debit", amount, party_type="supplier", party_id=party, description=description),
              RecipeLine(role, "credit", amount, description=description)]
     return _flip(lines) if reverse else lines
@@ -208,7 +208,7 @@ def expense(method: str, amount: Decimal, tax: Decimal, account_id: Any, *, desc
     """
     if amount <= 0 or tax < 0 or tax >= amount:
         raise ValidationFailed("An expense must be more than nothing, and its VAT less than the amount")
-    role = method if method in ("cash", "mpesa", "card", "bank") else "other"
+    role = method if method in ("cash", "mobile_money", "card", "bank") else "other"
     lines = [RecipeLine("expense", "debit", amount - tax, account_id=account_id, description=description)]
     if tax:
         lines.append(RecipeLine("vat_input", "debit", tax, description=description))
@@ -305,7 +305,7 @@ def customer_payment(method: str, amount: Decimal, *, party: Any = None, descrip
     """A customer paid an invoice: Dr cash / M-Pesa / card / bank  Cr accounts receivable (reversed: the other way)."""
     if amount <= 0:
         raise ValidationFailed("A payment must be more than nothing")
-    role = method if method in ("cash", "mpesa", "card", "bank") else "other"
+    role = method if method in ("cash", "mobile_money", "card", "bank") else "other"
     lines = [RecipeLine(role, "debit", amount, description=description),
              RecipeLine("receivable", "credit", amount, party_type="customer", party_id=party, description=description)]
     return _flip(lines) if reverse else lines

@@ -11,7 +11,7 @@ from decimal import Decimal
 from ziira.modules.finance.domain.entries import natural_balance
 
 COST_OF_SALES = frozenset({"cogs", "shrinkage", "purchase_variance"})
-CASH_SUBTYPES = ("cash", "bank", "mpesa_clearing", "card_clearing")
+CASH_SUBTYPES = ("cash", "bank", "mobile_money_clearing", "card_clearing")
 ZERO = Decimal(0)
 
 

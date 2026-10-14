@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from ziira.sdk import ValidationFailed
 
-KRA_PIN = re.compile(r"^[AP]\d{9}[A-Z]$")
+TAX_ID = re.compile(r"^[A-Z0-9][A-Z0-9/\-. ]{2,29}$")
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 CODE = re.compile(r"^[A-Z0-9][A-Z0-9\-_.]{0,19}$")
 MAX_CREDIT = Decimal("1000000000")
@@ -33,22 +33,6 @@ def normalise_code(code: str) -> str:
     return value
 
 
-def normalise_phone(phone: str | None) -> str | None:
-    """A Kenyan number as 2547XXXXXXXX or 2541XXXXXXXX; None when empty."""
-    if phone is None or not phone.strip():
-        return None
-    digits = re.sub(r"[\s\-()]", "", phone.strip())
-    if digits.startswith("+"):
-        digits = digits[1:]
-    if digits.startswith("0") and len(digits) == 10:
-        digits = "254" + digits[1:]
-    elif len(digits) == 9 and digits[0] in "17":
-        digits = "254" + digits
-    if not re.fullmatch(r"254[17]\d{8}", digits):
-        raise ValidationFailed("A phone number looks like 0712345678 or +254712345678")
-    return digits
-
-
 def clean_email(email: str | None) -> str | None:
     if email is None or not email.strip():
         return None
@@ -58,12 +42,13 @@ def clean_email(email: str | None) -> str | None:
     return value
 
 
-def clean_kra_pin(pin: str | None) -> str | None:
-    if pin is None or not pin.strip():
+def clean_tax_id(number: str | None) -> str | None:
+    """A tax number as the tax authority writes it: 3 to 30 letters, digits, '-', '/' or '.'; None when empty."""
+    if number is None or not number.strip():
         return None
-    value = pin.strip().upper()
-    if not KRA_PIN.match(value):
-        raise ValidationFailed("A KRA PIN is a letter, nine digits and a letter, for example P051234567A")
+    value = " ".join(number.strip().upper().split())
+    if not TAX_ID.match(value):
+        raise ValidationFailed("A tax number is 3 to 30 letters, digits, '-', '/' or '.'")
     return value
 
 

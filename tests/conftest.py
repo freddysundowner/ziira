@@ -86,7 +86,8 @@ def make_tenant(name: str) -> dict[str, UUID]:
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         assert cli.main(["create-tenant", name, "--code", code, "--company", f"{name} Ltd",
-                         "--branch-code", "HQ", "--branch-name", "Head office",
+                         "--branch-code", "HQ", "--branch-name", "Head office", "--currency", "KES",
+                         "--phone-country-code", "254",
                          "--owner-name", f"{name} Owner", "--owner-email", f"owner@{code}.test"]) == 0
     ids = dict(line.split(" = ") for line in out.getvalue().strip().splitlines())
     return {k.strip(): UUID(v.strip()) for k, v in ids.items()}

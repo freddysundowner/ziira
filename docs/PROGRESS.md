@@ -8,24 +8,27 @@ push (see the end-of-session steps in `CLAUDE.md`).
 
 | | |
 |---|---|
-| Phase | **Phases 1, 2, 3, 4, 6, 7 and 8 done**, MFA and CD deferred · **next: phase 9, People and payroll** · eTIMS is parked (below) |
+| Phase | **Phases 1, 2, 3, 4, 6, 7, 8 and 9 done**, MFA and CD deferred · **next: phase 10, Command Center and Intelligence** · eTIMS is parked (below) |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 1140 backend (PostgreSQL 16; incl. fuzzing, security, Hypothesis properties, concurrency, offline sync) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
+| Tests | 1230 backend (PostgreSQL 16; incl. fuzzing, security, Hypothesis properties, concurrency, offline sync) + 13 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
 | CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-14 |
 
 ## Start here (next session)
 
-**Order (decided with the owner):** 7 Purchasing -> 6 Customers and sales -> 8 Finance reports -> **9 People and payroll** ->
-10 Intelligence -> 11 Hardening. Pull MFA and sign-in rate limiting forward if a customer goes live before phase 11.
+**Order (decided with the owner):** 7 Purchasing -> 6 Customers and sales -> 8 Finance reports -> 9 People and payroll ->
+**10 Intelligence** -> 11 Hardening. Pull MFA and sign-in rate limiting forward if a customer goes live before phase 11.
 **eTIMS is parked**, not planned: taxes are entered by hand (each product's tax code and VAT rate) until it is settled with
 KRA, and it will then be an installable plugin. Everything about it is in `docs/parked/etims.md`.
 
-Phases 4, 7, 6 and 8 are done, including their loose ends. Next: **phase 9, People and payroll** (employees, attendance, leave,
-payroll with statutory rates held as effective-dated data in `people.statutory_rate_table`, payslips, statutory files). Payroll
-posts to Finance through the `PAY` journal (salaries, PAYE/SHIF/NSSF/Housing Levy payables, net pay payable; see the spec's
-core posting rules); add its recipes to `finance/domain/recipes.py` and rules to `chart.py` as expenses were added.
+Phases 4, 7, 6, 8 and 9 are done, including their loose ends. Next: **phase 10, Command Center and Intelligence** (daily checks
+of business data and alerts to owners **by SMS or email**; WhatsApp is out for now). The building blocks exist: the exceptions
+inbox, `ziira verify` checks, recurring tasks (`@periodic`), the notification queue, and every module's `public.py` reads.
+
+**Rule from the owner (2026-10-14): no country in code** (`CLAUDE.md` rule 15, `docs/localisation.md`). Statutory deductions
+are rules each business defines; currency, phone calling code and tax numbers are company data; mobile money is a generic
+method with a provider. Kenya's M-Pesa (Daraja) stays as one payment provider and eTIMS stays a parked plugin.
 
 Decisions in phase 8: SMS is BlessedTexts, email is SMTP, Brevo, Resend or SendGrid, WhatsApp is out for now; expenses are paid at
 once (credit costs go through supplier bills); bank reconciliation clears ledger lines against the statement's balance;
@@ -86,7 +89,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 6 | Customers and sales: CRM, credit, invoices, receivables, advances, statements, reminders (sent) | ✅ Done | Messaging gateways untested live |
 | 7 | Purchasing: orders, receipts, bills, three-way match, returns, credit notes, reversals | ✅ Done | Includes supplier refunds and statement reconciliation |
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, cash flow, VAT, exports | ✅ Done | QuickBooks/Sage layouts untried live |
-| 9 | People and payroll: HR, attendance, payroll, payslips | ⬜ | Rates verified by an accountant before launch |
+| 9 | People and payroll: employees, pay with approvals, attendance, leave, user-defined statutory rules, payroll runs, payslips, returns | ✅ Done | Statutory rules are the business's data; golden cases are hand-calculated |
 | 10 | Command Center, Intelligence (owner alerts by SMS or email) | ⬜ | |
 | 11 | Hardening: performance, security test, backups, monitoring | ⬜ | Includes MFA, rate limiting, PgBouncer |
 
@@ -133,6 +136,7 @@ Open:
 | Date | What was done |
 |---|---|
 | 2026-10-13 (o) | **Email providers Brevo, Resend and SendGrid added** (with SMTP); **SMS through BlessedTexts; WhatsApp removed.** New provider `blessedtexts` (JSON POST, status_code "1000" = sent). WhatsApp left out for now: provider, fake, tests, channel values and docs removed; messages go by SMS or email, and Intelligence alerts will use those. Daraja stays as built, to be run in Safaricom's sandbox (`docs/go-live-checklist.md`). `make lint` clean; `make test` 1090 passed. |
+| 2026-10-14 (q) | **Phase 9 done (People and payroll) and the localisation sweep.** Statutory deductions (taxes, contributions, levies) are **rules each business defines as data** (`people/domain/rules.py`: rate, bands with a credit, fixed; base, order, reduces taxable pay, residency, employer part, effective date, payable account; entered by one person, verified by another); no country's values anywhere in code (the Kenyan seed was deleted). Employees (national ID encrypted), pay terms and salary bank details proposed then approved by someone else, pay items, shifts, attendance (manual and from the till), leave with approval and balances, payroll runs (calculate with review exceptions and blockers, approve by someone other than the preparer with a recalculation check, post to Finance by branch, pay, payment file), payslip printing, yearly tax card, a return per rule, payslips by email or SMS. Finance: payroll accounts, posting rules and recipes. **Localisation:** `kra_pin` -> `tax_id`, eTIMS fields -> `authority_code`/`authority_item_class`/`authority_ref` (unused `kernel.etims_*` tables dropped), currency chosen at company creation (`--currency`), phone numbers read with the company's calling code (`ziira.sdk.normalise_phone`), payment method `mpesa` -> `mobile_money` (accounts have a provider; Daraja is one), chart template neutral, credentials accept any provider name. Test caveat: run only one pytest session at a time (they share test database names) and under `caffeinate -dimsu` (a sleeping Mac makes tests hang). `make lint` clean; `make test` 1230 passed. |
 | 2026-10-14 (p) | **Phase 8 done (Finance reports).** Statements: profit and loss (consolidated, one branch or split by branch), balance sheet (profit not yet closed shown so it always balances), cash flow summary, VAT summary, all with `format=csv` (formula-safe); journal export in generic, QuickBooks and Sage layouts with per-company account mapping (`finance/0003`). Expenses (`0004`, table existed since 0001): draft, submit, approval matrix (`expense`), posted Dr expense and VAT input / Cr cash, bank, M-Pesa or card, reversible. Bank reconciliation (`0005`): clear ledger lines until the cleared balance equals the statement, statement upload with suggested matches, final once completed; a period with one open cannot close (and neither with expenses awaiting approval). New permission `bank.reconcile`. Also this session: BlessedTexts SMS, Brevo/Resend/SendGrid email, WhatsApp removed. `make lint` clean; `make test` 1140 passed. |
 | 2026-10-13 (n) | **Open items of phases 6 and 7 closed; eTIMS archived.** Supplier refunds of overpaid bills (`purchasing/0004_refunds`, `supplier.refunded`/`refund_reversed` posted by Finance), supplier statement reconciliation (JSON or CSV; matched / amount differs / missing here / missing there, balance difference explained), printable sale receipts, invoices and payment receipts (text 32/40/48 wide, HTML escaped, JSON; company settings `receipt_footer`, `invoice_footer`; extension point `pos.receipt_extras` for a future eTIMS plugin). eTIMS moved out of every to-do list into `docs/parked/etims.md`; sandbox runs and security items are in `docs/go-live-checklist.md`. `make lint` clean; `make test` 1090 passed. |
 | 2026-10-13 (m) | **Loose ends of phase 6 closed.** Recurring tasks (`@periodic`, claimed per business per interval) running the expiry of old quotations; advance payments (`hold_balance`, `apply-credit`, refunds, reversal in either place, credit counted against the limit, ledger check updated); messaging: kernel notification queue with opt-outs, retries and the exceptions inbox, channel set-up API, the `messaging` plugin (SMTP, Africa's Talking, WhatsApp Cloud, fake), reminders sent on request, in a batch and daily by company setting, CRM do-not-contact. Fixed: the settings API did not expose `bill_match_tolerance_percent`. Migrations `kernel/0005`, `pos/0004`. |

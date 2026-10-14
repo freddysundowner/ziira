@@ -45,7 +45,7 @@ def make_stock_shop(client, registry, name: str):  # type: ignore[no-untyped-def
 
     uom = client.post(f"{P}/uoms", headers=owner, json={"code": "PCS", "name": "Pieces"}).json()["id"]
     tax = client.post(f"{P}/tax-codes", headers=owner,
-                      json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "etims_tax_type": "B"}).json()["id"]
+                      json={"code": "VAT16", "name": "VAT", "vat_rate": "16", "authority_code": "B"}).json()["id"]
 
     def product(sku: str, **extra) -> str:  # type: ignore[no-untyped-def]
         r = client.post(f"{P}/products", headers=owner, json={
