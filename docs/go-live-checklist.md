@@ -6,6 +6,8 @@ service**. Tick each off (with the date and who did it) before a customer relies
 
 ## Integrations to run in their sandboxes
 
+How: `docs/live-checks.md` (`scripts/live_check.py`, with the go-live gate for each item and the doubts to watch for).
+
 - [ ] **Safaricom Daraja** (M-Pesa): STK push, STK query, C2B register/confirmation/validation URLs, callbacks reaching
       our public URL. Code: `ziira/modules/payments/providers.py`. Check real response shapes and error codes.
 - [ ] **BlessedTexts SMS** (provider `blessedtexts`): send a real message with the live key and approved sender id; check

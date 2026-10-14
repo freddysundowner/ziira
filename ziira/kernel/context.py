@@ -2,6 +2,7 @@
 
 from contextvars import ContextVar
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from ziira.kernel.errors import Forbidden
@@ -55,6 +56,13 @@ class RequestContext:
     ip_address: str | None = None
     # The business requires a second factor of this person and it is not set up: only the setup calls may be made.
     mfa_setup_required: bool = False
+    # Platform staff working in the business under a support grant (channel 'support'; there is no user then).
+    support_operator_id: UUID | None = None
+    support_operator_name: str | None = None
+    support_grant_id: UUID | None = None
+    support_session_id: UUID | None = None
+    support_level: str | None = None         # 'read' or 'full'
+    support_until: datetime | None = None
 
     def can(self, permission: str, *, company_id: UUID | None = None, branch_id: UUID | None = None,
             owner_id: UUID | None = None) -> bool:

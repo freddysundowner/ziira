@@ -33,7 +33,7 @@ export default function BillsDueWidget() {
         <ul className="divide-y divide-line text-sm">
           {due.data.map((b) => (
             <li key={b.id}>
-              <Link to={`/bills/${b.id}`} className="flex items-center justify-between gap-3 py-2 hover:text-brand">
+              <Link to={`/bills/${b.id}`} className="flex items-center justify-between gap-3 py-2 hover:text-brand-strong">
                 <span className="min-w-0"><span className="block truncate font-medium"><SupplierName id={b.supplier_id} /></span>
                   <span className={`block text-xs ${isOverdue(b, day) ? "text-bad" : "text-muted"}`}>{isOverdue(b, day) ? t("overdueSince", { date: formatDate(b.due_date) }) : t("dueOn", { date: formatDate(b.due_date) })}</span></span>
                 <span className="tnum shrink-0">{money(amountDue(b), currency)}</span>
@@ -42,7 +42,7 @@ export default function BillsDueWidget() {
           ))}
         </ul>
       )}
-      <Link to="/payables" className="inline-block text-xs font-medium text-brand hover:underline">{t("seePayables")}</Link>
+      <Link to="/payables" className="inline-block text-xs font-medium text-brand-strong hover:underline">{t("seePayables")}</Link>
     </div>
   );
 }

@@ -19,6 +19,7 @@ Every business (tenant) has its own database; the master database lists them.
     ziira backup [--tenant CODE] --dir PATH [--keep-daily 35 --keep-monthly 12]   pg_dump of master + tenants, pruned
     ziira restore-test [--tenant CODE] --dir PATH   restore the newest dump to a scratch database, check it, drop it
     ziira restore --tenant CODE --dir PATH --into NEWDB   restore a dump into a NEW database (never over a live one)
+    ziira operator create NAME EMAIL | list | disable|enable|reset-mfa EMAIL   platform staff (support access)
     ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
     ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
     ziira import <tenant> <kind> FILE.csv [--company NAME] [--commit]   check (and with --commit import) a file
@@ -65,7 +66,7 @@ def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
                       branch_name=a.branch_name, owner_name=a.owner_name, owner_email=a.owner_email,
                       owner_password=password, tax_id=a.tax_id, currency=a.currency,
                       phone_country_code=a.phone_country_code, country=a.country,
-                      vat_registered=a.vat_registered, registry=reg)
+                      vat_registered=a.vat_registered, timezone=a.timezone, registry=reg)
     print(f"tenant_id  = {t.tenant_id}\ncompany_id = {t.company_id}\nbranch_id  = {t.branch_id}\n"
           f"owner_id   = {t.owner_id}")
 
@@ -121,6 +122,25 @@ def cmd_index_logins(reg: Registry, a: argparse.Namespace) -> None:
 
     done = directory.rebuild([_tenant(a.tenant)] if a.tenant else None)
     print(f"Registered {done} login(s) in the login directory")
+
+
+def cmd_operator(_: Registry, a: argparse.Namespace) -> None:
+    from ziira.kernel import operators
+
+    if a.action == "create":
+        password = os.environ.get("ZIIRA_OPERATOR_PASSWORD") or getpass.getpass("Operator password: ")
+        _id, secret, uri = operators.create_operator(a.name, a.email, password)
+        print("Operator created. Add this to an authenticator app now: it is shown once and every sign-in needs it.")
+        print(f"secret: {secret}\naddress: {uri}")
+    elif a.action == "list":
+        for o in operators.list_operators():
+            print(f"{o['email']:<36} {o['status']:<9} {o['name']}   last sign-in: {o['last_sign_in_at'] or 'never'}")
+    elif a.action in ("disable", "enable"):
+        operators.set_status(a.name, "disabled" if a.action == "disable" else "active")
+        print(f"Operator {a.name} {a.action}d")
+    elif a.action == "reset-mfa":
+        secret, uri = operators.reset_mfa(a.name)
+        print(f"New secret (shown once): {secret}\naddress: {uri}")
 
 
 def cmd_invite(reg: Registry, a: argparse.Namespace) -> None:
@@ -288,6 +308,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--currency", required=True, help="Base currency code, such as USD")
     s.add_argument("--country", help="Two-letter country code, such as GB")
     s.add_argument("--phone-country-code", default="", help="Calling code of the business's phone numbers, such as 44")
+    s.add_argument("--timezone", help="IANA time zone of the business, such as Europe/London (default UTC)")
     s.add_argument("--vat-registered", action="store_true")
     s.set_defaults(fn=cmd_create_tenant)
     sub.add_parser("tenants").set_defaults(fn=cmd_tenants)
@@ -321,6 +342,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--days", type=int, default=30, help="valid for this many days (0: no expiry)")
     s.add_argument("--note")
     s.set_defaults(fn=cmd_invite)
+    s = sub.add_parser("operator", help="platform staff who may open support sessions (create, list, disable)")
+    s.add_argument("action", choices=["create", "list", "disable", "enable", "reset-mfa"])
+    s.add_argument("name", nargs="?", help="create: the name; disable/enable/reset-mfa: the email")
+    s.add_argument("email", nargs="?", help="create: the email")
+    s.set_defaults(fn=cmd_operator)
     s = sub.add_parser("index-logins", help="rebuild the login directory used to sign in without a workspace code")
     s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
     s.set_defaults(fn=cmd_index_logins)
@@ -357,6 +383,11 @@ def main(argv: list[str] | None = None) -> int:
         s.add_argument("unit")
         s.set_defaults(fn=fn)
     args = p.parse_args(argv)
+    if args.cmd == "operator":
+        if args.action == "create" and not (args.name and args.email):
+            p.error("operator create needs NAME and EMAIL")
+        if args.action in ("disable", "enable", "reset-mfa") and not args.name:
+            p.error(f"operator {args.action} needs the operator's EMAIL")
     if args.cmd == "install" and not args.all and not args.unit:
         p.error("give a unit name or --all")
     try:

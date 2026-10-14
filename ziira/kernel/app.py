@@ -17,17 +17,20 @@ from sqlalchemy.orm import Session
 
 from ziira.kernel import notifications  # noqa: F401 - registers the send job and the channel socket
 from ziira.kernel.api.notification_routes import router as notification_router
+from ziira.kernel.api.operator_routes import router as operator_router
 from ziira.kernel.api.ops_routes import router as ops_router
 from ziira.kernel.api.privacy_routes import router as privacy_router
 from ziira.kernel.api.routes import router as kernel_router
 from ziira.kernel.api.security_routes import router as security_router
+from ziira.kernel.api.support_routes import router as support_router
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
 from ziira.kernel.export_audit import ExportAuditMiddleware
 from ziira.kernel.http_middleware import HttpMiddleware
 from ziira.kernel.observability import configure_logging, current_request_id
 from ziira.kernel.registry import discover, load_event_handlers
-from ziira.sdk import db_session
+from ziira.kernel.support_log import SupportLogMiddleware
+from ziira.sdk import DB_SESSION
 
 log = logging.getLogger("ziira")
 
@@ -35,7 +38,7 @@ log = logging.getLogger("ziira")
 def require_unit(name: str) -> Callable[[Session], None]:
     """Dependency that rejects requests for units the tenant has not enabled."""
 
-    def check(session: Session = Depends(db_session)) -> None:
+    def check(session: Session = DB_SESSION) -> None:
         enabled = session.execute(text(
             "select 1 from kernel.tenant_unit where unit_name = :n and status = 'enabled' "
             "and tenant_id = kernel.current_tenant()"), {"n": name}).first()
@@ -61,6 +64,8 @@ def create_app() -> FastAPI:
     app.include_router(security_router)
     app.include_router(notification_router)
     app.include_router(privacy_router)
+    app.include_router(support_router)
+    app.include_router(operator_router)
     units = discover()
     load_event_handlers(units)
 
@@ -90,7 +95,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     @app.get("/api/v1/units", tags=["Kernel"])
-    def tenant_units(session: Session = Depends(db_session)) -> list[dict[str, object]]:
+    def tenant_units(session: Session = DB_SESSION) -> list[dict[str, object]]:
         enabled = set(session.execute(text(
             "select unit_name from kernel.tenant_unit where status = 'enabled' "
             "and tenant_id = kernel.current_tenant()")).scalars())
@@ -130,6 +135,7 @@ def create_app() -> FastAPI:
                                           "X-Request-ID", "X-Device-ID", "Accept-Language"],
                            expose_headers=["X-Request-ID"], max_age=600)
     app.add_middleware(ExportAuditMiddleware)
+    app.add_middleware(SupportLogMiddleware)
     app.add_middleware(HttpMiddleware)          # outermost: request id, access log, security headers, size limit
 
     return app

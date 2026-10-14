@@ -11,7 +11,7 @@ from ziira.kernel.api.routes import NO_CONTENT, admin, signed_in_user
 from ziira.kernel.context import RequestContext
 from ziira.kernel.errors import Unauthorized, ValidationFailed
 from ziira.kernel.security import verify_password
-from ziira.sdk import Session, db_session
+from ziira.sdk import DB_SESSION, Session
 
 router = APIRouter(prefix="/api/v1")
 USERS_ADMIN = Depends(admin("users.manage"))
@@ -79,7 +79,7 @@ def mfa_verify(body: MfaVerifyIn, request: Request) -> object:
 
 
 @router.get("/auth/mfa", response_model=MfaStatusOut, tags=["Auth"])
-def mfa_status(ctx: RequestContext = Depends(signed_in_user), s: Session = Depends(db_session)) -> object:
+def mfa_status(ctx: RequestContext = Depends(signed_in_user), s: Session = DB_SESSION) -> object:
     assert ctx.user_id is not None
     return mfa.status(s, ctx.user_id)
 
@@ -93,7 +93,7 @@ def _account(s: Session, user_id: UUID) -> str:
 
 
 @router.post("/auth/mfa/setup", response_model=MfaSetupOut, tags=["Auth"])
-def mfa_setup(ctx: RequestContext = Depends(signed_in_user), s: Session = Depends(db_session)) -> object:
+def mfa_setup(ctx: RequestContext = Depends(signed_in_user), s: Session = DB_SESSION) -> object:
     """Start setting up the second factor: returns the secret and the address for a QR code. Switched on only when a
     code from the app is confirmed at /auth/mfa/enable."""
     assert ctx.user_id is not None
@@ -103,7 +103,7 @@ def mfa_setup(ctx: RequestContext = Depends(signed_in_user), s: Session = Depend
 
 @router.post("/auth/mfa/enable", response_model=MfaBackupCodesOut, tags=["Auth"])
 def mfa_enable(body: MfaCodeIn, request: Request, ctx: RequestContext = Depends(signed_in_user),
-               s: Session = Depends(db_session)) -> object:
+               s: Session = DB_SESSION) -> object:
     """Confirm a code from the app: switches the second factor on and returns backup codes (shown once)."""
     assert ctx.user_id is not None
     counters = throttle.action_counters("mfa-enable", str(ctx.user_id), auth.client_ip(request), per_subject=10)
@@ -132,7 +132,7 @@ def _confirm(s: Session, ctx: RequestContext, password: str, code: str) -> None:
 
 @router.post("/auth/mfa/disable", status_code=NO_CONTENT, tags=["Auth"])
 def mfa_disable(body: MfaDisableIn, ctx: RequestContext = Depends(signed_in_user),
-                s: Session = Depends(db_session)) -> Response:
+                s: Session = DB_SESSION) -> Response:
     """Switch the second factor off (needs your password and a code). Refused if your business requires it."""
     assert ctx.user_id is not None
     if mfa.required_for(s, ctx.user_id):
@@ -144,7 +144,7 @@ def mfa_disable(body: MfaDisableIn, ctx: RequestContext = Depends(signed_in_user
 
 @router.post("/auth/mfa/backup-codes", response_model=MfaBackupCodesOut, tags=["Auth"])
 def mfa_new_backup_codes(body: MfaDisableIn, ctx: RequestContext = Depends(signed_in_user),
-                         s: Session = Depends(db_session)) -> object:
+                         s: Session = DB_SESSION) -> object:
     """Replace your backup codes with new ones (needs your password and a code). The old ones stop working."""
     assert ctx.user_id is not None
     _confirm(s, ctx, body.password, body.code)
@@ -153,7 +153,7 @@ def mfa_new_backup_codes(body: MfaDisableIn, ctx: RequestContext = Depends(signe
 
 @router.post("/users/{user_id}/mfa/reset", status_code=NO_CONTENT, tags=["Users and roles"])
 def mfa_reset(user_id: UUID, ctx: RequestContext = USERS_ADMIN,
-              s: Session = Depends(db_session)) -> Response:
+              s: Session = DB_SESSION) -> Response:
     """Reset someone's second factor (they lost their phone): switches it off and signs them out everywhere. They set it
     up again at their next sign-in if the business requires it."""
     users.get_user(s, user_id)
@@ -164,13 +164,13 @@ def mfa_reset(user_id: UUID, ctx: RequestContext = USERS_ADMIN,
 
 # --------------------------------------------------------------------------- the business's policy
 @router.get("/settings/security", response_model=SecuritySettingsOut, tags=["Settings"])
-def get_security(ctx: RequestContext = SETTINGS_ADMIN, s: Session = Depends(db_session)) -> object:
+def get_security(ctx: RequestContext = SETTINGS_ADMIN, s: Session = DB_SESSION) -> object:
     return SecuritySettingsOut(mfa_policy=mfa.policy(s))
 
 
 @router.patch("/settings/security", response_model=SecuritySettingsOut, tags=["Settings"])
 def patch_security(body: SecuritySettingsIn, ctx: RequestContext = SETTINGS_ADMIN,
-                   s: Session = Depends(db_session)) -> object:
+                   s: Session = DB_SESSION) -> object:
     """Choose who must sign in with a second factor. People it applies to who have not set it up are asked to at their
     next sign-in (and cannot do anything else until they have)."""
     return SecuritySettingsOut(mfa_policy=mfa.set_policy(s, body.mfa_policy))

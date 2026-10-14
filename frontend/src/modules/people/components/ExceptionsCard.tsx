@@ -33,7 +33,7 @@ export function ExceptionsCard({ exceptions, calculated }: { exceptions: RunExce
                     <p>{e.message}</p>
                     <p className="mt-0.5 text-xs text-muted">
                       {t(`run.severity.${e.severity}`)}
-                      {e.employee_id && <> · <Link className="font-medium text-brand hover:underline" to={`/employees/${e.employee_id}`}>{e.employee_no ?? t("run.openEmployee")}</Link></>}
+                      {e.employee_id && <> · <Link className="font-medium text-brand-strong hover:underline" to={`/employees/${e.employee_id}`}>{e.employee_no ?? t("run.openEmployee")}</Link></>}
                     </p>
                   </div>
                 </li>

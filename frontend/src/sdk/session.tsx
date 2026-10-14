@@ -45,6 +45,7 @@ export interface RegisterInput {
   country: string;
   currency: string;
   phone_country_code: string;
+  timezone?: string;
   invite_code?: string;
 }
 

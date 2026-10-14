@@ -18,7 +18,7 @@ from ziira.modules.purchasing.permissions import BILLS_APPROVE
 from ziira.modules.purchasing.repository import purchasing_repo as repo
 from ziira.modules.purchasing.repository.models import SupplierCreditNote, SupplierCreditNoteLine
 from ziira.modules.purchasing.services import access
-from ziira.modules.purchasing.services.common import today, unit_enabled
+from ziira.modules.purchasing.services.common import unit_enabled
 from ziira.sdk import (
     Conflict,
     Event,
@@ -26,6 +26,7 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    company_today,
     current_context,
     next_document_number,
     publish,
@@ -78,7 +79,7 @@ def create_credit_note(session: Session, bill_id: UUID, *, supplier_credit_no: s
     credit_no = rules.check_invoice_no(supplier_credit_no)
     if repo.credit_note_by_supplier_no(session, bill.supplier_id, credit_no) is not None:
         raise Conflict(f"The supplier's credit note {credit_no} has already been entered")
-    if credit_date > today() + timedelta(days=1):
+    if credit_date > company_today(session, bill.company_id) + timedelta(days=1):
         raise ValidationFailed("The credit note date cannot be in the future")
     if not lines or len(lines) > 200:
         raise ValidationFailed("A credit note has between 1 and 200 lines")

@@ -57,7 +57,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
   return (
     <div role="tablist" className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
       {tabs.map((t) => (
-        <button key={t.id} role="tab" aria-selected={value === t.id} onClick={() => onChange(t.id)}
+        <button key={t.id} type="button" role="tab" aria-selected={value === t.id} onClick={() => onChange(t.id)}
           className={cx("-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors", value === t.id ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink")}>
           {t.label}{t.count !== undefined && <span className="ml-1.5 rounded-full bg-sunken px-1.5 text-xs text-muted">{t.count}</span>}
         </button>

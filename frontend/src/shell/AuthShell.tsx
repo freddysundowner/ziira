@@ -16,9 +16,9 @@ export function AuthShell({ children }: { children: ReactNode }) {
         </div>
         <div className="relative max-w-md space-y-3">
           <p className="text-3xl font-semibold leading-tight">{t("auth.tagline")}</p>
-          <p className="text-base opacity-80">{t("auth.subtitle")}</p>
+          <p className="text-base opacity-90">{t("auth.subtitle")}</p>
         </div>
-        <p className="relative text-xs opacity-60">© {new Date().getFullYear()} Ziira</p>
+        <p className="relative text-xs opacity-90">© {new Date().getFullYear()} Ziira</p>
       </div>
       <main className="flex items-center justify-center p-5 sm:p-10">
         <div className="w-full max-w-sm">

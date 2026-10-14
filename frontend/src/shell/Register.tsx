@@ -49,6 +49,7 @@ export function Register() {
       country: country.code,
       currency: business.currency || country.currency,
       phone_country_code: country.calling,
+      timezone: country.zone,
       invite_code: params.get("invite") ?? undefined,
     });
     setBusy(false);

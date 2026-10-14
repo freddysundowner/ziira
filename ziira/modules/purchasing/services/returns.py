@@ -17,7 +17,7 @@ from ziira.modules.purchasing.permissions import GOODS_RETURN
 from ziira.modules.purchasing.repository import purchasing_repo as repo
 from ziira.modules.purchasing.repository.models import PurchaseReturn, PurchaseReturnLine
 from ziira.modules.purchasing.services import access
-from ziira.modules.purchasing.services.common import NAIROBI, unit_enabled
+from ziira.modules.purchasing.services.common import unit_enabled
 from ziira.sdk import (
     Event,
     NotFound,
@@ -25,6 +25,7 @@ from ziira.sdk import (
     ValidationFailed,
     audit_record,
     check_reason,
+    company_date_of,
     current_context,
     flag_for_review,
     next_document_number,
@@ -99,7 +100,7 @@ def return_goods(session: Session, receipt_id: UUID, *, lines: list[tuple[UUID, 
             for source, quantity in prepared]
     session.add_all(rows)
     session.flush()
-    day = moment.astimezone(NAIROBI).date()
+    day = company_date_of(session, receipt.company_id, moment)
     publish(session, Event("goods.returned", "purchasing.purchase_return", ret.id, {
         "company_id": receipt.company_id, "branch_id": receipt.branch_id, "location_id": receipt.location_id,
         "business_date": day, "number": ret.number, "supplier_id": receipt.supplier_id,

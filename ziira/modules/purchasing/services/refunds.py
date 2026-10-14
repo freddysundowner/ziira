@@ -18,7 +18,7 @@ from ziira.modules.purchasing.permissions import BILLS_PAY
 from ziira.modules.purchasing.repository import purchasing_repo as repo
 from ziira.modules.purchasing.repository.models import SupplierBill, SupplierRefund
 from ziira.modules.purchasing.services import access
-from ziira.modules.purchasing.services.common import today, unit_enabled
+from ziira.modules.purchasing.services.common import unit_enabled
 from ziira.sdk import (
     Conflict,
     Event,
@@ -26,6 +26,7 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    company_today,
     current_context,
     next_document_number,
     publish,
@@ -89,7 +90,7 @@ def record_refund(session: Session, bill_id: UUID, *, amount: Decimal, method: s
         account_id = account_for_method(session, bill.company_id, bill.branch_id, pay_method)
         if account_id is None:
             raise ValidationFailed(f"No {method} account is set up")
-    day = received_on or today()
+    day = received_on or company_today(session, bill.company_id)
     refund = SupplierRefund(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=bill.company_id, branch_id=bill.branch_id,
         number=next_document_number(session, company_id=bill.company_id, branch_id=bill.branch_id,
@@ -145,7 +146,8 @@ def apply_payment_reversal(session: Session, event: Event) -> None:
     session.flush()
     audit_record(session, "reverse", "purchasing.supplier_refund", refund.id, {"number": refund.number})
     publish(session, Event("supplier.refund_reversed", "purchasing.supplier_refund", refund.id, {
-        "company_id": refund.company_id, "branch_id": refund.branch_id, "business_date": today(),
+        "company_id": refund.company_id, "branch_id": refund.branch_id,
+        "business_date": company_today(session, refund.company_id),
         "amount": refund.amount, "method": "bank" if refund.method == "cheque" else refund.method,
         "supplier_id": refund.supplier_id, "number": refund.number, "bill_id": refund.bill_id,
         "at": datetime.now(UTC).isoformat()}))

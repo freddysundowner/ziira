@@ -1,4 +1,4 @@
-import { Children, cloneElement, forwardRef, isValidElement, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes, useId } from "react";
+import { Children, cloneElement, createContext, forwardRef, isValidElement, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes, useContext, useId } from "react";
 import { Loader2 } from "lucide-react";
 import type { ButtonHTMLAttributes } from "react";
 
@@ -8,7 +8,7 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-brand text-brand-ink hover:bg-brand-strong shadow-card",
+  primary: "bg-brand-strong text-brand-ink hover:bg-brand-strong/90 shadow-card",
   secondary: "border border-line bg-surface text-ink hover:bg-sunken shadow-card",
   ghost: "text-ink hover:bg-sunken",
   danger: "bg-bad text-white hover:opacity-90 shadow-card",
@@ -41,21 +41,27 @@ export function IconButton({ label, className, children, ...props }: ButtonHTMLA
   );
 }
 
-const CONTROL = "rounded-lg border bg-surface px-3 text-sm text-ink placeholder:text-muted/70 transition-colors disabled:cursor-not-allowed disabled:bg-sunken disabled:text-muted";
+const CONTROL = "rounded-lg border bg-surface px-3 text-sm text-ink placeholder:text-muted transition-colors disabled:cursor-not-allowed disabled:bg-sunken disabled:text-muted";
 /** Controls fill their container unless the caller gives them a width (a toolbar filter): Tailwind cannot be asked which of two widths wins. */
 const widthOf = (className?: string) => (className && /(^|\s)(w|min-w|max-w)-/.test(className) ? "" : "w-full");
 const controlClass = (invalid?: boolean) => cx(CONTROL, invalid ? "border-bad" : "border-line hover:border-muted/50");
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(function Input({ invalid, className, ...props }, ref) {
-  return <input ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9", className)} {...props} />;
+/** The id a Field gives its control when the control is nested in a wrapper (an input with a button beside it). */
+const FieldIdContext = createContext<string | undefined>(undefined);
+
+export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(function Input({ invalid, className, id, ...props }, ref) {
+  const fieldId = useContext(FieldIdContext);
+  return <input ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9", className)} {...props} />;
 });
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }>(function Select({ invalid, className, ...props }, ref) {
-  return <select ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9 pr-8", className)} {...props} />;
+export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }>(function Select({ invalid, className, id, ...props }, ref) {
+  const fieldId = useContext(FieldIdContext);
+  return <select ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9 pr-8", className)} {...props} />;
 });
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { invalid?: boolean }>(function Textarea({ invalid, className, ...props }, ref) {
-  return <textarea ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "min-h-[84px] py-2", className)} {...props} />;
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { invalid?: boolean }>(function Textarea({ invalid, className, id, ...props }, ref) {
+  const fieldId = useContext(FieldIdContext);
+  return <textarea ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "min-h-[84px] py-2", className)} {...props} />;
 });
 
 /**
@@ -80,8 +86,10 @@ function FieldControl({ id, invalid, children }: { id: string; invalid: boolean;
   if (isValidElement<{ id?: string; invalid?: boolean }>(only) && typeof only.type !== "string") {
     return cloneElement(only, { id: only.props.id ?? id, invalid: only.props.invalid ?? invalid });
   }
-  if (isValidElement<{ id?: string }>(only)) return cloneElement(only, { id: only.props.id ?? id });
-  return <>{children}</>;
+  if (isValidElement<{ id?: string }>(only) && (only.type === "input" || only.type === "select" || only.type === "textarea")) {
+    return cloneElement(only, { id: only.props.id ?? id });
+  }
+  return <FieldIdContext.Provider value={id}>{children}</FieldIdContext.Provider>;
 }
 
 export function Checkbox({ label, className, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: ReactNode }) {

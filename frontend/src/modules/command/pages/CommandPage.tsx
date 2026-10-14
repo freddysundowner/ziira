@@ -42,7 +42,7 @@ export default function CommandPage() {
                 {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Select>
             )}
-            <Link to="/command/briefs" className="text-sm font-medium text-brand hover:underline">{t("myBriefs")}</Link>
+            <Link to="/command/briefs" className="text-sm font-medium text-brand-strong hover:underline">{t("myBriefs")}</Link>
           </>
         } />
       {overview.error ? <ErrorState message={overview.error.message} onRetry={() => void overview.refetch()} />

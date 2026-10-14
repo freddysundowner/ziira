@@ -21,7 +21,7 @@ export default function ReturnPage() {
           <DetailList items={[
             { label: t("supplier"), value: <SupplierName id={r.supplier_id} link /> },
             { label: t("date"), value: formatDate(r.returned_at, true) },
-            { label: t("receipt"), value: <Link className="font-medium text-brand hover:underline" to={`/receipts/${r.receipt_id}`}>{t("openReceipt")}</Link> },
+            { label: t("receipt"), value: <Link className="font-medium text-brand-strong hover:underline" to={`/receipts/${r.receipt_id}`}>{t("openReceipt")}</Link> },
             { label: t("note"), value: r.note },
           ]} />
         </Card>

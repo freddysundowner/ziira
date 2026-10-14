@@ -55,10 +55,10 @@ export function Combobox({ value, onChange, options, search, selectedLabel, plac
 
   return (
     <div ref={box} className="relative">
-      <button id={id} type="button" disabled={disabled} role="combobox" aria-expanded={open} aria-controls={listId} aria-invalid={invalid || undefined}
+      <button id={id} type="button" disabled={disabled} role="combobox" aria-label={id ? undefined : shownLabel ? `${placeholder}: ${shownLabel}` : placeholder} aria-expanded={open} aria-controls={listId} aria-invalid={invalid || undefined}
         onClick={() => { setOpen((o) => !o); setActive(0); }}
         className={cx("flex h-9 w-full items-center justify-between rounded-lg border bg-surface px-3 text-left text-sm disabled:bg-sunken", invalid ? "border-bad" : "border-line hover:border-muted/50")}>
-        <span className={cx("truncate", !shownLabel && "text-muted/70")}>{shownLabel || placeholder}</span>
+        <span className={cx("truncate", !shownLabel && "text-muted")}>{shownLabel || placeholder}</span>
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted" />
       </button>
       {open && (
@@ -83,7 +83,7 @@ export function Combobox({ value, onChange, options, search, selectedLabel, plac
                 <button type="button" onMouseEnter={() => setActive(i)} onClick={() => choose(o)}
                   className={cx("flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-sm", i === active && "bg-sunken")}>
                   <span className="min-w-0"><span className="block truncate">{o.label}</span>{o.hint && <span className="block truncate text-xs text-muted">{o.hint}</span>}</span>
-                  {o.value === value && <Check className="h-4 w-4 shrink-0 text-brand" />}
+                  {o.value === value && <Check className="h-4 w-4 shrink-0 text-brand-strong" />}
                 </button>
               </li>
             ))}

@@ -59,7 +59,7 @@ export default function ScheduleForm({ kind, schedule }: { kind: Kind; schedule:
             <span className="text-sm">{t("active")}</span>
           </div>
         </FormGrid>
-        {channel !== "in_app" && <p className="text-xs text-muted">{t("profileHint")} <Link className="text-brand hover:underline" to="/admin/account">{t("openProfile")}</Link></p>}
+        {channel !== "in_app" && <p className="text-xs text-muted">{t("profileHint")} <Link className="text-brand-strong hover:underline" to="/admin/account">{t("openProfile")}</Link></p>}
         {problem && <Alert tone="bad">{problem}</Alert>}
         <div className="flex justify-end"><Button type="submit" loading={save.isPending}>{t("save")}</Button></div>
       </form>

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from ziira.kernel import privacy
-from ziira.sdk import Session, db_session, page_limit, page_offset, require_permission
+from ziira.sdk import DB_SESSION, Session, page_limit, page_offset, require_permission
 
 router = APIRouter(prefix="/api/v1/privacy", tags=["Privacy"],
                    dependencies=[Depends(require_permission("privacy.manage"))])
@@ -75,7 +75,7 @@ class CloseIn(BaseModel):
 
 
 @router.post("/requests", response_model=RequestOut, status_code=201)
-def create_request(body: RequestIn, s: Session = Depends(db_session)) -> object:
+def create_request(body: RequestIn, s: Session = DB_SESSION) -> object:
     """Record a request. The due date is `privacy_response_days` after it was received."""
     return privacy.create_request(s, company_id=body.company_id, request_type=body.request_type,
                                   subject=body.subject, notes=body.notes, received_on=body.received_on)
@@ -84,29 +84,29 @@ def create_request(body: RequestIn, s: Session = Depends(db_session)) -> object:
 @router.get("/requests", response_model=list[RequestOut])
 def list_requests(status: Literal["open", "in_progress", "completed", "refused"] | None = None,
                   company_id: UUID | None = None, limit: int = page_limit(), offset: int = page_offset(),
-                  s: Session = Depends(db_session)) -> object:
+                  s: Session = DB_SESSION) -> object:
     return privacy.list_requests(s, status=status, company_id=company_id, limit=limit, offset=offset)
 
 
 @router.get("/requests/{request_id}", response_model=RequestOut)
-def get_request(request_id: UUID, s: Session = Depends(db_session)) -> object:
+def get_request(request_id: UUID, s: Session = DB_SESSION) -> object:
     return privacy.get_request(s, request_id)
 
 
 @router.post("/requests/{request_id}/search", response_model=RequestOut)
-def search(request_id: UUID, s: Session = Depends(db_session)) -> object:
+def search(request_id: UUID, s: Session = DB_SESSION) -> object:
     """Ask every unit what it holds about the subject. Matches by name are flagged 'possible'."""
     return privacy.search(s, request_id)
 
 
 @router.post("/requests/{request_id}/export")
-def export(request_id: UUID, body: SelectionIn | None = None, s: Session = Depends(db_session)) -> object:
+def export(request_id: UUID, body: SelectionIn | None = None, s: Session = DB_SESSION) -> object:
     """The data held about the subject as a JSON bundle. Written to the audit log as a data export."""
     return privacy.export(s, request_id, body.record_ids if body else None)
 
 
 @router.post("/requests/{request_id}/erase", response_model=RequestOut)
-def erase(request_id: UUID, body: EraseIn, s: Session = Depends(db_session)) -> object:
+def erase(request_id: UUID, body: EraseIn, s: Session = DB_SESSION) -> object:
     """Anonymise the subject's records. Irreversible. Waits for a second person's approval when the company setting
     `privacy_erasure_needs_approval` is on (the default)."""
     return privacy.erase(s, request_id, confirm_subject=body.confirm_subject, reason=body.reason,
@@ -114,13 +114,13 @@ def erase(request_id: UUID, body: EraseIn, s: Session = Depends(db_session)) -> 
 
 
 @router.post("/requests/{request_id}/close", response_model=RequestOut)
-def close(request_id: UUID, body: CloseIn, s: Session = Depends(db_session)) -> object:
+def close(request_id: UUID, body: CloseIn, s: Session = DB_SESSION) -> object:
     """Finish a request by hand: an access answer was sent, a correction was made, or the request is refused."""
     return privacy.close_request(s, request_id, outcome=body.outcome, note=body.note)
 
 
 @router.get("/retention")
-def retention(company_id: UUID = Query(...), s: Session = Depends(db_session)) -> object:
+def retention(company_id: UUID = Query(...), s: Session = DB_SESSION) -> object:
     """What each unit keeps about people, for how long, and the company's retention settings."""
     return privacy.retention_overview(s, company_id)
 

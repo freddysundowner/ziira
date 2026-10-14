@@ -60,6 +60,7 @@ def test_wide_access_is_flagged_for_a_recent_grant(client, shop) -> None:  # typ
     summaries = [f["summary"] for f in findings(client, shop, "controls.new_wide_access")]
     assert any(s.startswith("boss was given the role Branch Manager over the whole company") for s in summaries)
     assert not any(s.startswith("manager was given") for s in summaries)           # a branch-level role is not wide
+    assert not any("Owner over the whole business" in s for s in summaries)       # the owner's role made at setup
 
 
 def audit_rows(shop, user: str, hour: int, count: int, day: date) -> None:  # type: ignore[no-untyped-def]

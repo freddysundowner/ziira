@@ -151,9 +151,9 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
 
     # when the sale happened, and which trading day it belongs to
     sold_at = sold_at or datetime.now(UTC)
-    day = till.business_date if not offline else tills.business_day(sold_at)
+    day = till.business_date if not offline else tills.business_day(session, company_id, sold_at)
     if offline and day_is_locked(session, till.branch_id, day):
-        day = tills.today()
+        day = tills.today(session, company_id)
         warnings.append("closed_day")
 
     if not lines or len(lines) > rules.MAX_LINES:

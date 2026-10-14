@@ -18,13 +18,14 @@ from ziira.modules.purchasing.permissions import GOODS_RECEIVE
 from ziira.modules.purchasing.repository import purchasing_repo as repo
 from ziira.modules.purchasing.repository.models import GoodsReceipt, GoodsReceiptLine, PurchaseOrderLine, SupplierPrice
 from ziira.modules.purchasing.services import access
-from ziira.modules.purchasing.services.common import NAIROBI, active_supplier, unit_enabled
+from ziira.modules.purchasing.services.common import active_supplier, unit_enabled
 from ziira.sdk import (
     Event,
     NotFound,
     Session,
     ValidationFailed,
     audit_record,
+    company_date_of,
     current_context,
     next_document_number,
     publish,
@@ -135,7 +136,7 @@ def receive_goods(session: Session, *, lines: list[ReceiptLineIn], order_id: UUI
             raise ValidationFailed(f"{product.sku} is batch-tracked: give the batch number")
 
     moment = received_at or datetime.now(UTC)
-    day = moment.astimezone(NAIROBI).date()
+    day = company_date_of(session, company_id, moment)
     receipt = GoodsReceipt(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, branch_id=branch_id,
         number=next_document_number(session, company_id=company_id, branch_id=branch_id, doc_type="goods_receipt",

@@ -111,8 +111,7 @@ def test_a_status_query() -> None:
     r = failed.provider().query_stk(StkQuery("174379", "ws_CO_1", CREDS))
     assert r.cancelled and not r.succeeded
     processing = Safaricom(query=(500, {"errorCode": "500.001.1001", "errorMessage": "The transaction is being processed"}))
-    with pytest.raises(httpx.HTTPStatusError):
-        processing.provider().query_stk(StkQuery("174379", "ws_CO_1", CREDS))
+    assert processing.provider().query_stk(StkQuery("174379", "ws_CO_1", CREDS)).result_code == -1   # pending, not an outage
     pending = Safaricom(query=(200, {"errorMessage": "The transaction is being processed"}))
     assert pending.provider().query_stk(StkQuery("174379", "ws_CO_1", CREDS)).result_code == -1
 
@@ -136,3 +135,28 @@ def test_the_fake_provider_follows_the_test_script() -> None:
     assert fake.query_stk(StkQuery("1", checkout)).succeeded
     FakeProvider.sent.clear()
     FakeProvider.outcomes.clear()
+
+
+def test_a_prompt_with_cents_is_refused_not_rounded() -> None:
+    pretend = Safaricom()
+    response = pretend.provider().stk_push(request(amount=D("10.50")))
+    assert not response.accepted and response.permanent_failure and "whole amount" in response.message
+    assert pretend.requests == []                                         # nothing was sent
+
+
+def test_a_refusal_with_an_error_body_is_a_refusal_not_an_outage() -> None:
+    wrong = Safaricom(push=(500, {"requestId": "r", "errorCode": "500.001.1001", "errorMessage": "Wrong credentials"}))
+    response = wrong.provider().stk_push(request())
+    assert not response.accepted and response.permanent_failure and response.message == "Wrong credentials"
+    outage = Safaricom(push=(502, {}))                                    # nothing readable: a real outage, retried later
+    with pytest.raises(httpx.HTTPStatusError):
+        outage.provider().stk_push(request())
+
+
+def test_a_prompt_still_being_processed_is_pending_even_when_daraja_says_500() -> None:
+    pending = Safaricom(query=(500, {"requestId": "r", "errorCode": "500.001.1001",
+                                     "errorMessage": "The transaction is being processed"}))
+    result = pending.provider().query_stk(StkQuery("174379", "ws_CO_1", CREDS, "sandbox"))
+    assert result.result_code == -1 and "processed" in result.description
+    with pytest.raises(httpx.HTTPStatusError):
+        Safaricom(query=(503, {})).provider().query_stk(StkQuery("174379", "ws_CO_1", CREDS, "sandbox"))

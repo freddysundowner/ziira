@@ -4,10 +4,9 @@ A price is tax-inclusive and has a start date. Setting a new price ends the curr
 of what a product sold for is kept and a sale on any past day can be priced again.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 
@@ -22,16 +21,12 @@ from ziira.sdk import (
     ValidationFailed,
     audit_record,
     check_company,
+    company_today,
     current_context,
     publish,
 )
 
-NAIROBI = ZoneInfo("Africa/Nairobi")
 MAX_PRICE = Decimal("100000000")
-
-
-def today() -> date:
-    return datetime.now(NAIROBI).date()
 
 
 def create_price_list(session: Session, *, company_id: UUID, name: str, branch_id: UUID | None = None,
@@ -85,7 +80,7 @@ def set_price(session: Session, price_list_id: UUID, *, product_id: UUID, price:
         raise ValidationFailed("Product not found in this company")
     if price < 0 or price > MAX_PRICE or price != price.quantize(Decimal("0.01")):
         raise ValidationFailed("A price is an amount of zero or more with at most 2 decimal places")
-    start = valid_from or today()
+    start = valid_from or company_today(session, price_list.company_id)
     current = products_repo.open_price_item(session, price_list_id, product_id)
     if current is not None:
         if current.valid_from >= start:
@@ -113,7 +108,7 @@ def current_prices(session: Session, company_id: UUID, branch_id: UUID | None, p
                    day: date | None = None, customer_group: str | None = None) -> dict[UUID, Decimal]:
     """The tax-inclusive selling price of each product that has one on `day`: from a list for the customer's group if
     there is one, then the branch's default list, then the company's. Products without a price are absent."""
-    day = day or today()
+    day = day or company_today(session, company_id)
     prices: dict[UUID, Decimal] = {}
     for price_list in products_repo.lists_for_branch(session, company_id, branch_id, customer_group):
         wanted = product_ids - prices.keys()

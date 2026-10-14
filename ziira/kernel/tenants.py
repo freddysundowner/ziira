@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import make_url, text
 
-from ziira.kernel import audit, directory
+from ziira.kernel import audit, company_settings, directory
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import system_context
 from ziira.kernel.db import (
@@ -84,19 +84,21 @@ def find_tenant(code_or_id: str) -> TenantRecord:
 def create_tenant(*, name: str, code: str, company: str, branch_code: str, branch_name: str,
                   owner_name: str, owner_email: str, currency: str, owner_password: str | None = None,
                   owner_password_hash: str | None = None, tax_id: str | None = None, phone_country_code: str = "",
-                  country: str | None = None, vat_registered: bool = False,
+                  country: str | None = None, vat_registered: bool = False, timezone: str | None = None,
                   registry: Registry | None = None) -> NewTenant:
     """Create a business with its own database, ready to sign in to with the workspace code.
 
     The owner gets the Owner role for the whole tenant. `currency` is the company's base currency (a three-letter code
     such as USD or KES); `phone_country_code` is its calling code (such as 44 or 254), used to read national phone
-    numbers. Nothing about a country is assumed: both are chosen here. The owner's password is given as text or, when
+    numbers; `timezone` (an IANA name such as Europe/London; default UTC) is where its business dates are read. Nothing
+    about a country is assumed: all are chosen here. The owner's password is given as text or, when
     it was already hashed (self-service registration), as `owner_password_hash`.
     """
     currency = currency.strip().upper()
     if not re.fullmatch(r"[A-Z]{3}", currency):
         raise ValidationFailed("Currency is a three-letter code such as USD")
     phone_country_code = check_calling_code(phone_country_code)
+    zone = str(company_settings.SETTINGS["timezone"].parse(timezone)) if timezone and timezone.strip() else None
     country = country.strip().upper() if country and country.strip() else None
     if country is not None and not re.fullmatch(r"[A-Z]{2}", country):
         raise ValidationFailed("Country is a two-letter code such as GB")
@@ -137,7 +139,7 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
                          branch_code=branch_code, branch_name=branch_name, owner_name=owner_name,
                          owner_email=owner_email, password_hash=password_hash, tax_id=tax_id,
                          vat_registered=vat_registered, currency=currency, phone_country_code=phone_country_code,
-                         country=country)
+                         country=country, timezone=zone)
         with master_session() as s:
             s.execute(text("update master.tenant set status = 'active', updated_at = now() where id = :i"),
                       {"i": str(tenant_id)})
@@ -151,12 +153,14 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
 def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id: UUID, owner_id: UUID, *,
                      name: str, code: str, company: str, branch_code: str, branch_name: str, owner_name: str,
                      owner_email: str, password_hash: str, tax_id: str | None, vat_registered: bool, currency: str,
-                     phone_country_code: str, country: str | None) -> None:
+                     phone_country_code: str, country: str | None, timezone: str | None = None) -> None:
     system_context(tenant_id)
     with tenant_session(tenant_id, admin=True) as s:
         s.execute(text("insert into kernel.tenant (id, name, code, mfa_policy) values (:i, :n, :c, :m)"),
                   {"i": str(tenant_id), "n": name, "c": code, "m": get_settings().mfa_default_policy})
-        settings = {"phone_country_code": phone_country_code} if phone_country_code else {}
+        settings: dict[str, str] = {"phone_country_code": phone_country_code} if phone_country_code else {}
+        if timezone:
+            settings["timezone"] = timezone
         s.execute(text("insert into kernel.company (id, tenant_id, name, tax_id, vat_registered, base_currency, "
                        "country, settings) values (:i, :t, :n, :p, :v, :cur, :ctry, cast(:s as jsonb))"),
                   {"i": str(company_id), "t": str(tenant_id), "n": company, "p": tax_id, "v": vat_registered,

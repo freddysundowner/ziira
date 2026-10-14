@@ -13,7 +13,7 @@ Use `ziira/modules/products` as the template.
 4. **Services** in `services/`: one file per use case. A service validates with domain rules,
    reads and writes through the repository, calls `audit_record(...)`, and `publish(...)` events.
 5. **API** in `api/schemas.py` and `api/routes.py`. Routes only convert HTTP to service calls and use
-   `Depends(db_session)`. Every route declares the permission it needs:
+   `DB_SESSION` (`session: Session = DB_SESSION`; it commits before the reply is sent). Every route declares the permission it needs:
    `dependencies=[Depends(require_permission(STOCK_ADJUST))]`.
 6. **Public interface** in `public.py`: the functions other modules may call.
 7. **Event handlers** in `events.py` with `@subscribe("event.type")`. They run inside the publisher's

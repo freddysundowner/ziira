@@ -11,7 +11,7 @@ reason code's category with `check_reason` before passing it in.
 """
 
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
@@ -26,17 +26,11 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     company_setting,
+    company_today,
     current_context,
     flag_for_review,
     publish,
 )
-
-NAIROBI = timezone(timedelta(hours=3))        # Kenya has no daylight saving time
-
-
-def business_today() -> date:
-    """Today's date in Kenya: the business date of a movement unless the document says otherwise."""
-    return datetime.now(UTC).astimezone(NAIROBI).date()
 
 
 @dataclass(frozen=True)
@@ -121,7 +115,8 @@ def post_movement(session: Session, request: MovementRequest) -> StockMovement:
         quantity=request.quantity, unit_cost=costed.unit_cost, value=costed.value,
         movement_type=request.movement_type, source_type=request.source_type, source_id=request.source_id,
         source_line_id=request.source_line_id, reason_code_id=request.reason_code_id,
-        business_date=request.business_date or business_today(), approved_by=request.approved_by)
+        business_date=request.business_date or company_today(session, request.company_id),
+        approved_by=request.approved_by)
     inventory_repo.add(session, movement)
 
     balance.quantity += request.quantity

@@ -29,7 +29,7 @@ export default function PayablesPage() {
         <DataTable rows={rows} loading={owed.isLoading} error={owed.error?.message} onRetry={() => void owed.refetch()} rowKey={(r) => r.supplier_id}
           rowHref={(r) => `/suppliers/${r.supplier_id}`} searchText={(r) => r.supplier} searchPlaceholder={t("searchSuppliers")} empty={{ title: t("owingNothing"), hint: t("owingNothingHint") }}
           columns={[
-            { header: t("supplier"), sortValue: (r) => r.supplier, cell: (r) => <Link className="font-medium text-brand hover:underline" to={`/suppliers/${r.supplier_id}`}>{r.supplier}</Link> },
+            { header: t("supplier"), sortValue: (r) => r.supplier, cell: (r) => <Link className="font-medium text-brand-strong hover:underline" to={`/suppliers/${r.supplier_id}`}>{r.supplier}</Link> },
             ...AGE_BUCKETS.map((b) => ({ header: t(`ageing.${b}`), align: "right" as const, hideBelow: b === "not_due" ? undefined : ("md" as const), sortValue: (r: PayableRow) => Number(r[b]), cell: (r: PayableRow) => (Number(r[b]) > 0 ? money(r[b], currency) : "—") })),
             { header: t("total"), align: "right", sortValue: (r) => Number(r.total), cell: (r) => <span className="font-semibold">{money(r.total, currency)}</span> },
           ]} />

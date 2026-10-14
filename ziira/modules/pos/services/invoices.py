@@ -159,7 +159,7 @@ def issue_invoice(session: Session, *, customer_id: UUID, lines: list[InvoiceLin
     if branch_id is None:
         raise ValidationFailed("Say which branch is invoicing (or name the stock location)")
     ctx.require(INVOICES_MANAGE, company_id=company_id, branch_id=branch_id)
-    day = issue_date or tills.today()
+    day = issue_date or tills.today(session, company_id)
 
     products = {}
     for line in lines:
@@ -270,7 +270,8 @@ def cancel_invoice(session: Session, invoice_id: UUID, reason: str) -> InvoiceVi
     audit_record(session, "cancel", "pos.sales_invoice", invoice.id,
                  {"number": invoice.number, "reason": reason.strip()})
     publish(session, Event("sale.returned", "pos.sales_invoice", invoice.id, {
-        "company_id": invoice.company_id, "branch_id": invoice.branch_id, "business_date": tills.today(),
+        "company_id": invoice.company_id, "branch_id": invoice.branch_id,
+        "business_date": tills.today(session, invoice.company_id),
         "number": f"{invoice.number} (cancelled)", "sale_id": invoice.id, "location_id": invoice.location_id,
         "net": invoice.subtotal, "tax": invoice.tax_total, "customer_id": invoice.customer_id, "voided": True,
         "payments": [{"method": "credit", "amount": invoice.total}],

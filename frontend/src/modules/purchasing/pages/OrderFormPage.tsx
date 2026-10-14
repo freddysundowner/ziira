@@ -43,7 +43,9 @@ function OrderForm({ existing, initialLines, requestId, initialCompany, initialB
 }) {
   const { t } = useTranslation("purchasing");
   const { company } = useCompany();
-  const [companyId, setCompanyId] = useState(existing?.company_id ?? initialCompany ?? company?.id ?? "");
+  // The company list may still be loading when the page opens (a hard load of /orders/new): derive the id, never freeze it in state
+  const [chosenCompany, setCompanyId] = useState(existing?.company_id ?? initialCompany ?? "");
+  const companyId = chosenCompany || company?.id || "";
   const [branchId, setBranchId] = useState(existing?.branch_id ?? initialBranch);
   const [supplierId, setSupplierId] = useState(existing?.supplier_id ?? initialSupplier);
   const [orderDate, setOrderDate] = useState(existing?.order_date ?? today());

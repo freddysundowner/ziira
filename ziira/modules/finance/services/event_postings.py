@@ -24,8 +24,8 @@ from uuid import UUID
 
 from ziira.modules.finance.domain import recipes
 from ziira.modules.finance.repository.models import JournalEntry
-from ziira.modules.finance.services.posting import post_from_recipe, today
-from ziira.sdk import Event, Session, ValidationFailed
+from ziira.modules.finance.services.posting import post_from_recipe
+from ziira.sdk import Event, Session, ValidationFailed, company_today
 
 
 def _uuid(value: Any, name: str) -> UUID:
@@ -45,15 +45,17 @@ def _amount(value: Any, name: str) -> Decimal:
     return number
 
 
-def _date(value: Any) -> date:
+def _date(session: Session, payload: dict[str, Any], key: str = "business_date") -> date:
+    """The event's business date; an event without one is dated today where the company is."""
+    value = payload.get(key)
     if value is None:
-        return today()
+        return company_today(session, _uuid(payload.get("company_id"), "company_id"))
     if isinstance(value, date):
         return value
     try:
         return date.fromisoformat(str(value))
     except ValueError:
-        raise ValidationFailed("'business_date' is not a date") from None
+        raise ValidationFailed(f"'{key}' is not a date") from None
 
 
 def _optional_uuid(value: Any, name: str) -> UUID | None:
@@ -68,7 +70,7 @@ def post_stock_movement(session: Session, event: Event) -> JournalEntry | None:
     recipe = recipes.stock_movement(movement_type, value, str(p.get("location_kind") or "store"))
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="stock_movement", journal_code="STK",
-        entry_date=_date(p.get("business_date")), recipe=recipe, context={"movement_type": movement_type},
+        entry_date=_date(session, p), recipe=recipe, context={"movement_type": movement_type},
         branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="stock_movement",
         source_id=event.aggregate_id, description=f"Stock {movement_type.replace('_', ' ')}")
 
@@ -90,7 +92,7 @@ def post_sale(session: Session, event: Event) -> JournalEntry | None:
     number = p.get("number")
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="sale", journal_code="SAL",
-        entry_date=_date(p.get("business_date")), recipe=recipes.sale(net, tax, money, party=customer),
+        entry_date=_date(session, p), recipe=recipes.sale(net, tax, money, party=customer),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="sale",
         source_id=event.aggregate_id, description=f"Sale {number}" if number else "Sale")
 
@@ -102,7 +104,7 @@ def post_sale_return(session: Session, event: Event) -> JournalEntry | None:
     number = p.get("number")
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="sale_return", journal_code="SAL",
-        entry_date=_date(p.get("business_date")), recipe=recipes.sale_return(net, tax, money, party=customer),
+        entry_date=_date(session, p), recipe=recipes.sale_return(net, tax, money, party=customer),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="sale_return",
         source_id=event.aggregate_id, description=f"Sales return {number}" if number else "Sales return")
 
@@ -112,7 +114,7 @@ def post_settlement(session: Session, event: Event) -> JournalEntry | None:
     p = event.payload
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="settlement", journal_code="CSH",
-        entry_date=_date(p.get("business_date")),
+        entry_date=_date(session, p),
         recipe=recipes.settlement(_amount(p.get("amount"), "amount"), _amount(p.get("fee", 0), "fee"),
                                   description=f"M-Pesa settlement {p.get('reference') or ''}".strip()),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="settlement",
@@ -124,7 +126,7 @@ def post_cash_deposit(session: Session, event: Event) -> JournalEntry | None:
     p = event.payload
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="cash_deposit", journal_code="CSH",
-        entry_date=_date(p.get("business_date")), recipe=recipes.cash_deposit(_amount(p.get("amount"), "amount")),
+        entry_date=_date(session, p), recipe=recipes.cash_deposit(_amount(p.get("amount"), "amount")),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="cash_deposit",
         source_id=event.aggregate_id, description=f"Cash deposit {p.get('reference') or ''}".strip())
 
@@ -135,7 +137,7 @@ def post_till_variance(session: Session, event: Event) -> JournalEntry | None:
     variance = _amount(p.get("variance", 0), "variance")
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="till_variance", journal_code="CSH",
-        entry_date=_date(p.get("business_date")), recipe=recipes.till_variance(variance), context={},
+        entry_date=_date(session, p), recipe=recipes.till_variance(variance), context={},
         branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="till_variance",
         source_id=event.aggregate_id, description="Till shortage" if variance < 0 else "Till overage")
 
@@ -156,7 +158,7 @@ def post_supplier_bill(session: Session, event: Event, *, reverse: bool = False)
     label = "Reversal of supplier bill" if reverse else "Supplier bill"
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_bill", journal_code="PUR",
-        entry_date=_date(p.get("business_date")), recipe=recipe, context={},
+        entry_date=_date(session, p), recipe=recipe, context={},
         branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
         source_type="supplier_bill_reversal" if reverse else "supplier_bill", source_id=event.aggregate_id,
         description=f"{label} {p.get('number') or ''}".strip())
@@ -173,7 +175,7 @@ def post_supplier_payment(session: Session, event: Event, *, kind: str = "paymen
              }[kind]
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_payment",
-        journal_code="CSH", entry_date=_date(p.get("business_date")),
+        journal_code="CSH", entry_date=_date(session, p),
         recipe=recipes.supplier_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
                                         party=_optional_uuid(p.get("supplier_id"), "supplier_id"), reverse=reverse),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type=f"supplier_{kind}",
@@ -194,7 +196,7 @@ def post_supplier_credit_note(session: Session, event: Event) -> JournalEntry | 
         description=f"Supplier credit note {p.get('number') or ''}".strip())
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="supplier_credit_note",
-        journal_code="PUR", entry_date=_date(p.get("business_date")), recipe=recipe, context={},
+        journal_code="PUR", entry_date=_date(session, p), recipe=recipe, context={},
         branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="supplier_credit_note",
         source_id=event.aggregate_id, description=f"Supplier credit note {p.get('number') or ''}".strip())
 
@@ -209,7 +211,7 @@ def post_customer_payment(session: Session, event: Event, *, kind: str = "paymen
              "refund": "Refund to customer", "refund_reversal": "Reversal of refund to customer"}[kind]
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="customer_payment",
-        journal_code="CSH", entry_date=_date(p.get("business_date")),
+        journal_code="CSH", entry_date=_date(session, p),
         recipe=recipes.customer_payment(str(p.get("method") or "other"), _amount(p.get("amount"), "amount"),
                                         party=_optional_uuid(p.get("customer_id"), "customer_id"), reverse=reverse),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type=f"customer_{kind}",
@@ -239,7 +241,7 @@ def post_payroll(session: Session, event: Event) -> JournalEntry | None:
     label = f"Payroll {p.get('period_start')} to {p.get('period_end')}"
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="payroll", journal_code="PAY",
-        entry_date=_date(p.get("period_end")), recipe=recipes.payroll(_groups(p), description=label), context={},
+        entry_date=_date(session, p, "period_end"), recipe=recipes.payroll(_groups(p), description=label), context={},
         branch_id=None, source_type="payroll", source_id=event.aggregate_id, description=label)
 
 
@@ -251,5 +253,6 @@ def post_payroll_payment(session: Session, event: Event) -> JournalEntry | None:
     label = f"Salaries paid for {p.get('period_start')} to {p.get('period_end')}"
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="payroll_payment", journal_code="PAY",
-        entry_date=_date(p.get("paid_on")), recipe=recipes.payroll_payment(payments, description=label), context={},
+        entry_date=_date(session, p, "paid_on"),
+        recipe=recipes.payroll_payment(payments, description=label), context={},
         branch_id=None, source_type="payroll_payment", source_id=event.aggregate_id, description=label)

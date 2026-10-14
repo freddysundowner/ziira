@@ -176,5 +176,11 @@
     "goSignIn": "Go to sign in",
     "badLink": "This link is not valid.",
     "askNew": "Ask for a new link"
+  },
+  "supportBanner": {
+    "viewing": "Ziira support is viewing your business ({{name}})",
+    "full": "full access",
+    "read": "read-only",
+    "until": "ends {{until}}"
   }
 }

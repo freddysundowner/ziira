@@ -73,7 +73,7 @@ from ziira.modules.inventory.services.transfers import (
     list_transfers,
     receive_transfer,
 )
-from ziira.sdk import Session, db_session, page_limit, page_offset, require_permission
+from ziira.sdk import DB_SESSION, Session, page_limit, page_offset, require_permission
 
 router = APIRouter()
 VIEW = [Depends(require_permission(STOCK_VIEW))]
@@ -81,7 +81,7 @@ VIEW = [Depends(require_permission(STOCK_VIEW))]
 
 @router.post("/locations", response_model=LocationOut, status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(require_permission(LOCATIONS_MANAGE))])
-def post_location(body: LocationIn, session: Session = Depends(db_session)) -> object:
+def post_location(body: LocationIn, session: Session = DB_SESSION) -> object:
     """Create a store, warehouse, in-transit or virtual location."""
     return create_location(session, company_id=body.company_id, branch_id=body.branch_id, code=body.code,
                            name=body.name, kind=body.kind)
@@ -89,13 +89,13 @@ def post_location(body: LocationIn, session: Session = Depends(db_session)) -> o
 
 @router.get("/locations", response_model=list[LocationOut], dependencies=VIEW)
 def get_locations(company_id: UUID | None = None, branch_id: UUID | None = None, kind: str | None = None,
-                  session: Session = Depends(db_session)) -> object:
+                  session: Session = DB_SESSION) -> object:
     return list_locations(session, company_id, branch_id, kind)
 
 
 @router.post("/opening-stock", response_model=list[MovementOut], status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(require_permission(STOCK_ADJUST))])
-def post_opening(body: OpeningStockIn, session: Session = Depends(db_session)) -> object:
+def post_opening(body: OpeningStockIn, session: Session = DB_SESSION) -> object:
     """Record the stock a location already had when the business started using Ziira."""
     posted = post_opening_stock(
         session, company_id=body.company_id, location_id=body.location_id, business_date=body.business_date,
@@ -106,7 +106,7 @@ def post_opening(body: OpeningStockIn, session: Session = Depends(db_session)) -
 
 @router.post("/adjustments", response_model=AdjustmentOut, status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(require_permission(STOCK_ADJUST))])
-def post_adjustment(body: AdjustmentIn, session: Session = Depends(db_session)) -> object:
+def post_adjustment(body: AdjustmentIn, session: Session = DB_SESSION) -> object:
     """Write a draft stock adjustment. It changes nothing until it is submitted (and approved)."""
     return _adjustment_out(create_adjustment(
         session, company_id=body.company_id, location_id=body.location_id, reason_code_id=body.reason_code_id,
@@ -116,18 +116,18 @@ def post_adjustment(body: AdjustmentIn, session: Session = Depends(db_session)) 
 @router.get("/adjustments", response_model=list[AdjustmentSummaryOut], dependencies=VIEW)
 def get_adjustments(location_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
                     limit: int = page_limit(), offset: int = page_offset(),
-                    session: Session = Depends(db_session)) -> object:
+                    session: Session = DB_SESSION) -> object:
     return list_adjustments(session, location_id=location_id, status=status_, limit=limit, offset=offset)
 
 
 @router.get("/adjustments/{adjustment_id}", response_model=AdjustmentOut, dependencies=VIEW)
-def get_one_adjustment(adjustment_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_one_adjustment(adjustment_id: UUID, session: Session = DB_SESSION) -> object:
     return _adjustment_out(get_adjustment(session, adjustment_id))
 
 
 @router.post("/adjustments/{adjustment_id}/submit", response_model=AdjustmentOut,
              dependencies=[Depends(require_permission(STOCK_ADJUST))])
-def post_submit_adjustment(adjustment_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_submit_adjustment(adjustment_id: UUID, session: Session = DB_SESSION) -> object:
     """Send the adjustment for approval. It posts at once if the approval matrix needs no approval for its size;
     otherwise an approver decides it under /api/v1/approvals."""
     return _adjustment_out(submit_adjustment(session, adjustment_id))
@@ -137,7 +137,7 @@ TRANSFER = [Depends(require_permission(STOCK_TRANSFER))]
 
 
 @router.post("/transfers", response_model=TransferOut, status_code=status.HTTP_201_CREATED, dependencies=TRANSFER)
-def post_transfer(body: TransferIn, session: Session = Depends(db_session)) -> object:
+def post_transfer(body: TransferIn, session: Session = DB_SESSION) -> object:
     """Write a draft transfer between two locations of a company. Nothing moves until it is dispatched."""
     return _transfer_out(create_transfer(
         session, company_id=body.company_id, from_location_id=body.from_location_id,
@@ -148,23 +148,23 @@ def post_transfer(body: TransferIn, session: Session = Depends(db_session)) -> o
 @router.get("/transfers", response_model=list[TransferSummaryOut], dependencies=VIEW)
 def get_transfers(location_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
                   limit: int = page_limit(), offset: int = page_offset(),
-                    session: Session = Depends(db_session)) -> object:
+                    session: Session = DB_SESSION) -> object:
     return list_transfers(session, location_id=location_id, status=status_, limit=limit, offset=offset)
 
 
 @router.get("/transfers/{transfer_id}", response_model=TransferOut, dependencies=VIEW)
-def get_one_transfer(transfer_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_one_transfer(transfer_id: UUID, session: Session = DB_SESSION) -> object:
     return _transfer_out(get_transfer(session, transfer_id))
 
 
 @router.post("/transfers/{transfer_id}/dispatch", response_model=TransferOut, dependencies=TRANSFER)
-def post_dispatch(transfer_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_dispatch(transfer_id: UUID, session: Session = DB_SESSION) -> object:
     """Send the stock: it leaves the source location and is held in transit."""
     return _transfer_out(dispatch_transfer(session, transfer_id))
 
 
 @router.post("/transfers/{transfer_id}/receive", response_model=TransferOut, dependencies=TRANSFER)
-def post_receive(transfer_id: UUID, body: ReceiveIn | None = None, session: Session = Depends(db_session)) -> object:
+def post_receive(transfer_id: UUID, body: ReceiveIn | None = None, session: Session = DB_SESSION) -> object:
     """Record what arrived. Differences need a reason and may need approval (status 'pending_approval')."""
     lines = [ReceivedLine(x.line_id, x.qty_received, x.reason_code_id) for x in body.lines] \
         if body and body.lines is not None else None
@@ -172,7 +172,7 @@ def post_receive(transfer_id: UUID, body: ReceiveIn | None = None, session: Sess
 
 
 @router.post("/transfers/{transfer_id}/cancel", response_model=TransferOut, dependencies=TRANSFER)
-def post_cancel_transfer(transfer_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_cancel_transfer(transfer_id: UUID, session: Session = DB_SESSION) -> object:
     """Cancel a draft transfer."""
     return _transfer_out(cancel_transfer(session, transfer_id))
 
@@ -181,7 +181,7 @@ COUNT = [Depends(require_permission(STOCK_COUNT))]
 
 
 @router.post("/counts", response_model=CountOut, status_code=status.HTTP_201_CREATED, dependencies=COUNT)
-def post_count(body: CountStartIn, session: Session = Depends(db_session)) -> object:
+def post_count(body: CountStartIn, session: Session = DB_SESSION) -> object:
     """Start counting a location: takes a snapshot of what the system holds."""
     return _count_out(start_count(session, company_id=body.company_id, location_id=body.location_id,
                                   product_ids=set(body.product_ids) if body.product_ids is not None else None))
@@ -190,17 +190,17 @@ def post_count(body: CountStartIn, session: Session = Depends(db_session)) -> ob
 @router.get("/counts", response_model=list[CountSummaryOut], dependencies=VIEW)
 def get_counts(location_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
                limit: int = page_limit(), offset: int = page_offset(),
-                    session: Session = Depends(db_session)) -> object:
+                    session: Session = DB_SESSION) -> object:
     return list_counts(session, location_id=location_id, status=status_, limit=limit, offset=offset)
 
 
 @router.get("/counts/{count_id}", response_model=CountOut, dependencies=VIEW)
-def get_one_count(count_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_one_count(count_id: UUID, session: Session = DB_SESSION) -> object:
     return _count_out(get_count(session, count_id))
 
 
 @router.post("/counts/{count_id}/entries", response_model=CountOut, dependencies=COUNT)
-def post_count_entries(count_id: UUID, body: CountEntriesIn, session: Session = Depends(db_session)) -> object:
+def post_count_entries(count_id: UUID, body: CountEntriesIn, session: Session = DB_SESSION) -> object:
     """Enter counted quantities (again to correct). Each is compared with what the system held when it was counted."""
     return _count_out(record_counts(session, count_id, [
         CountEntry(e.product_id, e.counted_qty, e.batch_id, e.reason_code_id) for e in body.entries]))
@@ -208,21 +208,21 @@ def post_count_entries(count_id: UUID, body: CountEntriesIn, session: Session = 
 
 @router.post("/counts/{count_id}/finish", response_model=CountOut, dependencies=COUNT)
 def post_finish_count(count_id: UUID, body: CountFinishIn | None = None,
-                      session: Session = Depends(db_session)) -> object:
+                      session: Session = DB_SESSION) -> object:
     """End the counting and move the count to review."""
     return _count_out(finish_counting(session, count_id, uncounted_as_zero=bool(body and body.uncounted_as_zero)))
 
 
 @router.post("/counts/{count_id}/submit", response_model=CountOut, dependencies=COUNT)
 def post_submit_count(count_id: UUID, body: CountSubmitIn | None = None,
-                      session: Session = Depends(db_session)) -> object:
+                      session: Session = DB_SESSION) -> object:
     """Submit the reviewed count. Differences up to the company's threshold post at once; larger ones need approval."""
     return _count_out(submit_count(session, count_id, {r.line_id: r.reason_code_id for r in body.reasons}
                                    if body else None))
 
 
 @router.post("/counts/{count_id}/cancel", response_model=CountOut, dependencies=COUNT)
-def post_cancel_count(count_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_cancel_count(count_id: UUID, session: Session = DB_SESSION) -> object:
     """Abandon a count that has not been posted."""
     return _count_out(cancel_count(session, count_id))
 
@@ -230,7 +230,7 @@ def post_cancel_count(count_id: UUID, session: Session = Depends(db_session)) ->
 @router.get("/balances", response_model=list[BalanceOut], dependencies=VIEW)
 def get_balances(location_id: UUID | None = None, product_id: UUID | None = None, branch_id: UUID | None = None,
                  include_zero: bool = False, limit: int = page_limit(), offset: int = page_offset(),
-                 session: Session = Depends(db_session)) -> object:
+                 session: Session = DB_SESSION) -> object:
     """Current stock per location, product and batch."""
     return [BalanceOut(location_id=b.location_id, location_code=loc.code, product_id=b.product_id, sku=sku,
                        product_name=name, batch_id=b.batch_id, quantity=b.quantity)
@@ -242,14 +242,14 @@ def get_balances(location_id: UUID | None = None, product_id: UUID | None = None
 @router.get("/movements", response_model=list[MovementOut], dependencies=VIEW)
 def get_movements(location_id: UUID | None = None, product_id: UUID | None = None, source_id: UUID | None = None,
                   limit: int = page_limit(), offset: int = page_offset(),
-                    session: Session = Depends(db_session)) -> object:
+                    session: Session = DB_SESSION) -> object:
     """The stock ledger, newest first. Costs and values need 'stock.cost'."""
     return [_movement_out(m) for m in list_movements(session, location_id=location_id, product_id=product_id,
                                                      source_id=source_id, limit=limit, offset=offset)]
 
 
 @router.get("/products/{product_id}/stock", response_model=ProductStockOut, dependencies=VIEW)
-def get_product_stock(product_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_product_stock(product_id: UUID, session: Session = DB_SESSION) -> object:
     """A product's total stock, with its average cost and value for users who may see costs."""
     s = product_stock(session, product_id)
     return ProductStockOut(product_id=s.product_id, company_id=s.company_id, quantity=s.quantity,

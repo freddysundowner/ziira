@@ -58,7 +58,8 @@ class NewFullAccess(IntelCheck):
     code = "controls.new_wide_access"
     title = "Someone was given wide access"
     area = "controls"
-    description = "A person was given a role over the whole business or a whole company in the last few days."
+    description = ("A person was given a role over the whole business or a whole company in the last few days "
+                   "(not the owner's own role, made when the business was set up).")
     default_severity = "medium"
     params = {"days": 14}
     auto_resolves = False
@@ -70,7 +71,8 @@ class NewFullAccess(IntelCheck):
             "g.full_name as granter from kernel.user_role ur join kernel.role r on r.id = ur.role_id "
             "join kernel.app_user u on u.id = ur.user_id "
             "left join kernel.app_user g on g.id = ur.created_by where ur.scope in ('tenant', 'company') "
-            "and (ur.company_id is null or ur.company_id = :c) and ur.created_at >= :since order by ur.created_at"),
+            "and (ur.company_id is null or ur.company_id = :c) and ur.created_at >= :since "
+            "and ur.created_by is not null order by ur.created_at"),     # not the owner's role made at setup
             {"c": str(ctx.company_id), "since": since}).all()
         out = []
         for r in rows:

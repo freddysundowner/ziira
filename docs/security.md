@@ -60,9 +60,33 @@ nobody reviewed). `GET /metrics` and the alerting list in `docs/operations.md` c
 
 ## Staff access to a business's data
 
-The operator reaches a business's data only through the database credentials (kept in the master database, encrypted) and the CLI.
-A consent-based, time-limited, logged "support access" feature is **not built**: until it is, do not access tenant data without the
-business's written consent, and record each access in the operator's ticket. (Spec 18, "Access by staff": open.)
+Platform staff ("operators") are not users of any business and see nothing without the business's consent (Spec 18, "Access by staff").
+
+- **Consent.** A business user with `support.grant` (Owner by default) gives a *support grant* under Settings, Support access (or
+  `POST /api/v1/support/grants`): a reason, a level (`read` or `full`), and a length of 1 hour to 7 days (default 24 hours). They can
+  list grants, see who used each, and revoke at any moment; revoking ends every open support session with the next request.
+- **Operators.** Created only by the CLI (`ziira operator create`), stored in the master database with a scrypt password hash and an
+  encrypted authenticator secret. The second factor is compulsory: sign-in is password (`POST /api/v1/operator/sign-in`), then a code
+  (`/operator/mfa/verify`); both steps are throttled like business sign-ins, a code works once, and operator tokens (kind `op`, 30
+  minutes, revocable) are refused by every business endpoint, as business tokens are by the operator endpoints.
+- **Sessions.** `POST /api/v1/operator/businesses/{code}/support-session` works only while that business has a grant that is neither
+  expired nor revoked, and returns a token for at most 60 minutes. The token is re-checked against the grant (and the operator's
+  status) on **every request**, so expiry, revocation and disabling an operator apply to sessions already open. A grant in one
+  business gives nothing in another.
+- **Limits.** A `read` session holds only `*.view` permissions (not `payroll.view`) and every non-GET request is refused. A `full`
+  session holds every permission except `users.manage`, `roles.manage`, `api_keys.manage`, `support.grant`, `privacy.manage` and
+  `units.manage`, and may not change passwords, two-step verification, roles, users, API keys, the security policy, support grants, or
+  sign anyone out. There is no user behind a support session (the audit `user_id` is empty).
+- **Logging.** Every request is written (after the response) to the business's own audit log (channel `support`, action
+  `support_request`, with method, route template and status) and to `master.support_access_log` (start, end, revoked, each request or
+  refusal: operator, business, grant, route template, status; the database refuses updates and deletes). Writes made in a session
+  also carry `support_operator_id` and `support_operator` in the audit entry's `changes`. The owner reads this at
+  `GET /api/v1/support/access-log` and on the Support access page. When a session opens, the person who gave the access is emailed
+  (through the business's email channel, if it has one) and `/auth/me` carries `support_session` so the web app shows a red bar.
+
+Not covered: the database credentials in the master database still let someone with server access read any tenant database directly;
+that is an infrastructure control (who has server access), not something this feature can prevent. Request logging is written after
+the response and a failure to write is logged at error level, not shown to the operator.
 
 ## Dependencies and supply chain
 

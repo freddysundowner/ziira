@@ -4,7 +4,75 @@
  * [ISO 3166 code, name, calling code (digits, no +), ISO 4217 currency of the country].
  * Countries that share a calling code (the +1 numbering plan) share it here.
  */
-export type Country = { code: string; name: string; calling: string; currency: string };
+export type Country = { code: string; name: string; calling: string; currency: string; zone: string };
+
+/**
+ * The main IANA time zone of each country (for countries with several, the most populated): a default for the business's
+ * time zone at registration, which the owner can change later in Settings. Reference data, not behaviour.
+ */
+const ZONES: Readonly<Record<string, string>> = {
+  AE: "Asia/Dubai", AF: "Asia/Kabul", AL: "Europe/Tirane",
+  AM: "Asia/Yerevan", AO: "Africa/Luanda", AR: "America/Argentina/Buenos_Aires",
+  AT: "Europe/Vienna", AU: "Australia/Sydney", AZ: "Asia/Baku",
+  BA: "Europe/Sarajevo", BB: "America/Barbados", BD: "Asia/Dhaka",
+  BE: "Europe/Brussels", BF: "Africa/Ouagadougou", BG: "Europe/Sofia",
+  BH: "Asia/Bahrain", BI: "Africa/Bujumbura", BJ: "Africa/Porto-Novo",
+  BN: "Asia/Brunei", BO: "America/La_Paz", BR: "America/Sao_Paulo",
+  BS: "America/Nassau", BT: "Asia/Thimphu", BW: "Africa/Gaborone",
+  BY: "Europe/Minsk", BZ: "America/Belize", CA: "America/Toronto",
+  CD: "Africa/Kinshasa", CF: "Africa/Bangui", CG: "Africa/Brazzaville",
+  CH: "Europe/Zurich", CI: "Africa/Abidjan", CL: "America/Santiago",
+  CM: "Africa/Douala", CN: "Asia/Shanghai", CO: "America/Bogota",
+  CR: "America/Costa_Rica", CU: "America/Havana", CV: "Atlantic/Cape_Verde",
+  CY: "Asia/Nicosia", CZ: "Europe/Prague", DE: "Europe/Berlin",
+  DJ: "Africa/Djibouti", DK: "Europe/Copenhagen", DO: "America/Santo_Domingo",
+  DZ: "Africa/Algiers", EC: "America/Guayaquil", EE: "Europe/Tallinn",
+  EG: "Africa/Cairo", ER: "Africa/Asmara", ES: "Europe/Madrid",
+  ET: "Africa/Addis_Ababa", FI: "Europe/Helsinki", FJ: "Pacific/Fiji",
+  FR: "Europe/Paris", GA: "Africa/Libreville", GB: "Europe/London",
+  GE: "Asia/Tbilisi", GH: "Africa/Accra", GM: "Africa/Banjul",
+  GN: "Africa/Conakry", GQ: "Africa/Malabo", GR: "Europe/Athens",
+  GT: "America/Guatemala", GW: "Africa/Bissau", GY: "America/Guyana",
+  HK: "Asia/Hong_Kong", HN: "America/Tegucigalpa", HR: "Europe/Zagreb",
+  HT: "America/Port-au-Prince", HU: "Europe/Budapest", ID: "Asia/Jakarta",
+  IE: "Europe/Dublin", IL: "Asia/Jerusalem", IN: "Asia/Kolkata",
+  IQ: "Asia/Baghdad", IR: "Asia/Tehran", IS: "Atlantic/Reykjavik",
+  IT: "Europe/Rome", JM: "America/Jamaica", JO: "Asia/Amman",
+  JP: "Asia/Tokyo", KE: "Africa/Nairobi", KG: "Asia/Bishkek",
+  KH: "Asia/Phnom_Penh", KM: "Indian/Comoro", KR: "Asia/Seoul",
+  KW: "Asia/Kuwait", KZ: "Asia/Almaty", LA: "Asia/Vientiane",
+  LB: "Asia/Beirut", LI: "Europe/Vaduz", LK: "Asia/Colombo",
+  LR: "Africa/Monrovia", LS: "Africa/Maseru", LT: "Europe/Vilnius",
+  LU: "Europe/Luxembourg", LV: "Europe/Riga", LY: "Africa/Tripoli",
+  MA: "Africa/Casablanca", MD: "Europe/Chisinau", ME: "Europe/Podgorica",
+  MG: "Indian/Antananarivo", MK: "Europe/Skopje", ML: "Africa/Bamako",
+  MM: "Asia/Yangon", MN: "Asia/Ulaanbaatar", MO: "Asia/Macau",
+  MR: "Africa/Nouakchott", MT: "Europe/Malta", MU: "Indian/Mauritius",
+  MV: "Indian/Maldives", MW: "Africa/Blantyre", MX: "America/Mexico_City",
+  MY: "Asia/Kuala_Lumpur", MZ: "Africa/Maputo", NA: "Africa/Windhoek",
+  NE: "Africa/Niamey", NG: "Africa/Lagos", NI: "America/Managua",
+  NL: "Europe/Amsterdam", NO: "Europe/Oslo", NP: "Asia/Kathmandu",
+  NZ: "Pacific/Auckland", OM: "Asia/Muscat", PA: "America/Panama",
+  PE: "America/Lima", PG: "Pacific/Port_Moresby", PH: "Asia/Manila",
+  PK: "Asia/Karachi", PL: "Europe/Warsaw", PS: "Asia/Gaza",
+  PT: "Europe/Lisbon", PY: "America/Asuncion", QA: "Asia/Qatar",
+  RO: "Europe/Bucharest", RS: "Europe/Belgrade", RU: "Europe/Moscow",
+  RW: "Africa/Kigali", SA: "Asia/Riyadh", SB: "Pacific/Guadalcanal",
+  SC: "Indian/Mahe", SD: "Africa/Khartoum", SE: "Europe/Stockholm",
+  SG: "Asia/Singapore", SI: "Europe/Ljubljana", SK: "Europe/Bratislava",
+  SL: "Africa/Freetown", SN: "Africa/Dakar", SO: "Africa/Mogadishu",
+  SR: "America/Paramaribo", SS: "Africa/Juba", ST: "Africa/Sao_Tome",
+  SV: "America/El_Salvador", SY: "Asia/Damascus", SZ: "Africa/Mbabane",
+  TD: "Africa/Ndjamena", TG: "Africa/Lome", TH: "Asia/Bangkok",
+  TJ: "Asia/Dushanbe", TL: "Asia/Dili", TM: "Asia/Ashgabat",
+  TN: "Africa/Tunis", TO: "Pacific/Tongatapu", TR: "Europe/Istanbul",
+  TT: "America/Port_of_Spain", TW: "Asia/Taipei", TZ: "Africa/Dar_es_Salaam",
+  UA: "Europe/Kyiv", UG: "Africa/Kampala", US: "America/New_York",
+  UY: "America/Montevideo", UZ: "Asia/Tashkent", VE: "America/Caracas",
+  VN: "Asia/Ho_Chi_Minh", VU: "Pacific/Efate", WS: "Pacific/Apia",
+  YE: "Asia/Aden", ZA: "Africa/Johannesburg", ZM: "Africa/Lusaka",
+  ZW: "Africa/Harare",
+};
 
 const DATA: readonly (readonly [string, string, string, string])[] = [
   // Africa
@@ -77,7 +145,7 @@ const DATA: readonly (readonly [string, string, string, string])[] = [
   ["VU", "Vanuatu", "678", "VUV"], ["SB", "Solomon Islands", "677", "SBD"],
 ];
 
-export const COUNTRIES: readonly Country[] = DATA.map(([code, name, calling, currency]) => ({ code, name, calling, currency }))
+export const COUNTRIES: readonly Country[] = DATA.map(([code, name, calling, currency]) => ({ code, name, calling, currency, zone: ZONES[code] ?? "UTC" }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
 export const CURRENCIES: readonly string[] = [...new Set(COUNTRIES.map((c) => c.currency))].sort();

@@ -23,8 +23,10 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "reminder_min_days_overdue", kind: "integer" },
     { key: "reminder_repeat_days", kind: "integer" },
   ] },
-  { id: "alerts", fields: [
+  { id: "regional", fields: [
     { key: "timezone", kind: "text" },
+  ] },
+  { id: "alerts", fields: [
     { key: "intel_alert_channel", kind: "choice", choices: ["off", "sms", "email"] },
     { key: "intel_alert_min_severity", kind: "choice", choices: ["low", "medium", "high", "critical"] },
     { key: "intel_action_level", kind: "integer" },
@@ -34,6 +36,14 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "payroll_unpaid_day_divisor", kind: "integer" },
     { key: "overtime_multiplier", kind: "number" },
     { key: "overtime_hours_per_month", kind: "number" },
+  ] },
+  { id: "privacy", fields: [
+    { key: "privacy_response_days", kind: "integer" },
+    { key: "privacy_erasure_needs_approval", kind: "switch" },
+    { key: "retention_notifications_days", kind: "integer" },
+    { key: "retention_audit_years", kind: "integer" },
+    { key: "retention_employee_records_years", kind: "integer" },
+    { key: "retention_inactive_customers_years", kind: "integer" },
   ] },
   { id: "printing", fields: [
     { key: "phone_country_code", kind: "text" },

@@ -23,7 +23,7 @@ export default function CreditNotePage() {
             { label: t("supplier"), value: <SupplierName id={c.supplier_id} link /> },
             { label: t("theirCreditNo"), value: c.supplier_credit_no },
             { label: t("date"), value: formatDate(c.credit_date) },
-            { label: t("bill"), value: <Link className="font-medium text-brand hover:underline" to={`/bills/${c.bill_id}`}>{t("openBill")}</Link> },
+            { label: t("bill"), value: <Link className="font-medium text-brand-strong hover:underline" to={`/bills/${c.bill_id}`}>{t("openBill")}</Link> },
           ]} />
         </Card>
         <Card title={t("lines")} flush>

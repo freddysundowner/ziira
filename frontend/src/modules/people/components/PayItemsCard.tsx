@@ -24,7 +24,7 @@ export function PayItemsCard({ employee, currency }: { employee: Employee; curre
   return (
     <Card title={t("pay.items")} description={t("pay.itemsHint")} flush actions={<Button size="sm" onClick={() => setAdding(true)} disabled={(components.data ?? []).length === 0}><Plus className="h-3.5 w-3.5" />{t("pay.addItem")}</Button>}>
       {components.isSuccess && components.data.length === 0 && (
-        <p className="border-b border-line px-4 py-3 text-sm text-muted">{t("pay.noComponents")} <Link className="font-medium text-brand underline" to="/pay-components">{t("pay.openSetup")}</Link></p>
+        <p className="border-b border-line px-4 py-3 text-sm text-muted">{t("pay.noComponents")} <Link className="font-medium text-brand-strong underline" to="/pay-components">{t("pay.openSetup")}</Link></p>
       )}
       <DataTable
         rows={items.data} loading={items.isLoading} error={items.error?.message} onRetry={() => void items.refetch()} rowKey={(x) => x.id}

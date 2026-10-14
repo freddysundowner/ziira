@@ -139,7 +139,7 @@ def receive_payment(session: Session, *, customer_id: UUID, amount: Decimal, met
         raise ValidationFailed(f"{customer.name} has no unpaid invoices: to take the money in advance, say so "
                                "(hold_balance)")
 
-    day = received_on or tills.today()
+    day = received_on or tills.today(session, company_id)
     account_id = payment_account_id
     if account_id is None and method != "cash":
         account_id = account_for_method(session, company_id, branch_id, "bank" if method == "cheque" else method)
@@ -224,7 +224,8 @@ def apply_payment_reversal(session: Session, event: Event) -> None:
     session.flush()
     audit_record(session, "reverse", "pos.customer_receipt", receipt.id, {"number": receipt.number})
     publish(session, Event("customer.payment_reversed", "pos.customer_receipt", receipt.id, {
-        "company_id": receipt.company_id, "branch_id": receipt.branch_id, "business_date": tills.today(),
+        "company_id": receipt.company_id, "branch_id": receipt.branch_id,
+        "business_date": tills.today(session, receipt.company_id),
         "amount": receipt.amount, "method": receipt.method, "customer_id": receipt.customer_id,
         "number": receipt.number}))
 
@@ -349,7 +350,7 @@ def refund_advance(session: Session, receipt_id: UUID, *, amount: Decimal, metho
         account_id = account_for_method(session, receipt.company_id, receipt.branch_id, method)
         if account_id is None:
             raise ValidationFailed(f"No {method} account is set up for this branch")
-    day = till.business_date if till is not None else tills.today()
+    day = till.business_date if till is not None else tills.today(session, receipt.company_id)
     refund = CustomerRefund(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=receipt.company_id, branch_id=receipt.branch_id,
         number=next_document_number(session, company_id=receipt.company_id, branch_id=receipt.branch_id,
@@ -402,6 +403,7 @@ def _reverse_refund_effects(session: Session, event: Event) -> None:
     session.flush()
     audit_record(session, "reverse", "pos.customer_refund", refund.id, {"number": refund.number})
     publish(session, Event("customer.refund_reversed", "pos.customer_refund", refund.id, {
-        "company_id": refund.company_id, "branch_id": refund.branch_id, "business_date": tills.today(),
+        "company_id": refund.company_id, "branch_id": refund.branch_id,
+        "business_date": tills.today(session, refund.company_id),
         "amount": refund.amount, "method": refund.method, "customer_id": refund.customer_id,
         "number": refund.number}))

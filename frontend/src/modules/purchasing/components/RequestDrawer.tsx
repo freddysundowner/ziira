@@ -15,7 +15,8 @@ export function RequestDrawer({ onClose, onSaved }: { onClose: () => void; onSav
   const { t } = useTranslation("purchasing");
   const qc = useQueryClient();
   const { company } = useCompany();
-  const [companyId, setCompanyId] = useState(company?.id ?? "");
+  const [chosenCompany, setCompanyId] = useState("");
+  const companyId = chosenCompany || company?.id || "";
   const [branchId, setBranchId] = useState("");
   const [neededBy, setNeededBy] = useState("");
   const { lines, add, update, remove } = useLines<Line>(() => ({ product_id: "", quantity: "1", note: "" }), [{ key: crypto.randomUUID(), product_id: "", quantity: "1", note: "" }]);

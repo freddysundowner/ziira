@@ -13,8 +13,17 @@ from ziira.modules.payments.domain import mpesa
 from ziira.modules.payments.permissions import PAYMENTS_RECORD
 from ziira.modules.payments.repository import payments_repo
 from ziira.modules.payments.services import accounts, closing
-from ziira.modules.payments.services.payments import record_payment, today
-from ziira.sdk import Event, Session, ValidationFailed, audit_record, check_company, current_context, publish
+from ziira.modules.payments.services.payments import record_payment
+from ziira.sdk import (
+    Event,
+    Session,
+    ValidationFailed,
+    audit_record,
+    check_company,
+    company_today,
+    current_context,
+    publish,
+)
 
 
 def record_settlement(session: Session, *, from_account_id: UUID, to_account_id: UUID, amount: Decimal,
@@ -32,7 +41,7 @@ def record_settlement(session: Session, *, from_account_id: UUID, to_account_id:
         raise ValidationFailed("The fee must be zero or a positive amount")
     if not reference.strip():
         raise ValidationFailed("A reference is required")
-    day = business_date or today()
+    day = business_date or company_today(session, source.company_id)
     paid_out = record_payment(session, company_id=source.company_id, branch_id=source.branch_id, method="mobile_money",
                               direction="out", amount=amount + fee, payment_account_id=source.id, business_date=day,
                               external_ref=reference, party_type="other",
@@ -59,7 +68,7 @@ def record_cash_deposit(session: Session, *, company_id: UUID, branch_id: UUID, 
     amount = mpesa.parse_amount(amount, "Deposit amount")
     if not reference.strip():
         raise ValidationFailed("A reference (the deposit slip number) is required")
-    day = business_date or today()
+    day = business_date or company_today(session, company_id)
     closing.check_day_open(session, branch_id, day)
     cash = accounts.cash_account_for_branch(session, company_id, branch_id)
     out = record_payment(session, company_id=company_id, branch_id=branch_id, method="cash", direction="out",

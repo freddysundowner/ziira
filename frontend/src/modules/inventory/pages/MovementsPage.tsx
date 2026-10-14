@@ -46,7 +46,7 @@ export default function MovementsPage() {
             header: t("source"), hideBelow: "lg", cell: (m) => {
               const base = SOURCE_PATH[m.source_type];
               const label = t(`sources.${m.source_type}`, humanise(m.source_type));
-              return base ? <Link className="text-brand hover:underline" to={`${base}/${m.source_id}`}>{label}</Link> : label;
+              return base ? <Link className="text-brand-strong hover:underline" to={`${base}/${m.source_id}`}>{label}</Link> : label;
             },
           },
         ]}

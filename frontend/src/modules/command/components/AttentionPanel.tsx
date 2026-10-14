@@ -15,7 +15,7 @@ export default function AttentionPanel({ overview }: { overview: Overview }) {
   const counts = severityCounts(overview.findings_by_severity);
   return (
     <Card title={t("attention")} description={t("attentionHint")}
-      actions={canOpen && <Link className="text-sm font-medium text-brand hover:underline" to="/findings">{t("allFindings")}</Link>}>
+      actions={canOpen && <Link className="text-sm font-medium text-brand-strong hover:underline" to="/findings">{t("allFindings")}</Link>}>
       {overview.top_findings.length === 0 ? (
         <p className="text-sm text-muted">{t("noAttention")}</p>
       ) : (

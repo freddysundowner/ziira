@@ -24,7 +24,7 @@ from ziira.modules.purchasing.repository.models import (
     PurchaseRequestLine,
 )
 from ziira.modules.purchasing.services import access
-from ziira.modules.purchasing.services.common import active_supplier, today, unit_enabled
+from ziira.modules.purchasing.services.common import active_supplier, unit_enabled
 from ziira.sdk import (
     Conflict,
     Event,
@@ -33,6 +33,7 @@ from ziira.sdk import (
     ValidationFailed,
     audit_record,
     check_company,
+    company_today,
     current_context,
     next_document_number,
     publish,
@@ -200,7 +201,8 @@ def create_order(session: Session, *, company_id: UUID, supplier_id: UUID, lines
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, branch_id=branch_id,
         number=next_document_number(session, company_id=company_id, branch_id=branch_id, doc_type="purchase_order",
                                     prefix="PO"), supplier_id=supplier.id, request_id=request_id,
-        deliver_to_location_id=deliver_to_location_id, order_date=order_date or today(), expected_date=expected_date)
+        deliver_to_location_id=deliver_to_location_id,
+        order_date=order_date or company_today(session, company_id), expected_date=expected_date)
     repo.add(session, order)
     _write(session, order, built)
     audit_record(session, "create", "purchasing.purchase_order", order.id,

@@ -209,3 +209,24 @@ def test_production_refuses_open_registration_without_a_way_to_send_email(monkey
     Settings(**secure, registration_mode="open", platform_email_provider="smtp").check_safe_for_production()
     with pytest.raises(RuntimeError, match="REGISTRATION_MODE"):
         Settings(**secure, registration_mode="wide-open").check_safe_for_production()
+
+
+def test_the_time_zone_chosen_at_registration_becomes_the_companys(client, registry) -> None:  # type: ignore[no-untyped-def]
+    from tests.stock_helpers import system
+
+    token = client.post(REGISTER, json=body("Zoned Traders", timezone="Pacific/Auckland")).json()["dev_token"]
+    out = verify(client, token).json()
+    headers = {"Authorization": f"Bearer {out['access_token']}"}
+    company = client.get("/api/v1/companies", headers=headers).json()[0]
+    assert client.get(f"/api/v1/companies/{company['id']}/settings", headers=headers).json()["timezone"] == "Pacific/Auckland"
+    with system({"tenant_id": out["tenant_id"]}) as s:           # stored as a setting, not a column
+        assert s.execute(text("select settings->>'timezone' from kernel.company")).scalar_one() == "Pacific/Auckland"
+    # one that names no zone starts in UTC; a made-up one is refused before anything is saved
+    plain = verify(client, client.post(REGISTER, json=body("Plain Traders")).json()["dev_token"]).json()
+    h2 = {"Authorization": f"Bearer {plain['access_token']}"}
+    c2 = client.get("/api/v1/companies", headers=h2).json()[0]
+    assert client.get(f"/api/v1/companies/{c2['id']}/settings", headers=h2).json()["timezone"] == "UTC"
+    bad = client.post(REGISTER, json=body("Nowhere Ltd", timezone="Mars/Olympus"))
+    assert bad.status_code == 422 or bad.status_code == 400, bad.text
+    with master_session() as s:
+        assert s.execute(text("select count(*) from master.registration where business_name = 'Nowhere Ltd'")).scalar_one() == 0

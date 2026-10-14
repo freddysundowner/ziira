@@ -43,7 +43,7 @@ function Units() {
       <DataTable rows={q.data} loading={q.isLoading} error={q.error?.message} onRetry={() => void q.refetch()} rowKey={(u) => u.id} empty={{ title: t("noUnits"), hint: t("unitsHint") }}
         toolbar={can && <Button className="ml-auto" onClick={() => setOpen(true)}><Plus className="h-4 w-4" />{t("newUnit")}</Button>}
         columns={[{ header: t("code"), cell: (u) => <span className="font-mono text-xs font-medium">{u.code}</span> }, { header: t("name"), cell: (u) => u.name }]} />
-      <Drawer open={open} onClose={() => setOpen(false)} title={t("newUnit")} footer={<><Button variant="secondary" onClick={() => setOpen(false)}>{t("cancel")}</Button><Button type="submit" form="uom" loading={create.isPending}>{t("save")}</Button></>}>
+      <Drawer open={open} onClose={() => setOpen(false)} title={t("newUnit")} footer={<><Button variant="secondary" onClick={() => setOpen(false)}>{t("cancel")}</Button><Button type="submit" form="uom" loading={create.isPending}>{t("saveSetup")}</Button></>}>
         <form id="uom" className="space-y-4" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
           <Field label={t("code")} hint={t("lettersOnly")} required error={f.error("code")}><Input {...f.bind("code")} required autoFocus maxLength={10} /></Field>
           <Field label={t("name")} required error={f.error("name")}><Input {...f.bind("name")} required /></Field>
@@ -68,7 +68,7 @@ function Taxes() {
           { header: t("code"), cell: (x) => <span className="font-mono text-xs font-medium">{x.code}</span> }, { header: t("name"), cell: (x) => x.name },
           { header: t("rate"), align: "right", cell: (x) => `${Number(x.vat_rate)}%` }, { header: t("authorityCode"), hideBelow: "md", cell: (x) => x.authority_code ?? "—" },
         ]} />
-      <Drawer open={open} onClose={() => setOpen(false)} title={t("newTaxCode")} footer={<><Button variant="secondary" onClick={() => setOpen(false)}>{t("cancel")}</Button><Button type="submit" form="tax" loading={create.isPending}>{t("save")}</Button></>}>
+      <Drawer open={open} onClose={() => setOpen(false)} title={t("newTaxCode")} footer={<><Button variant="secondary" onClick={() => setOpen(false)}>{t("cancel")}</Button><Button type="submit" form="tax" loading={create.isPending}>{t("saveSetup")}</Button></>}>
         <form id="tax" className="space-y-4" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
           <FormGrid>
             <Field label={t("code")} required error={f.error("code")}><Input {...f.bind("code")} required autoFocus /></Field>
@@ -99,7 +99,7 @@ function Lists() {
           { header: t("name"), cell: (l) => <span className="font-medium">{l.name}</span> }, { header: t("currency"), cell: (l) => l.currency },
           { header: t("customerGroup"), hideBelow: "md", cell: (l) => l.customer_group ?? "—" }, { header: "", cell: (l) => (l.is_default ? <Badge tone="brand">{t("default")}</Badge> : null) },
         ]} />
-      <Drawer open={open} onClose={() => setOpen(false)} title={t("newPriceList")} footer={<><Button variant="secondary" onClick={() => setOpen(false)}>{t("cancel")}</Button><Button type="submit" form="plist" loading={create.isPending}>{t("save")}</Button></>}>
+      <Drawer open={open} onClose={() => setOpen(false)} title={t("newPriceList")} footer={<><Button variant="secondary" onClick={() => setOpen(false)}>{t("cancel")}</Button><Button type="submit" form="plist" loading={create.isPending}>{t("saveSetup")}</Button></>}>
         <form id="plist" className="space-y-4" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
           <Field label={t("name")} required error={f.error("name")}><Input {...f.bind("name")} required autoFocus /></Field>
           {companies.length > 1 && <Field label={t("company")}><Select value={f.values.company_id || company?.id} onChange={(e) => f.set("company_id", e.target.value)}>{companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></Field>}

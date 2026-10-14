@@ -491,6 +491,43 @@ that rewrites the stored URLs of existing ones**. The simple way around that: mo
 PgBouncer the port PostgreSQL had (`listen_port = 5432`), then set `ZIIRA_PG_TOOL_PORT` to PostgreSQL's new port for
 backups and keep the tenant server URL (admin DDL) on the direct port for new businesses.
 
+## Support access: operator runbook
+
+Platform staff never use a business's own logins. They use **operators** and a business-granted **support grant** (design and limits:
+`docs/security.md`, "Staff access to a business's data").
+
+### Creating and managing operators
+
+```bash
+.venv/bin/ziira operator create "Sam Support" sam@example.com   # password from the prompt or ZIIRA_OPERATOR_PASSWORD
+.venv/bin/ziira operator list
+.venv/bin/ziira operator disable sam@example.com               # also ends their sign-ins; open support sessions stop at once
+.venv/bin/ziira operator enable sam@example.com
+.venv/bin/ziira operator reset-mfa sam@example.com             # lost phone: a new secret, shown once
+```
+
+`create` prints the authenticator secret and `otpauth://` address once: add it to an authenticator app before closing the terminal.
+Password rules are the same as for business users. Give each person their own operator; never share one.
+
+### Handling a support request
+
+1. The business owner gives access under Settings, Support access (a reason, read-only or full, a length). Ask for read-only first.
+2. Sign in: `POST /api/v1/operator/sign-in` {email, password} returns a challenge; `POST /api/v1/operator/mfa/verify` {challenge, code}
+   returns an operator token (30 minutes). `GET /api/v1/operator/businesses` lists codes and names, never data.
+3. `POST /api/v1/operator/businesses/<code>/support-session` returns a business access token (at most 60 minutes, never past the grant).
+   403 means the business has not given access or it has ended: ask them. Use the token as any business token (Swagger UI works).
+4. Done: `POST /api/v1/operator/sessions/<id>/end`. `GET /api/v1/operator/sessions` lists your sessions.
+
+### What is logged
+
+- Master: `master.support_access_log` (events `start`, `end`, `revoked`, `request`, `refused`; operator, business, grant, session, method,
+  route template, status). It cannot be updated or deleted by the application. Include it in the monthly review:
+  `select occurred_at, operator_name, tenant_id, event, method, route, status from master.support_access_log order by id desc limit 200;`
+- Business: its audit log (channel `support`), visible to its owner on the Support access page and at `GET /api/v1/support/access-log`.
+- The grant's creator is emailed when a session opens (needs an email channel set up for the business).
+- Alert on: sessions opened outside agreed hours, a business with many `refused` events, and any operator that is no longer staff
+  but is still `active` (review `ziira operator list` monthly).
+
 ## Incident and breach response (skeleton)
 
 Fill the names in before you need them. Keep a printed copy.

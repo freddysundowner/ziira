@@ -37,6 +37,7 @@ make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT
 make test                     # all tests (use `caffeinate -i make test` on a Mac: a sleeping laptop expires the test tokens) (creates/drops ziira_test_master, _template, _t_* databases)
 make lint                     # ruff + mypy + import-linter
 make web-setup | web | web-check   # web app: npm ci | dev server :5173 | lint+types+tests+build
+make e2e-setup | e2e        # real-browser journeys (Playwright, folder e2e/): npm ci + Chromium | run all against a throwaway stack (docs/testing.md, docs/e2e-findings.md)
 make api-types                # regenerate frontend/src/api/schema.d.ts after backend API changes (commit it)
 .venv/bin/ziira units | install --all | uninstall <unit>          # platform (master database)
 .venv/bin/ziira tenants | enable <tenant> <unit> | disable ... | remove ...   # <tenant> = code or id
@@ -157,6 +158,8 @@ tests/             unit tests for domain rules
   test in their sandboxes before any live use.
 - A unit that stores data about people (customers, employees, suppliers, payers, recipients) implements `kernel.personal_data` in its
   `hooks.py` (find / export / anonymise; `docs/privacy.md`); retention periods and what must be kept are company settings, never code.
+- Platform staff are `master.operator`s (CLI-made, second factor compulsory), never tenant users; they enter a business only through a
+  business-made support grant (`ziira/kernel/support.py`), re-checked on every request, and everything they do is logged twice. Do not add other staff back doors.
 - Never send a message in the caller's request: queue it. Respect the do-not-contact list (the kernel does).
 - **Sign-in security** (`docs/security.md`): wrong passwords are counted and locked out per login/address (`kernel/throttle.py`, 429 with
   `Retry-After`); a second factor (TOTP, backup codes) is compulsory by the business's policy (`kernel.tenant.mfa_policy`; production refuses

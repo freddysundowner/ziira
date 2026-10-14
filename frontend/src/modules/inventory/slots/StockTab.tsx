@@ -32,7 +32,7 @@ export default function StockTab(props: SlotProps) {
           { header: t("batch"), hideBelow: "sm", cell: (b) => (b.batch_id ? <span className="font-mono text-xs">{b.batch_id.slice(0, 8)}</span> : "—") },
           { header: t("quantity"), align: "right", cell: (b) => <span className="font-medium">{quantity(b.quantity)}</span> },
         ]} />
-      <p className="text-sm"><Link className="text-brand hover:underline" to="/stock/movements">{t("seeMovements")}</Link></p>
+      <p className="text-sm"><Link className="text-brand-strong hover:underline" to="/stock/movements">{t("seeMovements")}</Link></p>
     </div>
   );
 }

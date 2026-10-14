@@ -97,7 +97,7 @@ export default function SalePage() {
               { label: t("cashier"), value: cashier(s.cashier_id) },
               { label: t("businessDate"), value: formatDate(s.business_date) },
               { label: t("till"), value: s.till_session_id ? (
-                <Link className="text-brand hover:underline" to={`/pos/tills/${s.till_session_id}`}>{till.data ? deviceName(till.data.device_id) : t("viewTill")}</Link>
+                <Link className="text-brand-strong hover:underline" to={`/pos/tills/${s.till_session_id}`}>{till.data ? deviceName(till.data.device_id) : t("viewTill")}</Link>
               ) : "—" },
             ]} />
           </Card>

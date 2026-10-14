@@ -34,6 +34,8 @@ OWED: dict[str, Dec] = {}
 @pytest.fixture(scope="module")
 def shop(client, registry):  # type: ignore[no-untyped-def]
     s = make_crm_shop(client, registry, "Crm Intel Co")
+    # these tests are written in UTC hours: say so (test tenants are otherwise created in LOCALE["timezone"])
+    client.patch(f"/api/v1/companies/{s['company_id']}/settings", headers=s["owner"], json={"timezone": "UTC"})
     for unit in ("pos", "intel", "command"):
         registry.enable(s["tenant_id"], unit)
     co = str(s["company_id"])

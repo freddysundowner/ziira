@@ -11,7 +11,6 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 from fastapi.encoders import jsonable_encoder
 
@@ -30,22 +29,25 @@ from ziira.sdk import (
     ValidationFailed,
     audit_record,
     check_reason,
+    company_date_of,
+    company_today,
     current_context,
     flag_for_review,
     publish,
 )
 
-NAIROBI = ZoneInfo("Africa/Nairobi")
 MAX_FLOAT = Decimal("1000000")
 TILL_VARIANCE = "till_variance"
 
 
-def today() -> date:
-    return datetime.now(NAIROBI).date()
+def today(session: Session, company_id: UUID) -> date:
+    """Today's trading date where the company is."""
+    return company_today(session, company_id)
 
 
-def business_day(moment: datetime | None) -> date:
-    return moment.astimezone(NAIROBI).date() if moment is not None else today()
+def business_day(session: Session, company_id: UUID, moment: datetime | None) -> date:
+    """The company's calendar date of a moment (today when there is none)."""
+    return company_date_of(session, company_id, moment) if moment is not None else company_today(session, company_id)
 
 
 def company_of(session: Session, till: TillSession) -> UUID:
@@ -103,9 +105,9 @@ def open_till(session: Session, device_id: UUID, opening_float: Decimal, *, loca
         raise ValidationFailed("This device is blocked")
     if opening_float < 0 or opening_float > MAX_FLOAT or opening_float != opening_float.quantize(rules.CENT):
         raise ValidationFailed("The opening float is an amount of zero or more with at most 2 decimal places")
-    day = business_day(opened_at)
+    day = business_day(session, company_id, opened_at)
     if day_is_locked(session, device.branch_id, day):
-        day = today()
+        day = today(session, company_id)
         if day_is_locked(session, device.branch_id, day):
             raise ValidationFailed(f"The day {day} is already closed for this branch")
     pos_repo.lock_key(session, f"pos.till.open:{ctx.user_id}")

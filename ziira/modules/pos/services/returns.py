@@ -170,7 +170,7 @@ def _create(session: Session, source: Source, lines: list[tuple[UUID, Decimal]],
         original_sale_id=None if source.is_invoice else source.id,
         original_invoice_id=source.id if source.is_invoice else None, reason_code_id=reason_code_id,
         refund_method=refund_method, total=total, restock_location_id=restock_location_id,
-        status="pending_approval", business_date=tills.today(), net=total - tax, tax=tax)
+        status="pending_approval", business_date=tills.today(session, source.company_id), net=total - tax, tax=tax)
     pos_repo.add(session, ret)
     for row in rows:
         row.return_id = ret.id
@@ -211,7 +211,7 @@ def _post(session: Session, ret: SalesReturn, source: Source, lines: list[SalesR
           approved_by: UUID | None) -> None:
     """Move the stock and the money for an approved return."""
     till = pos_repo.open_till_of_user(session, ret.created_by) if ret.created_by else None
-    day = till.business_date if till is not None else tills.today()
+    day = till.business_date if till is not None else tills.today(session, ret.company_id)
     method = ret.refund_method
     if method == "credit_note":
         target = pos_repo.get_invoice(session, source.invoice.id, lock=True) if source.invoice else None

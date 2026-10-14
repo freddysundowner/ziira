@@ -26,7 +26,7 @@ def catalog(session: Session, branch_id: UUID, *, location_id: UUID | None = Non
             raise NotFound("Location not found")
     products = sellable_products(session, company_id, search, limit, offset)
     ids = {p.id for p in products}
-    prices = selling_prices(session, company_id, branch_id, ids, day or tills.today())
+    prices = selling_prices(session, company_id, branch_id, ids, day or tills.today(session, company_id))
     stock = stock_at_location(session, location_id, ids) if location_id is not None else {}
     return [{
         "product_id": p.id, "sku": p.sku, "name": p.name, "product_type": p.product_type, "vat_rate": p.vat_rate,

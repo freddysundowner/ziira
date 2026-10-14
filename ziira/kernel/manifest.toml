@@ -23,6 +23,7 @@ implements = ["kernel.personal_data"]
 "api_keys.manage" = "Create and revoke API keys for integrations"
 "exceptions.manage" = "Work the exceptions inbox: assign, explain and resolve items"
 "privacy.manage" = "Handle data subject requests: find, export and erase a person's data"
+"support.grant" = "Let Ziira staff access this business for a limited time, and take that back"
 
 # Owner receives every permission automatically.
 [roles]

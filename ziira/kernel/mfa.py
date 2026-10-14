@@ -39,7 +39,7 @@ POLICIES = ("off", "privileged", "everyone")
 PRIVILEGED_PERMISSIONS = frozenset({
     "users.manage", "roles.manage", "settings.manage", "api_keys.manage", "approvals.manage", "accounts.manage",
     "journal.approve", "period.close", "expenses.approve", "payroll.approve", "payroll.pay", "payroll.rates",
-    "employee.pay_edit", "privacy.manage", "imports.manage",
+    "employee.pay_edit", "privacy.manage", "imports.manage", "support.grant",
 })
 
 
@@ -85,6 +85,12 @@ def new_secret() -> str:
 
 def _secret_bytes(b32: str) -> bytes:
     return base64.b32decode(b32 + "=" * (-len(b32) % 8))
+
+
+def check_code(secret_b32: str, code: str, after_counter: int = 0) -> int | None:
+    """For second factors kept outside a business's database (platform staff): the counter a code was made for, if it is
+    valid now and newer than `after_counter`, else None."""
+    return match(_secret_bytes(secret_b32), code, _now(), after_counter)
 
 
 def otpauth_uri(secret_b32: str, account: str) -> str:

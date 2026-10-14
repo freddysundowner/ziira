@@ -13,7 +13,7 @@ export default function RecentMessages({ companyId }: { companyId: string }) {
     queryFn: () => unwrap(api.GET("/api/v1/notifications", { params: { query: { company_id: companyId, limit: 8 } } })),
   });
   return (
-    <Card title={t("recent")} actions={canLog ? <Link className="text-xs font-medium text-brand hover:underline" to="/admin/notifications">{t("fullLog")}</Link> : undefined} flush>
+    <Card title={t("recent")} actions={canLog ? <Link className="text-xs font-medium text-brand-strong hover:underline" to="/admin/notifications">{t("fullLog")}</Link> : undefined} flush>
       {recent.error ? <ErrorState message={recent.error.message} onRetry={() => void recent.refetch()} /> : !recent.data ? <SkeletonRows rows={3} cols={3} /> : recent.data.length === 0 ? (
         <p className="p-4 text-sm text-muted">{t("noRecent")}</p>
       ) : (

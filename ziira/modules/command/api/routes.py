@@ -25,6 +25,7 @@ from ziira.modules.command.permissions import BRIEFS_MANAGE, COMMAND_VIEW
 from ziira.modules.command.repository import command_repo as repo
 from ziira.modules.command.services import briefs, overview, pulse
 from ziira.sdk import (
+    DB_SESSION,
     Forbidden,
     NotFound,
     Session,
@@ -33,7 +34,6 @@ from ziira.sdk import (
     check_company,
     company_setting,
     current_context,
-    db_session,
     page_limit,
     page_offset,
     recipients_with_permission,
@@ -78,7 +78,7 @@ def _today(session: Session, company_id: UUID) -> date:
 
 @router.get("/overview", response_model=OverviewOut, dependencies=VIEW)
 def get_overview(company_id: UUID | None = None, day: date | None = None,
-                 session: Session = Depends(db_session)) -> object:
+                 session: Session = DB_SESSION) -> object:
     """The figures for today so far (against yesterday) and the findings that need the user, within their role."""
     cid = _company(session, company_id)
     o = overview.build(session, current_context(), cid, day or _today(session, cid))
@@ -94,7 +94,7 @@ def get_overview(company_id: UUID | None = None, day: date | None = None,
 
 
 @router.post("/pulse/refresh", status_code=NO_CONTENT, dependencies=MANAGE)
-def post_refresh(company_id: UUID | None = None, session: Session = Depends(db_session)) -> Response:
+def post_refresh(company_id: UUID | None = None, session: Session = DB_SESSION) -> Response:
     """Collect today's figures again now (they are also collected every hour)."""
     cid = _company(session, company_id)
     pulse.refresh_company(session, cid, _today(session, cid))
@@ -109,12 +109,12 @@ def _out(row: object, user_name: str | None = None) -> ScheduleOut:
 
 
 @router.get("/schedules/mine", response_model=list[ScheduleOut], dependencies=VIEW)
-def get_my_schedules(session: Session = Depends(db_session)) -> object:
+def get_my_schedules(session: Session = DB_SESSION) -> object:
     return [_out(r) for r in repo.list_schedules(session, current_context().user_id)]
 
 
 @router.put("/schedules/mine/{kind}", response_model=ScheduleOut, dependencies=VIEW)
-def put_my_schedule(kind: Kind, body: ScheduleIn, session: Session = Depends(db_session)) -> object:
+def put_my_schedule(kind: Kind, body: ScheduleIn, session: Session = DB_SESSION) -> object:
     """Choose when and how you get your brief. SMS or email needs that contact on your profile."""
     person = _me(session)
     if kind == "weekly" and body.weekday is None:
@@ -130,13 +130,13 @@ def put_my_schedule(kind: Kind, body: ScheduleIn, session: Session = Depends(db_
 
 
 @router.delete("/schedules/mine/{kind}", status_code=NO_CONTENT, dependencies=VIEW)
-def delete_my_schedule(kind: Kind, session: Session = Depends(db_session)) -> Response:
+def delete_my_schedule(kind: Kind, session: Session = DB_SESSION) -> Response:
     repo.delete_schedule(session, _me(session).user_id, kind)
     return Response(status_code=NO_CONTENT)
 
 
 @router.get("/schedules", response_model=list[ScheduleOut], dependencies=MANAGE)
-def get_all_schedules(session: Session = Depends(db_session)) -> object:
+def get_all_schedules(session: Session = DB_SESSION) -> object:
     """Everyone's brief schedules (for the people who manage them)."""
     return [_out(r) for r in repo.list_schedules(session, None)]
 
@@ -144,13 +144,13 @@ def get_all_schedules(session: Session = Depends(db_session)) -> object:
 # --------------------------------------------------------------------------- briefs
 @router.get("/briefs", response_model=list[BriefSummaryOut], dependencies=VIEW)
 def get_briefs(limit: int = page_limit(20), offset: int = page_offset(),
-               session: Session = Depends(db_session)) -> object:
+               session: Session = DB_SESSION) -> object:
     """Briefs sent to you, newest first."""
     return [BriefSummaryOut(**dict(r._mapping)) for r in repo.list_briefs(session, _me(session).user_id, limit, offset)]
 
 
 @router.get("/briefs/{brief_id}", response_model=BriefOut, dependencies=VIEW)
-def get_brief(brief_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_brief(brief_id: UUID, session: Session = DB_SESSION) -> object:
     row = repo.get_brief(session, _me(session).user_id, brief_id)
     if row is None:
         raise NotFound("Brief not found")
@@ -160,7 +160,7 @@ def get_brief(brief_id: UUID, session: Session = Depends(db_session)) -> object:
 
 @router.post("/briefs/preview", response_model=BriefPreviewOut, dependencies=VIEW)
 def post_preview(kind: Kind = "daily", company_id: UUID | None = None,
-                 session: Session = Depends(db_session)) -> object:
+                 session: Session = DB_SESSION) -> object:
     """What your brief would say right now. Nothing is stored or sent."""
     cid = _company(session, company_id)
     brief, _ = briefs.build(session, _me(session), cid, kind, _today(session, cid))
@@ -169,7 +169,7 @@ def post_preview(kind: Kind = "daily", company_id: UUID | None = None,
 
 @router.post("/briefs/send-now", response_model=BriefSummaryOut | None, dependencies=VIEW)
 def post_send_now(kind: Kind = "daily", channel: Channel = "in_app", company_id: UUID | None = None,
-                  session: Session = Depends(db_session)) -> object:
+                  session: Session = DB_SESSION) -> object:
     """Compose your brief and send it now, by the channel chosen (once per day and kind)."""
     person = _me(session)
     cid = _company(session, company_id)
@@ -185,14 +185,14 @@ def post_send_now(kind: Kind = "daily", channel: Channel = "in_app", company_id:
 
 # --------------------------------------------------------------------------- dashboard layout
 @router.get("/dashboard/widgets", response_model=list[WidgetOut], dependencies=VIEW)
-def get_widgets(session: Session = Depends(db_session)) -> object:
+def get_widgets(session: Session = DB_SESSION) -> object:
     user = current_context().user_id
     return [WidgetOut(widget_code=r.widget_code, position=r.position, settings=dict(r.settings or {}))
             for r in repo.widgets(session, user)] if user else []
 
 
 @router.put("/dashboard/widgets", response_model=list[WidgetOut], dependencies=VIEW)
-def put_widgets(body: list[WidgetIn], session: Session = Depends(db_session)) -> object:
+def put_widgets(body: list[WidgetIn], session: Session = DB_SESSION) -> object:
     """Choose and order the boxes on your Command Center."""
     user = current_context().user_id
     if user is None:

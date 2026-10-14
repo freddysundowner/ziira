@@ -3,10 +3,11 @@
 Every scenario is built through the unit's own API or ledger, then the real engine runs the check under test.
 """
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal as Dec
 from typing import Any
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 import pytest
 from sqlalchemy import text
@@ -17,10 +18,10 @@ from ziira.modules.command.public import COMMAND_PULSE_SOURCE
 from ziira.modules.intel.services import baselines, engine
 from ziira.modules.inventory.intel_checks.controls import AdjustmentValueByUser
 from ziira.modules.inventory.pulse import InventoryPulse
-from ziira.modules.inventory.services.ledger import MovementRequest, business_today, post_movement, post_stock_out
+from ziira.modules.inventory.services.ledger import MovementRequest, post_movement, post_stock_out
 
 INTEL = "/api/v1/intel"
-BASE = business_today()
+BASE = datetime.now(ZoneInfo("Africa/Nairobi")).date()          # the test tenants' zone (a fixture value)
 
 
 def prepare(client, registry, name: str):  # type: ignore[no-untyped-def]

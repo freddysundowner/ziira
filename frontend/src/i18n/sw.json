@@ -176,5 +176,11 @@
     "goSignIn": "Nenda kuingia",
     "badLink": "Kiungo hiki si sahihi.",
     "askNew": "Omba kiungo kipya"
+  },
+  "supportBanner": {
+    "viewing": "Msaada wa Ziira unaangalia biashara yako ({{name}})",
+    "full": "ruhusa kamili",
+    "read": "kusoma tu",
+    "until": "inaisha {{until}}"
   }
 }

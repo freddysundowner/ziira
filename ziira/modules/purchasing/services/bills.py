@@ -25,7 +25,7 @@ from ziira.modules.purchasing.permissions import BILLS_APPROVE, BILLS_MANAGE, BI
 from ziira.modules.purchasing.repository import purchasing_repo as repo
 from ziira.modules.purchasing.repository.models import SupplierBill, SupplierBillLine
 from ziira.modules.purchasing.services import access
-from ziira.modules.purchasing.services.common import active_supplier, today, unit_enabled
+from ziira.modules.purchasing.services.common import active_supplier, unit_enabled
 from ziira.sdk import (
     Conflict,
     Event,
@@ -37,6 +37,7 @@ from ziira.sdk import (
     check_company,
     check_reason,
     company_setting,
+    company_today,
     current_context,
     flag_for_review,
     next_document_number,
@@ -189,7 +190,7 @@ def create_bill(session: Session, *, supplier_id: UUID, supplier_invoice_no: str
         due_date = bill_date + timedelta(days=supplier.payment_terms_days)
     if due_date < bill_date:
         raise ValidationFailed("The due date cannot be before the bill date")
-    if bill_date > today() + timedelta(days=1):
+    if bill_date > company_today(session, company_id) + timedelta(days=1):
         raise ValidationFailed("The bill date cannot be in the future")
     built = _build(session, company_id, supplier.id, lines)
     branches = {x.branch_id for x in built if x.branch_id is not None}
@@ -461,7 +462,7 @@ def pay_bill(session: Session, bill_id: UUID, *, amount: Decimal, method: str,
     owed = bill.total - bill.amount_paid - bill.credited
     if amount > owed:
         raise ValidationFailed(f"Only {rules.plain(owed)} is still owed on this bill")
-    day = paid_on or today()
+    day = paid_on or company_today(session, bill.company_id)
     paid = record_payment(
         session, company_id=bill.company_id, branch_id=bill.branch_id, method=method, direction="out", amount=amount,
         payment_account_id=payment_account_id, business_date=day, external_ref=external_ref, party_type="supplier",
@@ -481,14 +482,18 @@ def pay_bill(session: Session, bill_id: UUID, *, amount: Decimal, method: str,
 def payables(session: Session, *, as_of: date | None = None,
              supplier_id: UUID | None = None) -> dict[str, Any]:
     """What the business owes suppliers on posted bills, by supplier, aged by due date."""
-    as_of = as_of or today()
+    # Without a date the report is "as of today" where each bill's company is (companies can be in different zones)
+    days: dict[UUID, date] = {}
     totals: dict[UUID, dict[str, Decimal]] = {}
-    for bill in repo.open_bills(session, access.view_scopes(), as_of):
+    for bill in repo.open_bills(session, access.view_scopes(), as_of or date.max):
         if supplier_id is not None and bill.supplier_id != supplier_id:
+            continue
+        day = as_of or days.setdefault(bill.company_id, company_today(session, bill.company_id))
+        if bill.bill_date > day:
             continue
         owed = bill.total - bill.amount_paid - bill.credited
         row = totals.setdefault(bill.supplier_id, {b: Decimal(0) for b in rules.AGEING_BUCKETS})
-        row[rules.ageing_bucket(bill.due_date, as_of)] += owed
+        row[rules.ageing_bucket(bill.due_date, day)] += owed
     rows: list[dict[str, Any]] = []
     for sid, buckets in totals.items():
         supplier = repo.get_supplier(session, sid)
@@ -496,7 +501,8 @@ def payables(session: Session, *, as_of: date | None = None,
             buckets.values(), Decimal(0)), **buckets})
     rows.sort(key=lambda r: str(r["supplier"]))
     grand = {b: sum((Decimal(r[b]) for r in rows), Decimal(0)) for b in rules.AGEING_BUCKETS}
-    return {"as_of": as_of, "suppliers": rows, "total": sum(grand.values(), Decimal(0)), "buckets": grand}
+    shown = as_of or max(days.values(), default=datetime.now(UTC).date())
+    return {"as_of": shown, "suppliers": rows, "total": sum(grand.values(), Decimal(0)), "buckets": grand}
 
 
 # --------------------------------------------------------------------------- payments made on a bill
@@ -543,6 +549,7 @@ def apply_payment_reversal(session: Session, event: Event) -> None:
         audit_record(session, "payment_reversed", "purchasing.supplier_bill", bill.id,
                      {"payment": payload.get("number"), "amount": amount})
         publish(session, Event("supplier.payment_reversed", "payments.payment", event.aggregate_id, {
-            "company_id": bill.company_id, "branch_id": bill.branch_id, "business_date": today(), "amount": amount,
+            "company_id": bill.company_id, "branch_id": bill.branch_id,
+            "business_date": company_today(session, bill.company_id), "amount": amount,
             "method": payload.get("method"), "supplier_id": bill.supplier_id, "number": bill.number,
             "bill_id": bill.id}))

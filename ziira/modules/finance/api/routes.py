@@ -39,11 +39,11 @@ from ziira.modules.finance.services import (
 )
 from ziira.modules.finance.services.access import READERS
 from ziira.sdk import (
+    DB_SESSION,
     Forbidden,
     RequestContext,
     Session,
     ValidationFailed,
-    db_session,
     page_limit,
     page_offset,
     request_context,
@@ -77,74 +77,74 @@ EXPENSE_DECIDE = [Depends(any_of(EXPENSES_APPROVE))]
 
 # --------------------------------------------------------------------------- chart of accounts
 @router.post("/companies/{company_id}/books", response_model=list[sc.AccountOut], dependencies=MANAGE_CHART)
-def post_setup_books(company_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_setup_books(company_id: UUID, session: Session = DB_SESSION) -> object:
     """Create the company's chart of accounts, journals and default posting rules (harmless if they exist)."""
     return accounts.setup_books(session, company_id)
 
 
 @router.get("/accounts", response_model=list[sc.AccountOut], dependencies=READ)
 def get_accounts(company_id: UUID | None = None, include_inactive: bool = False,
-                 session: Session = Depends(db_session)) -> object:
+                 session: Session = DB_SESSION) -> object:
     return accounts.list_accounts(session, company_id, include_inactive)
 
 
 @router.post("/accounts", response_model=sc.AccountOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE_CHART)
-def post_account(body: sc.AccountIn, session: Session = Depends(db_session)) -> object:
+def post_account(body: sc.AccountIn, session: Session = DB_SESSION) -> object:
     return accounts.create_account(session, company_id=body.company_id, code=body.code, name=body.name,
                                    type=body.type, subtype=body.subtype, parent_id=body.parent_id)
 
 
 @router.patch("/accounts/{account_id}", response_model=sc.AccountOut, dependencies=MANAGE_CHART)
-def patch_account(account_id: UUID, body: sc.AccountUpdateIn, session: Session = Depends(db_session)) -> object:
+def patch_account(account_id: UUID, body: sc.AccountUpdateIn, session: Session = DB_SESSION) -> object:
     return accounts.update_account(session, account_id, name=body.name, is_active=body.is_active)
 
 
 # --------------------------------------------------------------------------- posting rules
 @router.get("/posting-rules", response_model=list[sc.RuleOut], dependencies=READ)
-def get_rules(company_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_rules(company_id: UUID, session: Session = DB_SESSION) -> object:
     return posting_rules.list_rules(session, company_id)
 
 
 @router.post("/posting-rules", response_model=sc.RuleOut, status_code=status.HTTP_201_CREATED,
              dependencies=MANAGE_CHART)
-def post_rule(body: sc.RuleIn, session: Session = Depends(db_session)) -> object:
+def post_rule(body: sc.RuleIn, session: Session = DB_SESSION) -> object:
     return posting_rules.create_rule(session, company_id=body.company_id, doc_type=body.doc_type,
                                      line_role=body.line_role, account_id=body.account_id, side=body.side,
                                      conditions=body.conditions, priority=body.priority)
 
 
 @router.put("/posting-rules/{posting_rule_id}", response_model=sc.RuleOut, dependencies=MANAGE_CHART)
-def put_rule(posting_rule_id: UUID, body: sc.RuleUpdateIn, session: Session = Depends(db_session)) -> object:
+def put_rule(posting_rule_id: UUID, body: sc.RuleUpdateIn, session: Session = DB_SESSION) -> object:
     return posting_rules.update_rule(session, posting_rule_id, account_id=body.account_id)
 
 
 @router.delete("/posting-rules/{posting_rule_id}", status_code=NO_CONTENT, dependencies=MANAGE_CHART)
-def delete_rule(posting_rule_id: UUID, session: Session = Depends(db_session)) -> Response:
+def delete_rule(posting_rule_id: UUID, session: Session = DB_SESSION) -> Response:
     posting_rules.delete_rule(session, posting_rule_id)
     return Response(status_code=NO_CONTENT)
 
 
 # --------------------------------------------------------------------------- periods
 @router.get("/periods", response_model=list[sc.PeriodOut], dependencies=READ)
-def get_periods(company_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_periods(company_id: UUID, session: Session = DB_SESSION) -> object:
     return periods.list_periods(session, company_id)
 
 
 @router.post("/periods", response_model=sc.PeriodOut, status_code=status.HTTP_201_CREATED, dependencies=CLOSE)
-def post_period(body: sc.PeriodOpenIn, session: Session = Depends(db_session)) -> object:
+def post_period(body: sc.PeriodOpenIn, session: Session = DB_SESSION) -> object:
     """Create the monthly period containing a date (periods are also created when something is first posted)."""
     return periods.open_period(session, body.company_id, body.day)
 
 
 @router.get("/periods/{period_id}/checklist", response_model=sc.ChecklistOut, dependencies=CLOSE)
-def get_checklist(period_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_checklist(period_id: UUID, session: Session = DB_SESSION) -> object:
     """What stops this period from being closed."""
     problems = periods.period_checklist(session, period_id)
     return sc.ChecklistOut(ready=not problems, problems=problems)
 
 
 @router.post("/periods/{period_id}/status", response_model=sc.PeriodOut, dependencies=CLOSE)
-def post_period_status(period_id: UUID, body: sc.PeriodStatusIn, session: Session = Depends(db_session)) -> object:
+def post_period_status(period_id: UUID, body: sc.PeriodStatusIn, session: Session = DB_SESSION) -> object:
     """Close (soft), lock or reopen a period. Closing checks the period-close checklist first."""
     return periods.change_status(session, period_id, body.status)
 
@@ -153,19 +153,19 @@ def post_period_status(period_id: UUID, body: sc.PeriodStatusIn, session: Sessio
 @router.get("/journal-entries", response_model=list[sc.EntrySummaryOut], dependencies=REPORT)
 def get_entries(company_id: UUID | None = None, source_type: str | None = None, source_id: UUID | None = None,
                 date_from: date | None = None, date_to: date | None = None, limit: int = page_limit(),
-                offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+                offset: int = page_offset(), session: Session = DB_SESSION) -> object:
     return entries.list_entries(session, company_id=company_id, source_type=source_type, source_id=source_id,
                                 date_from=date_from, date_to=date_to, limit=limit, offset=offset)
 
 
 @router.get("/journal-entries/{entry_id}", response_model=sc.EntryOut, dependencies=REPORT)
-def get_one_entry(entry_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_one_entry(entry_id: UUID, session: Session = DB_SESSION) -> object:
     return _entry_out(entries.get_entry(session, entry_id))
 
 
 @router.post("/journal-entries/{entry_id}/reverse", response_model=sc.EntryOut, status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(any_of(JOURNAL_APPROVE))])
-def post_reverse(entry_id: UUID, body: sc.ReverseIn, session: Session = Depends(db_session)) -> object:
+def post_reverse(entry_id: UUID, body: sc.ReverseIn, session: Session = DB_SESSION) -> object:
     """Cancel an entry by posting its mirror image (once per entry; a reversal cannot be reversed)."""
     reversal = posting.reverse_entry(session, entry_id, entry_date=body.entry_date, reason=body.reason)
     return _entry_out(entries.get_entry(session, reversal.id))
@@ -174,7 +174,7 @@ def post_reverse(entry_id: UUID, body: sc.ReverseIn, session: Session = Depends(
 # --------------------------------------------------------------------------- manual journals
 @router.post("/manual-journals", response_model=sc.ManualJournalOut, status_code=status.HTTP_201_CREATED,
              dependencies=MANUAL)
-def post_manual(body: sc.ManualJournalIn, session: Session = Depends(db_session)) -> object:
+def post_manual(body: sc.ManualJournalIn, session: Session = DB_SESSION) -> object:
     """Write a draft manual journal. It changes nothing until it is submitted (and approved)."""
     return _manual_out(manual_journals.create_manual_journal(
         session, company_id=body.company_id, entry_date=body.entry_date, description=body.description,
@@ -184,17 +184,17 @@ def post_manual(body: sc.ManualJournalIn, session: Session = Depends(db_session)
 
 @router.get("/manual-journals", response_model=list[sc.ManualJournalSummaryOut], dependencies=READ)
 def get_manuals(status_: str | None = Query(default=None, alias="status"), limit: int = page_limit(),
-                offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+                offset: int = page_offset(), session: Session = DB_SESSION) -> object:
     return manual_journals.list_manual_journals(session, status=status_, limit=limit, offset=offset)
 
 
 @router.get("/manual-journals/{manual_id}", response_model=sc.ManualJournalOut, dependencies=READ)
-def get_manual(manual_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_manual(manual_id: UUID, session: Session = DB_SESSION) -> object:
     return _manual_out(manual_journals.get_manual_journal(session, manual_id))
 
 
 @router.post("/manual-journals/{manual_id}/submit", response_model=sc.ManualJournalOut, dependencies=MANUAL)
-def post_submit_manual(manual_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_submit_manual(manual_id: UUID, session: Session = DB_SESSION) -> object:
     """Send for approval; posts at once if no approval rule applies to its size."""
     return _manual_out(manual_journals.submit_manual_journal(session, manual_id))
 
@@ -202,7 +202,7 @@ def post_submit_manual(manual_id: UUID, session: Session = Depends(db_session)) 
 # --------------------------------------------------------------------------- reports
 @router.get("/reports/trial-balance", response_model=sc.TrialBalanceOut, dependencies=REPORT)
 def get_trial_balance(company_id: UUID, as_of: date, branch_id: UUID | None = None, include_zero: bool = False,
-                      session: Session = Depends(db_session)) -> object:
+                      session: Session = DB_SESSION) -> object:
     """Debit and credit totals per account up to a date. Reproducible for any past date."""
     t = reports.trial_balance(session, company_id, as_of, branch_id=branch_id, include_zero=include_zero)
     return sc.TrialBalanceOut(
@@ -215,7 +215,7 @@ def get_trial_balance(company_id: UUID, as_of: date, branch_id: UUID | None = No
 @router.get("/reports/general-ledger", response_model=sc.GeneralLedgerOut, dependencies=REPORT)
 def get_general_ledger(company_id: UUID, account_id: UUID, date_from: date, date_to: date,
                        branch_id: UUID | None = None, limit: int = page_limit(500),
-                       offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+                       offset: int = page_offset(), session: Session = DB_SESSION) -> object:
     """The lines posted to an account between two dates, with a running balance."""
     g = reports.general_ledger(session, company_id, account_id, date_from, date_to, branch_id=branch_id,
                                limit=limit, offset=offset)
@@ -265,7 +265,7 @@ def _pairs(rows: list[tuple[str, Decimal]]) -> list[sc.LabelAmountOut]:
             responses={200: {"content": {"text/csv": {}}}}, dependencies=REPORT)
 def get_profit_and_loss(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
                         by_branch: bool = False, format: str = Format,
-                        session: Session = Depends(db_session)) -> object:
+                        session: Session = DB_SESSION) -> object:
     """Income, cost of sales and expenses between two dates: consolidated, one branch, or split by branch."""
     r = statement_service.profit_and_loss(session, company_id, date_from, date_to, branch_id=branch_id,
                                           by_branch=by_branch)
@@ -281,7 +281,7 @@ def get_profit_and_loss(company_id: UUID, date_from: date, date_to: date, branch
 @router.get("/reports/balance-sheet", response_model=sc.BalanceSheetOut, responses={200: {"content": {"text/csv": {}}}},
             dependencies=REPORT)
 def get_balance_sheet(company_id: UUID, as_of: date, branch_id: UUID | None = None, format: str = Format,
-                      session: Session = Depends(db_session)) -> object:
+                      session: Session = DB_SESSION) -> object:
     """What the business has, owes and is worth at the end of a day."""
     r = statement_service.balance_sheet(session, company_id, as_of, branch_id=branch_id)
     if format == "csv":
@@ -299,7 +299,7 @@ def get_balance_sheet(company_id: UUID, as_of: date, branch_id: UUID | None = No
 @router.get("/reports/cash-flow", response_model=sc.CashFlowOut, responses={200: {"content": {"text/csv": {}}}},
             dependencies=REPORT)
 def get_cash_flow(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
-                  format: str = Format, session: Session = Depends(db_session)) -> object:
+                  format: str = Format, session: Session = DB_SESSION) -> object:
     """Cash, bank, M-Pesa and card balances at the start and end, and what moved them."""
     r = statement_service.cash_flow(session, company_id, date_from, date_to, branch_id=branch_id)
     if format == "csv":
@@ -312,7 +312,7 @@ def get_cash_flow(company_id: UUID, date_from: date, date_to: date, branch_id: U
 @router.get("/reports/vat-summary", response_model=sc.VatReportOut, responses={200: {"content": {"text/csv": {}}}},
             dependencies=REPORT)
 def get_vat_summary(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
-                    format: str = Format, session: Session = Depends(db_session)) -> object:
+                    format: str = Format, session: Session = DB_SESSION) -> object:
     """VAT charged less VAT paid between two dates: the figure for the VAT return."""
     r = statement_service.vat_summary(session, company_id, date_from, date_to, branch_id=branch_id)
     if format == "csv":
@@ -328,33 +328,33 @@ def get_vat_summary(company_id: UUID, date_from: date, date_to: date, branch_id:
             dependencies=REPORT)
 def get_journal_export(company_id: UUID, date_from: date, date_to: date,
                        format: str = Query(default="generic", pattern="^(generic|quickbooks|sage)$"),
-                       branch_id: UUID | None = None, session: Session = Depends(db_session)) -> Response:
+                       branch_id: UUID | None = None, session: Session = DB_SESSION) -> Response:
     """The journal lines of a period as CSV, for the accountant's software (generic, QuickBooks or Sage)."""
     text = export_service.journal_export(session, company_id, date_from, date_to, format, branch_id=branch_id)
     return _csv(text, f"journal-{format}-{date_from}-{date_to}")
 
 
 @router.get("/account-mappings", response_model=list[sc.MappingOut], dependencies=READ)
-def get_account_mappings(company_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_account_mappings(company_id: UUID, session: Session = DB_SESSION) -> object:
     """What the accountant calls each account in their own software."""
     return export_service.list_mappings(session, company_id)
 
 
 @router.put("/account-mappings/{account_id}", response_model=sc.MappingOut, dependencies=MANAGE_CHART)
 def put_account_mapping(account_id: UUID, company_id: UUID, body: sc.MappingIn,
-                        session: Session = Depends(db_session)) -> object:
+                        session: Session = DB_SESSION) -> object:
     return export_service.set_mapping(session, company_id, account_id, external_code=body.external_code,
                                       external_name=body.external_name)
 
 
 @router.delete("/account-mappings/{account_id}", status_code=NO_CONTENT, dependencies=MANAGE_CHART)
-def delete_account_mapping(account_id: UUID, company_id: UUID, session: Session = Depends(db_session)) -> None:
+def delete_account_mapping(account_id: UUID, company_id: UUID, session: Session = DB_SESSION) -> None:
     export_service.clear_mapping(session, company_id, account_id)
 
 
 # --------------------------------------------------------------------------- expenses
 @router.post("/expenses", response_model=sc.ExpenseOut, status_code=status.HTTP_201_CREATED, dependencies=EXPENSE_WRITE)
-def post_expense(body: sc.ExpenseIn, session: Session = Depends(db_session)) -> object:
+def post_expense(body: sc.ExpenseIn, session: Session = DB_SESSION) -> object:
     """Write a draft expense: a cost paid at once from cash, bank, M-Pesa or card, with its receipt reference."""
     return expenses.create_expense(
         session, company_id=body.company_id, branch_id=body.branch_id, expense_date=body.expense_date,
@@ -365,24 +365,24 @@ def post_expense(body: sc.ExpenseIn, session: Session = Depends(db_session)) -> 
 @router.get("/expenses", response_model=list[sc.ExpenseOut], dependencies=EXPENSE_READ)
 def get_expenses(company_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
                  date_from: date | None = None, date_to: date | None = None, limit: int = page_limit(50),
-                 offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+                 offset: int = page_offset(), session: Session = DB_SESSION) -> object:
     return expenses.list_expenses(session, company_id=company_id, status=status_, date_from=date_from,
                                   date_to=date_to, limit=limit, offset=offset)
 
 
 @router.get("/expenses/{expense_id}", response_model=sc.ExpenseOut, dependencies=EXPENSE_READ)
-def get_expense(expense_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_expense(expense_id: UUID, session: Session = DB_SESSION) -> object:
     return expenses.get_expense(session, expense_id)
 
 
 @router.post("/expenses/{expense_id}/submit", response_model=sc.ExpenseOut, dependencies=EXPENSE_WRITE)
-def post_submit_expense(expense_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_submit_expense(expense_id: UUID, session: Session = DB_SESSION) -> object:
     """Send the draft for approval; it posts at once when no approval rule applies to its size."""
     return expenses.submit_expense(session, expense_id)
 
 
 @router.post("/expenses/{expense_id}/reverse", response_model=sc.ExpenseOut, dependencies=EXPENSE_DECIDE)
-def post_reverse_expense(expense_id: UUID, body: sc.ExpenseReverseIn, session: Session = Depends(db_session)) -> object:
+def post_reverse_expense(expense_id: UUID, body: sc.ExpenseReverseIn, session: Session = DB_SESSION) -> object:
     """Cancel a posted expense by posting its mirror image."""
     return expenses.reverse_expense(session, expense_id, body.reason)
 
@@ -407,7 +407,7 @@ def _recon_out(d: bank_reconciliation.ReconciliationDetail) -> sc.Reconciliation
 
 @router.post("/bank-reconciliations", response_model=sc.ReconciliationOut, status_code=status.HTTP_201_CREATED,
              dependencies=RECON)
-def post_reconciliation(body: sc.ReconcileStartIn, session: Session = Depends(db_session)) -> object:
+def post_reconciliation(body: sc.ReconcileStartIn, session: Session = DB_SESSION) -> object:
     """Start reconciling a bank, M-Pesa or card account to a statement (its date and closing balance)."""
     return _recon_out(bank_reconciliation.start_reconciliation(
         session, company_id=body.company_id, account_id=body.account_id, statement_date=body.statement_date,
@@ -418,26 +418,26 @@ def post_reconciliation(body: sc.ReconcileStartIn, session: Session = Depends(db
 def get_reconciliations(company_id: UUID | None = None, account_id: UUID | None = None,
                         status_: str | None = Query(default=None, alias="status", pattern="^(in_progress|completed)$"),
                         limit: int = page_limit(50), offset: int = page_offset(),
-                        session: Session = Depends(db_session)) -> object:
+                        session: Session = DB_SESSION) -> object:
     return bank_reconciliation.list_reconciliations(session, company_id=company_id, account_id=account_id,
                                                     status=status_, limit=limit, offset=offset)
 
 
 @router.get("/bank-reconciliations/{recon_id}", response_model=sc.ReconciliationOut, dependencies=RECON)
-def get_reconciliation(recon_id: UUID, session: Session = Depends(db_session)) -> object:
+def get_reconciliation(recon_id: UUID, session: Session = DB_SESSION) -> object:
     """The reconciliation with the lines cleared and the lines still waiting (the reconciling items)."""
     return _recon_out(bank_reconciliation.get_reconciliation(session, recon_id))
 
 
 @router.post("/bank-reconciliations/{recon_id}/clear", response_model=sc.ReconciliationOut, dependencies=RECON)
-def post_clear(recon_id: UUID, body: sc.ClearIn, session: Session = Depends(db_session)) -> object:
+def post_clear(recon_id: UUID, body: sc.ClearIn, session: Session = DB_SESSION) -> object:
     """Mark ledger lines as on the statement (or take the mark off): by id, or everything up to a date."""
     return _recon_out(bank_reconciliation.clear_lines(session, recon_id, line_ids=body.line_ids, until=body.until,
                                                       cleared=body.cleared))
 
 
 @router.post("/bank-reconciliations/{recon_id}/suggestions", response_model=sc.SuggestResultOut, dependencies=RECON)
-def post_suggestions(recon_id: UUID, body: sc.SuggestIn, session: Session = Depends(db_session)) -> object:
+def post_suggestions(recon_id: UUID, body: sc.SuggestIn, session: Session = DB_SESSION) -> object:
     """Match statement lines (JSON, or CSV text) to ledger lines; `apply` clears the matches."""
     if (body.lines is None) == (body.csv is None):
         raise ValidationFailed("Send either lines or csv")
@@ -455,12 +455,12 @@ def post_suggestions(recon_id: UUID, body: sc.SuggestIn, session: Session = Depe
 
 
 @router.post("/bank-reconciliations/{recon_id}/complete", response_model=sc.ReconciliationOut, dependencies=RECON)
-def post_complete_reconciliation(recon_id: UUID, session: Session = Depends(db_session)) -> object:
+def post_complete_reconciliation(recon_id: UUID, session: Session = DB_SESSION) -> object:
     """Finish the reconciliation: only when the cleared lines add up to the statement's balance. Final."""
     return _recon_out(bank_reconciliation.complete_reconciliation(session, recon_id))
 
 
 @router.delete("/bank-reconciliations/{recon_id}", status_code=NO_CONTENT, dependencies=RECON)
-def delete_reconciliation(recon_id: UUID, session: Session = Depends(db_session)) -> None:
+def delete_reconciliation(recon_id: UUID, session: Session = DB_SESSION) -> None:
     """Throw away a reconciliation that is still in progress."""
     bank_reconciliation.cancel_reconciliation(session, recon_id)

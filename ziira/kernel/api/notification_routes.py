@@ -11,7 +11,7 @@ from sqlalchemy import text
 from ziira.kernel import credentials, notifications
 from ziira.kernel.context import RequestContext
 from ziira.kernel.errors import NotFound, ValidationFailed
-from ziira.sdk import Session, check_company, db_session, page_limit, page_offset, request_context
+from ziira.sdk import DB_SESSION, Session, check_company, page_limit, page_offset, request_context
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["Notifications"])
 Channel = Literal["email", "sms"]
@@ -94,7 +94,7 @@ COLUMNS = ("id, company_id, channel, recipient, subject, status, attempts, provi
 
 
 @router.get("/channels", response_model=list[ChannelOut])
-def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session: Session = Depends(db_session)
+def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session: Session = DB_SESSION
                  ) -> object:
     """The channels a business has set up (never their keys)."""
     ctx.require(MANAGE, company_id=company_id)
@@ -109,7 +109,7 @@ def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session
 
 @router.put("/channels/{channel}", response_model=ChannelOut)
 def put_channel(channel: Channel, body: ChannelIn, ctx: RequestContext = Depends(staff),
-                session: Session = Depends(db_session)) -> object:
+                session: Session = DB_SESSION) -> object:
     """Set up (or replace) how a business sends email or SMS. The old keys stop being used."""
     ctx.require(MANAGE, company_id=body.company_id)
     check_company(session, body.company_id)
@@ -123,7 +123,7 @@ def put_channel(channel: Channel, body: ChannelIn, ctx: RequestContext = Depends
 
 @router.delete("/channels/{channel}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_channel(channel: Channel, company_id: UUID, ctx: RequestContext = Depends(staff),
-                   session: Session = Depends(db_session)) -> Response:
+                   session: Session = DB_SESSION) -> Response:
     """Stop using a channel (its keys are kept encrypted for the audit trail)."""
     ctx.require(MANAGE, company_id=company_id)
     check_company(session, company_id)
@@ -136,7 +136,7 @@ def delete_channel(channel: Channel, company_id: UUID, ctx: RequestContext = Dep
 
 
 @router.post("/test", response_model=NotificationOut, status_code=status.HTTP_201_CREATED)
-def post_test(body: TestIn, ctx: RequestContext = Depends(staff), session: Session = Depends(db_session)) -> object:
+def post_test(body: TestIn, ctx: RequestContext = Depends(staff), session: Session = DB_SESSION) -> object:
     """Send a test message to check a channel works."""
     ctx.require(MANAGE, company_id=body.company_id)
     check_company(session, body.company_id)
@@ -154,7 +154,7 @@ def get_notifications(company_id: UUID, channel: Channel | None = None,
                                                   pattern="^(queued|sent|failed|skipped)$"),
                       ref_type: str | None = Query(default=None, max_length=60), ref_id: UUID | None = None,
                       limit: int = page_limit(50), offset: int = page_offset(),
-                      ctx: RequestContext = Depends(staff), session: Session = Depends(db_session)) -> object:
+                      ctx: RequestContext = Depends(staff), session: Session = DB_SESSION) -> object:
     """What was sent, and what became of it (recipients masked)."""
     ctx.require(MANAGE, company_id=company_id)
     check_company(session, company_id)
@@ -174,7 +174,7 @@ def get_notifications(company_id: UUID, channel: Channel | None = None,
 
 @router.get("/opt-outs", response_model=list[OptOutOut])
 def get_opt_outs(company_id: UUID, limit: int = page_limit(100), offset: int = page_offset(),
-                 ctx: RequestContext = Depends(staff), session: Session = Depends(db_session)) -> object:
+                 ctx: RequestContext = Depends(staff), session: Session = DB_SESSION) -> object:
     ctx.require(MANAGE, company_id=company_id)
     check_company(session, company_id)
     rows = session.execute(text(
@@ -185,7 +185,7 @@ def get_opt_outs(company_id: UUID, limit: int = page_limit(100), offset: int = p
 
 
 @router.post("/opt-outs", response_model=OptOutOut, status_code=status.HTTP_201_CREATED)
-def post_opt_out(body: OptOutIn, ctx: RequestContext = Depends(staff), session: Session = Depends(db_session)
+def post_opt_out(body: OptOutIn, ctx: RequestContext = Depends(staff), session: Session = DB_SESSION
                  ) -> object:
     """Record that a person asked not to be contacted."""
     ctx.require(MANAGE, company_id=body.company_id)
@@ -200,7 +200,7 @@ def post_opt_out(body: OptOutIn, ctx: RequestContext = Depends(staff), session: 
 
 @router.delete("/opt-outs/{optout_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_opt_out(optout_id: UUID, company_id: UUID, ctx: RequestContext = Depends(staff),
-                   session: Session = Depends(db_session)) -> Response:
+                   session: Session = DB_SESSION) -> Response:
     ctx.require(MANAGE, company_id=company_id)
     check_company(session, company_id)
     owner = session.execute(text("select company_id from kernel.notification_optout where id = :i"),

@@ -14,6 +14,8 @@ export function ReceivePayment({ open, onClose, customer }: { open: boolean; onC
   const { companies } = useCompany(customer.company_id);
   const branches = companies.find((c) => c.id === customer.company_id)?.branches ?? [];
   const f = useFormState({ amount: "", method: "cash", external_ref: "", received_on: today(), branch_id: "", payment_account_id: "" });
+  // Taking money is always at a branch: the one chosen, else the first (the only one in most businesses, where no picker shows)
+  const effectiveBranch = f.values.branch_id || branches[0]?.id || "";
   const [hold, setHold] = useState(false);
   const { reset } = f;
   useEffect(() => { if (open) { reset(); setHold(false); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -28,7 +30,7 @@ export function ReceivePayment({ open, onClose, customer }: { open: boolean; onC
   const save = useMutation({
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/pos/receipts", { body: {
-      customer_id: customer.id, amount: f.values.amount, method: f.values.method as "cash", branch_id: orNull(f.values.branch_id),
+      customer_id: customer.id, amount: f.values.amount, method: f.values.method as "cash", branch_id: effectiveBranch || null,
       payment_account_id: orNull(f.values.payment_account_id), external_ref: orNull(f.values.external_ref), received_on: f.values.received_on || null, hold_balance: hold } })),
     onSuccess: (r) => {
       for (const key of ["customer-balance", "customer-statement", "customer-receipts", "customer-invoices", "ageing"]) void qc.invalidateQueries({ queryKey: [key] });
@@ -60,7 +62,7 @@ export function ReceivePayment({ open, onClose, customer }: { open: boolean; onC
         <Field label={t("reference")} hint={t("referenceHint")} error={f.error("external_ref")}><Input {...f.bind("external_ref")} maxLength={60} /></Field>
         {branches.length > 1 && (
           <Field label={t("branch")} error={f.error("branch_id")}>
-            <Select {...f.bind("branch_id")}><option value="">{t("anyBranch")}</option>{branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</Select>
+            <Select value={effectiveBranch} onChange={(e) => f.set("branch_id", e.target.value)}>{branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</Select>
           </Field>
         )}
         <Checkbox label={t("holdBalance")} checked={hold} onChange={(e) => setHold(e.target.checked)} />

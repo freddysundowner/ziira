@@ -21,7 +21,7 @@ from fastapi import Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit, directory, mfa, throttle
+from ziira.kernel import audit, directory, mfa, support, throttle
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import Assignment, RequestContext, get_context, set_context
 from ziira.kernel.db import master_session, tenant_engine, tenant_session
@@ -330,6 +330,11 @@ def load_assignments(s: Session, user_id: UUID) -> tuple[Assignment, ...]:
 def context_from_access_token(token: str) -> RequestContext:
     """Verify an access token and its session, and load the user's roles."""
     payload = read_token(token)
+    kind = payload.get("k")
+    if kind == "support":
+        return _support_context(payload)
+    if kind is not None:
+        raise Unauthorized("Invalid token")          # operator tokens and sign-in challenges are not access tokens
     try:
         tenant_id, user_id, session_id = UUID(payload["t"]), UUID(payload["u"]), UUID(payload["s"])
     except (KeyError, ValueError, TypeError, AttributeError):
@@ -346,6 +351,17 @@ def context_from_access_token(token: str) -> RequestContext:
     return RequestContext(tenant_id=tenant_id, user_id=user_id, channel=row.channel, session_id=session_id,
                           assignments=assignments, device_id=row.device_id,
                           mfa_setup_required=bool(payload.get("m")))
+
+
+def _support_context(payload: dict[str, object]) -> RequestContext:
+    """The context of a platform staff member's support session. Everything is checked on every request: the session,
+    the business's grant (revoked? expired?) and the operator."""
+    try:
+        tenant_id, session_id, operator_id = UUID(str(payload["t"])), UUID(str(payload["sp"])), UUID(str(payload["o"]))
+    except (KeyError, ValueError, TypeError):
+        raise Unauthorized("Invalid token") from None
+    _require_active_tenant(tenant_id)
+    return support.load_session_context(tenant_id, session_id, operator_id)
 
 
 def context_from_api_key(key: str) -> RequestContext:

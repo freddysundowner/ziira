@@ -12,7 +12,7 @@ from tests.stock_helpers import system
 from ziira.modules.finance.domain.entries import Line
 from ziira.modules.finance.services import books, posting
 from ziira.modules.finance.services.posting import EntryRequest
-from ziira.sdk import Conflict, ValidationFailed
+from ziira.sdk import Conflict, ValidationFailed, company_today
 
 
 @pytest.fixture(scope="module")
@@ -125,7 +125,7 @@ def test_when_even_the_current_period_is_closed_the_document_is_refused(shop) ->
 
     with system(shop) as s:
         books.get_or_create_period(s, shop["company_id"], date(2026, 1, 15))
-        today = books.get_or_create_period(s, shop["company_id"], posting.today())
+        today = books.get_or_create_period(s, shop["company_id"], company_today(s, shop["company_id"]))
     with tenant_session(shop["tenant_id"], admin=True) as s:
         s.execute(text("update finance.period set status = 'locked' where id = :i or start_date = '2026-01-01'"),
                   {"i": str(today.id)})

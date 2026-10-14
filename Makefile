@@ -1,4 +1,4 @@
-.PHONY: setup db-up db-down install run test lint check web-setup web web-check api-types
+.PHONY: setup db-up db-down install run test lint check web-setup web web-check api-types e2e-setup e2e
 
 PY ?= python3
 
@@ -46,3 +46,9 @@ web-check:        ## web app: lint, types, tests, build
 api-types:        ## regenerate the web app's API types after changing backend routes or schemas
 	.venv/bin/python scripts/export_openapi.py
 	npm --prefix frontend run api
+
+e2e-setup:        ## real-browser tests: install Playwright and its Chromium (once)
+	cd e2e && npm ci && npx playwright install chromium
+
+e2e:              ## real-browser journeys against a throwaway stack (scratch databases, API on :8765, web on :4175); see docs/testing.md
+	bash e2e/run.sh

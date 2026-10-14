@@ -80,7 +80,7 @@ export function PayslipsTab({ employee, currency }: { employee: Employee; curren
             </div>
           )}
       </Card>
-      <p className="text-xs text-muted">{t("payslip.findHint")} <Link className="font-medium text-brand underline" to="/payroll">{t("payroll.title")}</Link></p>
+      <p className="text-xs text-muted">{t("payslip.findHint")} <Link className="font-medium text-brand-strong underline" to="/payroll">{t("payroll.title")}</Link></p>
     </div>
   );
 }

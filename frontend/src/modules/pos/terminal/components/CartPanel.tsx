@@ -71,8 +71,8 @@ export function CartPanel({ lines, currency, customer, heldCount, onStep, onEdit
           <div className="flex justify-between text-muted"><dt>{t("terminal.cart.items")}</dt><dd className="tnum">{quantity(itemCount(lines))}</dd></div>
           {discount > 0 && <div className="flex justify-between text-muted"><dt>{t("terminal.cart.discounts")}</dt><dd className="tnum">− {money(text(discount), currency)}</dd></div>}
           <div className="flex items-baseline justify-between pt-1"><dt className="text-base font-semibold">{t("terminal.cart.total")}</dt><dd className="tnum text-2xl font-bold">{money(text(total), currency)}</dd></div>
-          <p className="text-right text-[11px] text-muted">{t("terminal.cart.taxIncluded")}</p>
         </dl>
+        <p className="text-right text-[11px] text-muted">{t("terminal.cart.taxIncluded")}</p>
         <Button size="lg" className={cx("h-14 w-full text-lg")} disabled={lines.length === 0 || blocked !== null} onClick={onPay}>
           {t("terminal.cart.pay")} {lines.length > 0 && money(text(total), currency)}
           <kbd className="ml-2 hidden rounded border border-white/30 px-1.5 text-[11px] font-normal sm:inline">F8</kbd>

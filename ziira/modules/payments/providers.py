@@ -56,6 +56,9 @@ class DarajaProvider(PaymentProvider):
         return token
 
     def stk_push(self, request: StkRequest) -> StkResponse:
+        if request.amount != request.amount.to_integral_value():     # a prompt takes whole amounts: never round money
+            return StkResponse(False, None, "A mobile-money prompt can only ask for a whole amount",
+                               permanent_failure=True)
         timestamp = mpesa.daraja_timestamp()
         payload = {
             "BusinessShortCode": request.shortcode,
@@ -79,7 +82,8 @@ class DarajaProvider(PaymentProvider):
                 log.warning("Daraja refused our credentials: %s", exc.response.status_code)
                 return StkResponse(False, None, "Safaricom refused the credentials", permanent_failure=True)
             body = _json(response)
-            if response.status_code >= 500 or response.status_code == 429:
+            if response.status_code == 429 or (response.status_code >= 500 and not body.get("errorCode")):
+                # an outage (no body we can read): the job is retried later
                 raise httpx.HTTPStatusError("Daraja is unavailable", request=response.request, response=response)
             if response.status_code == 200 and str(body.get("ResponseCode")) == "0":
                 return StkResponse(True, str(body["CheckoutRequestID"]), str(body.get("CustomerMessage") or ""))
@@ -96,9 +100,9 @@ class DarajaProvider(PaymentProvider):
             response = client.post(f"{self._base(query.environment)}/mpesa/stkpushquery/v1/query", json=payload,
                                    headers={"Authorization": f"Bearer {token}"})
             body = _json(response)
-        if response.status_code >= 500 or response.status_code == 429:
+        if response.status_code == 429 or (response.status_code >= 500 and not body.get("errorCode")):
             raise httpx.HTTPStatusError("Daraja is unavailable", request=response.request, response=response)
-        if "ResultCode" not in body:                         # "still processing" comes back as an error body
+        if "ResultCode" not in body:                         # "still processing" comes back as an error body (HTTP 500)
             return mpesa.StkResult(query.provider_request_id, None, -1, str(body.get("errorMessage") or "Pending"))
         return mpesa.StkResult(query.provider_request_id, body.get("MerchantRequestID"), int(str(body["ResultCode"])),
                                str(body.get("ResultDesc") or ""))

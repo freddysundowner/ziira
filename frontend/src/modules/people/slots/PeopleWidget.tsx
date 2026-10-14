@@ -24,7 +24,7 @@ export default function PeopleWidget() {
       {canLeave && (
         <li className="flex items-center justify-between gap-3">
           <span>{pending.isLoading ? "…" : count === 0 ? t("widget.noLeave") : t("widget.leaveWaiting", { count })}</span>
-          {count > 0 && <Link className="font-medium text-brand hover:underline" to="/leave">{t("widget.review")}</Link>}
+          {count > 0 && <Link className="font-medium text-brand-strong hover:underline" to="/leave">{t("widget.review")}</Link>}
         </li>
       )}
       {canPayroll && (

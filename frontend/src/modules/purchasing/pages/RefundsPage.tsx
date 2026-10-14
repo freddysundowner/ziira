@@ -35,7 +35,7 @@ export default function RefundsPage() {
         <Card title={t("refundsDue")} description={t("refundsDueHint")} flush>
           <DataTable rows={due.data} loading={due.isLoading} error={due.error?.message} onRetry={() => void due.refetch()} rowKey={(r) => r.bill_id} empty={{ title: t("noRefundsDue") }}
             columns={[
-              { header: t("bill"), cell: (r) => <Link className="font-mono text-xs font-medium text-brand hover:underline" to={`/bills/${r.bill_id}`}>{r.number}</Link> },
+              { header: t("bill"), cell: (r) => <Link className="font-mono text-xs font-medium text-brand-strong hover:underline" to={`/bills/${r.bill_id}`}>{r.number}</Link> },
               { header: t("supplier"), cell: (r) => <SupplierName id={r.supplier_id} link /> },
               { header: t("paid"), hideBelow: "md", align: "right", cell: (r) => <Money value={r.amount_paid} /> },
               { header: t("credited"), hideBelow: "md", align: "right", cell: (r) => <Money value={r.credited} /> },

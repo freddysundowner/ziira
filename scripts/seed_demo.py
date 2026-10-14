@@ -68,7 +68,8 @@ def main() -> None:
     demo = create_tenant(name="Demo Hardware", code="demo-hardware", company="Demo Hardware Ltd",
                          branch_code="THK", branch_name="Thika", owner_name="Demo Owner",
                          owner_email="owner@demo-hardware.test", owner_password="demo-pass-123",
-                         currency="KES", phone_country_code="254", vat_registered=True)   # the demo is a Kenyan shop
+                         currency="KES", phone_country_code="254", vat_registered=True,
+                         timezone="Africa/Nairobi")   # the demo is a Kenyan shop
     tenant_id, company_id = demo.tenant_id, demo.company_id
 
     Registry().enable(tenant_id, "pos")             # also enables products, inventory, payments

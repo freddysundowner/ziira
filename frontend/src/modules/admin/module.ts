@@ -1,4 +1,4 @@
-/** The kernel's own screens: users, roles, settings, approvals, exceptions, notifications, API keys and my account. Always active (unit "kernel"). */
+/** The kernel's own screens: users, roles, settings, approvals, exceptions, notifications, API keys, privacy requests, support access and my account. Always active (unit "kernel"). */
 import { defineModule } from "@/sdk";
 
 import en from "./i18n/en.json";
@@ -17,6 +17,9 @@ export default defineModule({
     { path: "/admin/exceptions", page: () => import("./pages/ExceptionsPage"), permission: "exceptions.manage" },
     { path: "/admin/notifications", page: () => import("./pages/NotificationsPage"), permission: "settings.manage" },
     { path: "/admin/api-keys", page: () => import("./pages/ApiKeysPage"), permission: "api_keys.manage" },
+    { path: "/admin/privacy", page: () => import("./pages/PrivacyPage"), permission: "privacy.manage" },
+    { path: "/admin/privacy/:requestId", page: () => import("./pages/PrivacyRequestPage"), permission: "privacy.manage" },
+    { path: "/admin/support", page: () => import("./pages/SupportAccessPage"), permission: "support.grant" },
     // Every signed-in user may open their own account page, so it names no permission.
     { path: "/admin/account", page: () => import("./pages/AccountPage"), anySignedIn: true },
   ],
@@ -29,6 +32,8 @@ export default defineModule({
     { label: "kernel:approvalRules", to: "/admin/approval-rules", permission: "approvals.manage", order: 93, group: "admin", icon: "document" },
     { label: "kernel:notifications", to: "/admin/notifications", permission: "settings.manage", order: 94, group: "admin", icon: "document" },
     { label: "kernel:apiKeys", to: "/admin/api-keys", permission: "api_keys.manage", order: 95, group: "admin", icon: "security" },
+    { label: "kernel:privacy", to: "/admin/privacy", permission: "privacy.manage", order: 96, group: "admin", icon: "security" },
+    { label: "kernel:supportAccess", to: "/admin/support", permission: "support.grant", order: 97, group: "admin", icon: "security" },
     { label: "kernel:myAccount", to: "/admin/account", order: 99, group: "admin", icon: "settings" },
   ],
   slots: {

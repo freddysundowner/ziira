@@ -50,6 +50,8 @@ class RegisterIn(BaseModel):
                                     description="Calling code used to read national phone numbers")
     country: str | None = Field(default=None, min_length=2, max_length=2, examples=["GB"],
                                 description="The business's country (two-letter code)")
+    timezone: str | None = Field(default=None, max_length=64, examples=["Europe/London"],
+                                 description="Time zone (IANA name) that business dates follow; default UTC")
     tax_id: str | None = Field(default=None, max_length=40)
     invite_code: str | None = Field(default=None, max_length=40,
                                     description="Needed when registration is by invitation")
@@ -80,6 +82,12 @@ class AssignmentOut(Out):
     permissions: list[str]
 
 
+class SupportSessionInfo(BaseModel):
+    operator: str
+    until: datetime
+    level: str
+
+
 class MeOut(BaseModel):
     tenant_id: UUID
     user_id: UUID | None
@@ -88,6 +96,9 @@ class MeOut(BaseModel):
     full_name: str | None = None
     email: str | None = None
     roles: list[AssignmentOut]
+    support_session: SupportSessionInfo | None = Field(
+        default=None, description="Set while platform staff are working in the business under a support grant (the "
+                                  "web app shows a banner) and for the staff member's own session")
 
 
 class SessionOut(Out):

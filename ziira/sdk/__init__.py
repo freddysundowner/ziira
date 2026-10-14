@@ -26,9 +26,11 @@ from ziira.kernel import (
     notifications,
     numbering,
     reasons,
+    support,
 )
 from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
 from ziira.kernel.checks import IntegrityCheck
+from ziira.kernel.clock import company_date_of, company_today
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext, get_context, set_context, system_context
 from ziira.kernel.csvutil import safe, to_csv
@@ -83,8 +85,9 @@ __all__ = [
     "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
     "Quantity", "Rate", "Recipient", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized",
     "UnitCost",
-    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_setting",
-    "current_context", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
+    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_date_of",
+    "company_setting", "company_today",
+    "current_context", "DB_SESSION", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
     "encrypt_text", "enqueue", "flag_for_review", "hash_secret", "idempotency_key_header", "idempotent",
     "implementations", "is_production", "job", "money", "new_secret", "next_document_number", "opt_out_contact",
     "page_limit", "page_offset", "periodic", "provides", "publish", "publish_many", "read_credential",
@@ -273,6 +276,7 @@ async def request_context(
         raise Unauthorized("Sign in first")
     ctx = replace(ctx, ip_address=client_ip(request))
     request.state.ziira_ctx = ctx              # for the export audit (kernel/export_audit.py), which runs outside
+    support.enforce(ctx, request.method, request.url.path)     # platform staff under a support grant: its limits
     if ctx.mfa_setup_required and not request.url.path.startswith("/api/v1/auth/"):
         # The business requires a second factor of this person and it is not set up: nothing else works until it is.
         raise MfaSetupRequired("Set up two-step verification to continue")
@@ -281,9 +285,16 @@ async def request_context(
 
 
 def db_session(ctx: RequestContext = Depends(request_context)) -> Iterator[Session]:
-    """FastAPI dependency: one transaction scoped to the request's tenant."""
+    """The transaction scoped to the request's tenant. Use `DB_SESSION` in routes, not `Depends(db_session)`."""
     with tenant_session(ctx.tenant_id) as session:
         yield session
+
+
+# The scope matters. FastAPI (since 0.118) ends a `yield` dependency AFTER the response has gone to the client unless
+# told otherwise: the transaction would commit after "201 Created" was sent (the next request may not see the record,
+# and a failed commit could never become an error reply). `scope="function"` ends it right after the endpoint, before
+# the reply.
+DB_SESSION = Depends(db_session, scope="function")
 
 
 def require_permission(permission: str) -> Callable[[RequestContext], RequestContext]:

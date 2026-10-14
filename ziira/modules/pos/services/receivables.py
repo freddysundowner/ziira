@@ -1,7 +1,7 @@
 """Use cases: what customers owe - ageing, statements, balances and reminders."""
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -38,13 +38,17 @@ def bucket(due: date, as_of: date) -> str:
 
 def ageing(session: Session, *, as_of: date | None = None, customer_id: UUID | None = None) -> dict[str, Any]:
     """What customers owe on unpaid invoices, by customer, aged by due date."""
-    as_of = as_of or tills.today()
+    # Without a date the report is "as of today" where each invoice's company is (companies can be in different zones)
+    days: dict[UUID, date] = {}
     totals: dict[UUID, dict[str, Decimal]] = {}
-    for invoice in pos_repo.all_open_invoices(session, invoices.invoice_scopes(), as_of):
+    for invoice in pos_repo.all_open_invoices(session, invoices.invoice_scopes(), as_of or date.max):
         if customer_id is not None and invoice.customer_id != customer_id:
             continue
+        day = as_of or days.setdefault(invoice.company_id, tills.today(session, invoice.company_id))
+        if invoice.issue_date > day:
+            continue
         row = totals.setdefault(invoice.customer_id, {b: Decimal(0) for b in BUCKETS})
-        row[bucket(invoice.due_date, as_of)] += invoices.outstanding(invoice)
+        row[bucket(invoice.due_date, day)] += invoices.outstanding(invoice)
     names = find_customers(session, set(totals)) if totals and unit_enabled(session, "crm") else {}
     rows: list[dict[str, Any]] = []
     for cid, buckets in totals.items():
@@ -53,7 +57,8 @@ def ageing(session: Session, *, as_of: date | None = None, customer_id: UUID | N
             buckets.values(), Decimal(0)), **buckets})
     rows.sort(key=lambda r: (str(r["customer"]), str(r["customer_id"])))
     grand = {b: sum((Decimal(r[b]) for r in rows), Decimal(0)) for b in BUCKETS}
-    return {"as_of": as_of, "customers": rows, "total": sum(grand.values(), Decimal(0)), "buckets": grand}
+    shown = as_of or max(days.values(), default=datetime.now(UTC).date())
+    return {"as_of": shown, "customers": rows, "total": sum(grand.values(), Decimal(0)), "buckets": grand}
 
 
 @dataclass(frozen=True)
@@ -90,7 +95,7 @@ def statement(session: Session, customer_id: UUID, *, date_from: date | None = N
                              f"Payment by {receipt.method}" + (f" ({receipt.reference})" if receipt.reference else ""),
                              Decimal(0), receipt.amount))
     for note in pos_repo.credit_notes_of_customer(session, customer.id):
-        entries.append(Entry(note.business_date or tills.today(), "credit_note", note.number,
+        entries.append(Entry(note.business_date or tills.today(session, note.company_id), "credit_note", note.number,
                              "Goods taken back", Decimal(0), note.total))
     entries.sort(key=lambda e: (e.day, {"invoice": 0, "credit_note": 1, "receipt": 2}[e.kind], e.number))
     opening = sum((e.debit - e.credit for e in entries if date_from is not None and e.day < date_from), Decimal(0))
@@ -120,21 +125,25 @@ def balance(session: Session, customer_id: UUID) -> dict[str, Any]:
 def due_reminders(session: Session, *, as_of: date | None = None, min_days_overdue: int = 1,
                   repeat_days: int = 7, limit: int = 100) -> list[dict[str, Any]]:
     """Overdue invoices that have not had a reminder lately, oldest first - who to chase today."""
-    as_of = as_of or tills.today()
-    overdue = [i for i in pos_repo.all_open_invoices(session, invoices.invoice_scopes(), as_of)
-               if (as_of - i.due_date).days >= min_days_overdue]
+    days: dict[UUID, date] = {}
+
+    def day_of(invoice: Any) -> date:
+        return as_of or days.setdefault(invoice.company_id, tills.today(session, invoice.company_id))
+
+    overdue = [i for i in pos_repo.all_open_invoices(session, invoices.invoice_scopes(), as_of or date.max)
+               if i.issue_date <= day_of(i) and (day_of(i) - i.due_date).days >= min_days_overdue]
     last = pos_repo.last_reminders(session, [i.id for i in overdue])
     crm_on = unit_enabled(session, "crm")
     names = find_customers(session, {i.customer_id for i in overdue}) if overdue and crm_on else {}
     found = []
     for invoice in overdue:
         reminded = last.get(invoice.id)
-        if reminded is not None and (as_of - reminded.date()).days < repeat_days:
+        if reminded is not None and (day_of(invoice) - reminded.date()).days < repeat_days:
             continue
         customer = names.get(invoice.customer_id)
         found.append({"invoice_id": invoice.id, "number": invoice.number, "customer_id": invoice.customer_id,
                       "customer": customer.name if customer else "", "phone": customer.phone if customer else None,
-                      "due_date": invoice.due_date, "days_overdue": (as_of - invoice.due_date).days,
+                      "due_date": invoice.due_date, "days_overdue": (day_of(invoice) - invoice.due_date).days,
                       "outstanding": invoices.outstanding(invoice), "last_reminder": reminded})
     return found[:min(limit, 500)]
 
@@ -165,7 +174,7 @@ def _message(session: Session, invoice: Any, customer: Any, channel: str) -> tup
     company = session.execute(text("select name from kernel.company where id = :c"),
                               {"c": str(invoice.company_id)}).scalar_one()
     owed = invoices.outstanding(invoice)
-    late = (tills.today() - invoice.due_date).days
+    late = (tills.today(session, invoice.company_id) - invoice.due_date).days
     when = f"was due on {invoice.due_date}" if late > 0 else f"is due on {invoice.due_date}"
     body = (f"Dear {customer.name}, invoice {invoice.number} for KES {owed:,.2f} {when}. "
             f"Please pay at your earliest convenience. If you have already paid, thank you and please ignore this. "
@@ -197,9 +206,10 @@ def send_reminder(session: Session, invoice_id: UUID, *, channel: str | None = N
         raise ValidationFailed(f"{customer.name} has no {'email address' if channel == 'email' else 'phone number'} "
                                "on record")
     subject, body = _message(session, invoice, customer, channel)
+    day = tills.today(session, invoice.company_id)
     notification_id = send_notification(
         session, company_id=invoice.company_id, channel=channel, recipient=recipient, body=body, subject=subject,
-        ref_type="sales_invoice", ref_id=invoice.id, dedupe_key=f"reminder:{invoice.id}:{tills.today()}:{channel}")
+        ref_type="sales_invoice", ref_id=invoice.id, dedupe_key=f"reminder:{invoice.id}:{day}:{channel}")
     if notification_id is None:
         raise ValidationFailed("A reminder was already sent about this invoice today")
     state = session.execute(text("select status from kernel.notification where id = :i"),

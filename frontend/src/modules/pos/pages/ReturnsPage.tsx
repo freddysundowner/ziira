@@ -43,11 +43,11 @@ export default function ReturnsPage() {
         )}
         empty={{ title: status || branch ? t("noReturnsMatch") : t("noReturns"), hint: status || branch ? t("tryOtherFilters") : t("noReturnsHint") }}
         columns={[
-          { header: t("number"), cell: (r) => <button className="font-mono text-xs font-medium text-brand hover:underline" onClick={() => setOpen(r)}>{r.number}</button> },
+          { header: t("number"), cell: (r) => <button className="font-mono text-xs font-medium text-brand-strong hover:underline" onClick={() => setOpen(r)}>{r.number}</button> },
           { header: t("businessDate"), hideBelow: "sm", cell: (r) => formatDate(r.business_date) },
           { header: t("branch"), hideBelow: "lg", cell: (r) => nameOf(r.branch_id) },
           { header: t("refundMethod"), hideBelow: "md", cell: (r) => t(`refundMethods.${r.refund_method}`, humanise(r.refund_method)) },
-          { header: t("sale"), hideBelow: "md", cell: (r) => (r.original_sale_id ? <Link className="text-brand hover:underline" to={`/pos/sales/${r.original_sale_id}`}>{t("viewSale")}</Link> : "—") },
+          { header: t("sale"), hideBelow: "md", cell: (r) => (r.original_sale_id ? <Link className="text-brand-strong hover:underline" to={`/pos/sales/${r.original_sale_id}`}>{t("viewSale")}</Link> : "—") },
           { header: t("total"), align: "right", cell: (r) => m(r.total, r.company_id) },
           { header: t("status"), cell: (r) => <StatusBadge status={r.status} /> },
         ]}

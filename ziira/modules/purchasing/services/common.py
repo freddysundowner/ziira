@@ -1,20 +1,12 @@
 """Small helpers shared by the purchasing services."""
 
-from datetime import date, datetime
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 
 from ziira.modules.purchasing.repository.models import Supplier
 from ziira.modules.purchasing.services import access
 from ziira.sdk import NotFound, Session, ValidationFailed, current_context
-
-NAIROBI = ZoneInfo("Africa/Nairobi")
-
-
-def today() -> date:
-    return datetime.now(NAIROBI).date()
 
 
 def unit_enabled(session: Session, unit: str) -> bool:

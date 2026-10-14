@@ -6,7 +6,7 @@ import { useProduct, useSupplier } from "../hooks";
 export function SupplierName({ id, link }: { id: string | null | undefined; link?: boolean }) {
   const supplier = useSupplier(id);
   const name = supplier.data?.name ?? (supplier.isError ? "—" : "…");
-  return link && id ? <Link className="font-medium text-brand hover:underline" to={`/suppliers/${id}`}>{name}</Link> : <>{name}</>;
+  return link && id ? <Link className="font-medium text-brand-strong hover:underline" to={`/suppliers/${id}`}>{name}</Link> : <>{name}</>;
 }
 
 export function ProductName({ id, sku = true }: { id: string | null | undefined; sku?: boolean }) {

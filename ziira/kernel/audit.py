@@ -35,6 +35,10 @@ def record(session: Session, action: str, entity_type: str, entity_id: UUID | No
         session.info[_LISTENING] = True
         event.listen(session, "before_commit", _write_pending)
         event.listen(session, "after_rollback", _forget_pending)
+    if ctx.support_operator_id is not None:
+        # Work done by platform staff under a support grant says so in every entry.
+        changes = {**(changes or {}), "support_operator_id": str(ctx.support_operator_id),
+                   "support_operator": ctx.support_operator_name}
     session.info.setdefault(_PENDING, []).append({
         "user_id": ctx.user_id, "channel": ctx.channel, "device_id": ctx.device_id, "ip": ctx.ip_address,
         "tenant_id": ctx.tenant_id, "action": action, "entity_type": entity_type, "entity_id": entity_id,

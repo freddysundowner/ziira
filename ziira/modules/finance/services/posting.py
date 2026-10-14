@@ -7,7 +7,7 @@ publish documents, and finance's event handlers turn them into entries through `
 """
 
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import date
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -28,17 +28,11 @@ from ziira.sdk import (
     audit_record,
     check_company,
     company_setting,
+    company_today,
     current_context,
     next_document_number,
     publish,
 )
-
-NAIROBI = timezone(timedelta(hours=3))        # Kenya has no daylight saving time
-
-
-def today() -> date:
-    """Today's date in Kenya."""
-    return datetime.now(UTC).astimezone(NAIROBI).date()
 
 
 @dataclass(frozen=True)
@@ -92,7 +86,7 @@ def post_entry(session: Session, request: EntryRequest) -> JournalEntry:
                               policy=str(company_setting(session, request.company_id, "late_posting")))
     if decision == periods.REDIRECT:
         # A document dated in a closed month is booked in the current one, and says so
-        original, entry_date = entry_date, today()
+        original, entry_date = entry_date, company_today(session, request.company_id)
         period = get_or_create_period(session, request.company_id, entry_date)
         if period.status != periods.OPEN:
             raise ValidationFailed("There is no open accounting period to post into")
@@ -174,7 +168,8 @@ def reverse_entry(session: Session, entry_id: UUID, *, entry_date: date | None, 
     journal = finance_repo.get_journal(session, original.journal_id)
     code = journal.code if journal else "GEN"
     return post_entry(session, EntryRequest(
-        company_id=original.company_id, entry_date=entry_date or today(), journal_code=code, lines=mirrored,
+        company_id=original.company_id, journal_code=code, lines=mirrored,
+        entry_date=entry_date or company_today(session, original.company_id),
         description=f"Reversal of {original.number}: {reason.strip()}", source_type=original.source_type,
         source_id=original.source_id, is_manual=True, reversal_of_id=original.id,
         approved_by=current_context().user_id, allow_control=True))

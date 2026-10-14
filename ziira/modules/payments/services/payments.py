@@ -1,6 +1,6 @@
 """Use cases: recording money received or paid, in the one payments model (specification section 10)."""
 
-from datetime import UTC, date, datetime, timedelta, timezone
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -18,6 +18,7 @@ from ziira.sdk import (
     ValidationFailed,
     audit_record,
     check_company,
+    company_today,
     current_context,
     enqueue,
     next_document_number,
@@ -28,12 +29,6 @@ METHODS = ("cash", "mobile_money", "bank", "card", "cheque", "other")
 KIND_FOR_METHOD = {"cash": ("cash",), "mobile_money": ("mobile_money",), "bank": ("bank",), "card": ("card",),
                    "cheque": ("bank", "cash"), "other": ("bank", "cash", "card", "mobile_money")}
 PARTY_TYPES = ("customer", "supplier", "employee", "other")
-NAIROBI = timezone(timedelta(hours=3))
-
-
-def today() -> date:
-    return datetime.now(UTC).astimezone(NAIROBI).date()
-
 
 def record_payment(session: Session, *, company_id: UUID, branch_id: UUID | None, method: str, amount: Decimal,
                    direction: str = "in", payment_account_id: UUID | None = None, business_date: date | None = None,
@@ -55,7 +50,7 @@ def record_payment(session: Session, *, company_id: UUID, branch_id: UUID | None
     amount = mpesa.parse_amount(amount, "Payment amount")
     if party_type is not None and party_type not in PARTY_TYPES:
         raise ValidationFailed(f"Party type must be one of: {', '.join(PARTY_TYPES)}")
-    day = business_date or today()
+    day = business_date or company_today(session, company_id)
     closing.check_day_open(session, branch_id, day)
 
     if payment_account_id is None:

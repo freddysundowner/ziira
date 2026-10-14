@@ -22,7 +22,7 @@ export default function LowStockWidget() {
           </li>
         ))}
       </ul>
-      <Link className="text-sm text-brand hover:underline" to="/stock">{t("seeAll")}</Link>
+      <Link className="text-sm text-brand-strong hover:underline" to="/stock">{t("seeAll")}</Link>
     </div>
   );
 }

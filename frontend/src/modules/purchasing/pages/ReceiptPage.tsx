@@ -41,7 +41,7 @@ export default function ReceiptPage() {
             { label: t("supplier"), value: <SupplierName id={r.supplier_id} link /> },
             { label: t("receivedOn"), value: formatDate(r.received_at, true) },
             { label: t("deliveryNote"), value: r.delivery_note_no },
-            { label: t("order"), value: r.order_id ? <Link className="font-medium text-brand hover:underline" to={`/orders/${r.order_id}`}>{t("openOrder")}</Link> : t("noOrder") },
+            { label: t("order"), value: r.order_id ? <Link className="font-medium text-brand-strong hover:underline" to={`/orders/${r.order_id}`}>{t("openOrder")}</Link> : t("noOrder") },
             { label: t("landedCost"), value: <Money value={r.landed_cost} companyId={r.company_id} /> },
           ]} />
         </Card>

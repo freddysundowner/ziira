@@ -30,7 +30,7 @@ export function CommitStep({ batch }: { batch: Batch }) {
           </div>
           <div className="flex gap-2">
             <Link to="/imports" className="inline-flex h-9 items-center rounded-lg border border-line px-3 text-sm font-medium hover:bg-sunken">{t("done.history")}</Link>
-            <Link to="/imports/new" className="inline-flex h-9 items-center rounded-lg bg-brand px-3 text-sm font-medium text-white">{t("done.another")}</Link>
+            <Link to="/imports/new" className="inline-flex h-9 items-center rounded-lg bg-brand-strong px-3 text-sm font-medium text-white">{t("done.another")}</Link>
           </div>
         </div>
       )}

@@ -20,7 +20,7 @@ from uuid import UUID
 
 from sqlalchemy import text
 
-from ziira.kernel import auth, platform_mail
+from ziira.kernel import auth, company_settings, platform_mail
 from ziira.kernel.config import get_settings
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import Conflict, Forbidden, TooManyRequests, Unauthorized, Unavailable, ValidationFailed
@@ -87,7 +87,7 @@ def _check_invite(code: str | None) -> str:
 
 def register(*, business_name: str, owner_name: str, email: str, password: str, currency: str,
              phone_country_code: str = "", country: str | None = None, tax_id: str | None = None,
-             invite_code: str | None = None, ip_address: str | None = None) -> Started:
+             timezone: str | None = None, invite_code: str | None = None, ip_address: str | None = None) -> Started:
     """Ask for a business. Saves the request and emails a verification link; creates nothing else."""
     settings = get_settings()
     if settings.registration_mode == "closed":
@@ -101,6 +101,7 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
     if not re.fullmatch(r"[A-Z]{3}", currency):
         raise ValidationFailed("Currency is a three-letter code such as USD")
     code = check_calling_code(phone_country_code)
+    zone = str(company_settings.SETTINGS["timezone"].parse(timezone)) if timezone and timezone.strip() else None
     nation = country.strip().upper() if country and country.strip() else None
     if nation is not None and not re.fullmatch(r"[A-Z]{2}", nation):
         raise ValidationFailed("Country is a two-letter code such as GB")
@@ -124,10 +125,11 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
                        "and expires_at > now()"), {"e": address})
         s.execute(text(
             "insert into master.registration (email, business_name, owner_name, password_hash, currency, "
-            "phone_country_code, country, tax_id, invite_code_hash, token_hash, ip_address, expires_at) values "
-            "(:e, :b, :o, :p, :c, :pc, :n, :t, :i, :h, :ip, :x)"),
+            "phone_country_code, country, timezone, tax_id, invite_code_hash, token_hash, ip_address, expires_at) "
+            "values "
+            "(:e, :b, :o, :p, :c, :pc, :n, :z, :t, :i, :h, :ip, :x)"),
             {"e": address, "b": business, "o": owner, "p": password_hash, "c": currency, "pc": code, "n": nation,
-             "t": tax, "i": invite, "h": hash_secret(token), "ip": ip_address,
+             "z": zone, "t": tax, "i": invite, "h": hash_secret(token), "ip": ip_address,
              "x": datetime.now(UTC) + timedelta(hours=settings.registration_token_hours)})
     link = f"{settings.public_web_url.rstrip('/')}/register/verify?token={token}"
     platform_mail.send(address, "Confirm your email to create your business",
@@ -177,7 +179,7 @@ def complete(token: str, *, device_id: str, device_name: str | None = None,
             name=row.business_name, code=code, company=row.business_name, branch_code="HQ", branch_name="Head office",
             owner_name=row.owner_name, owner_email=row.email, owner_password_hash=row.password_hash,
             currency=row.currency, phone_country_code=row.phone_country_code, country=row.country,
-            tax_id=row.tax_id, registry=registry)
+            timezone=row.timezone, tax_id=row.tax_id, registry=registry)
         for unit in [u.strip() for u in get_settings().registration_units.split(",") if u.strip()]:
             registry.enable(created.tenant_id, unit)
     except Exception:

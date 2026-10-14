@@ -11,6 +11,7 @@ import { readStored, writeStored } from "@/sdk/storage";
 import { CommandPalette } from "./CommandPalette";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { OfflineBanner } from "./OfflineBanner";
+import { SupportBanner } from "./SupportBanner";
 
 const COLLAPSE_KEY = "ziira.sidebar";
 
@@ -61,7 +62,7 @@ export function Layout() {
       </NavLink>
       {groups.map((g) => (
         <div key={g.id || "top"}>
-          {g.id && !small && <p className="mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted/80">{t(`nav.${g.id}`)}</p>}
+          {g.id && !small && <p className="mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t(`nav.${g.id}`)}</p>}
           {g.id && small && <hr className="mx-2 mb-2 border-line" />}
           <div className="space-y-0.5">
             {g.items.map((item) => {
@@ -114,6 +115,7 @@ export function Layout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <OfflineBanner />
+        <SupportBanner />
         <header className="app-bar sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-surface/85 px-3 backdrop-blur sm:px-5">
           <button aria-label={t("menu")} onClick={() => setMobileOpen(true)} className="rounded-lg p-2 text-muted hover:bg-sunken md:hidden"><MenuIcon className="h-5 w-5" /></button>
           <button onClick={() => setPalette(true)} className="flex h-9 w-full max-w-md items-center gap-2 rounded-lg border border-line bg-bg px-3 text-sm text-muted hover:border-muted/50">

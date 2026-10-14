@@ -11,6 +11,7 @@ for the quantities on it, at the prices agreed. Prices include VAT, as everywher
 from dataclasses import dataclass
 from datetime import date, timedelta
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import text
@@ -70,16 +71,22 @@ def _can_see(document: SalesDocument) -> bool:
 def _expire(session: Session, document: SalesDocument) -> None:
     """A quotation past its date is expired, whoever looks at it first."""
     if document.doc_kind == "quotation" and document.status in OPEN_QUOTE and document.valid_until is not None \
-            and document.valid_until < tills.today():
+            and document.valid_until < tills.today(session, document.company_id):
         document.status = "expired"
         session.flush()
 
 
 def expire_all(session: Session) -> int:
     """Expire every open quotation whose date has passed (the recurring task). Returns how many."""
-    rows = session.execute(text(
-        "update pos.sales_document set status = 'expired', updated_at = now() where doc_kind = 'quotation' "
-        "and status in ('draft', 'sent') and valid_until < :today returning id"), {"today": tills.today()}).all()
+    companies = session.execute(text(
+        "select distinct company_id from pos.sales_document where doc_kind = 'quotation' "
+        "and status in ('draft', 'sent')")).scalars().all()
+    rows: list[Any] = []
+    for company_id in companies:           # "today" is the company's own date: companies can be in different zones
+        rows += session.execute(text(
+            "update pos.sales_document set status = 'expired', updated_at = now() where doc_kind = 'quotation' "
+            "and company_id = :c and status in ('draft', 'sent') and valid_until < :today returning id"),
+            {"c": str(company_id), "today": tills.today(session, company_id)}).all()
     for row in rows:
         audit_record(session, "expire", "pos.sales_quotation", row.id, None)
     return len(rows)
@@ -114,8 +121,8 @@ def _price_lines(session: Session, customer: CustomerView, branch_id: UUID | Non
         if product is None or product.company_id != customer.company_id or not product.is_active:
             raise ValidationFailed("A product was not found in this company")
         products[line.product_id] = product
-    prices = selling_prices(session, customer.company_id, branch_id, set(products), tills.today(),
-                            customer.customer_group)
+    today = tills.today(session, customer.company_id)
+    prices = selling_prices(session, customer.company_id, branch_id, set(products), today, customer.customer_group)
     can_override = ctx.can(PRICE_OVERRIDE, company_id=customer.company_id, branch_id=branch_id)
     priced = []
     for line in lines:
@@ -172,7 +179,10 @@ def _create(session: Session, kind: str, *, customer_id: UUID, lines: list[DocLi
     if branch_id is None:
         raise ValidationFailed("Say which branch this is for (or name the stock location)")
     ctx.require(INVOICES_MANAGE, company_id=customer.company_id, branch_id=branch_id)
-    if valid_until is not None and valid_until < tills.today():
+    today = tills.today(session, customer.company_id)
+    if kind == "quotation" and valid_until is None:
+        valid_until = today + timedelta(days=14)
+    if valid_until is not None and valid_until < today:
         raise ValidationFailed("A quotation cannot be valid until a date that has passed")
     terms = customer.payment_terms_days if terms_days is None else terms_days
     if terms < 0 or terms > 365:
@@ -182,7 +192,7 @@ def _create(session: Session, kind: str, *, customer_id: UUID, lines: list[DocLi
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=customer.company_id, branch_id=branch_id,
         doc_kind=kind, number=next_document_number(
             session, company_id=customer.company_id, branch_id=branch_id, doc_type=f"sales_{kind}",
-            prefix="QUO" if kind == "quotation" else "SO"), customer_id=customer.id, doc_date=tills.today(),
+            prefix="QUO" if kind == "quotation" else "SO"), customer_id=customer.id, doc_date=today,
         valid_until=valid_until if kind == "quotation" else None, source_quotation_id=source_quotation_id,
         location_id=location_id, terms_days=terms, notes=(notes or "").strip()[:500] or None)
     pos_repo.add(session, document)
@@ -197,7 +207,7 @@ def create_quotation(session: Session, *, customer_id: UUID, lines: list[DocLine
                      notes: str | None = None) -> DocView:
     """Quote a customer. By default it is valid for 14 days. Needs 'invoices.manage' at the branch."""
     return _create(session, "quotation", customer_id=customer_id, lines=lines, branch_id=branch_id,
-                   location_id=location_id, valid_until=valid_until or tills.today() + timedelta(days=14),
+                   location_id=location_id, valid_until=valid_until,
                    terms_days=terms_days, notes=notes)
 
 
@@ -230,7 +240,7 @@ def update_document(session: Session, document_id: UUID, *, lines: list[DocLineI
     if notes is not None:
         document.notes = notes.strip()[:500] or None
     if valid_until is not None and document.doc_kind == "quotation":
-        if valid_until < tills.today():
+        if valid_until < tills.today(session, document.company_id):
             raise ValidationFailed("A quotation cannot be valid until a date that has passed")
         document.valid_until = valid_until
     if lines is not None:
@@ -273,7 +283,7 @@ def confirm_quotation(session: Session, document_id: UUID) -> DocView:
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=quote.company_id, branch_id=quote.branch_id,
         doc_kind="order", number=next_document_number(session, company_id=quote.company_id, branch_id=quote.branch_id,
                                                       doc_type="sales_order", prefix="SO"),
-        customer_id=quote.customer_id, doc_date=tills.today(), source_quotation_id=quote.id,
+        customer_id=quote.customer_id, doc_date=tills.today(session, quote.company_id), source_quotation_id=quote.id,
         location_id=quote.location_id, terms_days=quote.terms_days, notes=quote.notes, subtotal=quote.subtotal,
         tax_total=quote.tax_total, total=quote.total)
     pos_repo.add(session, order)
