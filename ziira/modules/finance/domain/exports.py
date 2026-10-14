@@ -1,42 +1,21 @@
 """CSV for reports and for the accountant's software. Pure rules: rows in, text out.
 
-Every text cell is made safe for spreadsheets: a cell that starts with = + - @ (or a tab or return) would be run as a
-formula when the file is opened, so it is prefixed with an apostrophe. Numbers are written plainly, never as text.
+Every text cell is made safe for spreadsheets (see ziira.sdk `to_csv`: nothing in a file can run as a formula).
 
 The QuickBooks and Sage layouts were written from those products' public import documentation and have not been tried
 in the real software: have the accountant import a small file first.
 """
 
-import csv
-import io
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
 from ziira.modules.finance.domain import statements
+from ziira.sdk import safe, to_csv
 
-FORMULA_STARTS = ("=", "+", "-", "@", "\t", "\r")
 FORMATS = ("generic", "quickbooks", "sage")
-
-
-def safe(value: object) -> str:
-    """A cell's text, defused against spreadsheet formulas. Numbers and dates are not text, so they pass through."""
-    if isinstance(value, Decimal):
-        return f"{value:f}"
-    if isinstance(value, date):
-        return value.isoformat()
-    text = "" if value is None else str(value)
-    return "'" + text if text.startswith(FORMULA_STARTS) else text
-
-
-def to_csv(header: list[str], rows: list[list[object]]) -> str:
-    """The rows as CSV text (comma separated, CRLF line ends, quoted where needed)."""
-    out = io.StringIO()
-    writer = csv.writer(out, lineterminator="\r\n")
-    writer.writerow(header)
-    for row in rows:
-        writer.writerow([safe(x) for x in row])
-    return out.getvalue()
+__all__ = ["FORMATS", "JournalRow", "balance_sheet_csv", "cash_flow_csv", "journal_csv", "pnl_csv", "safe", "to_csv",
+           "vat_csv"]
 
 
 @dataclass(frozen=True)

@@ -271,10 +271,10 @@ def calculate_run(session: Session, run_id: UUID) -> PayrollRun:
             employer_cost=r.employer_cost, branch_id=pay.employee.branch_id, benefits=r.benefits,
             detail={**r.detail, **pay.detail}, pay_method=pay.pay_method)
         people_repo.add(session, slip)
-        for line in r.lines:
+        for number, line in enumerate(r.lines, 1):
             people_repo.add(session, PayslipLine(
                 tenant_id=ctx.tenant_id, payslip_id=slip.id, component_code=line.code, kind=line.kind,
-                amount=line.amount, rate_table_id=line.table_id, description=line.name))
+                amount=line.amount, rate_table_id=line.table_id, description=line.name, line_no=number))
     run.totals = _totals(results, active)
     run.exceptions = exceptions
     run.status = "calculated"

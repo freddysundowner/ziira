@@ -395,3 +395,84 @@ class PaymentRowOut(BaseModel):
     account_no: str
     amount: Decimal
     reference: str
+
+
+# --------------------------------------------------------------------------- outputs
+class PrintLineOut(BaseModel):
+    label: str
+    amount: Decimal
+
+
+class PayslipPrintOut(BaseModel):
+    header: list[str]
+    title: str
+    period: str
+    employee: list[list[str]]
+    earnings: list[PrintLineOut]
+    benefits: list[PrintLineOut]
+    deductions: list[PrintLineOut]
+    totals: list[PrintLineOut]
+    notes: list[str]
+    is_copy: bool
+
+
+class CardRowOut(BaseModel):
+    period_start: date
+    period_end: date
+    gross_pay: Decimal
+    benefits: Decimal
+    taxable_pay: Decimal
+    by_rule: dict[str, Decimal]
+    total_deductions: Decimal
+    net_pay: Decimal
+
+
+class TaxCardOut(BaseModel):
+    employee_id: UUID
+    employee_no: str
+    full_name: str
+    tax_id: str | None
+    year: int
+    rules: list[str]
+    rows: list[CardRowOut]
+    totals: CardRowOut | None
+
+
+class ReturnRowOut(BaseModel):
+    employee_no: str
+    name: str
+    tax_id: str | None
+    registration_no: str | None
+    base: Decimal
+    employee_amount: Decimal
+    employer_amount: Decimal
+
+
+class ReturnOut(BaseModel):
+    run_id: UUID
+    code: str
+    name: str
+    period_start: date
+    period_end: date
+    employee_total: Decimal
+    employer_total: Decimal
+    rows: list[ReturnRowOut]
+
+
+class ReturnSummaryOut(BaseModel):
+    code: str
+    name: str
+    kind: str
+    employee: Decimal
+    employer: Decimal
+    payable_account_id: UUID | None
+
+
+class SendPayslipsIn(BaseModel):
+    channel: Literal["email", "sms"]
+
+
+class SendPayslipsOut(BaseModel):
+    queued: int
+    already_sent: int
+    without_contact: int

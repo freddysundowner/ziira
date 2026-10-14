@@ -31,6 +31,7 @@ from ziira.kernel.auth import client_ip, context_from_access_token, context_from
 from ziira.kernel.checks import IntegrityCheck
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext, get_context, set_context, system_context
+from ziira.kernel.csvutil import safe, to_csv
 from ziira.kernel.db import tenant_session
 from ziira.kernel.errors import (
     Conflict,
@@ -57,6 +58,7 @@ from ziira.kernel.phone import check_calling_code, normalise_phone
 from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
 __all__ = [
+    "safe", "to_csv",
     "check_calling_code", "normalise_phone",
     "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
     "Quantity", "Rate", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized", "UnitCost",

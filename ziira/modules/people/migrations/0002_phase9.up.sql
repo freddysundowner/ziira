@@ -74,5 +74,5 @@ alter table people.payslip
   add column benefits numeric(18,2) not null default 0,
   add column detail jsonb not null default '{}',
   add column pay_method text check (pay_method in ('bank', 'mobile_money'));
-alter table people.payslip_line add column description text;
+alter table people.payslip_line add column description text, add column line_no smallint not null default 0;
 create index payslip_employee on people.payslip (employee_id);

@@ -1,5 +1,5 @@
 drop index if exists people.payslip_employee;
-alter table people.payslip_line drop column if exists description;
+alter table people.payslip_line drop column if exists line_no, drop column if exists description;
 alter table people.payslip drop column if exists pay_method, drop column if exists detail, drop column if exists benefits,
   drop column if exists branch_id;
 alter table people.payroll_run drop constraint if exists payroll_run_period_check;

@@ -2,9 +2,11 @@
 
 from collections.abc import Callable
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi.responses import PlainTextResponse
 
 from ziira.modules.people.api import schemas as sc
 from ziira.modules.people.permissions import (
@@ -22,11 +24,22 @@ from ziira.modules.people.services import (
     attendance,
     employees,
     leave,
+    outputs,
     pay_setup,
     payroll,
     statutory_rules,
 )
-from ziira.sdk import Forbidden, RequestContext, Session, db_session, page_limit, page_offset, request_context
+from ziira.sdk import (
+    Forbidden,
+    RequestContext,
+    Session,
+    ValidationFailed,
+    db_session,
+    page_limit,
+    page_offset,
+    request_context,
+    to_csv,
+)
 
 router = APIRouter()
 NO_CONTENT = status.HTTP_204_NO_CONTENT
@@ -401,8 +414,6 @@ def get_payment_file(run_id: UUID, format: str = Query(default="json", pattern="
     rows = payroll.payment_file(session, run_id)
     if format == "json":
         return rows
-    from ziira.modules.finance.domain.exports import to_csv
-
     text = to_csv(["employee_no", "name", "method", "bank_name", "account_no", "amount", "reference"],
                   [[r["employee_no"], r["name"], r["method"], r["bank_name"], r["account_no"], r["amount"],
                     r["reference"]] for r in rows])
@@ -433,3 +444,96 @@ def get_my_payslips(session: Session = Depends(db_session)) -> object:
         employee = employees.get_employee_for_self(session, slip.employee_id)
         out.append(_summary(slip, employee))
     return out
+
+
+# --------------------------------------------------------------------------- outputs
+@router.get("/payslips/{payslip_id}/print", response_model=sc.PayslipPrintOut,
+            responses={200: {"content": {"text/plain": {}, "text/html": {}}}}, dependencies=SIGNED_IN)
+def print_payslip(payslip_id: UUID, format: str = Query(default="json", pattern="^(json|text|html)$"),
+                  width: int = Query(default=40, description="Characters across for text: 32, 40, 48 or 80"),
+                  copy: bool = False, session: Session = Depends(db_session)) -> Response:
+    """A payslip ready to print: data, plain text, or HTML."""
+    doc = outputs.payslip_document(session, payslip_id, copy=copy)
+    if format == "json":
+        return Response(sc.PayslipPrintOut(
+            header=doc.header, title=doc.title, period=doc.period, employee=[[a, b] for a, b in doc.employee],
+            earnings=[sc.PrintLineOut(label=a, amount=b) for a, b in doc.earnings],
+            benefits=[sc.PrintLineOut(label=a, amount=b) for a, b in doc.benefits],
+            deductions=[sc.PrintLineOut(label=a, amount=b) for a, b in doc.deductions],
+            totals=[sc.PrintLineOut(label=a, amount=b) for a, b in doc.totals], notes=doc.notes,
+            is_copy=doc.copy).model_dump_json(), media_type="application/json")
+    if width not in (32, 40, 48, 80):
+        raise ValidationFailed("width must be 32, 40, 48 or 80")
+    body = outputs.render(doc, format, width)
+    return PlainTextResponse(body) if format == "text" else Response(body, media_type="text/html; charset=utf-8")
+
+
+@router.get("/employees/{employee_id}/tax-card", response_model=sc.TaxCardOut,
+            responses={200: {"content": {"text/csv": {}}}}, dependencies=SIGNED_IN)
+def get_tax_card(employee_id: UUID, year: int = Query(ge=2000, le=2100),
+                 format: str = Query(default="json", pattern="^(json|csv)$"),
+                 session: Session = Depends(db_session)) -> object:
+    """An employee's pay and what each rule took from it, month by month, for a year of approved runs."""
+    card = outputs.tax_card(session, employee_id, year)
+    rows = [sc.CardRowOut(period_start=r.period_start, period_end=r.period_end, gross_pay=r.gross_pay,
+                          benefits=r.benefits, taxable_pay=r.taxable_pay, by_rule=r.by_rule,
+                          total_deductions=r.total_deductions, net_pay=r.net_pay) for r in card.rows]
+    totals = None
+    if rows:
+        totals = sc.CardRowOut(
+            period_start=rows[0].period_start, period_end=rows[-1].period_end,
+            gross_pay=sum((r.gross_pay for r in rows), Decimal(0)),
+            benefits=sum((r.benefits for r in rows), Decimal(0)),
+            taxable_pay=sum((r.taxable_pay for r in rows), Decimal(0)),
+            by_rule={c: sum((r.by_rule.get(c, Decimal(0)) for r in rows), Decimal(0)) for c in card.rules},
+            total_deductions=sum((r.total_deductions for r in rows), Decimal(0)),
+            net_pay=sum((r.net_pay for r in rows), Decimal(0)))
+    if format == "csv":
+        text = to_csv(["Period start", "Period end", "Gross pay", "Benefits", "Taxable pay", *card.rules,
+                       "Total deductions", "Net pay"],
+                      [[r.period_start, r.period_end, r.gross_pay, r.benefits, r.taxable_pay,
+                        *[r.by_rule.get(c, Decimal(0)) for c in card.rules], r.total_deductions, r.net_pay]
+                       for r in rows])
+        return Response(text, media_type="text/csv; charset=utf-8", headers={
+            "Content-Disposition": f'attachment; filename="tax-card-{card.employee.employee_no}-{year}.csv"'})
+    return sc.TaxCardOut(employee_id=card.employee.id, employee_no=card.employee.employee_no,
+                         full_name=card.employee.full_name, tax_id=card.employee.tax_id, year=year,
+                         rules=card.rules, rows=rows, totals=totals)
+
+
+@router.get("/payroll-runs/{run_id}/returns", response_model=list[sc.ReturnSummaryOut], dependencies=RUN_READ)
+def get_returns(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    """What the run owes under each rule: the totals for the returns to file."""
+    run = payroll.get_run(session, run_id)
+    return [sc.ReturnSummaryOut(
+        code=code, name=info["name"], kind=info["kind"], employee=Decimal(info["employee"]),
+        employer=Decimal(info["employer"]), payable_account_id=info.get("payable_account_id"))
+        for code, info in (run.totals.get("by_rule") or {}).items()]
+
+
+@router.get("/payroll-runs/{run_id}/returns/{code}", response_model=sc.ReturnOut,
+            responses={200: {"content": {"text/csv": {}}}}, dependencies=RUN_READ)
+def get_return(run_id: UUID, code: str, format: str = Query(default="json", pattern="^(json|csv)$"),
+               session: Session = Depends(db_session)) -> object:
+    """One rule's return, employee by employee, with registration numbers (`format=csv` for a spreadsheet)."""
+    r = outputs.statutory_return(session, run_id, code)
+    if format == "csv":
+        text = to_csv(["Employee no", "Name", "Tax number", "Registration number", "Pay charged on", "Employee",
+                       "Employer", "Total"],
+                      [[x.employee_no, x.name, x.tax_id or "", x.registration_no or "", x.base, x.employee_amount,
+                        x.employer_amount, x.employee_amount + x.employer_amount] for x in r.rows])
+        return Response(text, media_type="text/csv; charset=utf-8", headers={
+            "Content-Disposition": f'attachment; filename="return-{r.code}-{r.run.period_start}.csv"'})
+    return sc.ReturnOut(
+        run_id=r.run.id, code=r.code, name=r.name, period_start=r.run.period_start, period_end=r.run.period_end,
+        employee_total=r.employee_total, employer_total=r.employer_total,
+        rows=[sc.ReturnRowOut(employee_no=x.employee_no, name=x.name, tax_id=x.tax_id,
+                              registration_no=x.registration_no, base=x.base, employee_amount=x.employee_amount,
+                              employer_amount=x.employer_amount) for x in r.rows])
+
+
+@router.post("/payroll-runs/{run_id}/send-payslips", response_model=sc.SendPayslipsOut, dependencies=RUN_PAY)
+def post_send_payslips(run_id: UUID, body: sc.SendPayslipsIn, session: Session = Depends(db_session)) -> object:
+    """Queue each employee's payslip by email, or a short SMS notice with the net pay."""
+    sent = outputs.send_payslips(session, run_id, body.channel)
+    return sc.SendPayslipsOut(queued=sent.queued, already_sent=sent.already_sent, without_contact=sent.without_contact)

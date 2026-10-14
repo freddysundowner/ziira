@@ -378,3 +378,101 @@ def test_the_books_still_balance_after_two_payrolls(client, shop) -> None:  # ty
         "company_id": shop["company"], "date_from": "2026-09-01", "date_to": "2026-09-30", "by_branch": "true"}).json()
     by_branch = {b["branch_name"]: b["statement"] for b in pnl["branches"]}
     assert Dec(by_branch["Juja"]["total_expenses"]) == 104320 and Dec(by_branch["Head office"]["total_expenses"]) == 79500
+
+
+# --------------------------------------------------------------------------- what payroll hands out
+def test_a_payslip_is_printed_as_data_text_or_html(client, shop) -> None:  # type: ignore[no-untyped-def]
+    ann = slips(client, shop, shop["sept"])["Ann"]["id"]
+    path = f"{PEOPLE}/payslips/{ann}/print"
+    data = client.get(path, headers=shop["finance"]).json()
+    assert data["title"] == "Payslip" and data["period"] == "2026-09-01 to 2026-09-30" and data["is_copy"] is False
+    assert data["header"][0] == "Payroll Co Ltd" and ["Name", "Ann Otieno"] in data["employee"]
+    assert {x["label"]: Dec(x["amount"]) for x in data["totals"]} == {
+        "Gross pay": Dec(50000), "Total deductions": Dec("10445.85"), "NET PAY": Dec("39554.15")}
+    assert [x["label"] for x in data["deductions"]] == ["Pension", "Health cover", "Income tax"]
+    text = client.get(path, headers=shop["finance"], params={"format": "text"})
+    rows = text.text.splitlines()
+    assert text.headers["content-type"].startswith("text/plain") and all(len(r) <= 40 for r in rows)
+    assert "NET PAY" in text.text and "39,554.15" in text.text and "Ann Otieno" in text.text
+    wide = client.get(path, headers=shop["finance"], params={"format": "text", "width": 80, "copy": True})
+    assert "*** COPY ***" in wide.text
+    assert "<table" in client.get(path, headers=shop["finance"], params={"format": "html"}).text
+    for bad in ({"format": "pdf"}, {"format": "text", "width": 20}):
+        assert client.get(path, headers=shop["finance"], params=bad).status_code == 422, bad
+    assert client.get(path, headers=shop["cashier"]).status_code == 200                         # Ann prints her own
+    ben = slips(client, shop, shop["sept"])["Ben"]["id"]
+    assert client.get(f"{PEOPLE}/payslips/{ben}/print", headers=shop["cashier"]).status_code == 404
+    assert client.get(f"{PEOPLE}/payslips/{ben}/print", headers=shop["hr"]).status_code == 404
+
+
+def test_the_yearly_tax_card(client, shop) -> None:  # type: ignore[no-untyped-def]
+    path = f"{PEOPLE}/employees/{shop['ann']['id']}/tax-card"
+    card = client.get(path, headers=shop["finance"], params={"year": 2026})
+    assert card.status_code == 200, card.text
+    c = card.json()
+    assert c["rules"] == ["HEALTH", "INCOME_TAX", "PENSION"] and len(c["rows"]) == 2
+    sept, october = c["rows"]
+    assert Dec(sept["gross_pay"]) == 50000 and Dec(sept["by_rule"]["INCOME_TAX"]) == Dec("6070.85")
+    assert Dec(october["by_rule"]["PENSION"]) == Dec("3300.00")
+    assert Dec(c["totals"]["net_pay"]) == Dec("39554.15") + Dec("42747.90")
+    assert Dec(c["totals"]["by_rule"]["PENSION"]) == Dec("3000") + Dec("3300")
+    csv = client.get(path, headers=shop["finance"], params={"year": 2026, "format": "csv"})
+    assert csv.headers["content-type"].startswith("text/csv")
+    assert csv.text.splitlines()[0] == ("Period start,Period end,Gross pay,Benefits,Taxable pay,HEALTH,INCOME_TAX,"
+                                       "PENSION,Total deductions,Net pay")
+    assert client.get(path, headers=shop["finance"], params={"year": 2025}).json()["rows"] == []
+    assert client.get(path, headers=shop["cashier"], params={"year": 2026}).status_code == 200   # her own card
+    ben = f"{PEOPLE}/employees/{shop['ben']['id']}/tax-card"
+    assert client.get(ben, headers=shop["cashier"], params={"year": 2026}).status_code == 404
+    assert client.get(ben, headers=shop["hr"], params={"year": 2026}).status_code == 404
+    assert client.get(path, headers=shop["finance"], params={"year": 1999}).status_code == 422
+
+
+def test_the_return_of_each_rule(client, shop) -> None:  # type: ignore[no-untyped-def]
+    client.patch(f"{PEOPLE}/employees/{shop['ann']['id']}", headers=shop["hr"],
+                 json={"registrations": {"pension": "PEN-1", "health": "H-9"}})
+    summary = {r["code"]: r for r in client.get(f"{RUNS}/{shop['sept']}/returns", headers=shop["finance"]).json()}
+    assert set(summary) == {"HEALTH", "INCOME_TAX", "PENSION"}
+    assert Dec(summary["PENSION"]["employee"]) == 8820 and Dec(summary["PENSION"]["employer"]) == 8820
+    assert summary["INCOME_TAX"]["payable_account_id"] == shop["tax_account"] and summary["PENSION"]["kind"] == "contribution"
+    r = client.get(f"{RUNS}/{shop['sept']}/returns/pension", headers=shop["finance"])
+    assert r.status_code == 200, r.text
+    rows = {x["name"].split()[0]: x for x in r.json()["rows"]}
+    assert rows["Ann"]["registration_no"] == "PEN-1" and rows["Ben"]["registration_no"] is None
+    assert Dec(rows["Cara"]["base"]) == 100000 and Dec(rows["Cara"]["employee_amount"]) == Dec("4320.00")
+    assert Dec(r.json()["employee_total"]) == 8820 and Dec(r.json()["employer_total"]) == 8820
+    csv = client.get(f"{RUNS}/{shop['sept']}/returns/PENSION", headers=shop["finance"], params={"format": "csv"})
+    assert csv.text.splitlines()[0] == ("Employee no,Name,Tax number,Registration number,Pay charged on,Employee,"
+                                       "Employer,Total")
+    assert "PEN-1" in csv.text
+    tax = client.get(f"{RUNS}/{shop['sept']}/returns/INCOME_TAX", headers=shop["finance"]).json()
+    assert Dec(tax["employee_total"]) == Dec("27533.20") and Dec(tax["employer_total"]) == 0
+    assert client.get(f"{RUNS}/{shop['sept']}/returns/NOPE", headers=shop["finance"]).status_code == 404
+    assert client.get(f"{RUNS}/{shop['sept']}/returns/PENSION", headers=shop["hr"]).status_code == 403
+    cancelled = next(x for x in client.get(RUNS, headers=shop["finance"], params={"status": "cancelled"}).json())
+    assert client.get(f"{RUNS}/{cancelled['id']}/returns/PENSION", headers=shop["finance"]).status_code == 409
+
+
+def test_payslips_are_sent_by_email_or_sms_once(client, shop) -> None:  # type: ignore[no-untyped-def]
+    path = f"{RUNS}/{shop['sept']}/send-payslips"
+    assert client.post(path, headers=shop["hr"], json={"channel": "email"}).status_code == 403
+    none = client.post(path, headers=shop["finance"], json={"channel": "email"}).json()
+    assert none == {"queued": 0, "already_sent": 0, "without_contact": 3}                      # nobody has an address
+    client.patch(f"{PEOPLE}/employees/{shop['ann']['id']}", headers=shop["hr"],
+                 json={"email": "ann@example.test", "phone": "0712 000 111"})
+    sent = client.post(path, headers=shop["finance"], json={"channel": "email"}).json()
+    assert sent == {"queued": 1, "already_sent": 0, "without_contact": 2}
+    again = client.post(path, headers=shop["finance"], json={"channel": "email"}).json()
+    assert again == {"queued": 0, "already_sent": 1, "without_contact": 2}                     # once per channel
+    sms = client.post(path, headers=shop["finance"], json={"channel": "sms"}).json()
+    assert sms["queued"] == 1
+    with system(shop) as s:
+        rows = s.execute(text("select channel, recipient, subject, body from kernel.notification "
+                              "where ref_type = 'payslip' order by channel")).all()
+    assert [(r.channel, r.recipient) for r in rows] == [("email", "ann@example.test"), ("sms", "254712000111")]
+    assert "NET PAY" in rows[0].body and "39,554.15" in rows[0].body and rows[0].subject == "Payslip 2026-09-01 to 2026-09-30"
+    assert rows[1].body == "Your payslip for 2026-09-01 to 2026-09-30 is ready. Net pay 39,554.15."
+    assert client.post(path, headers=shop["finance"], json={"channel": "pigeon"}).status_code == 422
+    draft = next(x for x in client.get(RUNS, headers=shop["finance"], params={"status": "cancelled"}).json())
+    assert client.post(f"{RUNS}/{draft['id']}/send-payslips", headers=shop["finance"], json={"channel": "email"}
+                       ).status_code == 409

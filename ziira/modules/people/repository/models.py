@@ -217,3 +217,4 @@ class PayslipLine(TenantColumns, Base):
     amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     rate_table_id: Mapped[UUID | None]
     description: Mapped[str | None]
+    line_no: Mapped[int] = mapped_column(server_default=text("0"))

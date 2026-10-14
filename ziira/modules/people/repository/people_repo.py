@@ -381,7 +381,7 @@ def get_payslip(session: Session, payslip_id: UUID) -> Payslip | None:
 
 def payslip_lines(session: Session, payslip_id: UUID) -> list[PayslipLine]:
     return list(session.scalars(select(PayslipLine).where(PayslipLine.payslip_id == payslip_id)
-                                .order_by(PayslipLine.created_at, PayslipLine.id)))
+                                .order_by(PayslipLine.line_no, PayslipLine.id)))
 
 
 def delete_payslips(session: Session, run_id: UUID) -> None:
