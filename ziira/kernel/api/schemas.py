@@ -85,6 +85,8 @@ class MeOut(BaseModel):
     user_id: UUID | None
     session_id: UUID | None
     channel: str
+    full_name: str | None = None
+    email: str | None = None
     roles: list[AssignmentOut]
 
 
@@ -117,6 +119,8 @@ class BranchOut(Out):
 class CompanyOut(Out):
     id: UUID
     name: str
+    currency: str
+    country: str | None = None
     branches: list[BranchOut]
 
 

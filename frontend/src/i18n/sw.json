@@ -7,7 +7,11 @@
     "password": "Nenosiri",
     "submit": "Ingia",
     "working": "Inaingia…",
-    "createBusiness": "Fungua biashara"
+    "createBusiness": "Fungua biashara",
+    "subtitle": "Karibu tena. Ingia kwenye biashara yako.",
+    "show": "Onyesha nenosiri",
+    "hide": "Ficha nenosiri",
+    "newHere": "Mgeni Ziira?"
   },
   "register": {
     "businessName": "Jina la biashara",
@@ -36,9 +40,44 @@
   "home": {
     "menu": "Mwanzo",
     "title": "Leo",
-    "noWidgets": "Hakuna cha kuonyesha bado. Vipengele vitaonekana hapa moduli zikiwashwa."
+    "noWidgets": "Hakuna cha kuonyesha bado.",
+    "morning": "Habari ya asubuhi",
+    "afternoon": "Habari ya mchana",
+    "evening": "Habari ya jioni",
+    "subtitle": "Hali ya biashara yako ilivyo."
   },
   "loading": "Inapakia…",
   "notFound": "Ukurasa huu haupo, au huna ruhusa ya kuuona.",
-  "language": "Lugha"
+  "language": "Lugha",
+  "nav": {
+    "sell": "Mauzo",
+    "stock": "Bidhaa",
+    "buy": "Manunuzi",
+    "money": "Fedha",
+    "people": "Watu",
+    "admin": "Usimamizi"
+  },
+  "auth": {
+    "tagline": "Simamia matawi yote ya biashara yako mahali pamoja.",
+    "subtitle": "Mauzo, bidhaa, manunuzi, vitabu na mishahara, vyote pamoja."
+  },
+  "theme": {
+    "light": "Mwanga",
+    "dark": "Giza",
+    "system": "Kama kifaa"
+  },
+  "account": "Akaunti",
+  "menu": "Menyu",
+  "close": "Funga",
+  "collapse": "Punguza",
+  "expand": "Panua",
+  "search": "Tafuta",
+  "searchScreens": "Nenda kwenye ukurasa…",
+  "nothingFound": "Hakuna kilichopatikana",
+  "offline": "Huna mtandao. Mabadiliko hayatahifadhiwa hadi uunganishwe tena.",
+  "unreachable": {
+    "title": "Haiwezekani kufikia Ziira",
+    "hint": "Angalia muunganisho wako. Kipindi chako ni salama; jaribu tena baadaye kidogo."
+  },
+  "notFoundHint": "Ukurasa unaweza kuwa umehamishwa, au jukumu lako halijumuishi."
 }

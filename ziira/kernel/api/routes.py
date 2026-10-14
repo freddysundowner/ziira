@@ -102,9 +102,12 @@ def sign_out(ctx: RequestContext = Depends(signed_in_user), s: Session = Depends
 
 
 @router.get("/auth/me", response_model=sc.MeOut, tags=["Auth"])
-def me(ctx: RequestContext = Depends(request_context)) -> object:
+def me(ctx: RequestContext = Depends(request_context), s: Session = Depends(db_session)) -> object:
     """Who is signed in, with roles, scopes and permissions."""
+    person = s.execute(text("select full_name, email from kernel.app_user where id = :u"),
+                       {"u": str(ctx.user_id)}).first() if ctx.user_id else None
     return sc.MeOut(tenant_id=ctx.tenant_id, user_id=ctx.user_id, session_id=ctx.session_id, channel=ctx.channel,
+                    full_name=person.full_name if person else None, email=person.email if person else None,
                     roles=[sc.AssignmentOut(role_id=a.role_id, role_name=a.role_name, scope=a.scope,
                                             company_id=a.company_id, branch_id=a.branch_id,
                                             permissions=sorted(a.permissions)) for a in ctx.assignments])
@@ -150,7 +153,7 @@ def change_password(body: sc.ChangePasswordIn, ctx: RequestContext = Depends(sig
 def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session = Depends(db_session)) -> object:
     """Companies and branches the user has any role in (all of them for a tenant-wide role)."""
     rows = s.execute(text(
-        "select c.id, c.name, b.id as branch_id, b.code, b.name as branch_name from kernel.company c "
+        "select c.id, c.name, c.base_currency, c.country, b.id as branch_id, b.code, b.name as branch_name from kernel.company c "
         "left join kernel.branch b on b.company_id = c.id and b.is_active order by c.name, b.code")).all()
     reach = None if ctx.all_permissions or any(a.company_id is None and a.scope != "own" for a in ctx.assignments) \
         else {a.company_id for a in ctx.assignments}
@@ -158,7 +161,7 @@ def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session =
     for r in rows:
         if reach is not None and r.id not in reach:
             continue
-        company = companies.setdefault(r.id, sc.CompanyOut(id=r.id, name=r.name, branches=[]))
+        company = companies.setdefault(r.id, sc.CompanyOut(id=r.id, name=r.name, currency=r.base_currency, country=r.country, branches=[]))
         if r.branch_id:
             company.branches.append(sc.BranchOut(id=r.branch_id, code=r.code, name=r.branch_name))
     return list(companies.values())

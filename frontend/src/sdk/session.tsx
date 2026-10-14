@@ -8,7 +8,7 @@ import { api, deviceId, errorMessage, hasRefreshToken, refreshTokens, type Schem
 type Me = Schemas["MeOut"];
 
 export interface Session {
-  status: "loading" | "signed-out" | "signed-in";
+  status: "loading" | "signed-out" | "signed-in" | "unreachable";
   me: Me | null;
   enabledUnits: ReadonlySet<string>;
   /** True if the user holds the permission in at least one scope. The backend checks scope. */
@@ -17,6 +17,8 @@ export interface Session {
    *  again with the chosen workspace code). */
   signIn: (login: string, password: string, workspace?: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
+  /** Tries again after the server could not be reached. */
+  retry: () => void;
   /** Asks for a business of your own; the person must then use the link emailed to them. */
   register: (input: RegisterInput) => Promise<{ error: string | null; devToken?: string }>;
   /** Uses the emailed link: creates the business and signs the owner in. */
@@ -54,7 +56,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const load = useCallback(async () => {
     const [meResult, unitsResult] = await Promise.all([api.GET("/api/v1/auth/me"), api.GET("/api/v1/units")]);
     if (!meResult.data || !unitsResult.data) {
-      setStatus("signed-out");
+      // 401/403: the session is over. Anything else (server down, no network): keep the session and let the person retry.
+      const failed = !meResult.data ? meResult.response : unitsResult.response;
+      setStatus(failed.status === 401 || failed.status === 403 ? "signed-out" : "unreachable");
       return;
     }
     setMe(meResult.data);
@@ -62,14 +66,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setStatus("signed-in");
   }, []);
 
+  const start = useCallback(async () => {
+    if (!hasRefreshToken()) {
+      setStatus("signed-out");
+      return;
+    }
+    setStatus("loading");
+    const result = await refreshTokens();
+    if (result === "ok") await load();
+    else setStatus(result === "denied" ? "signed-out" : "unreachable");
+  }, [load]);
+
   useEffect(() => {
     whenSignedOut(() => setStatus("signed-out"));
-    if (hasRefreshToken()) {
-      void refreshTokens().then((ok) => (ok ? load() : setStatus("signed-out")));
-    } else {
-      setStatus("signed-out");
-    }
-  }, [load]);
+    void start();
+  }, [start]);
 
   const signIn = useCallback(
     async (login: string, password: string, workspace?: string): Promise<SignInResult> => {
@@ -108,7 +119,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
-    await api.POST("/api/v1/auth/sign-out");
+    await api.POST("/api/v1/auth/sign-out").catch(() => undefined);
     setTokens(null, null);
     setMe(null);
     setStatus("signed-out");
@@ -116,8 +127,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Session>(() => {
     const permissions = new Set(me?.roles.flatMap((r) => r.permissions) ?? []);
-    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, signOut, register, completeRegistration };
-  }, [status, me, units, signIn, signOut, register, completeRegistration]);
+    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, signOut, register, completeRegistration, retry: () => void start() };
+  }, [status, me, units, signIn, signOut, register, completeRegistration, start]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

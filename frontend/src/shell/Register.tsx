@@ -1,8 +1,9 @@
 import { type FormEvent, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { Button, ErrorText, Field, Input, Select, useSession, useTranslation } from "@/sdk";
+import { Alert, Button, Field, Input, Select, useSession, useTranslation } from "@/sdk";
 
+import { AuthShell } from "./AuthShell";
 import { COUNTRIES, countryByCode, CURRENCIES } from "./countries";
 
 type Step = 1 | 2;
@@ -60,31 +61,31 @@ export function Register() {
 
   if (sentTo) {
     return (
-      <main className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-sm space-y-3 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-lg font-semibold">{t("register.checkEmail")}</h1>
-          <p className="text-sm text-slate-600">{t("register.sent", { email: sentTo })}</p>
+      <AuthShell>
+        <div className="space-y-3">
+          <h1 className="text-2xl font-semibold">{t("register.checkEmail")}</h1>
+          <p className="text-sm text-muted">{t("register.sent", { email: sentTo })}</p>
           {devToken && (
-            <p className="rounded-md bg-amber-50 p-2 text-xs text-amber-900">
-              {t("register.devOnly")} <Link className="underline" to={`/register/verify?token=${encodeURIComponent(devToken)}`}>{t("register.devLink")}</Link>
-            </p>
+            <Alert tone="warn">
+              {t("register.devOnly")} <Link className="font-medium underline" to={`/register/verify?token=${encodeURIComponent(devToken)}`}>{t("register.devLink")}</Link>
+            </Alert>
           )}
-          <Link className="text-sm text-brand underline" to="/">{t("register.backToSignIn")}</Link>
+          <Link className="text-sm font-medium text-brand-strong hover:underline" to="/">{t("register.backToSignIn")}</Link>
         </div>
-      </main>
+      </AuthShell>
     );
   }
 
-  const shell = "w-full max-w-sm space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm";
+  const shell = "space-y-4";
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <AuthShell>
       {step === 1 ? (
         <form key="about" onSubmit={next} className={shell}>
           <Field label={t("register.ownerName")}><Input name="owner_name" required minLength={2} maxLength={120} autoComplete="name" defaultValue={person.owner_name} /></Field>
           <Field label={t("register.email")}><Input name="email" type="email" required autoComplete="email" defaultValue={person.email} /></Field>
           <Field label={t("register.password")}><Input name="password" type="password" required minLength={8} autoComplete="new-password" defaultValue={person.password} /></Field>
-          <Button type="submit" className="w-full">{t("register.next")}</Button>
-          <p className="text-center text-sm"><Link className="text-brand underline" to="/">{t("register.haveAccount")}</Link></p>
+          <Button type="submit" size="lg" className="w-full">{t("register.next")}</Button>
+          <p className="text-center text-sm text-muted"><Link className="font-medium text-brand-strong hover:underline" to="/">{t("register.haveAccount")}</Link></p>
         </form>
       ) : (
         <form key="business" onSubmit={submit} className={shell}>
@@ -105,16 +106,16 @@ export function Register() {
                   {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </Select>
               </Field>
-              <p className="text-sm text-slate-600">{t("register.phoneNote", { code: country.calling })}</p>
+              <p className="text-sm text-muted">{t("register.phoneNote", { code: country.calling })}</p>
             </>
           )}
-          <ErrorText>{error}</ErrorText>
+          {error && <Alert tone="bad">{error}</Alert>}
           <div className="flex gap-2">
-            <Button type="button" variant="secondary" onClick={() => setStep(1)}>{t("register.back")}</Button>
-            <Button type="submit" disabled={busy || !country} className="flex-1">{busy ? t("register.working") : t("register.submit")}</Button>
+            <Button type="button" variant="secondary" size="lg" onClick={() => setStep(1)}>{t("register.back")}</Button>
+            <Button type="submit" size="lg" loading={busy} disabled={!country} className="flex-1">{busy ? t("register.working") : t("register.submit")}</Button>
           </div>
         </form>
       )}
-    </main>
+    </AuthShell>
   );
 }

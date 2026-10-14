@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { ErrorText, useSession, useTranslation } from "@/sdk";
+import { Alert, Spinner, useSession, useTranslation } from "@/sdk";
+
+import { AuthShell } from "./AuthShell";
 
 /** The page the emailed link opens: it creates the business and signs the owner in. */
 export function VerifyRegistration() {
@@ -23,17 +25,17 @@ export function VerifyRegistration() {
   }, [params, completeRegistration, t]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-3 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <AuthShell>
+      <div className="space-y-4">
         {error ? (
           <>
-            <ErrorText>{error}</ErrorText>
-            <Link className="text-sm text-brand underline" to="/register">{t("register.startAgain")}</Link>
+            <Alert tone="bad">{error}</Alert>
+            <Link className="text-sm font-medium text-brand-strong hover:underline" to="/register">{t("register.startAgain")}</Link>
           </>
         ) : (
-          <p className="text-sm text-slate-600">{t("register.creating")}</p>
+          <p className="flex items-center gap-2 text-sm text-muted"><Spinner /> {t("register.creating")}</p>
         )}
       </div>
-    </main>
+    </AuthShell>
   );
 }

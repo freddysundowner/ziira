@@ -28,7 +28,15 @@ export interface MenuItem {
   permission?: string;
   /** Lower numbers come first. */
   order?: number;
+  /** Menu section: where it sits in the sidebar. */
+  group?: MenuGroup;
+  /** Icon name from the SDK's icon set (see sdk/icons.tsx). */
+  icon?: string;
 }
+
+/** Sidebar sections, in the order they appear. Their titles are in the shell's translations ("nav.sell"). */
+export const MENU_GROUPS = ["sell", "stock", "buy", "money", "people", "admin"] as const;
+export type MenuGroup = (typeof MENU_GROUPS)[number];
 
 export interface SlotContribution {
   /** Translation key for a title (tabs and widgets show it). */

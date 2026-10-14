@@ -1,3 +1,60 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Design tokens: space-separated RGB so Tailwind can add opacity. Dark theme = html.dark. */
+:root {
+  --bg: 246 247 249;
+  --surface: 255 255 255;
+  --sunken: 241 243 246;
+  --line: 226 230 236;
+  --ink: 17 24 39;
+  --muted: 100 110 128;
+  --brand: 13 148 136;
+  --brand-strong: 15 118 110;
+  --brand-soft: 224 247 244;
+  --brand-ink: 255 255 255;
+  --ok: 22 130 74;
+  --ok-soft: 220 247 232;
+  --warn: 180 110 0;
+  --warn-soft: 255 241 206;
+  --bad: 205 45 45;
+  --bad-soft: 254 228 228;
+  --info: 37 99 235;
+  --info-soft: 224 234 255;
+  --shadow: 15 23 42;
+  color-scheme: light;
+}
+html.dark {
+  --bg: 11 14 20;
+  --surface: 20 24 33;
+  --sunken: 28 33 44;
+  --line: 44 51 66;
+  --ink: 236 239 245;
+  --muted: 148 158 177;
+  --brand: 45 190 175;
+  --brand-strong: 94 214 200;
+  --brand-soft: 17 58 56;
+  --brand-ink: 6 26 25;
+  --ok: 74 200 130;
+  --ok-soft: 16 52 36;
+  --warn: 240 175 60;
+  --warn-soft: 61 46 12;
+  --bad: 248 113 113;
+  --bad-soft: 66 24 26;
+  --info: 120 160 255;
+  --info-soft: 24 36 72;
+  --shadow: 0 0 0;
+  color-scheme: dark;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-bg font-sans text-sm text-ink antialiased; font-feature-settings: "cv11", "ss01"; }
+  :focus-visible { @apply outline-none ring-2 ring-brand/60 ring-offset-1 ring-offset-surface; }
+  ::selection { @apply bg-brand/25; }
+  h1, h2, h3 { @apply tracking-tight; }
+  .tnum { font-variant-numeric: tabular-nums; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media print { aside, header.app-bar, .no-print { display: none !important; } body { background: #fff; } }

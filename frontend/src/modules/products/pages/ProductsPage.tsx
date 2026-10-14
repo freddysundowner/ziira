@@ -1,148 +1,98 @@
+import { Plus } from "lucide-react";
 import { type FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
 
 import {
-  api,
-  Button,
-  Card,
-  ErrorText,
-  errorMessage,
-  Field,
-  Input,
-  PageHeader,
-  Select,
-  Table,
-  useCan,
-  useMutation,
-  useQuery,
-  useCompanies,
-  useQueryClient,
-  useTranslation,
+  api, Badge, Button, Checkbox, DataTable, Drawer, Field, FormGrid, Input, NumberInput, Pager, PageHeader, Select, toast, unwrap, useCan, useCompany,
+  useDebounced, useFormState, useMutation, usePagedList, useQuery, useQueryClient, useTranslation, humanise, StatusBadge,
 } from "@/sdk";
 
 export default function ProductsPage() {
   const { t } = useTranslation("products");
-  const [search, setSearch] = useState("");
-  const [creating, setCreating] = useState(false);
   const canManage = useCan("products.manage");
-  const products = useQuery({
-    queryKey: ["products", search],
-    queryFn: async () => (await api.GET("/api/v1/products/products", { params: { query: { search } } })).data ?? [],
-  });
+  const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState("");
+  const q = useDebounced(search.trim());
+  const list = usePagedList(["products", q], async (limit, offset) =>
+    unwrap(api.GET("/api/v1/products/products", { params: { query: { search: q || undefined, limit, offset } } })));
 
   return (
     <>
-      <PageHeader title={t("title")} actions={canManage && <Button onClick={() => setCreating(!creating)}>{t("new")}</Button>} />
-      {creating && <NewProduct onDone={() => setCreating(false)} />}
-      <Card>
-        <div className="mb-3 max-w-sm"><Input placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-        <Table
-          rows={products.data ?? []}
-          rowKey={(p) => p.id}
-          empty={t("empty")}
-          columns={[
-            { header: t("sku"), cell: (p) => <Link className="text-brand hover:underline" to={`/products/${p.id}`}>{p.sku}</Link> },
-            { header: t("name"), cell: (p) => p.name },
-            { header: t("type"), cell: (p) => t(`types.${p.product_type}`) },
-          ]}
-        />
-      </Card>
+      <PageHeader title={t("title")} description={t("hint")} actions={canManage && <Button onClick={() => setCreating(true)}><Plus className="h-4 w-4" />{t("new")}</Button>} />
+      <DataTable
+        rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()} rowKey={(p) => p.id}
+        rowHref={(p) => `/products/${p.id}`}
+        toolbar={<Input className="max-w-sm" aria-label={t("search")} placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} />}
+        empty={{ title: q ? t("noMatch") : t("empty"), hint: q ? undefined : t("emptyHint"), action: canManage && !q ? <Button onClick={() => setCreating(true)}>{t("new")}</Button> : undefined }}
+        columns={[
+          { header: t("sku"), sortValue: (p) => p.sku, cell: (p) => <span className="font-mono text-xs font-medium">{p.sku}</span> },
+          { header: t("name"), sortValue: (p) => p.name, cell: (p) => <span className="font-medium">{p.name}</span> },
+          { header: t("type"), hideBelow: "sm", cell: (p) => <Badge>{t(`types.${p.product_type}`, humanise(p.product_type))}</Badge> },
+          { header: t("reorderLevel"), hideBelow: "md", align: "right", cell: (p) => p.reorder_level ?? "—" },
+          { header: t("status"), hideBelow: "md", cell: (p) => <StatusBadge status={p.is_active ? "active" : "inactive"} /> },
+        ]}
+        footer={<Pager page={list.page} onPage={list.setPage} hasNext={list.hasNext} count={list.rows?.length ?? 0} />}
+      />
+      <NewProduct open={creating} onClose={() => setCreating(false)} />
     </>
   );
 }
 
-function NewProduct({ onDone }: { onDone: () => void }) {
+function NewProduct({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation("products");
-  const queryClient = useQueryClient();
-  const [name, setName] = useState("");
-  const [sku, setSku] = useState("");
+  const qc = useQueryClient();
+  const { company, companies } = useCompany();
+  const f = useFormState({ name: "", sku: "", company_id: "", product_type: "stock", base_uom_id: "", tax_code_id: "", reorder_level: "" });
+  const [batch, setBatch] = useState(false);
   const [suggestions, setSuggestions] = useState<string[] | null>(null);
-  const companies = useCompanies().data ?? [];
-  const [chosenCompany, setCompanyId] = useState("");
-  const companyId = chosenCompany || companies[0]?.id || "";
-  const uoms = useQuery({ queryKey: ["uoms"], queryFn: async () => (await api.GET("/api/v1/products/uoms")).data ?? [] });
-  const taxes = useQuery({ queryKey: ["tax-codes"], queryFn: async () => (await api.GET("/api/v1/products/tax-codes")).data ?? [] });
+  const companyId = f.values.company_id || company?.id || "";
+  const uoms = useQuery({ enabled: open, queryKey: ["uoms"], queryFn: () => unwrap(api.GET("/api/v1/products/uoms")) });
+  const taxes = useQuery({ enabled: open, queryKey: ["tax-codes"], queryFn: () => unwrap(api.GET("/api/v1/products/tax-codes")) });
 
   const save = useMutation({
-    mutationFn: async (form: FormData) => {
-      const { data, error } = await api.POST("/api/v1/products/products", {
-        body: {
-          company_id: companyId,
-          sku,
-          name,
-          base_uom_id: String(form.get("uom")),
-          tax_code_id: String(form.get("tax")),
-          product_type: String(form.get("type")) as "stock" | "non_stock" | "service",
-          is_batch_tracked: false,
-        },
-      });
-      if (!data) throw new Error(errorMessage(error));
-      return data;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["products"] });
-      onDone();
-    },
+    meta: { silent: true },
+    mutationFn: () => unwrap(api.POST("/api/v1/products/products", { body: {
+      company_id: companyId, sku: f.values.sku.trim(), name: f.values.name.trim(), base_uom_id: f.values.base_uom_id || uoms.data?.[0]?.id || "",
+      tax_code_id: f.values.tax_code_id || taxes.data?.[0]?.id || "", product_type: f.values.product_type as "stock", is_batch_tracked: batch,
+      reorder_level: f.values.reorder_level || null } })),
+    onSuccess: (p) => { void qc.invalidateQueries({ queryKey: ["products"] }); toast(t("created", { name: p.name }), "ok"); f.reset(); setBatch(false); setSuggestions(null); onClose(); },
+    onError: (e) => { f.fail(e); toast((e as Error).message, "bad"); },
   });
 
   async function suggest() {
-    const { data } = await api.GET("/api/v1/products/sku-suggestions", { params: { query: { company_id: companyId, name } } });
-    setSuggestions(data ?? []);
+    setSuggestions(await unwrap(api.GET("/api/v1/products/sku-suggestions", { params: { query: { company_id: companyId, name: f.values.name } } })).catch(() => []));
   }
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    save.mutate(new FormData(event.currentTarget));
-  }
+  const submit = (e: FormEvent) => { e.preventDefault(); save.mutate(); };
+  const noSetup = uoms.isSuccess && taxes.isSuccess && (uoms.data.length === 0 || taxes.data.length === 0);
 
   return (
-    <Card title={t("new")}>
-      <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
-        <Field label={t("name")}><Input
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setSuggestions(null); // suggestions were for the old name
-            }}
-            required
-          /></Field>
-        <Field label={t("sku")}>
+    <Drawer open={open} onClose={onClose} title={t("new")}
+      footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="new-product" loading={save.isPending} disabled={noSetup}>{t("save")}</Button></>}>
+      <form id="new-product" onSubmit={submit} className="space-y-4">
+        {noSetup && <p className="rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn">{t("needSetup")}</p>}
+        <Field label={t("name")} required error={f.error("name")}><Input {...f.bind("name")} required autoFocus onChange={(e) => { f.set("name", e.target.value); setSuggestions(null); }} /></Field>
+        <Field label={t("sku")} required error={f.error("sku")} hint={t("skuHint")}>
           <div className="flex items-start gap-2">
-            <Input value={sku} onChange={(e) => setSku(e.target.value)} required />
-            <Button type="button" variant="secondary" className="whitespace-nowrap" disabled={!name || !companyId} onClick={() => void suggest()}>{t("suggest")}</Button>
+            <Input {...f.bind("sku")} required />
+            <Button variant="secondary" disabled={!f.values.name || !companyId} onClick={() => void suggest()}>{t("suggest")}</Button>
           </div>
-          {suggestions && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {suggestions.length === 0 && <span className="text-xs text-slate-500">{t("noSuggestions")}</span>}
-              {suggestions.map((s) => (
-                <button key={s} type="button" className="rounded bg-slate-100 px-2 py-0.5 text-xs" onClick={() => setSku(s)}>{s}</button>
-              ))}
-            </div>
-          )}
         </Field>
-        {companies.length > 1 && (
-          <Field label={t("company")}>
-            <Select value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
-              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </Select>
-          </Field>
+        {suggestions && (
+          <div className="-mt-2 flex flex-wrap gap-1.5">
+            {suggestions.length === 0 && <span className="text-xs text-muted">{t("noSuggestions")}</span>}
+            {suggestions.map((s) => <button key={s} type="button" className="rounded-full bg-sunken px-2.5 py-1 font-mono text-xs hover:bg-brand-soft" onClick={() => f.set("sku", s)}>{s}</button>)}
+          </div>
         )}
-        <Field label={t("type")}>
-          <Select name="type" defaultValue="stock">
-            {(["stock", "non_stock", "service"] as const).map((v) => <option key={v} value={v}>{t(`types.${v}`)}</option>)}
-          </Select>
-        </Field>
-        <Field label={t("unit")}>
-          <Select name="uom" required>{(uoms.data ?? []).map((u) => <option key={u.id} value={u.id}>{u.code} · {u.name}</option>)}</Select>
-        </Field>
-        <Field label={t("taxCode")}>
-          <Select name="tax" required>{(taxes.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}</Select>
-        </Field>
-        <div className="md:col-span-2">
-          <ErrorText>{save.error?.message}</ErrorText>
-          <Button type="submit" disabled={save.isPending}>{t("save")}</Button>
-        </div>
+        {companies.length > 1 && (
+          <Field label={t("company")}><Select value={companyId} onChange={(e) => f.set("company_id", e.target.value)}>{companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></Field>
+        )}
+        <FormGrid>
+          <Field label={t("type")}><Select {...f.bind("product_type")}>{(["stock", "non_stock", "service"] as const).map((v) => <option key={v} value={v}>{t(`types.${v}`)}</option>)}</Select></Field>
+          <Field label={t("unit")} error={f.error("base_uom_id")}><Select {...f.bind("base_uom_id")}>{(uoms.data ?? []).map((u) => <option key={u.id} value={u.id}>{u.code} · {u.name}</option>)}</Select></Field>
+          <Field label={t("taxCode")} error={f.error("tax_code_id")}><Select {...f.bind("tax_code_id")}>{(taxes.data ?? []).map((x) => <option key={x.id} value={x.id}>{x.code} · {x.name}</option>)}</Select></Field>
+          <Field label={t("reorderLevel")} hint={t("reorderHint")} error={f.error("reorder_level")}><NumberInput value={f.values.reorder_level} onChange={(v) => f.set("reorder_level", v)} /></Field>
+        </FormGrid>
+        <Checkbox label={t("batchTracked")} checked={batch} onChange={(e) => setBatch(e.target.checked)} />
       </form>
-    </Card>
+    </Drawer>
   );
 }

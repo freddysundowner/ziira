@@ -6097,6 +6097,10 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Currency */
+            currency: string;
+            /** Country */
+            country?: string | null;
             /** Branches */
             branches: components["schemas"]["BranchOut"][];
         };
@@ -8322,6 +8326,10 @@ export interface components {
             session_id: string | null;
             /** Channel */
             channel: string;
+            /** Full Name */
+            full_name?: string | null;
+            /** Email */
+            email?: string | null;
             /** Roles */
             roles: components["schemas"]["AssignmentOut"][];
         };

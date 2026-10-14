@@ -7,7 +7,11 @@
     "password": "Password",
     "submit": "Sign in",
     "working": "Signing in…",
-    "createBusiness": "Create a business"
+    "createBusiness": "Create a business",
+    "subtitle": "Welcome back. Sign in to your business.",
+    "show": "Show password",
+    "hide": "Hide password",
+    "newHere": "New to Ziira?"
   },
   "register": {
     "businessName": "Business name",
@@ -36,9 +40,44 @@
   "home": {
     "menu": "Home",
     "title": "Today",
-    "noWidgets": "Nothing to show yet. Widgets appear here as modules are enabled."
+    "noWidgets": "Nothing to show yet.",
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "subtitle": "Here is where your business stands."
   },
   "loading": "Loading…",
   "notFound": "This page does not exist, or you do not have access to it.",
-  "language": "Language"
+  "language": "Language",
+  "nav": {
+    "sell": "Sell",
+    "stock": "Stock",
+    "buy": "Buy",
+    "money": "Money",
+    "people": "People",
+    "admin": "Admin"
+  },
+  "auth": {
+    "tagline": "Run every branch of your business from one place.",
+    "subtitle": "Sales, stock, purchasing, books and payroll, together and always in step."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Match device"
+  },
+  "account": "Account",
+  "menu": "Menu",
+  "close": "Close",
+  "collapse": "Collapse",
+  "expand": "Expand",
+  "search": "Search",
+  "searchScreens": "Go to a screen…",
+  "nothingFound": "Nothing found",
+  "offline": "You are offline. Changes will not save until you reconnect.",
+  "unreachable": {
+    "title": "Cannot reach Ziira",
+    "hint": "Check your connection. Your session is safe; try again in a moment."
+  },
+  "notFoundHint": "The page may have moved, or your role may not include it."
 }

@@ -11,8 +11,8 @@ export default defineModule({
     { path: "/admin/roles", page: () => import("./pages/RolesPage"), permission: "roles.manage" },
   ],
   menu: [
-    { label: "kernel:users", to: "/admin/users", permission: "users.manage", order: 90 },
-    { label: "kernel:roles", to: "/admin/roles", permission: "roles.manage", order: 91 },
+    { label: "kernel:users", to: "/admin/users", permission: "users.manage", order: 90, group: "admin", icon: "people" },
+    { label: "kernel:roles", to: "/admin/roles", permission: "roles.manage", order: 91, group: "admin", icon: "security" },
   ],
   translations: { en, sw },
 });
