@@ -142,6 +142,10 @@ class CompanySettingsOut(Out):
     overtime_hours_per_month: Decimal
     receipt_footer: str
     invoice_footer: str
+    timezone: str
+    intel_alert_channel: Literal["off", "sms", "email"]
+    intel_alert_min_severity: Literal["low", "medium", "high", "critical"]
+    intel_action_level: int
 
 
 class CompanySettingsIn(BaseModel):
@@ -162,6 +166,10 @@ class CompanySettingsIn(BaseModel):
     overtime_hours_per_month: Annotated[Decimal, Field(ge=1, le=400, max_digits=6, decimal_places=2)] | None = None
     receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
     invoice_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
+    timezone: Annotated[str, Field(max_length=64)] | None = None
+    intel_alert_channel: Literal["off", "sms", "email"] | None = None
+    intel_alert_min_severity: Literal["low", "medium", "high", "critical"] | None = None
+    intel_action_level: Annotated[int, Field(ge=1, le=4)] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles

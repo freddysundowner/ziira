@@ -1,5 +1,6 @@
 """Sockets the Finance module plugs into (declared under [extends] in manifest.toml)."""
 
+from ziira.modules.finance import intel_checks, pulse  # noqa: F401 - registers the checks and pulse figures
 from ziira.modules.finance.services.verify import verify_books
 from ziira.sdk import IntegrityCheck, Session, provides
 

@@ -1,22 +1,21 @@
 # Command Center
 
-**Status:** skeleton. Database tables and manifest are complete; API, services and domain rules are to be built following the `products` module as the template.
+**Status:** built (phase 10). See `docs/intelligence.md`.
 
 | | |
 |---|---|
-| Schema | `command` (see `migrations/0001_init.up.sql`) |
-| Requires | kernel only |
-| Optional | pos, inventory, payments, finance, crm, purchasing, people |
-| Publishes | none |
-| Subscribes | none |
+| Schema | `command` (migrations `0001_init`, `0002_pulse_and_briefs`) |
+| Requires | kernel only; optional `intel` (findings in the overview and briefs); units add figures through `command.pulse_source` |
+| Recurring | `command.refresh_pulse` (hourly), `command.send_briefs` (every 10 minutes) |
+| Permissions | `command.view`, `briefs.manage` |
 
 ## Layout
 
 ```
-api/          routes.py and schemas.py (HTTP only)
-services/     one file per use case
-domain/       business rules, no database or HTTP
-repository/   database access for this schema only
-events.py     handlers for subscribed events
-public.py     the only file other units may import
+public.py        `Figure` and the `PulseSource` contract units implement
+domain/          compose (the words of a brief), schedule (when one is due)
+services/        pulse (store and summarise figures per scope), briefs (build, deliver, send what is due), overview
+repository/      SQL for the command schema
+api/             overview, schedules, briefs, dashboard layout
+jobs.py          the recurring runs
 ```

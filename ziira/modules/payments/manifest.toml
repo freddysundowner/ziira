@@ -5,7 +5,7 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = []
-optional = ["pos", "crm", "finance"]
+optional = ["pos", "crm", "finance", "intel", "command"]
 
 [provides]
 api_prefix = "/api/v1/payments"
@@ -15,7 +15,7 @@ extension_points = ["payments.provider"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["payments.provider"]
+implements = ["payments.provider", "intel.check", "intel.baseline_metric", "command.pulse_source"]
 
 [permissions]
 "payments.view" = "View payments"

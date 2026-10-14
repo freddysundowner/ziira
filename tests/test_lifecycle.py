@@ -76,10 +76,16 @@ def test_plugin_remove_and_uninstall(registry, tenants) -> None:  # type: ignore
     assert "plg_catalog_stats" in schemas(a)
 
 
-def test_unused_module_uninstall(registry) -> None:  # type: ignore[no-untyped-def]
-    registry.uninstall("command")                              # no tenant database has it
-    assert "command" not in registry.installed()
-    registry.install("command")
+def test_unused_module_uninstall(registry, tmp_path) -> None:  # type: ignore[no-untyped-def]
+    from ziira.kernel.registry import Registry
+
+    reg = Registry({**registry.units, "scratch": _scratch_plugin(tmp_path)})
+    reg.install("scratch")
+    reg.uninstall("scratch")                                   # no tenant database has it
+    assert "scratch" not in reg.installed()
+    reg.install("scratch")
+    assert "scratch" in reg.installed()
+    reg.uninstall("scratch")
 
 
 def _scratch_plugin(folder, sdk: str = ">=1.0,<2.0"):  # type: ignore[no-untyped-def]

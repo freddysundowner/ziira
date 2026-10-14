@@ -9,9 +9,21 @@ optional = []
 
 [provides]
 api_prefix = "/api/v1/intel"
-publishes = ["finding.created"]
+publishes = ["finding.created", "finding.asked"]
+extension_points = ["intel.check", "intel.baseline_metric"]
 subscribes = []
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["intel.check"]
 
 [permissions]
 "findings.view" = "View findings"
-"findings.manage" = "Acknowledge and resolve findings"
+"findings.manage" = "Acknowledge, resolve, dismiss and assign findings; tune the checks; ask people to explain"
+"findings.respond" = "Explain the findings assigned to you"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["findings.view", "findings.manage"]
+"Accountant" = ["findings.view"]
+"Branch Manager" = ["findings.view", "findings.respond"]

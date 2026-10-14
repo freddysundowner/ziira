@@ -12,13 +12,15 @@
   "stock": "Bidhaa na uwekaji",
   "reminders": "Vikumbusho kwa wateja",
   "people": "Wafanyakazi na mishahara",
-  "printing": "Uchapishaji na namba za simu"
+  "printing": "Uchapishaji na namba za simu",
+  "alerts": "Tahadhari na muhtasari"
  },
  "groupHint": {
   "stock": "Jinsi bidhaa, hesabu na ankara za wasambazaji zinavyodhibitiwa.",
   "reminders": "Kuwakumbusha wateja wanaodaiwa.",
   "people": "Siku za kazi, likizo na saa za ziada.",
-  "printing": "Mistari kwenye risiti na ankara, na jinsi namba za simu zinavyosomwa."
+  "printing": "Mistari kwenye risiti na ankara, na jinsi namba za simu zinavyosomwa.",
+  "alerts": "Wakati Intelligence inakutumia tahadhari na jinsi muhtasari wa kila siku unavyopangiwa saa."
  },
  "set": {
   "negative_stock_allowed": "Ruhusu kuuza bidhaa isiyokuwepo",
@@ -34,7 +36,11 @@
   "overtime_hours_per_month": "Saa za kawaida kwa mwezi",
   "phone_country_code": "Namba ya nchi ya simu",
   "receipt_footer": "Maandishi ya chini ya risiti",
-  "invoice_footer": "Maandishi ya chini ya ankara"
+  "invoice_footer": "Maandishi ya chini ya ankara",
+  "timezone": "Eneo la saa",
+  "intel_alert_channel": "Tuma tahadhari za dharura",
+  "intel_alert_min_severity": "Tahadhari kuanzia uzito",
+  "intel_action_level": "Kile Intelligence inaweza kufanya (kiwango)"
  },
  "setHint": {
   "negative_stock_allowed": "Mauzo yanakamilika na tatizo linawekwa kwa ukaguzi.",
@@ -50,7 +56,11 @@
   "overtime_hours_per_month": "Mshahara wa msingi ukigawanywa kwa namba hii ndio kiwango cha saa kwa saa za ziada.",
   "phone_country_code": "Namba ya nchi ya simu zako, kama 44. Namba za ndani husomwa nayo.",
   "receipt_footer": "Huchapishwa chini ya risiti za kaunta na za malipo.",
-  "invoice_footer": "Huchapishwa chini ya ankara, mfano taarifa za benki au masharti ya malipo."
+  "invoice_footer": "Huchapishwa chini ya ankara, mfano taarifa za benki au masharti ya malipo.",
+  "timezone": "Jina kama Africa/Nairobi au Europe/London. Muhtasari wa kila siku hutumwa kwa saa zake katika eneo hili.",
+  "intel_alert_channel": "Watumie ujumbe watu sahihi Intelligence inapogundua jambo zito, au weka mambo ndani ya programu tu.",
+  "intel_alert_min_severity": "Mambo yenye uzito huu au zaidi hutumwa kama tahadhari; mengine husubiri muhtasari wa kila siku.",
+  "intel_action_level": "1 ni kuripoti tu. 2 pia huruhusu mameneja kumwomba mtu aeleze jambo."
  },
  "choice": {
   "late_posting": {
@@ -61,6 +71,17 @@
    "off": "Imezimwa",
    "sms": "Kwa SMS",
    "email": "Kwa barua pepe"
+  },
+  "intel_alert_channel": {
+   "off": "Zimezimwa (ndani ya programu tu)",
+   "sms": "Kwa SMS",
+   "email": "Kwa barua pepe"
+  },
+  "intel_alert_min_severity": {
+   "low": "Chini",
+   "medium": "Wastani",
+   "high": "Juu",
+   "critical": "Dharura"
   }
  },
  "day": {

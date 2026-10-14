@@ -759,6 +759,202 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/command/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Overview
+         * @description The figures for today so far (against yesterday) and the findings that need the user, within their role.
+         */
+        get: operations["get_overview_api_v1_command_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/pulse/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Refresh
+         * @description Collect today's figures again now (they are also collected every hour).
+         */
+        post: operations["post_refresh_api_v1_command_pulse_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/schedules/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Schedules */
+        get: operations["get_my_schedules_api_v1_command_schedules_mine_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/schedules/mine/{kind}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put My Schedule
+         * @description Choose when and how you get your brief. SMS or email needs that contact on your profile.
+         */
+        put: operations["put_my_schedule_api_v1_command_schedules_mine__kind__put"];
+        post?: never;
+        /** Delete My Schedule */
+        delete: operations["delete_my_schedule_api_v1_command_schedules_mine__kind__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/schedules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get All Schedules
+         * @description Everyone's brief schedules (for the people who manage them).
+         */
+        get: operations["get_all_schedules_api_v1_command_schedules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/briefs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Briefs
+         * @description Briefs sent to you, newest first.
+         */
+        get: operations["get_briefs_api_v1_command_briefs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/briefs/{brief_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Brief */
+        get: operations["get_brief_api_v1_command_briefs__brief_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/briefs/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Preview
+         * @description What your brief would say right now. Nothing is stored or sent.
+         */
+        post: operations["post_preview_api_v1_command_briefs_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/briefs/send-now": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Send Now
+         * @description Compose your brief and send it now, by the channel chosen (once per day and kind).
+         */
+        post: operations["post_send_now_api_v1_command_briefs_send_now_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/command/dashboard/widgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Widgets */
+        get: operations["get_widgets_api_v1_command_dashboard_widgets_get"];
+        /**
+         * Put Widgets
+         * @description Choose and order the boxes on your Command Center.
+         */
+        put: operations["put_widgets_api_v1_command_dashboard_widgets_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/crm/customers": {
         parameters: {
             query?: never;
@@ -1622,6 +1818,225 @@ export interface paths {
          * @description Finish the reconciliation: only when the cleared lines add up to the statement's balance. Final.
          */
         post: operations["post_complete_reconciliation_api_v1_finance_bank_reconciliations__recon_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Findings
+         * @description Findings in the user's scope, most serious first. Without a status filter, open ones only.
+         */
+        get: operations["get_findings_api_v1_intel_findings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Summary */
+        get: operations["get_summary_api_v1_intel_findings_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Finding */
+        get: operations["get_finding_api_v1_intel_findings__finding_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Acknowledge */
+        post: operations["post_acknowledge_api_v1_intel_findings__finding_id__acknowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/explain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Explain */
+        post: operations["post_explain_api_v1_intel_findings__finding_id__explain_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Resolve */
+        post: operations["post_resolve_api_v1_intel_findings__finding_id__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Dismiss */
+        post: operations["post_dismiss_api_v1_intel_findings__finding_id__dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Assign */
+        post: operations["post_assign_api_v1_intel_findings__finding_id__assign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Ask
+         * @description Ask someone to explain a finding (level 2 of what Intelligence may do; the business must allow it).
+         */
+        post: operations["post_ask_api_v1_intel_findings__finding_id__ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Checks
+         * @description The checks that run for this business, with their limits.
+         */
+        get: operations["get_checks_api_v1_intel_checks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/checks/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Check
+         * @description Switch a check off or on, or change its limits.
+         */
+        patch: operations["patch_check_api_v1_intel_checks__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/intel/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Run
+         * @description Run the checks for a company now (they also run by themselves every few hours).
+         */
+        post: operations["post_run_api_v1_intel_run_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5444,6 +5859,24 @@ export interface components {
              */
             allocations?: components["schemas"]["AllocationIn"][] | null;
         };
+        /** AskIn */
+        AskIn: {
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /**
+             * Message
+             * @default
+             */
+            message: string;
+        };
+        /** AssignIn */
+        AssignIn: {
+            /** User Id */
+            user_id?: string | null;
+        };
         /** AssignmentOut */
         AssignmentOut: {
             /** Role Id */
@@ -5821,6 +6254,85 @@ export interface components {
             branch_name: string;
             statement: components["schemas"]["ProfitAndLossOut"];
         };
+        /** BriefOut */
+        BriefOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "daily" | "weekly";
+            /**
+             * Brief Date
+             * Format: date
+             */
+            brief_date: string;
+            /** Subject */
+            subject: string;
+            /** Delivered Via */
+            delivered_via: string;
+            /** Read At */
+            read_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Body */
+            body: string;
+        };
+        /** BriefPreviewOut */
+        BriefPreviewOut: {
+            /** Subject */
+            subject: string;
+            /** Body */
+            body: string;
+            /** Short */
+            short: string;
+        };
+        /** BriefSummaryOut */
+        BriefSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "daily" | "weekly";
+            /**
+             * Brief Date
+             * Format: date
+             */
+            brief_date: string;
+            /** Subject */
+            subject: string;
+            /** Delivered Via */
+            delivered_via: string;
+            /** Read At */
+            read_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** CallbackTokenOut */
         CallbackTokenOut: {
             /**
@@ -5993,6 +6505,40 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** CheckOut */
+        CheckOut: {
+            /** Code */
+            code: string;
+            /** Title */
+            title: string;
+            /** Area */
+            area: string;
+            /** Description */
+            description: string;
+            /** Severity */
+            severity: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Auto Resolves */
+            auto_resolves: boolean;
+            /** Defaults */
+            defaults: {
+                [key: string]: unknown;
+            };
+            /** Params */
+            params: {
+                [key: string]: unknown;
+            };
+        };
+        /** CheckUpdateIn */
+        CheckUpdateIn: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Params */
+            params?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** ChecklistOut */
         ChecklistOut: {
             /** Ready */
@@ -6137,6 +6683,14 @@ export interface components {
             receipt_footer?: string | null;
             /** Invoice Footer */
             invoice_footer?: string | null;
+            /** Timezone */
+            timezone?: string | null;
+            /** Intel Alert Channel */
+            intel_alert_channel?: ("off" | "sms" | "email") | null;
+            /** Intel Alert Min Severity */
+            intel_alert_min_severity?: ("low" | "medium" | "high" | "critical") | null;
+            /** Intel Action Level */
+            intel_action_level?: number | null;
         };
         /** CompanySettingsOut */
         CompanySettingsOut: {
@@ -6174,6 +6728,20 @@ export interface components {
             receipt_footer: string;
             /** Invoice Footer */
             invoice_footer: string;
+            /** Timezone */
+            timezone: string;
+            /**
+             * Intel Alert Channel
+             * @enum {string}
+             */
+            intel_alert_channel: "off" | "sms" | "email";
+            /**
+             * Intel Alert Min Severity
+             * @enum {string}
+             */
+            intel_alert_min_severity: "low" | "medium" | "high" | "critical";
+            /** Intel Action Level */
+            intel_action_level: number;
         };
         /** ComponentIn */
         ComponentIn: {
@@ -6834,6 +7402,11 @@ export interface components {
              */
             status: "active" | "blocked";
         };
+        /** DismissIn */
+        DismissIn: {
+            /** Reason */
+            reason: string;
+        };
         /** DoNotContactIn */
         DoNotContactIn: {
             /**
@@ -7431,6 +8004,14 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** ExplainIn */
+        ExplainIn: {
+            /**
+             * Note
+             * @description What happened
+             */
+            note: string;
+        };
         /** ExternalOut */
         ExternalOut: {
             /**
@@ -7466,6 +8047,186 @@ export interface components {
             counterparty_phone_masked: string | null;
             /** Match Status */
             match_status: string;
+        };
+        /** FigureOut */
+        FigureOut: {
+            /** Metric */
+            metric: string;
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "money" | "count" | "percent";
+            /** Value */
+            value: string;
+            /** Previous */
+            previous: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Branch Name */
+            branch_name: string | null;
+            /** Higher Is Better */
+            higher_is_better: boolean | null;
+        };
+        /** FindingDetailOut */
+        FindingDetailOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Check Code */
+            check_code: string | null;
+            /** Area */
+            area: string | null;
+            /** Company Id */
+            company_id: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Entity Type */
+            entity_type: string | null;
+            /** Entity Id */
+            entity_id: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Value */
+            value: string | null;
+            /** Expected Value */
+            expected_value: string | null;
+            /** Amount */
+            amount: string | null;
+            /** Severity */
+            severity: string;
+            /** Summary */
+            summary: string | null;
+            /** Recommended Action */
+            recommended_action: string | null;
+            /** Explanation */
+            explanation: string | null;
+            /** Status */
+            status: string;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
+            /** Resolved At */
+            resolved_at: string | null;
+            /** Records */
+            records: components["schemas"]["RecordOut"][];
+            /** Figures */
+            figures: {
+                [key: string]: string;
+            };
+            /** Events */
+            events: components["schemas"]["FindingEventOut"][];
+        };
+        /** FindingEventOut */
+        FindingEventOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Event */
+            event: string;
+            /** User Id */
+            user_id: string | null;
+            /** User Name */
+            user_name: string | null;
+            /** Channel */
+            channel: string | null;
+            /** Note */
+            note: string | null;
+        };
+        /** FindingOut */
+        FindingOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Check Code */
+            check_code: string | null;
+            /** Area */
+            area: string | null;
+            /** Company Id */
+            company_id: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Entity Type */
+            entity_type: string | null;
+            /** Entity Id */
+            entity_id: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Value */
+            value: string | null;
+            /** Expected Value */
+            expected_value: string | null;
+            /** Amount */
+            amount: string | null;
+            /** Severity */
+            severity: string;
+            /** Summary */
+            summary: string | null;
+            /** Recommended Action */
+            recommended_action: string | null;
+            /** Explanation */
+            explanation: string | null;
+            /** Status */
+            status: string;
+            /** Owner User Id */
+            owner_user_id: string | null;
+            /**
+             * First Seen At
+             * Format: date-time
+             */
+            first_seen_at: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
+            /** Resolved At */
+            resolved_at: string | null;
+        };
+        /** FindingsSummaryOut */
+        FindingsSummaryOut: {
+            /** Open */
+            open: number;
+            /** By Severity */
+            by_severity: {
+                [key: string]: number;
+            };
+            /** By Area */
+            by_area: {
+                [key: string]: number;
+            };
+            /** By Status */
+            by_status: {
+                [key: string]: number;
+            };
+            /** Amount At Stake */
+            amount_at_stake: string;
         };
         /** GeneralLedgerOut */
         GeneralLedgerOut: {
@@ -8393,6 +9154,11 @@ export interface components {
              */
             created_at: string;
         };
+        /** NoteIn */
+        NoteIn: {
+            /** Note */
+            note?: string | null;
+        };
         /** NotificationOut */
         NotificationOut: {
             /**
@@ -8655,6 +9421,35 @@ export interface components {
             expected_date?: string | null;
             /** Deliver To Location Id */
             deliver_to_location_id?: string | null;
+        };
+        /** OverviewOut */
+        OverviewOut: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Company Name */
+            company_name: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Figures */
+            figures: components["schemas"]["FigureOut"][];
+            /** Refreshed At */
+            refreshed_at: string | null;
+            /** Open Findings */
+            open_findings: number;
+            /** Findings By Severity */
+            findings_by_severity: {
+                [key: string]: number;
+            };
+            /** Top Findings */
+            top_findings: components["schemas"]["TopFindingOut"][];
         };
         /** PasswordIn */
         PasswordIn: {
@@ -9535,6 +10330,15 @@ export interface components {
             /** Completed At */
             completed_at: string | null;
         };
+        /** RecordOut */
+        RecordOut: {
+            /** Type */
+            type: string;
+            /** Id */
+            id: string | null;
+            /** Label */
+            label: string;
+        };
         /** RefreshIn */
         RefreshIn: {
             /** Refresh Token */
@@ -9913,79 +10717,6 @@ export interface components {
              */
             account_id: string;
         };
-        /** RunIn */
-        RunIn: {
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /**
-             * Period Start
-             * Format: date
-             */
-            period_start: string;
-            /**
-             * Period End
-             * Format: date
-             */
-            period_end: string;
-            /**
-             * Pay Date
-             * Format: date
-             */
-            pay_date: string;
-        };
-        /** RunOut */
-        RunOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /**
-             * Period Start
-             * Format: date
-             */
-            period_start: string;
-            /**
-             * Period End
-             * Format: date
-             */
-            period_end: string;
-            /**
-             * Pay Date
-             * Format: date
-             */
-            pay_date: string;
-            /** Status */
-            status: string;
-            /** Totals */
-            totals: {
-                [key: string]: unknown;
-            };
-            /** Exceptions */
-            exceptions: components["schemas"]["ExceptionOut"][];
-            /** Prepared By */
-            prepared_by: string | null;
-            /** Approved By */
-            approved_by: string | null;
-            /** Submitted At */
-            submitted_at: string | null;
-            /** Approved At */
-            approved_at: string | null;
-            /** Paid At */
-            paid_at: string | null;
-            /** Reject Note */
-            reject_note: string | null;
-            /** Journal Entry Id */
-            journal_entry_id: string | null;
-        };
         /** SaleIn */
         SaleIn: {
             /**
@@ -10249,6 +10980,65 @@ export interface components {
             status: string;
             /** Synced Offline */
             synced_offline: boolean;
+        };
+        /** ScheduleIn */
+        ScheduleIn: {
+            /**
+             * Channel
+             * @default in_app
+             * @enum {string}
+             */
+            channel: "sms" | "email" | "in_app";
+            /**
+             * Send Time
+             * Format: time
+             * @description Local time in the company's time zone, e.g. 07:30
+             */
+            send_time: string;
+            /**
+             * Weekday
+             * @description 1 Monday to 7 Sunday: needed for a weekly brief
+             */
+            weekday?: number | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** ScheduleOut */
+        ScheduleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "daily" | "weekly";
+            /**
+             * Channel
+             * @enum {string}
+             */
+            channel: "sms" | "email" | "in_app";
+            /**
+             * Send Time
+             * Format: time
+             */
+            send_time: string;
+            /** Weekday */
+            weekday: number | null;
+            /** Is Active */
+            is_active: boolean;
         };
         /** SendPayslipsIn */
         SendPayslipsIn: {
@@ -11080,6 +11870,28 @@ export interface components {
              */
             tenant_id: string;
         };
+        /** TopFindingOut */
+        TopFindingOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Severity */
+            severity: string;
+            /** Area */
+            area: string | null;
+            /** Summary */
+            summary: string;
+            /** Recommended Action */
+            recommended_action: string | null;
+            /** Status */
+            status: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Amount */
+            amount: string | null;
+        };
         /** TransferIn */
         TransferIn: {
             /**
@@ -11378,6 +12190,26 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** WidgetIn */
+        WidgetIn: {
+            /** Widget Code */
+            widget_code: string;
+            /** Settings */
+            settings?: {
+                [key: string]: unknown;
+            };
+        };
+        /** WidgetOut */
+        WidgetOut: {
+            /** Widget Code */
+            widget_code: string;
+            /** Settings */
+            settings?: {
+                [key: string]: unknown;
+            };
+            /** Position */
+            position: number;
+        };
         /** ReasonIn */
         ziira__kernel__api__schemas__ReasonIn: {
             /** Category */
@@ -11622,6 +12454,34 @@ export interface components {
             name: string;
             /** Amount */
             amount: string;
+        };
+        /** RunIn */
+        ziira__modules__intel__api__schemas__RunIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Checks
+             * @description Only these checks (all by default)
+             */
+            checks?: string[] | null;
+        };
+        /** RunOut */
+        ziira__modules__intel__api__schemas__RunOut: {
+            /** Checks Run */
+            checks_run: number;
+            /** Created */
+            created: number;
+            /** Updated */
+            updated: number;
+            /** Resolved */
+            resolved: number;
+            /** Reopened */
+            reopened: number;
+            /** Failed */
+            failed: string[];
         };
         /** BalanceOut */
         ziira__modules__inventory__api__schemas__BalanceOut: {
@@ -11925,6 +12785,79 @@ export interface components {
             verified_at: string | null;
             /** Created By */
             created_by: string | null;
+        };
+        /** RunIn */
+        ziira__modules__people__api__schemas__RunIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Pay Date
+             * Format: date
+             */
+            pay_date: string;
+        };
+        /** RunOut */
+        ziira__modules__people__api__schemas__RunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Pay Date
+             * Format: date
+             */
+            pay_date: string;
+            /** Status */
+            status: string;
+            /** Totals */
+            totals: {
+                [key: string]: unknown;
+            };
+            /** Exceptions */
+            exceptions: components["schemas"]["ExceptionOut"][];
+            /** Prepared By */
+            prepared_by: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Submitted At */
+            submitted_at: string | null;
+            /** Approved At */
+            approved_at: string | null;
+            /** Paid At */
+            paid_at: string | null;
+            /** Reject Note */
+            reject_note: string | null;
+            /** Journal Entry Id */
+            journal_entry_id: string | null;
         };
         /** BalanceOut */
         ziira__modules__pos__api__schemas__BalanceOut: {
@@ -14610,6 +15543,463 @@ export interface operations {
             };
         };
     };
+    get_overview_api_v1_command_overview_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                day?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_refresh_api_v1_command_pulse_refresh_post: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_schedules_api_v1_command_schedules_mine_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_my_schedule_api_v1_command_schedules_mine__kind__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                kind: "daily" | "weekly";
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScheduleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_my_schedule_api_v1_command_schedules_mine__kind__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                kind: "daily" | "weekly";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_all_schedules_api_v1_command_schedules_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScheduleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_briefs_api_v1_command_briefs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_brief_api_v1_command_briefs__brief_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                brief_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_preview_api_v1_command_briefs_preview_post: {
+        parameters: {
+            query?: {
+                kind?: "daily" | "weekly";
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_send_now_api_v1_command_briefs_send_now_post: {
+        parameters: {
+            query?: {
+                kind?: "daily" | "weekly";
+                channel?: "sms" | "email" | "in_app";
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BriefSummaryOut"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_widgets_api_v1_command_dashboard_widgets_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WidgetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_widgets_api_v1_command_dashboard_widgets_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WidgetIn"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WidgetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_customers_api_v1_crm_customers_get: {
         parameters: {
             query?: {
@@ -17103,6 +18493,497 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReconciliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_findings_api_v1_intel_findings_get: {
+        parameters: {
+            query?: {
+                status?: ("new" | "sent" | "acknowledged" | "explained" | "resolved" | "dismissed")[] | null;
+                severity?: ("info" | "low" | "medium" | "high" | "critical")[] | null;
+                area?: string | null;
+                company_id?: string | null;
+                branch_id?: string | null;
+                check_code?: string | null;
+                assigned_to_me?: boolean;
+                search?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_summary_api_v1_intel_findings_summary_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingsSummaryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_finding_api_v1_intel_findings__finding_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_acknowledge_api_v1_intel_findings__finding_id__acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_explain_api_v1_intel_findings__finding_id__explain_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExplainIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_resolve_api_v1_intel_findings__finding_id__resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_dismiss_api_v1_intel_findings__finding_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DismissIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_assign_api_v1_intel_findings__finding_id__assign_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_ask_api_v1_intel_findings__finding_id__ask_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_checks_api_v1_intel_checks_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_check_api_v1_intel_checks__code__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_run_api_v1_intel_run_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RunIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -20831,7 +22712,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"][];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"][];
                 };
             };
             /** @description Validation Error */
@@ -20861,7 +22742,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RunIn"];
+                "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunIn"];
             };
         };
         responses: {
@@ -20871,7 +22752,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -20909,7 +22790,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -20947,7 +22828,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -20985,7 +22866,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -21023,7 +22904,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -21065,7 +22946,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -21103,7 +22984,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */
@@ -21145,7 +23026,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RunOut"];
+                    "application/json": components["schemas"]["ziira__modules__people__api__schemas__RunOut"];
                 };
             };
             /** @description Validation Error */

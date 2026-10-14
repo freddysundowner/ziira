@@ -5,7 +5,11 @@ from uuid import UUID
 
 from sqlalchemy import text
 
+from ziira.modules.command.public import COMMAND_PULSE_SOURCE
+from ziira.modules.intel.public import INTEL_BASELINE_METRIC, INTEL_CHECK
+from ziira.modules.pos import intel_checks
 from ziira.modules.pos.public import RECEIPT_EXTRAS, ReceiptExtra
+from ziira.modules.pos.pulse import PosPulse
 from ziira.sdk import IntegrityCheck, Session, define_extension_point, provides
 
 define_extension_point(RECEIPT_EXTRAS, ReceiptExtra,
@@ -54,3 +58,15 @@ class CustomerLedgerCheck(IntegrityCheck):
             "left join pos.customer_receipt r on r.id = a.receipt_id group by i.id, i.number, i.amount_paid "
             "having i.amount_paid <> coalesce(sum(a.amount) filter (where r.status = 'posted'), 0)"))
         return [f"Invoice {r.number}: marked {r.amount_paid} paid but its receipts add up to {r.live}" for r in rows]
+
+
+# Intelligence checks, the baselines they compare with, and the Command Center figures (all read-only)
+for _check in (intel_checks.TillCashVariance, intel_checks.CashierVoidRate, intel_checks.CashierRefundRate,
+               intel_checks.CashierDiscountRate, intel_checks.LargeExceptions, intel_checks.OutOfHoursSales,
+               intel_checks.LateRecordedSales, intel_checks.BranchSalesLow, intel_checks.OverdueCustomers,
+               intel_checks.SlowerPayers, intel_checks.CreditToOverdueCustomer, intel_checks.OverCreditLimit):
+    provides(INTEL_CHECK)(_check)
+for _metric in (intel_checks.CashierVoidRateMetric, intel_checks.CashierRefundRateMetric,
+                intel_checks.CashierDiscountRateMetric, intel_checks.BranchDailySalesMetric):
+    provides(INTEL_BASELINE_METRIC)(_metric)
+provides(COMMAND_PULSE_SOURCE)(PosPulse)

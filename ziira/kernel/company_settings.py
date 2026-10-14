@@ -127,6 +127,36 @@ def _late_posting(value: Any) -> str:
     return str(value)
 
 
+def _timezone(value: Any) -> str:
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+    if not isinstance(value, str):
+        raise ValidationFailed("Expected a time zone name such as 'Europe/London'")
+    try:
+        ZoneInfo(value)
+    except (ZoneInfoNotFoundError, ValueError):
+        raise ValidationFailed("Unknown time zone; use a name such as 'Europe/London' or 'UTC'") from None
+    return value
+
+
+def _alert_channel(value: Any) -> str:
+    if value not in ("off", "sms", "email"):
+        raise ValidationFailed("Expected 'off', 'sms' or 'email'")
+    return str(value)
+
+
+def _alert_severity(value: Any) -> str:
+    if value not in ("low", "medium", "high", "critical"):
+        raise ValidationFailed("Expected 'low', 'medium', 'high' or 'critical'")
+    return str(value)
+
+
+def _action_level(value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 4:
+        raise ValidationFailed("Expected an action level from 1 to 4")
+    return value
+
+
 SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("negative_stock_allowed", False, _boolean,
             "Sell stock the system thinks is not there: the sale posts and an exception is raised for review"),
@@ -158,6 +188,14 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "The line printed at the bottom of till receipts and payment receipts"),
     Setting("invoice_footer", "", _footer,
             "The line printed at the bottom of invoices (bank details, payment terms)"),
+    Setting("timezone", "UTC", _timezone,
+            "The company's time zone: the times of daily briefs and 'unusual hour' checks are read in it"),
+    Setting("intel_alert_channel", "off", _alert_channel,
+            "Send urgent findings to the people who should see them by this channel ('off': only in the app)"),
+    Setting("intel_alert_min_severity", "high", _alert_severity,
+            "Findings at or above this severity are sent as alerts; the rest wait for the daily brief"),
+    Setting("intel_action_level", 1, _action_level,
+            "What Intelligence may do: 1 reports only, 2 also asks people to explain a finding on your instruction"),
 )}
 
 

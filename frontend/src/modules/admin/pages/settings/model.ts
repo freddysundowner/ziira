@@ -23,6 +23,12 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "reminder_min_days_overdue", kind: "integer" },
     { key: "reminder_repeat_days", kind: "integer" },
   ] },
+  { id: "alerts", fields: [
+    { key: "timezone", kind: "text" },
+    { key: "intel_alert_channel", kind: "choice", choices: ["off", "sms", "email"] },
+    { key: "intel_alert_min_severity", kind: "choice", choices: ["low", "medium", "high", "critical"] },
+    { key: "intel_action_level", kind: "integer" },
+  ] },
   { id: "people", fields: [
     { key: "weekend_days", kind: "weekdays" },
     { key: "payroll_unpaid_day_divisor", kind: "integer" },

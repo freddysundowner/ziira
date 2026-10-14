@@ -15,6 +15,7 @@ Every business (tenant) has its own database; the master database lists them.
     ziira drop-tenant <code> --confirm <code>   delete a tenant's database and login (cannot be undone)
     ziira outbox-run [--once]           deliver committed events to after-commit subscribers
     ziira worker [--once]               deliver events and run background jobs (replaces outbox-run)
+    ziira run-task <tenant> <name>      run one recurring task now (intel.run_checks, command.send_briefs, ...)
     ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
     ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
 """
@@ -125,6 +126,17 @@ def cmd_invite(reg: Registry, a: argparse.Namespace) -> None:
     print(f"Invitation code (shown once): {code}   uses: {a.uses}")
 
 
+def cmd_run_task(reg: Registry, a: argparse.Namespace) -> None:
+    """Run one recurring task now, for one business (for example `intel.run_checks`, or `command.send_briefs`)."""
+    from ziira.kernel import jobs
+
+    load_event_handlers(reg.units)
+    if a.name not in jobs.periodic_names():
+        raise ZiiraError(f"Unknown recurring task '{a.name}'. Known: {', '.join(jobs.periodic_names())}")
+    ran = jobs.run_periodic(_tenant(a.tenant), only=a.name, force=True)
+    print(f"Ran {a.name}" if ran else f"{a.name} did not run (is its unit enabled for {a.tenant}?)")
+
+
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
     from ziira.kernel import jobs, notifications  # noqa: F401 - notifications registers its send job
 
@@ -204,6 +216,10 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("outbox-run")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_outbox_run)
+    s = sub.add_parser("run-task", help="run one recurring task now for a business (e.g. intel.run_checks)")
+    s.add_argument("tenant", help="workspace code or id")
+    s.add_argument("name", help="the task, e.g. intel.run_checks, intel.refresh_baselines, command.send_briefs")
+    s.set_defaults(fn=cmd_run_task)
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_worker)

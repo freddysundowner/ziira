@@ -5,12 +5,15 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = []
-optional = ["pos", "payments"]
+optional = ["pos", "payments", "intel", "command"]
 
 [provides]
 api_prefix = "/api/v1/crm"
 publishes = ["customer.created", "lead.created", "lead.converted", "customer.credit_limit_changed"]
 subscribes = ["approval.decided"]
+
+[extends]
+implements = ["intel.check", "command.pulse_source"]
 
 [permissions]
 "customers.view" = "View customers"

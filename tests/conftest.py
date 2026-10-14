@@ -10,6 +10,7 @@ database, e.g. the `postgres` database). Default matches docker-compose.
 
 import os
 from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -55,8 +56,30 @@ def _prepare_server() -> None:
     })
 
 
+@contextmanager
+def _one_test_session_at_a_time() -> Iterator[None]:
+    """The test databases have fixed names, so two pytest sessions on one server would drop each other's databases.
+    A session that needs the server waits here until any other one has finished (a file lock, released on exit or
+    crash). The wait is visible: pytest simply sits at the first test that needs the database."""
+    import fcntl
+    import tempfile
+
+    path = os.path.join(tempfile.gettempdir(), "ziira-test-database.lock")
+    with open(path, "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
+
 @pytest.fixture(scope="session")
 def registry() -> Iterator[object]:
+    with _one_test_session_at_a_time():
+        yield from _registry()
+
+
+def _registry() -> Iterator[object]:
     _prepare_server()
     from ziira.kernel.config import get_settings
     from ziira.kernel.db import forget_all

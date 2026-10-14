@@ -51,6 +51,17 @@ service**. Tick each off (with the date and who did it) before a customer relies
       asks for; adapt the columns before first filing.
 - [ ] The bank's bulk payment upload format against the payment file; payslip email/SMS tried with a test employee.
 
+## Intelligence and briefs
+
+- [ ] Each company's **time zone** is set (company setting `timezone`): briefs, "unusual hours" checks and the day's figures are read in it.
+- [ ] Intelligence and the Command Center enabled for the business (`ziira enable <tenant> intel`, `... command`) and the worker running
+      (`ziira worker`): checks run every 6 hours, figures hourly, briefs every 10 minutes.
+- [ ] The alert channel chosen (`intel_alert_channel` sms or email) after the SMS/email channel is set up and tried; the alert severity
+      (`intel_alert_min_severity`) agreed with the owner. Leave it `off` for the first weeks: read the findings in the app and tune the checks
+      (switch off or loosen what is noisy) before anyone is messaged.
+- [ ] Owners and managers choose their briefs (daily/weekly, time, channel) and have an email/phone on their profile for SMS/email.
+- [ ] A first review with the owner of what the checks found in past months, and which checks to tune (spec "Onboarding", week 2).
+
 ## Business decisions
 
 - [ ] Chart of accounts, tax codes and VAT rates entered for each company (taxes are entered by hand for now).

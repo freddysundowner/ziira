@@ -5,13 +5,20 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = []
-optional = ["pos", "inventory", "payments", "finance", "crm", "purchasing", "people"]
+optional = ["intel"]
 
 [provides]
 api_prefix = "/api/v1/command"
 publishes = []
+extension_points = ["command.pulse_source"]
 subscribes = []
 
 [permissions]
 "command.view" = "View the Command Center"
-"briefs.manage" = "Manage brief schedules"
+"briefs.manage" = "Manage brief schedules and collect figures now"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["command.view"]
+"Branch Manager" = ["command.view"]
+"Accountant" = ["command.view"]

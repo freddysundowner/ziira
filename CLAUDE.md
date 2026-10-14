@@ -48,7 +48,8 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira invite create [--uses N --days D]   # invitation code for ZIIRA_REGISTRATION_MODE=invite
 .venv/bin/ziira index-logins [tenant]      # rebuild the login directory (sign-in without a workspace code)
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
-.venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + purge of old keys/jobs
+.venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + recurring tasks (checks, briefs) + purge
+.venv/bin/ziira run-task <tenant> <name>    # run one recurring task now, e.g. intel.run_checks, command.refresh_pulse, command.send_briefs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
 ```
 
@@ -137,6 +138,11 @@ tests/             unit tests for domain rules
   `system_session` (work nobody signed in for, such as a Safaricom callback), `periodic` (recurring tasks, run by the
   worker once per interval per business), `send_notification` / `opt_out_contact` (email and SMS through the
   business's channel; see `docs/notifications.md`). See `docs/adding-a-module.md`.
+- **Intelligence and the Command Center**: a unit adds *checks* (`intel.check`), *baseline metrics* (`intel.baseline_metric`) and
+  *pulse figures* (`command.pulse_source`) for its own data through extension points, in its own `hooks.py`, with `"intel"`/`"command"`
+  under `optional` in its manifest; `intel` and `command` never read another unit's tables. A check never writes, is bounded by a
+  look-back window, sets `branch_id` (it decides who sees it), keeps limits as `params` a business can change, and is tested end to
+  end with the real engine. Alerts and briefs are queued through the notification layer, never sent in a request. See `docs/intelligence.md`.
 - Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
   (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
 - A business event that already happened (an offline sale) is accepted and its problems are flagged, not refused.
@@ -157,7 +163,7 @@ tests/             unit tests for domain rules
 
 ## Where things are
 
-`docs/registration.md` (how businesses join) · `docs/localisation.md` · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/registration.md` (how businesses join) · `docs/localisation.md` · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

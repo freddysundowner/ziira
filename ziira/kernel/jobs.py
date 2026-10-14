@@ -62,6 +62,11 @@ def periodic(name: str, *, every_seconds: int) -> Callable[[PeriodicHandler], Pe
     return register
 
 
+def periodic_names() -> list[str]:
+    """The recurring tasks units have registered."""
+    return sorted(_periodic)
+
+
 def enqueue(session: Session, job_type: str, payload: dict[str, Any] | None = None, *, delay_seconds: int = 0,
             dedupe_key: str | None = None, max_attempts: int = 8) -> None:
     """Add a job to run `delay_seconds` from now. With a `dedupe_key`, a job with the same key is not added twice."""
@@ -127,18 +132,18 @@ def run_due(tenant_id: UUID, batch_size: int = 50) -> int:
     return finished
 
 
-def run_periodic(tenant_id: UUID) -> int:
+def run_periodic(tenant_id: UUID, *, only: str | None = None, force: bool = False) -> int:
     """Run the recurring tasks of one tenant that are due. Returns how many ran. A task is claimed before it runs, so
     two workers never run it at once; one that fails is recorded, put in the exceptions inbox, and tried again at its
-    next interval."""
+    next interval. `only` runs just that task and `force` runs it even if it ran recently (`ziira run-task`)."""
     system_context(tenant_id)
     ran = 0
     with tenant_session(tenant_id) as s:
         enabled = _enabled(s)
         for name, (unit, every, handler) in sorted(_periodic.items()):
-            if unit not in enabled:
+            if unit not in enabled or (only is not None and name != only):
                 continue
-            claimed = s.execute(text(
+            claimed = True if force else s.execute(text(
                 "insert into kernel.periodic_run (tenant_id, name, last_run_at) "
                 "values (kernel.current_tenant(), :n, now()) "
                 "on conflict (tenant_id, name) do update set last_run_at = now() "
