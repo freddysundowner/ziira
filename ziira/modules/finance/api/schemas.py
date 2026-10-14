@@ -212,3 +212,94 @@ class GeneralLedgerOut(BaseModel):
     opening: Decimal
     closing: Decimal
     lines: list[LedgerLineOut]
+
+
+# --------------------------------------------------------------------------- statements and exports
+class StatementLineOut(BaseModel):
+    account_id: UUID
+    code: str
+    name: str
+    amount: Decimal
+
+
+class LabelAmountOut(BaseModel):
+    label: str
+    amount: Decimal
+
+
+class ProfitAndLossOut(BaseModel):
+    income: list[StatementLineOut]
+    total_income: Decimal
+    cost_of_sales: list[StatementLineOut]
+    total_cost_of_sales: Decimal
+    gross_profit: Decimal
+    expenses: list[StatementLineOut]
+    total_expenses: Decimal
+    net_profit: Decimal
+
+
+class BranchProfitOut(BaseModel):
+    branch_id: UUID | None
+    branch_name: str
+    statement: ProfitAndLossOut
+
+
+class ProfitReportOut(BaseModel):
+    company_id: UUID
+    date_from: date
+    date_to: date
+    branch_id: UUID | None
+    consolidated: ProfitAndLossOut
+    branches: list[BranchProfitOut]
+
+
+class BalanceSheetOut(BaseModel):
+    company_id: UUID
+    as_of: date
+    branch_id: UUID | None
+    assets: list[StatementLineOut]
+    total_assets: Decimal
+    liabilities: list[StatementLineOut]
+    total_liabilities: Decimal
+    equity: list[StatementLineOut]
+    total_equity: Decimal
+    accumulated_profit: Decimal
+    total_liabilities_and_equity: Decimal
+    balanced: bool
+
+
+class CashFlowOut(BaseModel):
+    company_id: UUID
+    date_from: date
+    date_to: date
+    branch_id: UUID | None
+    opening: Decimal
+    movements: list[LabelAmountOut]
+    net_movement: Decimal
+    closing: Decimal
+    reconciles: bool
+
+
+class VatReportOut(BaseModel):
+    company_id: UUID
+    date_from: date
+    date_to: date
+    branch_id: UUID | None
+    sales_net: Decimal
+    output_vat: Decimal
+    input_vat: Decimal
+    net_payable: Decimal
+    output_by_source: list[LabelAmountOut]
+    input_by_source: list[LabelAmountOut]
+
+
+class MappingIn(BaseModel):
+    external_code: str | None = Field(default=None, max_length=40, examples=["4010"])
+    external_name: str | None = Field(default=None, max_length=100, examples=["Sales - hardware"])
+
+
+class MappingOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    account_id: UUID
+    external_code: str | None
+    external_name: str | None

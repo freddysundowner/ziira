@@ -1265,6 +1265,144 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/finance/reports/profit-and-loss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Profit And Loss
+         * @description Income, cost of sales and expenses between two dates: consolidated, one branch, or split by branch.
+         */
+        get: operations["get_profit_and_loss_api_v1_finance_reports_profit_and_loss_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/reports/balance-sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Balance Sheet
+         * @description What the business has, owes and is worth at the end of a day.
+         */
+        get: operations["get_balance_sheet_api_v1_finance_reports_balance_sheet_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/reports/cash-flow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cash Flow
+         * @description Cash, bank, M-Pesa and card balances at the start and end, and what moved them.
+         */
+        get: operations["get_cash_flow_api_v1_finance_reports_cash_flow_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/reports/vat-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Vat Summary
+         * @description VAT charged less VAT paid between two dates: the figure for the VAT return.
+         */
+        get: operations["get_vat_summary_api_v1_finance_reports_vat_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/exports/journal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Journal Export
+         * @description The journal lines of a period as CSV, for the accountant's software (generic, QuickBooks or Sage).
+         */
+        get: operations["get_journal_export_api_v1_finance_exports_journal_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/account-mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Account Mappings
+         * @description What the accountant calls each account in their own software.
+         */
+        get: operations["get_account_mappings_api_v1_finance_account_mappings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/account-mappings/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Account Mapping */
+        put: operations["put_account_mapping_api_v1_finance_account_mappings__account_id__put"];
+        post?: never;
+        /** Delete Account Mapping */
+        delete: operations["delete_account_mapping_api_v1_finance_account_mappings__account_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inventory/locations": {
         parameters: {
             query?: never;
@@ -4257,6 +4395,39 @@ export interface components {
             /** Permissions */
             permissions: string[];
         };
+        /** BalanceSheetOut */
+        BalanceSheetOut: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Assets */
+            assets: components["schemas"]["ziira__modules__finance__api__schemas__StatementLineOut"][];
+            /** Total Assets */
+            total_assets: string;
+            /** Liabilities */
+            liabilities: components["schemas"]["ziira__modules__finance__api__schemas__StatementLineOut"][];
+            /** Total Liabilities */
+            total_liabilities: string;
+            /** Equity */
+            equity: components["schemas"]["ziira__modules__finance__api__schemas__StatementLineOut"][];
+            /** Total Equity */
+            total_equity: string;
+            /** Accumulated Profit */
+            accumulated_profit: string;
+            /** Total Liabilities And Equity */
+            total_liabilities_and_equity: string;
+            /** Balanced */
+            balanced: boolean;
+        };
         /** BankConfirmIn */
         BankConfirmIn: {
             /**
@@ -4543,6 +4714,14 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** BranchProfitOut */
+        BranchProfitOut: {
+            /** Branch Id */
+            branch_id: string | null;
+            /** Branch Name */
+            branch_name: string;
+            statement: components["schemas"]["ProfitAndLossOut"];
+        };
         /** CallbackTokenOut */
         CallbackTokenOut: {
             /**
@@ -4578,6 +4757,36 @@ export interface components {
             business_date?: string | null;
             /** Reference */
             reference: string;
+        };
+        /** CashFlowOut */
+        CashFlowOut: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Opening */
+            opening: string;
+            /** Movements */
+            movements: components["schemas"]["LabelAmountOut"][];
+            /** Net Movement */
+            net_movement: string;
+            /** Closing */
+            closing: string;
+            /** Reconciles */
+            reconciles: boolean;
         };
         /** CatalogItemOut */
         CatalogItemOut: {
@@ -6116,6 +6325,13 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** LabelAmountOut */
+        LabelAmountOut: {
+            /** Label */
+            label: string;
+            /** Amount */
+            amount: string;
+        };
         /** LeadConvertIn */
         LeadConvertIn: {
             /** Code */
@@ -6414,6 +6630,25 @@ export interface components {
             payment_id: string;
             /** Amount */
             amount?: number | string | null;
+        };
+        /** MappingIn */
+        MappingIn: {
+            /** External Code */
+            external_code?: string | null;
+            /** External Name */
+            external_name?: string | null;
+        };
+        /** MappingOut */
+        MappingOut: {
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** External Code */
+            external_code: string | null;
+            /** External Name */
+            external_name: string | null;
         };
         /** MatchOut */
         MatchOut: {
@@ -7181,6 +7416,48 @@ export interface components {
             average_cost: string | null;
             /** Value */
             value: string | null;
+        };
+        /** ProfitAndLossOut */
+        ProfitAndLossOut: {
+            /** Income */
+            income: components["schemas"]["ziira__modules__finance__api__schemas__StatementLineOut"][];
+            /** Total Income */
+            total_income: string;
+            /** Cost Of Sales */
+            cost_of_sales: components["schemas"]["ziira__modules__finance__api__schemas__StatementLineOut"][];
+            /** Total Cost Of Sales */
+            total_cost_of_sales: string;
+            /** Gross Profit */
+            gross_profit: string;
+            /** Expenses */
+            expenses: components["schemas"]["ziira__modules__finance__api__schemas__StatementLineOut"][];
+            /** Total Expenses */
+            total_expenses: string;
+            /** Net Profit */
+            net_profit: string;
+        };
+        /** ProfitReportOut */
+        ProfitReportOut: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Branch Id */
+            branch_id: string | null;
+            consolidated: components["schemas"]["ProfitAndLossOut"];
+            /** Branches */
+            branches: components["schemas"]["BranchProfitOut"][];
         };
         /** QuotationIn */
         QuotationIn: {
@@ -8051,26 +8328,6 @@ export interface components {
             /** Amount */
             amount: number | string;
         };
-        /** StatementLineOut */
-        StatementLineOut: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Kind */
-            kind: string;
-            /** Number */
-            number: string;
-            /** Description */
-            description: string;
-            /** Debit */
-            debit: string;
-            /** Credit */
-            credit: string;
-            /** Balance */
-            balance: string;
-        };
         /** StatementOut */
         StatementOut: {
             /**
@@ -8093,7 +8350,7 @@ export interface components {
             /** Owed Now */
             owed_now: string;
             /** Lines */
-            lines: components["schemas"]["StatementLineOut"][];
+            lines: components["schemas"]["ziira__modules__pos__api__schemas__StatementLineOut"][];
         };
         /** StatementReconOut */
         StatementReconOut: {
@@ -8701,6 +8958,38 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VatReportOut */
+        VatReportOut: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Sales Net */
+            sales_net: string;
+            /** Output Vat */
+            output_vat: string;
+            /** Input Vat */
+            input_vat: string;
+            /** Net Payable */
+            net_payable: string;
+            /** Output By Source */
+            output_by_source: components["schemas"]["LabelAmountOut"][];
+            /** Input By Source */
+            input_by_source: components["schemas"]["LabelAmountOut"][];
+        };
         /** VoidIn */
         VoidIn: {
             /**
@@ -8941,6 +9230,20 @@ export interface components {
             };
             /** Priority */
             priority: number;
+        };
+        /** StatementLineOut */
+        ziira__modules__finance__api__schemas__StatementLineOut: {
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Amount */
+            amount: string;
         };
         /** BalanceOut */
         ziira__modules__inventory__api__schemas__BalanceOut: {
@@ -9413,6 +9716,26 @@ export interface components {
             status: string;
             /** Business Date */
             business_date: string | null;
+        };
+        /** StatementLineOut */
+        ziira__modules__pos__api__schemas__StatementLineOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Kind */
+            kind: string;
+            /** Number */
+            number: string;
+            /** Description */
+            description: string;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /** Balance */
+            balance: string;
         };
         /** PriceOut */
         ziira__modules__products__api__schemas__PriceOut: {
@@ -13282,6 +13605,344 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["GeneralLedgerOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_profit_and_loss_api_v1_finance_reports_profit_and_loss_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                date_from: string;
+                date_to: string;
+                branch_id?: string | null;
+                by_branch?: boolean;
+                /** @description json, or csv for a spreadsheet */
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfitReportOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_balance_sheet_api_v1_finance_reports_balance_sheet_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                as_of: string;
+                branch_id?: string | null;
+                /** @description json, or csv for a spreadsheet */
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BalanceSheetOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cash_flow_api_v1_finance_reports_cash_flow_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                date_from: string;
+                date_to: string;
+                branch_id?: string | null;
+                /** @description json, or csv for a spreadsheet */
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashFlowOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_vat_summary_api_v1_finance_reports_vat_summary_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                date_from: string;
+                date_to: string;
+                branch_id?: string | null;
+                /** @description json, or csv for a spreadsheet */
+                format?: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VatReportOut"];
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_journal_export_api_v1_finance_exports_journal_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                date_from: string;
+                date_to: string;
+                format?: string;
+                branch_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_account_mappings_api_v1_finance_account_mappings_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MappingOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_account_mapping_api_v1_finance_account_mappings__account_id__put: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MappingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MappingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_account_mapping_api_v1_finance_account_mappings__account_id__delete: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

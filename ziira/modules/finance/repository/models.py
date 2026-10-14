@@ -145,3 +145,15 @@ class ManualJournalLine(TenantColumns, Base):
     debit: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     credit: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
     description: Mapped[str | None]
+
+
+class AccountMapping(TenantColumns, Base):
+    __tablename__ = "account_mapping"
+    __table_args__ = {"schema": "finance"}
+    created_by: Mapped[UUID | None]
+    updated_at: Mapped[datetime | None]
+    updated_by: Mapped[UUID | None]
+    company_id: Mapped[UUID]
+    account_id: Mapped[UUID]
+    external_code: Mapped[str | None]
+    external_name: Mapped[str | None]

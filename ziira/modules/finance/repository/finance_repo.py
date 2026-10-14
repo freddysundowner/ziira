@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from ziira.modules.finance.repository.models import (
     Account,
+    AccountMapping,
     Journal,
     JournalEntry,
     JournalLine,
@@ -269,6 +270,101 @@ def ledger_lines(session: Session, scopes: Scopes, company_id: UUID, account_id:
         query = query.where(JournalLine.branch_id == branch_id)
     return [LedgerLine(e.id, e.number, e.entry_date, line.description or e.description, e.source_type,
                        line.branch_id, line.debit, line.credit) for line, e in session.execute(query)]
+
+
+@dataclass(frozen=True)
+class TotalRow:
+    account_id: UUID
+    code: str
+    name: str
+    type: str
+    subtype: str | None
+    branch_id: UUID | None
+    debit: Decimal
+    credit: Decimal
+
+
+def account_totals(session: Session, scopes: Scopes, company_id: UUID, date_to: date, *,
+                   date_from: date | None = None, branch_id: UUID | None = None,
+                   subtypes: tuple[str, ...] | None = None, group_branch: bool = False) -> list[TotalRow]:
+    """Debits and credits per account (and per branch when asked) over entries dated from `date_from` (or the
+    beginning) to `date_to`, only for accounts that have lines."""
+    columns = [Account.id, Account.code, Account.name, Account.type, Account.subtype,
+               func.sum(JournalLine.debit).label("d"), func.sum(JournalLine.credit).label("c")]
+    query = (select(*columns, *([JournalLine.branch_id] if group_branch else []))
+             .join(JournalLine, JournalLine.account_id == Account.id)
+             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+             .where(JournalLine.company_id == company_id, JournalEntry.entry_date <= date_to, _in_scope(scopes))
+             .group_by(Account.id, Account.code, Account.name, Account.type, Account.subtype,
+                       *([JournalLine.branch_id] if group_branch else []))
+             .order_by(Account.code))
+    if date_from is not None:
+        query = query.where(JournalEntry.entry_date >= date_from)
+    if branch_id:
+        query = query.where(JournalLine.branch_id == branch_id)
+    if subtypes is not None:
+        query = query.where(Account.subtype.in_(subtypes))
+    return [TotalRow(r.id, r.code, r.name, r.type, r.subtype, r.branch_id if group_branch else None,
+                     Decimal(r.d), Decimal(r.c)) for r in session.execute(query)]
+
+
+def totals_by_source(session: Session, scopes: Scopes, company_id: UUID, date_from: date, date_to: date, *,
+                     subtypes: tuple[str, ...], branch_id: UUID | None = None) -> dict[str | None, Decimal]:
+    """Net debit (debits less credits) on accounts of these subtypes in a span, by the kind of document behind it."""
+    query = (select(JournalEntry.source_type, func.sum(JournalLine.debit - JournalLine.credit))
+             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+             .join(Account, Account.id == JournalLine.account_id)
+             .where(JournalLine.company_id == company_id, Account.subtype.in_(subtypes),
+                    JournalEntry.entry_date >= date_from, JournalEntry.entry_date <= date_to, _in_scope(scopes))
+             .group_by(JournalEntry.source_type))
+    if branch_id:
+        query = query.where(JournalLine.branch_id == branch_id)
+    return {source: Decimal(total) for source, total in session.execute(query)}
+
+
+@dataclass(frozen=True)
+class JournalExportRow:
+    entry_number: str
+    entry_date: date
+    source_type: str | None
+    description: str | None
+    account_id: UUID
+    account_code: str
+    account_name: str
+    branch_id: UUID | None
+    debit: Decimal
+    credit: Decimal
+
+
+def journal_rows(session: Session, scopes: Scopes, company_id: UUID, date_from: date, date_to: date,
+                 branch_id: UUID | None = None, limit: int = 100000) -> list[JournalExportRow]:
+    """Every journal line of the entries dated in a span, in entry order (for exports)."""
+    query = (select(JournalEntry, JournalLine, Account)
+             .join(JournalLine, JournalLine.entry_id == JournalEntry.id)
+             .join(Account, Account.id == JournalLine.account_id)
+             .where(JournalEntry.company_id == company_id, JournalEntry.entry_date >= date_from,
+                    JournalEntry.entry_date <= date_to, _in_scope(scopes))
+             .order_by(JournalEntry.entry_date, JournalEntry.number, JournalLine.created_at, JournalLine.id)
+             .limit(limit))
+    if branch_id:
+        query = query.where(JournalLine.branch_id == branch_id)
+    return [JournalExportRow(e.number, e.entry_date, e.source_type, line.description or e.description, a.id, a.code,
+                             a.name, line.branch_id, line.debit, line.credit) for e, line, a in session.execute(query)]
+
+
+def branch_names(session: Session, company_id: UUID) -> dict[UUID, str]:
+    return {r.id: r.name for r in session.execute(
+        text("select id, name from kernel.branch where company_id = :c"), {"c": str(company_id)})}
+
+
+def mappings(session: Session, company_id: UUID) -> dict[UUID, AccountMapping]:
+    found = session.scalars(select(AccountMapping).where(AccountMapping.company_id == company_id))
+    return {m.account_id: m for m in found}
+
+
+def get_mapping(session: Session, company_id: UUID, account_id: UUID) -> AccountMapping | None:
+    return session.scalars(select(AccountMapping).where(
+        AccountMapping.company_id == company_id, AccountMapping.account_id == account_id)).first()
 
 
 # --------------------------------------------------------------------------- checks

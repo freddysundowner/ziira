@@ -2,11 +2,13 @@
 
 from collections.abc import Callable
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
 from ziira.modules.finance.api import schemas as sc
+from ziira.modules.finance.domain import exports as csv_export
 from ziira.modules.finance.permissions import (
     ACCOUNTS_MANAGE,
     JOURNAL_APPROVE,
@@ -22,6 +24,12 @@ from ziira.modules.finance.services import (
     posting,
     posting_rules,
     reports,
+)
+from ziira.modules.finance.services import (
+    exports as export_service,
+)
+from ziira.modules.finance.services import (
+    statements as statement_service,
 )
 from ziira.modules.finance.services.access import READERS
 from ziira.sdk import Forbidden, RequestContext, Session, db_session, page_limit, page_offset, request_context
@@ -215,3 +223,111 @@ def _manual_out(detail: manual_journals.ManualDetail) -> sc.ManualJournalOut:
         id=j.id, company_id=j.company_id, number=j.number, entry_date=j.entry_date, description=j.description,
         status=j.status, total=j.total, created_by=j.created_by, entry_id=j.entry_id, approved_by=j.approved_by,
         lines=[sc.ManualLineOut.model_validate(x) for x in detail.lines])
+
+
+# --------------------------------------------------------------------------- statements and exports
+Format = Query(default="json", pattern="^(json|csv)$", description="json, or csv for a spreadsheet")
+
+
+def _csv(text: str, name: str) -> Response:
+    return Response(text, media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{name}.csv"'})
+
+
+def _pnl_out(p: object) -> sc.ProfitAndLossOut:
+    return sc.ProfitAndLossOut.model_validate(p, from_attributes=True)
+
+
+def _pairs(rows: list[tuple[str, Decimal]]) -> list[sc.LabelAmountOut]:
+    return [sc.LabelAmountOut(label=a, amount=b) for a, b in rows]
+
+
+@router.get("/reports/profit-and-loss", response_model=sc.ProfitReportOut,
+            responses={200: {"content": {"text/csv": {}}}}, dependencies=REPORT)
+def get_profit_and_loss(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
+                        by_branch: bool = False, format: str = Format,
+                        session: Session = Depends(db_session)) -> object:
+    """Income, cost of sales and expenses between two dates: consolidated, one branch, or split by branch."""
+    r = statement_service.profit_and_loss(session, company_id, date_from, date_to, branch_id=branch_id,
+                                          by_branch=by_branch)
+    if format == "csv":
+        return _csv(csv_export.pnl_csv(r.consolidated), f"profit-and-loss-{date_from}-{date_to}")
+    return sc.ProfitReportOut(
+        company_id=r.company_id, date_from=r.date_from, date_to=r.date_to, branch_id=r.branch_id,
+        consolidated=_pnl_out(r.consolidated),
+        branches=[sc.BranchProfitOut(branch_id=b.branch_id, branch_name=b.branch_name, statement=_pnl_out(b.statement))
+                  for b in r.branches])
+
+
+@router.get("/reports/balance-sheet", response_model=sc.BalanceSheetOut, responses={200: {"content": {"text/csv": {}}}},
+            dependencies=REPORT)
+def get_balance_sheet(company_id: UUID, as_of: date, branch_id: UUID | None = None, format: str = Format,
+                      session: Session = Depends(db_session)) -> object:
+    """What the business has, owes and is worth at the end of a day."""
+    r = statement_service.balance_sheet(session, company_id, as_of, branch_id=branch_id)
+    if format == "csv":
+        return _csv(csv_export.balance_sheet_csv(r.sheet), f"balance-sheet-{as_of}")
+    return sc.BalanceSheetOut(
+        company_id=r.company_id, as_of=r.as_of, branch_id=r.branch_id, balanced=r.sheet.balanced,
+        **{k: getattr(r.sheet, k) for k in (
+            "total_assets", "total_liabilities", "total_equity", "accumulated_profit",
+            "total_liabilities_and_equity")},
+        assets=[sc.StatementLineOut.model_validate(x, from_attributes=True) for x in r.sheet.assets],
+        liabilities=[sc.StatementLineOut.model_validate(x, from_attributes=True) for x in r.sheet.liabilities],
+        equity=[sc.StatementLineOut.model_validate(x, from_attributes=True) for x in r.sheet.equity])
+
+
+@router.get("/reports/cash-flow", response_model=sc.CashFlowOut, responses={200: {"content": {"text/csv": {}}}},
+            dependencies=REPORT)
+def get_cash_flow(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
+                  format: str = Format, session: Session = Depends(db_session)) -> object:
+    """Cash, bank, M-Pesa and card balances at the start and end, and what moved them."""
+    r = statement_service.cash_flow(session, company_id, date_from, date_to, branch_id=branch_id)
+    if format == "csv":
+        return _csv(csv_export.cash_flow_csv(r.flow), f"cash-flow-{date_from}-{date_to}")
+    return sc.CashFlowOut(company_id=r.company_id, date_from=r.date_from, date_to=r.date_to, branch_id=r.branch_id,
+                          opening=r.flow.opening, movements=_pairs(r.flow.movements), net_movement=r.flow.net_movement,
+                          closing=r.flow.closing, reconciles=r.flow.reconciles)
+
+
+@router.get("/reports/vat-summary", response_model=sc.VatReportOut, responses={200: {"content": {"text/csv": {}}}},
+            dependencies=REPORT)
+def get_vat_summary(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
+                    format: str = Format, session: Session = Depends(db_session)) -> object:
+    """VAT charged less VAT paid between two dates: the figure for the VAT return."""
+    r = statement_service.vat_summary(session, company_id, date_from, date_to, branch_id=branch_id)
+    if format == "csv":
+        return _csv(csv_export.vat_csv(r.summary), f"vat-summary-{date_from}-{date_to}")
+    v = r.summary
+    return sc.VatReportOut(company_id=r.company_id, date_from=r.date_from, date_to=r.date_to, branch_id=r.branch_id,
+                           sales_net=v.sales_net, output_vat=v.output_vat, input_vat=v.input_vat,
+                           net_payable=v.net_payable, output_by_source=_pairs(v.output_by_source),
+                           input_by_source=_pairs(v.input_by_source))
+
+
+@router.get("/exports/journal", response_class=Response, responses={200: {"content": {"text/csv": {}}}},
+            dependencies=REPORT)
+def get_journal_export(company_id: UUID, date_from: date, date_to: date,
+                       format: str = Query(default="generic", pattern="^(generic|quickbooks|sage)$"),
+                       branch_id: UUID | None = None, session: Session = Depends(db_session)) -> Response:
+    """The journal lines of a period as CSV, for the accountant's software (generic, QuickBooks or Sage)."""
+    text = export_service.journal_export(session, company_id, date_from, date_to, format, branch_id=branch_id)
+    return _csv(text, f"journal-{format}-{date_from}-{date_to}")
+
+
+@router.get("/account-mappings", response_model=list[sc.MappingOut], dependencies=READ)
+def get_account_mappings(company_id: UUID, session: Session = Depends(db_session)) -> object:
+    """What the accountant calls each account in their own software."""
+    return export_service.list_mappings(session, company_id)
+
+
+@router.put("/account-mappings/{account_id}", response_model=sc.MappingOut, dependencies=MANAGE_CHART)
+def put_account_mapping(account_id: UUID, company_id: UUID, body: sc.MappingIn,
+                        session: Session = Depends(db_session)) -> object:
+    return export_service.set_mapping(session, company_id, account_id, external_code=body.external_code,
+                                      external_name=body.external_name)
+
+
+@router.delete("/account-mappings/{account_id}", status_code=NO_CONTENT, dependencies=MANAGE_CHART)
+def delete_account_mapping(account_id: UUID, company_id: UUID, session: Session = Depends(db_session)) -> None:
+    export_service.clear_mapping(session, company_id, account_id)
