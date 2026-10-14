@@ -157,3 +157,27 @@ class AccountMapping(TenantColumns, Base):
     account_id: Mapped[UUID]
     external_code: Mapped[str | None]
     external_name: Mapped[str | None]
+
+
+class Expense(TenantColumns, Base):
+    __tablename__ = "expense"
+    __table_args__ = {"schema": "finance"}
+    created_by: Mapped[UUID | None]
+    updated_at: Mapped[datetime | None]
+    updated_by: Mapped[UUID | None]
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID | None]
+    number: Mapped[str]
+    expense_date: Mapped[date]
+    payee: Mapped[str | None]
+    description: Mapped[str]
+    account_id: Mapped[UUID]
+    amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    paid_from: Mapped[str]
+    receipt_ref: Mapped[str | None]
+    status: Mapped[str] = mapped_column(server_default=text("'draft'"))
+    approved_by: Mapped[UUID | None]
+    entry_id: Mapped[UUID | None]
+    reversed_at: Mapped[datetime | None]
+    reverse_reason: Mapped[str | None]

@@ -24,11 +24,12 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
     "supplier_payment": ("payable", "cash", "bank", "mpesa", "card", "other"),
     "supplier_credit_note": ("payable", "grni", "purchase_variance", "vat_input"),
     "customer_payment": ("receivable", "cash", "bank", "mpesa", "card", "other"),
+    "expense": ("vat_input", "cash", "bank", "mpesa", "card", "other"),
 }
 RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
                                                "settlement": (), "cash_deposit": (), "till_variance": (),
                                                "supplier_bill": (), "supplier_payment": (),
-                                               "supplier_credit_note": (), "customer_payment": ()}
+                                               "supplier_credit_note": (), "customer_payment": (), "expense": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -192,6 +193,22 @@ def supplier_payment(method: str, amount: Decimal, *, party: Any = None, descrip
     role = method if method in ("cash", "mpesa", "card", "bank") else "other"
     lines = [RecipeLine("payable", "debit", amount, party_type="supplier", party_id=party, description=description),
              RecipeLine(role, "credit", amount, description=description)]
+    return _flip(lines) if reverse else lines
+
+
+def expense(method: str, amount: Decimal, tax: Decimal, account_id: Any, *, description: str | None = None,
+            reverse: bool = False) -> list[RecipeLine]:
+    """An expense paid at once. `amount` is everything paid, `tax` the VAT inside it.
+
+    Dr the expense account (amount less VAT)   Dr VAT input (the VAT)   Cr cash / bank / M-Pesa / card (amount)
+    """
+    if amount <= 0 or tax < 0 or tax >= amount:
+        raise ValidationFailed("An expense must be more than nothing, and its VAT less than the amount")
+    role = method if method in ("cash", "mpesa", "card", "bank") else "other"
+    lines = [RecipeLine("expense", "debit", amount - tax, account_id=account_id, description=description)]
+    if tax:
+        lines.append(RecipeLine("vat_input", "debit", tax, description=description))
+    lines.append(RecipeLine(role, "credit", amount, description=description))
     return _flip(lines) if reverse else lines
 
 

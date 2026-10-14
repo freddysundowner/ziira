@@ -303,3 +303,42 @@ class MappingOut(BaseModel):
     account_id: UUID
     external_code: str | None
     external_name: str | None
+
+
+# --------------------------------------------------------------------------- expenses
+class ExpenseIn(BaseModel):
+    company_id: UUID
+    branch_id: UUID | None = None
+    expense_date: date
+    description: str = Field(min_length=1, max_length=500, examples=["Diesel for the delivery van"])
+    account_id: UUID = Field(description="An expense account of the chart")
+    amount: Annotated[Amount, Field(gt=0)] = Field(description="Everything paid, VAT included")
+    tax_amount: Annotated[Amount, Field(ge=0)] = Field(default=Decimal(0), description="The VAT inside the amount")
+    paid_from: Literal["cash", "bank", "mpesa", "card", "other"]
+    payee: str | None = Field(default=None, max_length=200)
+    receipt_ref: str | None = Field(default=None, max_length=100, description="The receipt's number or file name")
+
+
+class ExpenseOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    number: str
+    expense_date: date
+    payee: str | None
+    description: str
+    account_id: UUID
+    amount: Decimal
+    tax_amount: Decimal
+    paid_from: str
+    receipt_ref: str | None
+    status: str
+    created_by: UUID | None
+    approved_by: UUID | None
+    entry_id: UUID | None
+    reverse_reason: str | None
+
+
+class ExpenseReverseIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)

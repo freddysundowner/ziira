@@ -1,13 +1,13 @@
 """Events published and handled by the Finance and Accounting module.
 
-Publishes: journal.posted, period.closed
+Publishes: journal.posted, period.closed, expense.approved
 Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed, bill.posted,
 bill.reversed, supplier.paid, supplier.payment_reversed, supplier.refunded, supplier.refund_reversed,
 credit_note.posted, customer.paid, customer.payment_reversed,
 customer.advance_refunded, customer.refund_reversed, approval.decided (kernel)
 """
 
-from ziira.modules.finance.services import event_postings, manual_journals
+from ziira.modules.finance.services import event_postings, expenses, manual_journals
 from ziira.sdk import Event, Session, subscribe
 
 
@@ -49,10 +49,14 @@ def on_till_closed(session: Session, event: Event) -> None:
 
 @subscribe("approval.decided")
 def on_approval_decided(session: Session, event: Event) -> None:
-    """Post or reject the manual journal whose approval was just decided."""
+    """Post or reject the manual journal or expense whose approval was just decided."""
+    approved = event.payload["status"] == "approved"
     if event.aggregate_type == manual_journals.DOC_TYPE:
-        manual_journals.apply_decision(session, event.aggregate_id, approved=event.payload["status"] == "approved",
+        manual_journals.apply_decision(session, event.aggregate_id, approved=approved,
                                        decided_by=event.payload.get("decided_by"))
+    elif event.aggregate_type == expenses.DOC_TYPE:
+        expenses.apply_decision(session, event.aggregate_id, approved=approved,
+                                decided_by=event.payload.get("decided_by"))
 
 
 @subscribe("bill.posted")

@@ -27,6 +27,6 @@ implements = ["kernel.integrity_check"]
 
 # Default roles that receive these permissions when the module is enabled (Owner gets all).
 [roles]
-"Finance Manager" = ["accounts.manage", "journal.post_manual", "journal.approve", "period.close", "reports.view"]
-"Accountant" = ["accounts.manage", "journal.post_manual", "reports.view"]
-"Branch Manager" = ["reports.view"]
+"Finance Manager" = ["accounts.manage", "journal.post_manual", "journal.approve", "period.close", "reports.view", "expenses.submit", "expenses.approve"]
+"Accountant" = ["accounts.manage", "journal.post_manual", "reports.view", "expenses.submit"]
+"Branch Manager" = ["reports.view", "expenses.submit"]

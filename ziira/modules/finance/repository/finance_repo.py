@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ziira.modules.finance.repository.models import (
     Account,
     AccountMapping,
+    Expense,
     Journal,
     JournalEntry,
     JournalLine,
@@ -194,6 +195,31 @@ def pending_manuals_in(session: Session, company_id: UUID, start: date, end: dat
     return int(session.scalar(select(func.count()).select_from(ManualJournal).where(
         ManualJournal.company_id == company_id, ManualJournal.status == "pending_approval",
         ManualJournal.entry_date >= start, ManualJournal.entry_date <= end)) or 0)
+
+
+# --------------------------------------------------------------------------- expenses
+def get_expense(session: Session, expense_id: UUID, *, lock: bool = False) -> Expense | None:
+    query = select(Expense).where(Expense.id == expense_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def list_expenses(session: Session, scopes: Scopes, *, company_id: UUID | None, status: str | None,
+                  date_from: date | None, date_to: date | None, limit: int, offset: int) -> list[Expense]:
+    query = select(Expense).order_by(Expense.expense_date.desc(), Expense.number.desc()).limit(limit).offset(offset)
+    if scopes is not None:
+        query = query.where(or_(false(), *(
+            and_(Expense.company_id == c, true() if b is None else Expense.branch_id == b) for c, b in scopes)))
+    if company_id:
+        query = query.where(Expense.company_id == company_id)
+    if status:
+        query = query.where(Expense.status == status)
+    if date_from:
+        query = query.where(Expense.expense_date >= date_from)
+    if date_to:
+        query = query.where(Expense.expense_date <= date_to)
+    return list(session.scalars(query))
 
 
 # --------------------------------------------------------------------------- reports

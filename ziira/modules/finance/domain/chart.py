@@ -101,4 +101,10 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("customer_payment", "mpesa", "1030", "debit"),
     ("customer_payment", "card", "1040", "debit"),
     ("customer_payment", "other", "1020", "debit"),
+    ("expense", "vat_input", "1300", "debit"),
+    ("expense", "cash", "1010", "credit"),
+    ("expense", "bank", "1020", "credit"),
+    ("expense", "mpesa", "1030", "credit"),
+    ("expense", "card", "1040", "credit"),
+    ("expense", "other", "1020", "credit"),
 )

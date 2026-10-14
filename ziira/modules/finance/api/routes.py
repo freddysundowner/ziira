@@ -11,6 +11,8 @@ from ziira.modules.finance.api import schemas as sc
 from ziira.modules.finance.domain import exports as csv_export
 from ziira.modules.finance.permissions import (
     ACCOUNTS_MANAGE,
+    EXPENSES_APPROVE,
+    EXPENSES_SUBMIT,
     JOURNAL_APPROVE,
     JOURNAL_POST_MANUAL,
     PERIOD_CLOSE,
@@ -19,6 +21,7 @@ from ziira.modules.finance.permissions import (
 from ziira.modules.finance.services import (
     accounts,
     entries,
+    expenses,
     manual_journals,
     periods,
     posting,
@@ -54,6 +57,9 @@ REPORT = [Depends(any_of(REPORTS_VIEW))]
 MANAGE_CHART = [Depends(any_of(ACCOUNTS_MANAGE))]
 MANUAL = [Depends(any_of(JOURNAL_POST_MANUAL))]
 CLOSE = [Depends(any_of(PERIOD_CLOSE))]
+EXPENSE_READ = [Depends(any_of(EXPENSES_SUBMIT, EXPENSES_APPROVE, REPORTS_VIEW))]
+EXPENSE_WRITE = [Depends(any_of(EXPENSES_SUBMIT))]
+EXPENSE_DECIDE = [Depends(any_of(EXPENSES_APPROVE))]
 
 
 # --------------------------------------------------------------------------- chart of accounts
@@ -331,3 +337,38 @@ def put_account_mapping(account_id: UUID, company_id: UUID, body: sc.MappingIn,
 @router.delete("/account-mappings/{account_id}", status_code=NO_CONTENT, dependencies=MANAGE_CHART)
 def delete_account_mapping(account_id: UUID, company_id: UUID, session: Session = Depends(db_session)) -> None:
     export_service.clear_mapping(session, company_id, account_id)
+
+
+# --------------------------------------------------------------------------- expenses
+@router.post("/expenses", response_model=sc.ExpenseOut, status_code=status.HTTP_201_CREATED, dependencies=EXPENSE_WRITE)
+def post_expense(body: sc.ExpenseIn, session: Session = Depends(db_session)) -> object:
+    """Write a draft expense: a cost paid at once from cash, bank, M-Pesa or card, with its receipt reference."""
+    return expenses.create_expense(
+        session, company_id=body.company_id, branch_id=body.branch_id, expense_date=body.expense_date,
+        description=body.description, account_id=body.account_id, amount=body.amount, tax_amount=body.tax_amount,
+        paid_from=body.paid_from, payee=body.payee, receipt_ref=body.receipt_ref)
+
+
+@router.get("/expenses", response_model=list[sc.ExpenseOut], dependencies=EXPENSE_READ)
+def get_expenses(company_id: UUID | None = None, status_: str | None = Query(default=None, alias="status"),
+                 date_from: date | None = None, date_to: date | None = None, limit: int = page_limit(50),
+                 offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+    return expenses.list_expenses(session, company_id=company_id, status=status_, date_from=date_from,
+                                  date_to=date_to, limit=limit, offset=offset)
+
+
+@router.get("/expenses/{expense_id}", response_model=sc.ExpenseOut, dependencies=EXPENSE_READ)
+def get_expense(expense_id: UUID, session: Session = Depends(db_session)) -> object:
+    return expenses.get_expense(session, expense_id)
+
+
+@router.post("/expenses/{expense_id}/submit", response_model=sc.ExpenseOut, dependencies=EXPENSE_WRITE)
+def post_submit_expense(expense_id: UUID, session: Session = Depends(db_session)) -> object:
+    """Send the draft for approval; it posts at once when no approval rule applies to its size."""
+    return expenses.submit_expense(session, expense_id)
+
+
+@router.post("/expenses/{expense_id}/reverse", response_model=sc.ExpenseOut, dependencies=EXPENSE_DECIDE)
+def post_reverse_expense(expense_id: UUID, body: sc.ExpenseReverseIn, session: Session = Depends(db_session)) -> object:
+    """Cancel a posted expense by posting its mirror image."""
+    return expenses.reverse_expense(session, expense_id, body.reason)
