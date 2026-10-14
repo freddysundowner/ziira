@@ -52,6 +52,7 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + recurring tasks (checks, briefs) + purge
 .venv/bin/ziira run-task <tenant> <name>    # run one recurring task now, e.g. intel.run_checks, command.refresh_pulse, command.send_briefs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
+.venv/bin/python scripts/seed_demo_rich.py [--scale tiny|small|full] [--reset --confirm demo-hardware]   # ~90 days of demo history + 10 planted stories (docs/demo-data.md)
 .venv/bin/ziira import <tenant> <kind> FILE.csv [--company NAME] [--commit]   # bring in products, customers, stock...: validates by default (docs/data-import.md)
 .venv/bin/ziira backup --dir PATH [--tenant CODE] [--keep-daily 35 --keep-monthly 12]   # pg_dump master + tenants, manifest, pruning
 .venv/bin/ziira restore-test --dir PATH [--tenant CODE]   # restore newest dump to a scratch DB, check counts/journal/integrity, drop
