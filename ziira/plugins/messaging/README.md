@@ -1,6 +1,6 @@
 # Messaging channels (plugin)
 
-Sends the messages other units ask for (`send_notification`): **email** through any SMTP server, **SMS** through
+Sends the messages other units ask for (`send_notification`): **email** through SMTP, Brevo, Resend or SendGrid, **SMS** through
 BlessedTexts (or Africa's Talking). The kernel owns the queue, the record of what was sent and
 the list of people who asked not to be contacted; this plugin only knows how to deliver one message through a gateway.
 
@@ -19,6 +19,7 @@ PUT /api/v1/notifications/channels/sms
 | Channel | Provider | Secret | Config |
 |---|---|---|---|
 | email | `smtp` | host, port, username, password | from_address, from_name, starttls |
+| email | `brevo`, `resend`, `sendgrid` | api_key | from_address (verified with the provider), from_name |
 | sms | `blessedtexts` | api_key | sender_id |
 | sms | `africastalking` | api_key | username, sender_id, sandbox |
 | any | `fake` | any (development only) | |

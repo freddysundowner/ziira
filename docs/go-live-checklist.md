@@ -11,7 +11,8 @@ service**. Tick each off (with the date and who did it) before a customer relies
 - [ ] **BlessedTexts SMS** (provider `blessedtexts`): send a real message with the live key and approved sender id; check
       the error codes it returns for a bad key, bad sender and no credit (only "1000" is known to mean success).
       Africa's Talking (`africastalking`) is also built but unused. Code: `ziira/plugins/messaging/`.
-- [ ] **Email (SMTP)**: sending domain with SPF/DKIM, bounce handling.
+- [ ] **Email** (providers `smtp`, `brevo`, `resend`, `sendgrid`): send one real message through the provider the customer
+      uses; sending domain/sender verified with SPF/DKIM; check the error replies for a bad key and unverified sender.
 - [ ] A real **receipt printer**: print `GET /sales/{id}/receipt?format=text&width=...` on the thermal printers the first
       customers use and pick the width (32, 40 or 48) that fits.
 

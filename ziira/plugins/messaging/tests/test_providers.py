@@ -7,7 +7,15 @@ from uuid import uuid4
 import httpx
 import pytest
 
-from ziira.plugins.messaging.providers import AfricasTalkingSms, BlessedTextsSms, FakeSms, SmtpEmail
+from ziira.plugins.messaging.providers import (
+    AfricasTalkingSms,
+    BlessedTextsSms,
+    BrevoEmail,
+    FakeSms,
+    ResendEmail,
+    SendGridEmail,
+    SmtpEmail,
+)
 from ziira.sdk import Outgoing
 
 MESSAGE = Outgoing(uuid4(), uuid4(), "254712345678", "Invoice due", "Your invoice INV-1 of KES 116 is due.")
@@ -173,3 +181,62 @@ def test_blessedtexts_refusals_are_permanent_and_outages_are_retried() -> None:
     assert not garbage.accepted and garbage.permanent_failure
     with pytest.raises(httpx.HTTPStatusError):
         blessed(lambda r: httpx.Response(503, text="down"))
+
+
+# --------------------------------------------------------------------------- email APIs
+MAIL = Outgoing(uuid4(), uuid4(), "mama@shop.test", "Statement", "Please find your statement.")
+
+
+def api_mail(provider: Any, handler: Any, config: dict[str, Any] | None = None):  # type: ignore[no-untyped-def]
+    provider.client_factory = staticmethod(lambda: gateway(handler))
+    return provider().send(MAIL, {"api_key": "KEY"}, {"from_address": "billing@myshop.test", "from_name": "My Shop",
+                                                      **(config or {})})
+
+
+def test_brevo_resend_and_sendgrid_requests() -> None:
+    import json
+    seen: dict[str, httpx.Request] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen[request.url.host] = request
+        if "brevo" in request.url.host:
+            return httpx.Response(201, json={"messageId": "<brevo-1@x>"})
+        if "resend" in request.url.host:
+            return httpx.Response(200, json={"id": "resend-1"})
+        return httpx.Response(202, headers={"X-Message-Id": "sg-1"})
+
+    refs = [api_mail(p, handler).provider_ref for p in (BrevoEmail, ResendEmail, SendGridEmail)]
+    assert refs == ["<brevo-1@x>", "resend-1", "sg-1"]
+    brevo = seen["api.brevo.com"]
+    assert str(brevo.url) == "https://api.brevo.com/v3/smtp/email" and brevo.headers["api-key"] == "KEY"
+    assert json.loads(brevo.content) == {"sender": {"email": "billing@myshop.test", "name": "My Shop"},
+                                         "to": [{"email": "mama@shop.test"}], "subject": "Statement",
+                                         "textContent": "Please find your statement."}
+    resend = seen["api.resend.com"]
+    assert str(resend.url) == "https://api.resend.com/emails" and resend.headers["authorization"] == "Bearer KEY"
+    assert json.loads(resend.content) == {"from": "My Shop <billing@myshop.test>", "to": ["mama@shop.test"],
+                                          "subject": "Statement", "text": "Please find your statement."}
+    grid = seen["api.sendgrid.com"]
+    assert str(grid.url) == "https://api.sendgrid.com/v3/mail/send" and grid.headers["authorization"] == "Bearer KEY"
+    assert json.loads(grid.content) == {
+        "personalizations": [{"to": [{"email": "mama@shop.test"}]}],
+        "from": {"email": "billing@myshop.test", "name": "My Shop"}, "subject": "Statement",
+        "content": [{"type": "text/plain", "value": "Please find your statement."}]}
+    plain = api_mail(ResendEmail, handler, {"from_name": None})
+    assert plain.accepted and json.loads(seen["api.resend.com"].content)["from"] == "billing@myshop.test"
+
+
+@pytest.mark.parametrize("provider", [BrevoEmail, ResendEmail, SendGridEmail])
+def test_email_api_failures(provider: Any) -> None:
+    bad_key = api_mail(provider, lambda r: httpx.Response(401, json={"message": "Invalid key"}))
+    assert not bad_key.accepted and bad_key.permanent_failure and "refused the API key" in bad_key.message
+    refused = api_mail(provider, lambda r: httpx.Response(400, json={"message": "Sender not verified"}))
+    assert not refused.accepted and refused.permanent_failure and "Sender not verified" in refused.message
+    odd = api_mail(provider, lambda r: httpx.Response(422, text="<html>"))
+    assert not odd.accepted and odd.permanent_failure
+    nobody = api_mail(provider, lambda r: httpx.Response(200), {"from_address": ""})
+    assert not nobody.accepted and "no sender" in nobody.message
+    with pytest.raises(httpx.HTTPStatusError):
+        api_mail(provider, lambda r: httpx.Response(503, text="down"))
+    with pytest.raises(httpx.HTTPStatusError):
+        api_mail(provider, lambda r: httpx.Response(429, text="slow down"))

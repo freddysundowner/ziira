@@ -1,6 +1,7 @@
-"""Ways of sending a message: SMTP email, BlessedTexts and Africa's Talking SMS (and a fake one for tests).
+"""Ways of sending a message: email (SMTP, Brevo, Resend, SendGrid), SMS (BlessedTexts, Africa's Talking), and a fake
+one for tests.
 
-**The SMS request formats were written from the gateways' public documentation and have not been run
+**The HTTP request formats were written from the gateways' public documentation and have not been run
 against the real services.** Try them with the gateway's sandbox or a test number before relying on them; the same goes
 for the details of their error replies, which decide whether a failure is retried.
 
@@ -70,6 +71,108 @@ class _HttpChannel(NotificationChannel):
 
     def send(self, message: Outgoing, secret: dict[str, Any], config: dict[str, Any]) -> SendResult:  # pragma: no cover
         raise NotImplementedError
+
+
+class _ApiEmail(_HttpChannel):
+    """Email through a provider's HTTPS API. Secret: {api_key}. Config: {from_address, from_name?}. A subclass says
+    where to post, how to authenticate and how to read the reply; refusals (bad key, unverified sender, bad address) are
+    permanent and outages are retried."""
+
+    channel = "email"
+    label = "The email provider"
+    url = ""
+
+    def request(self, message: Outgoing, sender: str, name: str | None, key: str) -> dict[str, Any]:
+        """The JSON body and headers: {"json": ..., "headers": ...}."""
+        raise NotImplementedError
+
+    def accepted(self, response: httpx.Response) -> SendResult | None:
+        """A SendResult when the reply says the mail was taken, else None."""
+        raise NotImplementedError
+
+    def send(self, message: Outgoing, secret: dict[str, Any], config: dict[str, Any]) -> SendResult:
+        sender = str(config.get("from_address") or "")
+        if not sender:
+            return SendResult(False, message="The email channel has no sender address", permanent_failure=True)
+        with self.client_factory() as client:
+            response = client.post(self.url, **self.request(message, sender, config.get("from_name"),
+                                                            str(secret["api_key"])))
+        if self.server_failed(response):
+            response.raise_for_status()
+        taken = self.accepted(response)
+        if taken is not None:
+            return taken
+        if response.status_code in (401, 403):
+            return SendResult(False, message=f"{self.label} refused the API key", permanent_failure=True)
+        try:
+            body = response.json()
+            detail = body.get("message") or body.get("error") or body.get("errors", [{}])[0].get("message")
+        except (ValueError, AttributeError, IndexError, TypeError):
+            detail = None
+        return SendResult(False, message=f"{self.label}: {detail or f'not sent ({response.status_code})'}"[:300],
+                          permanent_failure=True)
+
+
+class BrevoEmail(_ApiEmail):
+    """Email through Brevo's transactional API. The sender address must be a verified sender in Brevo."""
+
+    name = "brevo"
+    label = "Brevo"
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    def request(self, message: Outgoing, sender: str, name: str | None, key: str) -> dict[str, Any]:
+        who: dict[str, str] = {"email": sender, **({"name": name} if name else {})}
+        return {"headers": {"api-key": key, "Accept": "application/json"}, "json": {
+            "sender": who, "to": [{"email": message.recipient}], "subject": message.subject or "Message",
+            "textContent": message.body}}
+
+    def accepted(self, response: httpx.Response) -> SendResult | None:
+        if response.status_code in (200, 201):
+            try:
+                return SendResult(True, provider_ref=response.json().get("messageId"))
+            except ValueError:
+                return SendResult(True)
+        return None
+
+
+class ResendEmail(_ApiEmail):
+    """Email through Resend. The sender's domain must be verified in Resend."""
+
+    name = "resend"
+    label = "Resend"
+    url = "https://api.resend.com/emails"
+
+    def request(self, message: Outgoing, sender: str, name: str | None, key: str) -> dict[str, Any]:
+        return {"headers": {"Authorization": f"Bearer {key}"}, "json": {
+            "from": f"{name} <{sender}>" if name else sender, "to": [message.recipient],
+            "subject": message.subject or "Message", "text": message.body}}
+
+    def accepted(self, response: httpx.Response) -> SendResult | None:
+        if response.status_code == 200:
+            try:
+                return SendResult(True, provider_ref=response.json().get("id"))
+            except ValueError:
+                return SendResult(True)
+        return None
+
+
+class SendGridEmail(_ApiEmail):
+    """Email through SendGrid. The sender must be a verified single sender or on an authenticated domain."""
+
+    name = "sendgrid"
+    label = "SendGrid"
+    url = "https://api.sendgrid.com/v3/mail/send"
+
+    def request(self, message: Outgoing, sender: str, name: str | None, key: str) -> dict[str, Any]:
+        who: dict[str, str] = {"email": sender, **({"name": name} if name else {})}
+        return {"headers": {"Authorization": f"Bearer {key}"}, "json": {
+            "personalizations": [{"to": [{"email": message.recipient}]}], "from": who,
+            "subject": message.subject or "Message", "content": [{"type": "text/plain", "value": message.body}]}}
+
+    def accepted(self, response: httpx.Response) -> SendResult | None:
+        if response.status_code == 202:
+            return SendResult(True, provider_ref=response.headers.get("X-Message-Id"))
+        return None
 
 
 class AfricasTalkingSms(_HttpChannel):
