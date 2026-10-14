@@ -41,19 +41,21 @@ export function IconButton({ label, className, children, ...props }: ButtonHTMLA
   );
 }
 
-const CONTROL = "w-full rounded-lg border bg-surface px-3 text-sm text-ink placeholder:text-muted/70 transition-colors disabled:cursor-not-allowed disabled:bg-sunken disabled:text-muted";
+const CONTROL = "rounded-lg border bg-surface px-3 text-sm text-ink placeholder:text-muted/70 transition-colors disabled:cursor-not-allowed disabled:bg-sunken disabled:text-muted";
+/** Controls fill their container unless the caller gives them a width (a toolbar filter): Tailwind cannot be asked which of two widths wins. */
+const widthOf = (className?: string) => (className && /(^|\s)(w|min-w|max-w)-/.test(className) ? "" : "w-full");
 const controlClass = (invalid?: boolean) => cx(CONTROL, invalid ? "border-bad" : "border-line hover:border-muted/50");
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(function Input({ invalid, className, ...props }, ref) {
-  return <input ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), "h-9", className)} {...props} />;
+  return <input ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9", className)} {...props} />;
 });
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }>(function Select({ invalid, className, ...props }, ref) {
-  return <select ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), "h-9 pr-8", className)} {...props} />;
+  return <select ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9 pr-8", className)} {...props} />;
 });
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { invalid?: boolean }>(function Textarea({ invalid, className, ...props }, ref) {
-  return <textarea ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), "min-h-[84px] py-2", className)} {...props} />;
+  return <textarea ref={ref} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "min-h-[84px] py-2", className)} {...props} />;
 });
 
 /**

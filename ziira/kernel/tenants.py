@@ -154,8 +154,8 @@ def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id
                      phone_country_code: str, country: str | None) -> None:
     system_context(tenant_id)
     with tenant_session(tenant_id, admin=True) as s:
-        s.execute(text("insert into kernel.tenant (id, name, code) values (:i, :n, :c)"),
-                  {"i": str(tenant_id), "n": name, "c": code})
+        s.execute(text("insert into kernel.tenant (id, name, code, mfa_policy) values (:i, :n, :c, :m)"),
+                  {"i": str(tenant_id), "n": name, "c": code, "m": get_settings().mfa_default_policy})
         settings = {"phone_country_code": phone_country_code} if phone_country_code else {}
         s.execute(text("insert into kernel.company (id, tenant_id, name, tax_id, vat_registered, base_currency, "
                        "country, settings) values (:i, :t, :n, :p, :v, :cur, :ctry, cast(:s as jsonb))"),

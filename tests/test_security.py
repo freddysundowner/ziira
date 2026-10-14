@@ -158,7 +158,12 @@ def sign_in_raw(client, workspace, login, password):  # type: ignore[no-untyped-
 
 
 def test_the_reply_does_not_reveal_whether_the_workspace_or_user_exists(client, sec) -> None:  # type: ignore[no-untyped-def]
-    replies = {(r.status_code, r.text) for r in (
+    def same(r):  # type: ignore[no-untyped-def]
+        body = dict(r.json())
+        body.pop("request_id", None)                       # every reply carries its own id; the rest must be identical
+        return (r.status_code, tuple(sorted(body.items())))
+
+    replies = {same(r) for r in (
         sign_in_raw(client, "no-such-workspace", OWNER, OWNER_PASSWORD),
         sign_in_raw(client, WS, "nobody@sec-co.test", OWNER_PASSWORD),
         sign_in_raw(client, WS, OWNER, "wrong-password-1"))}

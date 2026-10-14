@@ -3,19 +3,31 @@
  */
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { api, deviceId, errorMessage, hasRefreshToken, refreshTokens, type Schemas, setTokens, whenSignedOut } from "./api";
+import { api, deviceId, errorMessage, hasRefreshToken, refreshTokens, type Schemas, setTokens, whenSetupRequired, whenSignedOut } from "./api";
+
+import { classifyVerifyFailure, isSetupRequired, retryAfterSeconds } from "./mfa/helpers";
 
 type Me = Schemas["MeOut"];
 
+/** The fields of the API's error body that sign-in cares about. */
+interface SignInErrorBody {
+  error?: string;
+  challenge?: string;
+  businesses?: Business[];
+}
+
 export interface Session {
-  status: "loading" | "signed-out" | "signed-in" | "unreachable";
+  /** "mfa-setup": signed in, but the business requires two-step verification and this person has not set it up yet. */
+  status: "loading" | "signed-out" | "signed-in" | "unreachable" | "mfa-setup";
   me: Me | null;
   enabledUnits: ReadonlySet<string>;
   /** True if the user holds the permission in at least one scope. The backend checks scope. */
   can: (permission: string) => boolean;
   /** Signs in with a login and password. If the same login works for several businesses, says which (the caller asks
-   *  again with the chosen workspace code). */
+   *  again with the chosen workspace code). If the person uses a second factor, returns a `mfaChallenge` to complete with `completeMfa`. */
   signIn: (login: string, password: string, workspace?: string) => Promise<SignInResult>;
+  /** The second step of signing in: the challenge from `signIn` and a code from the authenticator app (or a backup code). */
+  completeMfa: (challenge: string, code: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
   /** Tries again after the server could not be reached. */
   retry: () => void;
@@ -44,6 +56,12 @@ export interface Business {
 export interface SignInResult {
   error: string | null;
   businesses?: Business[];
+  /** The password was right and a code is needed: send it back with `completeMfa`. Valid for 5 minutes. */
+  mfaChallenge?: string;
+  /** Too many tries: seconds to wait. */
+  retryAfter?: number;
+  /** Why a second-factor attempt failed (the wording is in `error`). */
+  failure?: "wrong" | "expired" | "throttled" | "other";
 }
 
 const SessionContext = createContext<Session | null>(null);
@@ -55,6 +73,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const load = useCallback(async () => {
     const [meResult, unitsResult] = await Promise.all([api.GET("/api/v1/auth/me"), api.GET("/api/v1/units")]);
+    if (isSetupRequired(unitsResult.response.status, unitsResult.error)) {
+      setStatus("mfa-setup");          // a limited session: only the setup screen may work until it is done
+      return;
+    }
     if (!meResult.data || !unitsResult.data) {
       // 401/403: the session is over. Anything else (server down, no network): keep the session and let the person retry.
       const failed = !meResult.data ? meResult.response : unitsResult.response;
@@ -79,17 +101,34 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     whenSignedOut(() => setStatus("signed-out"));
+    whenSetupRequired(() => setStatus("mfa-setup"));
     void start();
   }, [start]);
 
   const signIn = useCallback(
     async (login: string, password: string, workspace?: string): Promise<SignInResult> => {
-      const { data, error } = await api.POST("/api/v1/auth/sign-in", {
+      const { data, error, response } = await api.POST("/api/v1/auth/sign-in", {
         body: { workspace: workspace ?? null, login, password, device_id: deviceId(), device_name: navigator.userAgent.slice(0, 60), channel: "web" },
       });
       if (!data) {
-        const choices = (error as { businesses?: Business[] } | undefined)?.businesses;
-        return choices?.length ? { error: null, businesses: choices } : { error: errorMessage(error) };
+        const body = error as SignInErrorBody | undefined;
+        if (response.status === 401 && body?.error === "mfa_required" && body.challenge) return { error: null, mfaChallenge: body.challenge };
+        if (response.status === 429) return { error: errorMessage(error), retryAfter: retryAfterSeconds(error, response.headers.get("Retry-After")) };
+        return body?.businesses?.length ? { error: null, businesses: body.businesses } : { error: errorMessage(error) };
+      }
+      setTokens(data.access_token, data.refresh_token);
+      await load();
+      return { error: null };
+    },
+    [load],
+  );
+
+  const completeMfa = useCallback(
+    async (challenge: string, code: string): Promise<SignInResult> => {
+      const { data, error, response } = await api.POST("/api/v1/auth/mfa/verify", { body: { challenge, code } });
+      if (!data) {
+        const failure = classifyVerifyFailure(response.status, error, response.headers.get("Retry-After"));
+        return { error: errorMessage(error), failure: failure.kind, retryAfter: failure.kind === "throttled" ? failure.retryAfter : undefined };
       }
       setTokens(data.access_token, data.refresh_token);
       await load();
@@ -127,8 +166,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Session>(() => {
     const permissions = new Set(me?.roles.flatMap((r) => r.permissions) ?? []);
-    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, signOut, register, completeRegistration, retry: () => void start() };
-  }, [status, me, units, signIn, signOut, register, completeRegistration, start]);
+    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, completeMfa, signOut, register, completeRegistration, retry: () => void start() };
+  }, [status, me, units, signIn, completeMfa, signOut, register, completeRegistration, start]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

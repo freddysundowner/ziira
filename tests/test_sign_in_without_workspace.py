@@ -60,7 +60,9 @@ def test_wrong_logins_and_passwords_get_one_answer(client, two_businesses) -> No
     wrong_pass = attempt(client, "owner@alpha-traders.test", "not-the-password")
     unknown = attempt(client, f"nobody-{uuid4().hex[:6]}@nowhere.test", "whatever-pass")
     assert wrong_pass.status_code == unknown.status_code == 401
-    assert wrong_pass.json() == unknown.json() == {"error": "unauthorized", "message": "Wrong login or password"}
+    expected = {"error": "unauthorized", "message": "Wrong login or password"}
+    assert ({k: v for k, v in wrong_pass.json().items() if k != "request_id"} ==
+            {k: v for k, v in unknown.json().items() if k != "request_id"} == expected)
     bad_workspace = attempt(client, "owner@alpha-traders.test", OWNER_PASSWORD, workspace="no-such-workspace")
     assert bad_workspace.status_code == 401
     with system(two_businesses[0]) as s:                                                       # the refusal is audited

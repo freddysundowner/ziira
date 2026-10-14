@@ -36,12 +36,13 @@ from ziira.kernel.db import tenant_session
 from ziira.kernel.errors import (
     Conflict,
     Forbidden,
+    MfaSetupRequired,
     NotFound,
     Unauthorized,
     ValidationFailed,
     ZiiraError,
 )
-from ziira.kernel.events import Event, publish, subscribe, subscribe_after
+from ziira.kernel.events import Event, publish, publish_many, subscribe, subscribe_after
 from ziira.kernel.extensions import (
     define_extension_point,
     define_validation_hook,
@@ -54,12 +55,30 @@ from ziira.kernel.jobs import enqueue, job, periodic
 from ziira.kernel.manifest import SDK_VERSION
 from ziira.kernel.notifications import NotificationChannel, Outgoing, SendResult
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
+from ziira.kernel.personal_data import (
+    PLACEHOLDER,
+    Kept,
+    Outcome,
+    PersonalDataProvider,
+    PersonalRecord,
+    RetentionRule,
+    Subject,
+    json_one,
+    json_rows,
+    like_pattern,
+    mask_text,
+    sql_digits,
+    sql_identifier,
+    sql_phone_matches,
+)
 from ziira.kernel.phone import check_calling_code, normalise_phone
 from ziira.kernel.recipients import Recipient, recipients_with_permission
 from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
 __all__ = [
     "safe", "to_csv",
+    "PLACEHOLDER", "Kept", "Outcome", "PersonalDataProvider", "PersonalRecord", "RetentionRule", "Subject",
+    "json_one", "json_rows", "like_pattern", "mask_text", "sql_digits", "sql_identifier", "sql_phone_matches",
     "check_calling_code", "normalise_phone",
     "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
     "Quantity", "Rate", "Recipient", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized",
@@ -68,7 +87,7 @@ __all__ = [
     "current_context", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
     "encrypt_text", "enqueue", "flag_for_review", "hash_secret", "idempotency_key_header", "idempotent",
     "implementations", "is_production", "job", "money", "new_secret", "next_document_number", "opt_out_contact",
-    "page_limit", "page_offset", "periodic", "provides", "publish", "read_credential",
+    "page_limit", "page_offset", "periodic", "provides", "publish", "publish_many", "read_credential",
     "recipients_with_permission", "request_context", "require_permission", "run_validators", "send_notification",
     "settings_public_base_url", "sign_value",
     "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session", "validate",
@@ -190,12 +209,16 @@ def check_company(session: Session, company_id: UUID, branch_id: UUID | None = N
     Call it before saving any record that names a company or branch: foreign keys are checked
     by PostgreSQL without row-level security, so they would accept another tenant's id.
     """
+    checked: set[tuple[UUID, UUID | None]] = session.info.setdefault("checked_companies", set())
+    if (company_id, branch_id) in checked:             # a posting asks again for every line and entry it makes
+        return
     if session.execute(text("select 1 from kernel.company where id = :c"), {"c": str(company_id)}).first() is None:
         raise ValidationFailed("Company not found")
     if branch_id is not None and session.execute(
             text("select 1 from kernel.branch where id = :b and company_id = :c"),
             {"b": str(branch_id), "c": str(company_id)}).first() is None:
         raise ValidationFailed("Branch not found in that company")
+    checked.add((company_id, branch_id))
 
 
 def next_document_number(session: Session, *, company_id: UUID, branch_id: UUID | None, doc_type: str,
@@ -249,6 +272,10 @@ async def request_context(
     else:
         raise Unauthorized("Sign in first")
     ctx = replace(ctx, ip_address=client_ip(request))
+    request.state.ziira_ctx = ctx              # for the export audit (kernel/export_audit.py), which runs outside
+    if ctx.mfa_setup_required and not request.url.path.startswith("/api/v1/auth/"):
+        # The business requires a second factor of this person and it is not set up: nothing else works until it is.
+        raise MfaSetupRequired("Set up two-step verification to continue")
     set_context(ctx)
     return ctx
 

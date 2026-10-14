@@ -51,6 +51,12 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + recurring tasks (checks, briefs) + purge
 .venv/bin/ziira run-task <tenant> <name>    # run one recurring task now, e.g. intel.run_checks, command.refresh_pulse, command.send_briefs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
+.venv/bin/ziira import <tenant> <kind> FILE.csv [--company NAME] [--commit]   # bring in products, customers, stock...: validates by default (docs/data-import.md)
+.venv/bin/ziira backup --dir PATH [--tenant CODE] [--keep-daily 35 --keep-monthly 12]   # pg_dump master + tenants, manifest, pruning
+.venv/bin/ziira restore-test --dir PATH [--tenant CODE]   # restore newest dump to a scratch DB, check counts/journal/integrity, drop
+.venv/bin/ziira restore --tenant CODE --dir PATH --into NEWDB [--keep-ownership]   # into a NEW database only
+python scripts/check_env.py [.env]          # validate a production configuration; python scripts/secret_scan.py
+# GET /healthz /readyz /metrics (bearer ZIIRA_METRICS_TOKEN); backups need pg_dump >= server version: see ZIIRA_PG_DUMP_COMMAND in docs/operations.md
 ```
 
 On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything at Docker on 5433.
@@ -149,7 +155,14 @@ tests/             unit tests for domain rules
 - Daraja (M-Pesa) request formats in `payments/providers.py`, and the SMS formats in
   `plugins/messaging/providers.py`, are written from public documentation and have not been run against the real services:
   test in their sandboxes before any live use.
+- A unit that stores data about people (customers, employees, suppliers, payers, recipients) implements `kernel.personal_data` in its
+  `hooks.py` (find / export / anonymise; `docs/privacy.md`); retention periods and what must be kept are company settings, never code.
 - Never send a message in the caller's request: queue it. Respect the do-not-contact list (the kernel does).
+- **Sign-in security** (`docs/security.md`): wrong passwords are counted and locked out per login/address (`kernel/throttle.py`, 429 with
+  `Retry-After`); a second factor (TOTP, backup codes) is compulsory by the business's policy (`kernel.tenant.mfa_policy`; production refuses
+  `ZIIRA_MFA_DEFAULT_POLICY=off`) and a person who must use it but has not set it up gets a session limited to the setup calls
+  (`MfaSetupRequired`); forgotten passwords use an emailed one-use link; every CSV download is audited. New guessable actions use
+  `throttle.action_counters`; never add a sign-in path that skips `auth.sign_in`/`complete_mfa`.
 - Auth: sign-in with email/phone + password only (no workspace code): the master database's login directory
   (`kernel/directory.py`, keyed hashes of logins -> tenants) says which business database to check; a `workspace` code is
   optional and needed only when the same login (and password) works for several businesses (the reply is `409
@@ -163,7 +176,7 @@ tests/             unit tests for domain rules
 
 ## Where things are
 
-`docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/registration.md` (how businesses join) · `docs/localisation.md` · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/security.md` · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/registration.md` (how businesses join) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

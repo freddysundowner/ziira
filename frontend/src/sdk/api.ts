@@ -9,6 +9,7 @@ import createClient, { type Middleware } from "openapi-fetch";
 
 import type { components, paths } from "@/api/schema";
 
+import { isSetupRequired } from "./mfa/helpers";
 import { readStored, writeStored } from "./storage";
 
 export type Schemas = components["schemas"];
@@ -18,6 +19,7 @@ const DEVICE_KEY = "ziira.device";
 
 let accessToken: string | null = null;
 let onSignedOut: () => void = () => {};
+let onSetupRequired: () => void = () => {};
 
 /** A stable id for this browser, sent at sign-in and refresh. */
 export function deviceId(): string {
@@ -40,6 +42,11 @@ export function hasRefreshToken(): boolean {
 
 export function whenSignedOut(callback: () => void): void {
   onSignedOut = callback;
+}
+
+/** Called when any request is answered "set up two-step verification first" (the business now requires it of this person). */
+export function whenSetupRequired(callback: () => void): void {
+  onSetupRequired = callback;
 }
 
 let refreshing: Promise<Refresh> | null = null;
@@ -76,6 +83,11 @@ const auth: Middleware = {
     return request;
   },
   async onResponse({ request, response }) {
+    if (response.status === 403 && !request.url.includes("/auth/")) {
+      const body: unknown = await response.clone().json().catch(() => null);
+      if (isSetupRequired(response.status, body)) onSetupRequired();
+      return response;
+    }
     if (response.status !== 401 || request.url.includes("/auth/")) return response;
     const result = await refreshTokens();
     if (result === "ok") {

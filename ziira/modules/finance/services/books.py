@@ -13,9 +13,25 @@ from ziira.modules.finance.repository.models import Account, Journal, Period, Po
 from ziira.sdk import Session, audit_record, check_company, current_context
 
 
+def _books_complete(session: Session, company_id: UUID) -> bool:
+    """True when the company has every template account and posting rules for every document type, so
+    `ensure_books` has nothing to do. Two cheap reads instead of one query per template account."""
+    codes = finance_repo.account_codes(session, company_id)
+    if not all(template.code in codes for template in chart.CHART):
+        return False
+    known_types = finance_repo.rule_doc_types(session, company_id)
+    return all(rule[0] in known_types for rule in chart.DEFAULT_RULES)
+
+
 def ensure_books(session: Session, company_id: UUID) -> None:
     """Create the company's chart of accounts, journals and default posting rules if it has none yet."""
     check_company(session, company_id)
+    done: set[UUID] = session.info.setdefault("books_complete", set())
+    if company_id in done:
+        return
+    if _books_complete(session, company_id):
+        done.add(company_id)
+        return                       # the usual case: nothing to add, so no lock (it would serialise every posting)
     finance_repo.lock_books(session, company_id)                    # two postings at once: one sets up, one waits
     if finance_repo.has_accounts(session, company_id):
         add_missing_accounts(session, company_id)

@@ -16,19 +16,23 @@ Every business (tenant) has its own database; the master database lists them.
     ziira outbox-run [--once]           deliver committed events to after-commit subscribers
     ziira worker [--once]               deliver events and run background jobs (replaces outbox-run)
     ziira run-task <tenant> <name>      run one recurring task now (intel.run_checks, command.send_briefs, ...)
+    ziira backup [--tenant CODE] --dir PATH [--keep-daily 35 --keep-monthly 12]   pg_dump of master + tenants, pruned
+    ziira restore-test [--tenant CODE] --dir PATH   restore the newest dump to a scratch database, check it, drop it
+    ziira restore --tenant CODE --dir PATH --into NEWDB   restore a dump into a NEW database (never over a live one)
     ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
     ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
+    ziira import <tenant> <kind> FILE.csv [--company NAME] [--commit]   check (and with --commit import) a file
 """
 
 import argparse
 import getpass
-import logging
 import os
 import sys
 from uuid import UUID
 
 from ziira.kernel import outbox
 from ziira.kernel.errors import ZiiraError
+from ziira.kernel.observability import configure_logging
 from ziira.kernel.registry import Registry, load_event_handlers
 from ziira.kernel.tenants import create_tenant, drop_tenant, find_tenant, list_tenants
 
@@ -84,7 +88,7 @@ def cmd_drop_tenant(_: Registry, a: argparse.Namespace) -> None:
 
 
 def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_logging()
     load_event_handlers(reg.units)
     if a.once:
         print(f"Delivered {outbox.process_all()} event(s)")
@@ -137,10 +141,23 @@ def cmd_run_task(reg: Registry, a: argparse.Namespace) -> None:
     print(f"Ran {a.name}" if ran else f"{a.name} did not run (is its unit enabled for {a.tenant}?)")
 
 
+def cmd_import(reg: Registry, a: argparse.Namespace) -> int:
+    """Move data in from a CSV file: a dry run by default, `--commit` imports the valid rows (docs/data-import.md)."""
+    from pathlib import Path
+
+    from ziira.modules.imports.cli import run_import
+
+    load_event_handlers(reg.units)
+    mapping = dict(item.split("=", 1) for item in a.map or [] if "=" in item)
+    return run_import(_tenant(a.tenant), kind=a.kind, path=Path(a.file), company=a.company, commit=a.commit,
+                      decimal_separator=a.decimal, date_format=a.date_format, mapping=mapping,
+                      rejected=Path(a.rejected) if a.rejected else None)
+
+
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
     from ziira.kernel import jobs, notifications  # noqa: F401 - notifications registers its send job
 
-    logging.basicConfig(level=logging.INFO)
+    configure_logging()
     load_event_handlers(reg.units)
     if a.once:
         print(f"Delivered {outbox.process_all()} event(s), ran {jobs.run_all()} job(s)")
@@ -156,6 +173,9 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
             from ziira.kernel import registration
 
             registration.purge()
+            from ziira.kernel import throttle
+
+            throttle.purge()
         if busy == 0:
             time.sleep(2.0)
 
@@ -171,6 +191,68 @@ def _purge_idempotency_keys(reg: Registry) -> None:
         with tenant_session(tenant_id) as s:
             purge_old_keys(s)
             purge_finished(s)
+
+
+def cmd_backup(_: Registry, a: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from ziira.kernel import backup
+
+    configure_logging()
+    problem = backup.tools_available()
+    if problem:
+        print(f"Error: {problem}", file=sys.stderr)
+        return 1
+    failed = 0
+    for r in backup.run_backup(Path(a.dir), tenant=a.tenant, include_master=not a.tenant and not a.no_master,
+                               keep_daily=a.keep_daily, keep_monthly=a.keep_monthly):
+        if r.ok:
+            print(f"ok      {r.target:<24} {r.size:>12,} bytes  {r.file.name if r.file else ''}"
+                  + (f"  (pruned {len(r.pruned)})" if r.pruned else ""))
+        else:
+            failed += 1
+            print(f"FAILED  {r.target:<24} {r.error}", file=sys.stderr)
+    return 1 if failed else 0
+
+
+def cmd_restore_test(_: Registry, a: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from ziira.kernel import backup
+
+    configure_logging()
+    problem = backup.tools_available()
+    if problem:
+        print(f"Error: {problem}", file=sys.stderr)
+        return 1
+    targets = [a.tenant] if a.tenant else ["master", *[t.code for t in list_tenants() if t.status != "closed"]]
+    failed = 0
+    for target in targets:
+        r = backup.restore_test(Path(a.dir), target)
+        print(f"{'ok     ' if r.ok else 'FAILED '} {target:<24} {r.backup}")
+        for line in r.problems:
+            print(f"    {line}")
+        failed += 0 if r.ok else 1
+    return 1 if failed else 0
+
+
+def cmd_restore(_: Registry, a: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from ziira.kernel import backup
+
+    configure_logging()
+    found = backup.list_backups(Path(a.dir), a.tenant)
+    if a.file:
+        found = [b for b in found if b.dump_path.name == a.file]
+    if not found:
+        raise ZiiraError(f"No matching backup of '{a.tenant}' in {a.dir}")
+    chosen = found[-1]
+    url = backup.restore_into_new_database(chosen, a.into, keep_ownership=a.keep_ownership)
+    print(f"Restored {chosen.dump_path.name} into the new database '{url.database}'. Nothing live was changed.\n"
+          "To use it, follow 'Restoring a business' in docs/operations.md (point the tenant at it in the master "
+          "database, or copy the data you need).")
+    return 0
 
 
 def cmd_enable(reg: Registry, a: argparse.Namespace) -> None:
@@ -220,6 +302,17 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("tenant", help="workspace code or id")
     s.add_argument("name", help="the task, e.g. intel.run_checks, intel.refresh_baselines, command.send_briefs")
     s.set_defaults(fn=cmd_run_task)
+    s = sub.add_parser("import", help="check a CSV file and (with --commit) import it: products, customers, ...")
+    s.add_argument("tenant", help="workspace code or id")
+    s.add_argument("kind", help="what the file holds, e.g. products, customers, suppliers, opening_stock")
+    s.add_argument("file", help="the CSV file")
+    s.add_argument("--company", help="the company's name or id (not needed when the business has one)")
+    s.add_argument("--commit", action="store_true", help="import the valid rows (default: check only)")
+    s.add_argument("--decimal", default=".", choices=[".", ","], help="decimal separator the file uses")
+    s.add_argument("--date-format", default="iso", choices=["iso", "dmy", "mdy"])
+    s.add_argument("--map", action="append", metavar="FIELD=HEADER", help="choose a column (repeatable)")
+    s.add_argument("--rejected", help="write the rejected rows (with an error column) to this CSV file")
+    s.set_defaults(fn=cmd_import)
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_worker)
@@ -231,6 +324,26 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("index-logins", help="rebuild the login directory used to sign in without a workspace code")
     s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
     s.set_defaults(fn=cmd_index_logins)
+    s = sub.add_parser("backup", help="dump the master database and the tenants' databases (pg_dump, custom format)")
+    s.add_argument("--tenant", help="back up only this workspace code (default: master and every tenant)")
+    s.add_argument("--all", action="store_true", help="every tenant and the master database (the default)")
+    s.add_argument("--no-master", action="store_true", help="skip the master database")
+    s.add_argument("--dir", required=True, help="folder for the dumps and manifests")
+    s.add_argument("--keep-daily", type=int, default=35, help="keep the newest backup of each of the last N days")
+    s.add_argument("--keep-monthly", type=int, default=12, help="keep the oldest backup of each of the last N months")
+    s.set_defaults(fn=cmd_backup)
+    s = sub.add_parser("restore-test", help="restore the newest dump into a scratch database and check it")
+    s.add_argument("--tenant", help="workspace code (default: master and every tenant)")
+    s.add_argument("--dir", required=True)
+    s.set_defaults(fn=cmd_restore_test)
+    s = sub.add_parser("restore", help="restore a dump into a NEW database (never over an existing one)")
+    s.add_argument("--tenant", required=True, help="workspace code, or 'master'")
+    s.add_argument("--dir", required=True)
+    s.add_argument("--file", help="a specific dump file name (default: the newest)")
+    s.add_argument("--into", required=True, help="name of the new database to create")
+    s.add_argument("--keep-ownership", action="store_true",
+                   help="restore owners and grants too (needed before it can replace a live database)")
+    s.set_defaults(fn=cmd_restore)
     for name in ("verify", "stock-verify"):
         s = sub.add_parser(name)
         s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")

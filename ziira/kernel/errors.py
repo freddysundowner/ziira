@@ -20,11 +20,30 @@ class Unauthorized(ZiiraError):
     code = "unauthorized"
 
 
+class ChallengeExpired(Unauthorized):
+    """The sign-in challenge is too old (or not ours): start again from the password."""
+
+    code = "challenge_expired"
+
+
+class MfaRequired(Unauthorized):
+    """The password was right but this person uses a second factor: the reply carries a short-lived `challenge` to send
+    back with the code."""
+
+    code = "mfa_required"
+
+
 class Forbidden(ZiiraError):
     """Signed in, but without the permission or scope for this action."""
 
     status = 403
     code = "forbidden"
+
+
+class MfaSetupRequired(Forbidden):
+    """The business requires a second factor of this person and they have not set one up: only the setup calls work."""
+
+    code = "mfa_setup_required"
 
 
 class NotFound(ZiiraError):

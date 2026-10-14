@@ -1,0 +1,23 @@
+[unit]
+name = "imports"
+title = "Data Import"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["products", "inventory", "crm", "purchasing", "finance", "pos", "people"]
+
+[provides]
+api_prefix = "/api/v1/imports"
+publishes = ["import.committed"]
+subscribes = []
+# Sockets other units can plug into (contract in public.py, declared in hooks.py): each unit that owns data
+# supplies the importer for it.
+extension_points = ["imports.importer"]
+
+[permissions]
+"imports.manage" = "Import data from files (products, customers, suppliers, opening stock, ...)"
+
+# Owner only by default: an import creates many records at once. Each importer also needs the permission of the
+# data it creates (for example products.manage for products).
+[roles]

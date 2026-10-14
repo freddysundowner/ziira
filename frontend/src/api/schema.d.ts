@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/healthz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Liveness: the process is running */
+        get: operations["healthz_healthz_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/readyz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Readiness: the database and migrations are in order */
+        get: operations["readyz_readyz_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/sign-in": {
         parameters: {
             query?: never;
@@ -637,6 +671,208 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/mfa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mfa Verify
+         * @description Second step of signing in when the person uses a second factor: the `challenge` from the password step, and a
+         *     code from their authenticator app (or a backup code).
+         */
+        post: operations["mfa_verify_api_v1_auth_mfa_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mfa Status */
+        get: operations["mfa_status_api_v1_auth_mfa_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mfa Setup
+         * @description Start setting up the second factor: returns the secret and the address for a QR code. Switched on only when a
+         *     code from the app is confirmed at /auth/mfa/enable.
+         */
+        post: operations["mfa_setup_api_v1_auth_mfa_setup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mfa Enable
+         * @description Confirm a code from the app: switches the second factor on and returns backup codes (shown once).
+         */
+        post: operations["mfa_enable_api_v1_auth_mfa_enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mfa Disable
+         * @description Switch the second factor off (needs your password and a code). Refused if your business requires it.
+         */
+        post: operations["mfa_disable_api_v1_auth_mfa_disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/mfa/backup-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mfa New Backup Codes
+         * @description Replace your backup codes with new ones (needs your password and a code). The old ones stop working.
+         */
+        post: operations["mfa_new_backup_codes_api_v1_auth_mfa_backup_codes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/{user_id}/mfa/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mfa Reset
+         * @description Reset someone's second factor (they lost their phone): switches it off and signs them out everywhere. They set it
+         *     up again at their next sign-in if the business requires it.
+         */
+        post: operations["mfa_reset_api_v1_users__user_id__mfa_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/security": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Security */
+        get: operations["get_security_api_v1_settings_security_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Security
+         * @description Choose who must sign in with a second factor. People it applies to who have not set it up are asked to at their
+         *     next sign-in (and cannot do anything else until they have).
+         */
+        patch: operations["patch_security_api_v1_settings_security_patch"];
+        trace?: never;
+    };
+    "/api/v1/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Forgot Password
+         * @description Ask for an email with a link to choose a new password. The answer is the same whether or not the login exists.
+         */
+        post: operations["forgot_password_api_v1_auth_password_forgot_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Password
+         * @description Use the emailed link to choose a new password. Signs the person out everywhere.
+         */
+        post: operations["reset_password_api_v1_auth_password_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/channels": {
         parameters: {
             query?: never;
@@ -754,6 +990,145 @@ export interface paths {
         post?: never;
         /** Delete Opt Out */
         delete: operations["delete_opt_out_api_v1_notifications_opt_outs__optout_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Requests */
+        get: operations["list_requests_api_v1_privacy_requests_get"];
+        put?: never;
+        /**
+         * Create Request
+         * @description Record a request. The due date is `privacy_response_days` after it was received.
+         */
+        post: operations["create_request_api_v1_privacy_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Request */
+        get: operations["get_request_api_v1_privacy_requests__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/requests/{request_id}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search
+         * @description Ask every unit what it holds about the subject. Matches by name are flagged 'possible'.
+         */
+        post: operations["search_api_v1_privacy_requests__request_id__search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/requests/{request_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export
+         * @description The data held about the subject as a JSON bundle. Written to the audit log as a data export.
+         */
+        post: operations["export_api_v1_privacy_requests__request_id__export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/requests/{request_id}/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Erase
+         * @description Anonymise the subject's records. Irreversible. Waits for a second person's approval when the company setting
+         *     `privacy_erasure_needs_approval` is on (the default).
+         */
+        post: operations["erase_api_v1_privacy_requests__request_id__erase_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/requests/{request_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close
+         * @description Finish a request by hand: an access answer was sent, a correction was made, or the request is refused.
+         */
+        post: operations["close_api_v1_privacy_requests__request_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/privacy/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retention
+         * @description What each unit keeps about people, for how long, and the company's retention settings.
+         */
+        get: operations["retention_api_v1_privacy_retention_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1818,6 +2193,215 @@ export interface paths {
          * @description Finish the reconciliation: only when the cleared lines add up to the statement's balance. Final.
          */
         post: operations["post_complete_reconciliation_api_v1_finance_bank_reconciliations__recon_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/kinds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Kinds
+         * @description What can be imported here: one kind per unit that supplies an importer and is switched on for the business.
+         */
+        get: operations["get_kinds_api_v1_imports_kinds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/kinds/{kind}/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Template
+         * @description A sample file for this kind: the column names and one example row.
+         */
+        get: operations["get_template_api_v1_imports_kinds__kind__template_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Batches
+         * @description Earlier imports, newest first.
+         */
+        get: operations["get_batches_api_v1_imports_batches_get"];
+        put?: never;
+        /**
+         * Post Batch
+         * @description Upload a CSV file (the request body) to import as `kind` into a company. UTF-8 (with or without a BOM), comma,
+         *     semicolon or tab separated. The reply has the column mapping we suggest; nothing is imported yet.
+         */
+        post: operations["post_batch_api_v1_imports_batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get One Batch
+         * @description One import with its progress (counts of rows by state).
+         */
+        get: operations["get_one_batch_api_v1_imports_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Batch
+         * @description Discard an import that created nothing. Only the staged file goes; no business record is touched.
+         */
+        delete: operations["delete_batch_api_v1_imports_batches__batch_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/mapping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Mapping
+         * @description Choose the column for each field, and how the file writes numbers and dates. Rows must be checked again.
+         */
+        put: operations["put_mapping_api_v1_imports_batches__batch_id__mapping_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Validate
+         * @description The dry run: every row is checked and nothing is written. Problems are listed per row.
+         */
+        post: operations["post_validate_api_v1_imports_batches__batch_id__validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Commit
+         * @description Import the valid rows in the background (poll the batch for progress). Safe to ask twice.
+         */
+        post: operations["post_commit_api_v1_imports_batches__batch_id__commit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rows
+         * @description The rows of the file with what became of each; `only_errors` shows the rejected and failed ones.
+         */
+        get: operations["get_rows_api_v1_imports_batches__batch_id__rows_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Report
+         * @description Reconciliation: rows imported, skipped and failed, and the file's sums against what Ziira now holds.
+         */
+        get: operations["get_report_api_v1_imports_batches__batch_id__report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/rejected.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rejected
+         * @description The rejected and failed rows with an `error` column. Fix them and upload the file again.
+         */
+        get: operations["get_rejected_api_v1_imports_batches__batch_id__rejected_csv_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6022,6 +6606,57 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** BatchOut */
+        BatchOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Kind */
+            kind: string;
+            /** Kind Title */
+            kind_title: string;
+            /** Filename */
+            filename: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "uploaded" | "validated" | "committing" | "done";
+            /** Delimiter */
+            delimiter: string;
+            /** Headers */
+            headers: string[];
+            /** Mapping */
+            mapping: {
+                [key: string]: string | null;
+            };
+            options: components["schemas"]["OptionsOut"];
+            /** Warnings */
+            warnings: string[];
+            /** Columns */
+            columns: components["schemas"]["ColumnOut"][];
+            counts: components["schemas"]["CountsOut"];
+            /** Total Rows */
+            total_rows: number;
+            /** Reversible */
+            reversible: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Committed At */
+            committed_at: string | null;
+            /** Finished At */
+            finished_at: string | null;
+        };
         /** BillIn */
         BillIn: {
             /**
@@ -6561,6 +7196,19 @@ export interface components {
              */
             cleared: boolean;
         };
+        /** CloseIn */
+        CloseIn: {
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "completed" | "refused";
+            /**
+             * Note
+             * @description What was done, or why the request is refused
+             */
+            note: string;
+        };
         /** CloseOut */
         CloseOut: {
             /**
@@ -6634,6 +7282,19 @@ export interface components {
             /** Explanation */
             explanation?: string | null;
         };
+        /** ColumnOut */
+        ColumnOut: {
+            /** Name */
+            name: string;
+            /** Required */
+            required: boolean;
+            /** Description */
+            description: string;
+            /** Example */
+            example: string;
+            /** Total */
+            total: string | null;
+        };
         /** CompanyOut */
         CompanyOut: {
             /**
@@ -6691,6 +7352,18 @@ export interface components {
             intel_alert_min_severity?: ("low" | "medium" | "high" | "critical") | null;
             /** Intel Action Level */
             intel_action_level?: number | null;
+            /** Privacy Response Days */
+            privacy_response_days?: number | null;
+            /** Privacy Erasure Needs Approval */
+            privacy_erasure_needs_approval?: boolean | null;
+            /** Retention Notifications Days */
+            retention_notifications_days?: number | null;
+            /** Retention Audit Years */
+            retention_audit_years?: number | null;
+            /** Retention Employee Records Years */
+            retention_employee_records_years?: number | null;
+            /** Retention Inactive Customers Years */
+            retention_inactive_customers_years?: number | null;
         };
         /** CompanySettingsOut */
         CompanySettingsOut: {
@@ -6742,6 +7415,18 @@ export interface components {
             intel_alert_min_severity: "low" | "medium" | "high" | "critical";
             /** Intel Action Level */
             intel_action_level: number;
+            /** Privacy Response Days */
+            privacy_response_days: number;
+            /** Privacy Erasure Needs Approval */
+            privacy_erasure_needs_approval: boolean;
+            /** Retention Notifications Days */
+            retention_notifications_days: number;
+            /** Retention Audit Years */
+            retention_audit_years: number;
+            /** Retention Employee Records Years */
+            retention_employee_records_years: number;
+            /** Retention Inactive Customers Years */
+            retention_inactive_customers_years: number;
         };
         /** ComponentIn */
         ComponentIn: {
@@ -6988,6 +7673,21 @@ export interface components {
             snapshot_at: string;
             /** Posted At */
             posted_at: string | null;
+        };
+        /** CountsOut */
+        CountsOut: {
+            /** Pending */
+            pending: number;
+            /** Valid */
+            valid: number;
+            /** Invalid */
+            invalid: number;
+            /** Imported */
+            imported: number;
+            /** Skipped */
+            skipped: number;
+            /** Failed */
+            failed: number;
         };
         /** CredentialsIn */
         CredentialsIn: {
@@ -7817,6 +8517,21 @@ export interface components {
              */
             posted_at: string;
         };
+        /** EraseIn */
+        EraseIn: {
+            /**
+             * Record Ids
+             * @description Records to include. Leave empty for every exact match; list a possible match (found by name) only after checking it is the same person
+             */
+            record_ids?: string[] | null;
+            /**
+             * Confirm Subject
+             * @description The subject of the request, typed again
+             */
+            confirm_subject: string;
+            /** Reason */
+            reason: string;
+        };
         /** ExceptionApprovalIn */
         ExceptionApprovalIn: {
             /**
@@ -8228,6 +8943,45 @@ export interface components {
             /** Amount At Stake */
             amount_at_stake: string;
         };
+        /** ForgotIn */
+        ForgotIn: {
+            /**
+             * Login
+             * @description The email or phone you sign in with
+             */
+            login: string;
+        };
+        /** ForgotOut */
+        ForgotOut: {
+            /** Message */
+            message: string;
+            /**
+             * Dev Token
+             * @description Development only: the link's token (no email is read)
+             */
+            dev_token?: string | null;
+        };
+        /** FoundOut */
+        FoundOut: {
+            /** Source */
+            source: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Record Id
+             * Format: uuid
+             */
+            record_id: string;
+            /** Label */
+            label: string;
+            /**
+             * Match
+             * @enum {string}
+             */
+            match: "exact" | "possible";
+            /** Company Id */
+            company_id: string | null;
+        };
         /** GeneralLedgerOut */
         GeneralLedgerOut: {
             /**
@@ -8579,6 +9333,23 @@ export interface components {
             credited: string;
             /** Status */
             status: string;
+        };
+        /** KindOut */
+        KindOut: {
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Permission */
+            permission: string;
+            /** Reversible */
+            reversible: boolean;
+            /** Reversal Note */
+            reversal_note: string;
+            /** Columns */
+            columns: components["schemas"]["ColumnOut"][];
         };
         /** LabelAmountOut */
         LabelAmountOut: {
@@ -9013,13 +9784,6 @@ export interface components {
             /** Amount */
             amount?: number | string | null;
         };
-        /** MappingIn */
-        MappingIn: {
-            /** External Code */
-            external_code?: string | null;
-            /** External Name */
-            external_name?: string | null;
-        };
         /** MappingOut */
         MappingOut: {
             /**
@@ -9093,6 +9857,57 @@ export interface components {
             email?: string | null;
             /** Roles */
             roles: components["schemas"]["AssignmentOut"][];
+        };
+        /** MfaBackupCodesOut */
+        MfaBackupCodesOut: {
+            /**
+             * Backup Codes
+             * @description Shown once: each works once, when the app is not at hand
+             */
+            backup_codes: string[];
+        };
+        /** MfaCodeIn */
+        MfaCodeIn: {
+            /** Code */
+            code: string;
+        };
+        /** MfaDisableIn */
+        MfaDisableIn: {
+            /** Password */
+            password: string;
+            /** Code */
+            code: string;
+        };
+        /** MfaSetupOut */
+        MfaSetupOut: {
+            /**
+             * Secret
+             * @description The shared secret, for typing into an authenticator app
+             */
+            secret: string;
+            /**
+             * Otpauth Uri
+             * @description The address to show as a QR code
+             */
+            otpauth_uri: string;
+        };
+        /** MfaStatusOut */
+        MfaStatusOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Backup Codes Left */
+            backup_codes_left: number;
+            /** Policy */
+            policy: string;
+            /** Required */
+            required: boolean;
+        };
+        /** MfaVerifyIn */
+        MfaVerifyIn: {
+            /** Challenge */
+            challenge: string;
+            /** Code */
+            code: string;
         };
         /** MovementOut */
         MovementOut: {
@@ -9288,6 +10103,13 @@ export interface components {
             channel: string | null;
             /** Reason */
             reason: string | null;
+        };
+        /** OptionsOut */
+        OptionsOut: {
+            /** Decimal Separator */
+            decimal_separator: string;
+            /** Date Format */
+            date_format: string;
         };
         /** OrderLineIn */
         OrderLineIn: {
@@ -10592,19 +11414,17 @@ export interface components {
             /** Failed */
             failed: number;
         };
-        /** RequestIn */
-        RequestIn: {
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /** Branch Id */
-            branch_id?: string | null;
-            /** Needed By */
-            needed_by?: string | null;
-            /** Lines */
-            lines: components["schemas"]["RequestLineIn"][];
+        /** ReportOut */
+        ReportOut: {
+            batch: components["schemas"]["BatchOut"];
+            /** Rows In File */
+            rows_in_file: number;
+            /** Totals */
+            totals: components["schemas"]["TotalOut"][];
+            /** Problems */
+            problems: string[];
+            /** Reconciled */
+            reconciled: boolean;
         };
         /** RequestLineIn */
         RequestLineIn: {
@@ -10655,6 +11475,13 @@ export interface components {
             needed_by: string | null;
             /** Status */
             status: string;
+        };
+        /** ResetIn */
+        ResetIn: {
+            /** Token */
+            token: string;
+            /** New Password */
+            new_password: string;
         };
         /** ReturnRowOut */
         ReturnRowOut: {
@@ -10708,6 +11535,33 @@ export interface components {
         RolePermissionsIn: {
             /** Permissions */
             permissions: string[];
+        };
+        /** RowOut */
+        RowOut: {
+            /** Row No */
+            row_no: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "valid" | "invalid" | "imported" | "skipped" | "failed";
+            /** Errors */
+            errors: string[];
+            /** Raw */
+            raw: string[];
+            /** Values */
+            values: {
+                [key: string]: string;
+            };
+            /** Record Id */
+            record_id: string | null;
+        };
+        /** RowsOut */
+        RowsOut: {
+            /** Total */
+            total: number;
+            /** Rows */
+            rows: components["schemas"]["RowOut"][];
         };
         /** RuleUpdateIn */
         RuleUpdateIn: {
@@ -11039,6 +11893,27 @@ export interface components {
             weekday: number | null;
             /** Is Active */
             is_active: boolean;
+        };
+        /** SecuritySettingsIn */
+        SecuritySettingsIn: {
+            /**
+             * Mfa Policy
+             * @description off, privileged (people with powerful roles) or everyone
+             */
+            mfa_policy: string;
+        };
+        /** SecuritySettingsOut */
+        SecuritySettingsOut: {
+            /** Mfa Policy */
+            mfa_policy: string;
+        };
+        /** SelectionIn */
+        SelectionIn: {
+            /**
+             * Record Ids
+             * @description Records to include. Leave empty for every exact match; list a possible match (found by name) only after checking it is the same person
+             */
+            record_ids?: string[] | null;
         };
         /** SendPayslipsIn */
         SendPayslipsIn: {
@@ -11892,6 +12767,25 @@ export interface components {
             /** Amount */
             amount: string | null;
         };
+        /** TotalOut */
+        TotalOut: {
+            /** Label */
+            label: string;
+            /** In File */
+            in_file: string;
+            /** Expected */
+            expected: string;
+            /** In Ziira */
+            in_ziira: string;
+            /** Not Imported */
+            not_imported: string;
+            /** Difference */
+            difference: string;
+            /** Matches */
+            matches: boolean;
+            /** Money */
+            money: boolean;
+        };
         /** TransferIn */
         TransferIn: {
             /**
@@ -12210,6 +13104,88 @@ export interface components {
             /** Position */
             position: number;
         };
+        /** RequestIn */
+        ziira__kernel__api__privacy_routes__RequestIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Request Type
+             * @enum {string}
+             */
+            request_type: "access" | "correction" | "erasure";
+            /**
+             * Subject
+             * @description What the person gave to be found by: an email, a phone number, an id or a name
+             */
+            subject: string;
+            /**
+             * Notes
+             * @description How the person was identified, what they asked
+             */
+            notes?: string | null;
+            /**
+             * Received On
+             * @description When the request arrived (default: today)
+             */
+            received_on?: string | null;
+        };
+        /** RequestOut */
+        ziira__kernel__api__privacy_routes__RequestOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Request Type */
+            request_type: string;
+            /** Subject */
+            subject: string;
+            /** Subject Masked */
+            subject_masked: string;
+            /** Status */
+            status: string;
+            /**
+             * Received On
+             * Format: date
+             */
+            received_on: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            /** Overdue */
+            overdue: boolean;
+            /** Handled By */
+            handled_by: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Found */
+            found: components["schemas"]["FoundOut"][];
+            /** Awaiting Approval */
+            awaiting_approval: boolean;
+            /** Outcome */
+            outcome: {
+                [key: string]: unknown;
+            } | null;
+            /** Completed At */
+            completed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** ReasonIn */
         ziira__kernel__api__schemas__ReasonIn: {
             /** Category */
@@ -12370,6 +13346,13 @@ export interface components {
             /** Is Active */
             is_active?: boolean | null;
         };
+        /** MappingIn */
+        ziira__modules__finance__api__schemas__MappingIn: {
+            /** External Code */
+            external_code?: string | null;
+            /** External Name */
+            external_name?: string | null;
+        };
         /** ReverseIn */
         ziira__modules__finance__api__schemas__ReverseIn: {
             /** Reason */
@@ -12454,6 +13437,26 @@ export interface components {
             name: string;
             /** Amount */
             amount: string;
+        };
+        /** MappingIn */
+        ziira__modules__imports__api__schemas__MappingIn: {
+            /**
+             * Columns
+             * @description Field name -> the file's column header (null: not in the file)
+             */
+            columns: {
+                [key: string]: string | null;
+            };
+            /**
+             * Decimal Separator
+             * @description How the file writes decimals
+             */
+            decimal_separator?: ("." | ",") | null;
+            /**
+             * Date Format
+             * @description How the file writes dates
+             */
+            date_format?: ("iso" | "dmy" | "mdy") | null;
         };
         /** RunIn */
         ziira__modules__intel__api__schemas__RunIn: {
@@ -13509,6 +14512,20 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** RequestIn */
+        ziira__modules__purchasing__api__schemas__RequestIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /** Needed By */
+            needed_by?: string | null;
+            /** Lines */
+            lines: components["schemas"]["RequestLineIn"][];
+        };
         /** RequestOut */
         ziira__modules__purchasing__api__schemas__RequestOut: {
             /**
@@ -13696,6 +14713,48 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    healthz_healthz_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    readyz_readyz_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     sign_in_api_v1_auth_sign_in_post: {
         parameters: {
             query?: never;
@@ -15223,6 +16282,405 @@ export interface operations {
             };
         };
     };
+    mfa_verify_api_v1_auth_mfa_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaVerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TokensOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mfa_status_api_v1_auth_mfa_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaStatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mfa_setup_api_v1_auth_mfa_setup_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaSetupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mfa_enable_api_v1_auth_mfa_enable_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaCodeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaBackupCodesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mfa_disable_api_v1_auth_mfa_disable_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaDisableIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mfa_new_backup_codes_api_v1_auth_mfa_backup_codes_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MfaDisableIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaBackupCodesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mfa_reset_api_v1_users__user_id__mfa_reset_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_security_api_v1_settings_security_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecuritySettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_security_api_v1_settings_security_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SecuritySettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecuritySettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    forgot_password_api_v1_auth_password_forgot_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForgotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_password_api_v1_auth_password_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_channels_api_v1_notifications_channels_get: {
         parameters: {
             query: {
@@ -15531,6 +16989,327 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_requests_api_v1_privacy_requests_get: {
+        parameters: {
+            query?: {
+                status?: ("open" | "in_progress" | "completed" | "refused") | null;
+                company_id?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_request_api_v1_privacy_requests_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_request_api_v1_privacy_requests__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_api_v1_privacy_requests__request_id__search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_api_v1_privacy_requests__request_id__export_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SelectionIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    erase_api_v1_privacy_requests__request_id__erase_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EraseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_api_v1_privacy_requests__request_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__privacy_routes__RequestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retention_api_v1_privacy_retention_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
             };
             /** @description Validation Error */
             422: {
@@ -17965,7 +19744,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MappingIn"];
+                "application/json": components["schemas"]["ziira__modules__finance__api__schemas__MappingIn"];
             };
         };
         responses: {
@@ -18493,6 +20272,476 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReconciliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_kinds_api_v1_imports_kinds_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KindOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_template_api_v1_imports_kinds__kind__template_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_batches_api_v1_imports_batches_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_batch_api_v1_imports_batches_post: {
+        parameters: {
+            query: {
+                kind: string;
+                company_id: string;
+                filename?: string;
+                decimal_separator?: "." | ",";
+                date_format?: "iso" | "dmy" | "mdy";
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_one_batch_api_v1_imports_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_batch_api_v1_imports_batches__batch_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_mapping_api_v1_imports_batches__batch_id__mapping_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__imports__api__schemas__MappingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_validate_api_v1_imports_batches__batch_id__validate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_commit_api_v1_imports_batches__batch_id__commit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rows_api_v1_imports_batches__batch_id__rows_get: {
+        parameters: {
+            query?: {
+                status?: ("pending" | "valid" | "invalid" | "imported" | "skipped" | "failed") | null;
+                only_errors?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RowsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_report_api_v1_imports_batches__batch_id__report_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rejected_api_v1_imports_batches__batch_id__rejected_csv_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
                 };
             };
             /** @description Validation Error */
@@ -26638,7 +28887,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RequestIn"];
+                "application/json": components["schemas"]["ziira__modules__purchasing__api__schemas__RequestIn"];
             };
         };
         responses: {

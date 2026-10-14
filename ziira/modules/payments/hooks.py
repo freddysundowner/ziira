@@ -22,3 +22,5 @@ for _check in (intel_checks.UnlinkedReceipts, intel_checks.UnmatchedTransactions
 
 provides(INTEL_BASELINE_METRIC)(intel_checks.PromptFailureRate)
 provides(COMMAND_PULSE_SOURCE)(PaymentsPulse)
+
+from ziira.modules.payments import privacy as _privacy  # noqa: E402, F401, I001 - registers personal-data provider

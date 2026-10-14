@@ -76,6 +76,53 @@ def find_by_fingerprint(s: Session, code: str, fingerprint: str) -> Row[Any] | N
                      {"c": code, "fp": fingerprint}).first()
 
 
+def existing_by_fingerprint(s: Session, code: str) -> dict[str, Row[Any]]:
+    """Every finding of this check (id, status, severity) by fingerprint: one read instead of one per candidate."""
+    rows = s.execute(text("select fingerprint, id, status, severity from intel.finding where check_code = :c"),
+                     {"c": code}).all()
+    return {r.fingerprint: r for r in rows}
+
+
+def insert_findings(s: Session, rows: list[dict[str, Any]]) -> None:
+    """Insert many new findings (each dict has the id and the fields of `insert_finding`) in one batch."""
+    if not rows:
+        return
+    s.execute(text(
+        "insert into intel.finding (id, tenant_id, check_id, check_code, area, fingerprint, severity, company_id, "
+        "branch_id, entity_type, entity_id, period_start, period_end, value, expected_value, amount, summary, "
+        "recommended_action, evidence) values (:id, kernel.current_tenant(), :ci, :cc, :ar, :fp, :sv, :co, :br, :et, "
+        ":ei, :ps, :pe, :v, :ev, :am, :su, :ra, cast(:evd as jsonb))"), rows)
+
+
+def refresh_findings(s: Session, rows: list[dict[str, Any]]) -> None:
+    """`refresh_finding` for many findings in one batch."""
+    if not rows:
+        return
+    s.execute(text(
+        "update intel.finding set severity = :sv, value = :v, expected_value = :ev, amount = :am, summary = :su, "
+        "recommended_action = :ra, evidence = cast(:evd as jsonb), last_seen_at = now(), updated_at = now(), "
+        "status = case when :reopen then 'new' else status end, resolved_at = case when :reopen then null "
+        "else resolved_at end, alerted_at = case when :reopen then null else alerted_at end where id = :i"), rows)
+
+
+def add_events(s: Session, rows: list[tuple[UUID, str, str | None]]) -> None:
+    """`add_event` (no user or channel) for many findings in one batch: (finding id, event, note)."""
+    if not rows:
+        return
+    s.execute(text(
+        "insert into intel.finding_event (tenant_id, finding_id, event, note) "
+        "values (kernel.current_tenant(), :f, :e, :n)"),
+        [{"f": str(f), "e": e, "n": n[:2000] if n else None} for f, e, n in rows])
+
+
+def resolve_many(s: Session, finding_ids: list[UUID]) -> None:
+    """Close findings a check no longer reports (`set_status(..., 'resolved')` for many)."""
+    if not finding_ids:
+        return
+    s.execute(text("update intel.finding set status = 'resolved', updated_at = now(), resolved_at = now() "
+                   "where id = :i"), [{"i": str(i)} for i in finding_ids])
+
+
 def insert_finding(s: Session, *, check_id: UUID, code: str, area: str, fingerprint: str, severity: str,
                    company_id: UUID, branch_id: UUID | None, entity_type: str | None, entity_id: UUID | None,
                    period_start: date | None, period_end: date | None, value: Decimal | None,

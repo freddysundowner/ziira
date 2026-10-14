@@ -10,7 +10,7 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
-    "cryptography>=42",       # encrypts tenant database credentials in the master database
+    "cryptography>=50",       # encrypts tenant database credentials in the master database
     "httpx>=0.27",            # calls out to Safaricom Daraja and other providers
 ]
 

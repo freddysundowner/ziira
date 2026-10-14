@@ -30,6 +30,19 @@ class Settings(BaseSettings):
     tenant_role_prefix: str = "zt_"
     template_database: str = "ziira_template"
 
+    # Connection pools (docs/operations.md). Each cached tenant database has its own pool of `db_pool_size` connections
+    # plus up to `db_max_overflow` extra under load. Behind PgBouncer in transaction pooling mode set `pgbouncer=true`
+    # (turns off server-side prepared statements, which a transaction pooler cannot keep per connection).
+    db_pool_size: int = 2
+    db_max_overflow: int = 8
+    db_pool_timeout: int = 30
+    db_pool_recycle: int = 1800
+    master_pool_size: int = 5
+    pgbouncer: bool = False
+    # Longest a statement of a tenant transaction may run (SET LOCAL, so it is safe behind PgBouncer). 0 = no limit.
+    # Migrations and provisioning use the admin login and are not limited.
+    statement_timeout_ms: int = 60000
+
     # How many tenant databases keep an open connection pool at once. Each pool holds a few connections, and PostgreSQL
     # allows a limited number in total, so the least recently used pools are closed beyond this (they reopen on demand).
     max_cached_tenant_engines: int = 25
@@ -57,7 +70,7 @@ class Settings(BaseSettings):
     # with an invitation code from `ziira invite create`) or "closed" (businesses are created by an operator only).
     registration_mode: str = "open"
     # Units switched on for every new business, comma separated (what they require comes along).
-    registration_units: str = "pos,finance"
+    registration_units: str = "pos,finance,crm,purchasing,people,imports,intel,command"
     registration_per_email_per_hour: int = 3
     registration_per_ip_per_hour: int = 10
     registration_token_hours: int = 24
@@ -69,12 +82,46 @@ class Settings(BaseSettings):
     platform_email_secret: str = ""
     platform_email_config: str = ""
 
+    # Sign-in protection (kernel/throttle.py): this many wrong passwords for one login from one address, for one login
+    # from anywhere, or from one address for any login, within the window, lock that key for the lock time.
+    throttle_login_ip_failures: int = 5
+    throttle_login_failures: int = 20
+    throttle_ip_failures: int = 60
+    throttle_window_minutes: int = 15
+    throttle_lock_minutes: int = 15
+    # Second factor: the default for a new business ("off", "privileged": people with powerful roles, "everyone"), the
+    # name shown in authenticator apps, and how long a password reset link works.
+    mfa_default_policy: str = "off"
+    mfa_issuer: str = "Ziira"
+    password_reset_hours: int = 2
+
     # Signs access tokens. Must be set to a long random value outside development.
     secret_key: str = DEV_SECRET_KEY
     access_token_minutes: int = 15
     refresh_token_days: int = 30
     # A session not refreshed for this long must sign in again.
     session_idle_hours: int = 12
+
+    # Operations and application security (docs/operations.md).
+    # Token for GET /metrics (Authorization: Bearer ...). Production refuses /metrics while this is empty.
+    metrics_token: str = ""
+    metrics_cache_seconds: int = 15
+    log_format: str = "text"                # "text" or "json" (one JSON object per line, for log shippers)
+    log_level: str = "INFO"
+    # Browser origins allowed to call the API from another site, comma separated (empty: none). Never "*" in production.
+    cors_origins: str = ""
+    max_body_bytes: int = 2_000_000         # larger requests are refused with 413
+    hsts_max_age: int = 31_536_000          # Strict-Transport-Security, production only
+    # Backups (docs/operations.md). Empty: use pg_dump / pg_restore from PATH. Set when the local client is older than
+    # the server, e.g. "docker exec -i -e PGPASSWORD ziira-core-db-1 pg_dump" (the command reads/writes stdin/stdout).
+    pg_dump_command: str = ""
+    pg_restore_command: str = ""
+    pg_tool_host: str = ""                  # host/port the tool above uses to reach the server (inside the container)
+    pg_tool_port: int = 0
+
+    def cors_origin_list(self) -> list[str]:
+        """The allowed CORS origins as a list."""
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     def check_safe_for_production(self) -> None:
         """Refuse to run in production with development shortcuts switched on."""
@@ -86,6 +133,17 @@ class Settings(BaseSettings):
             raise RuntimeError("Set ZIIRA_SECRET_KEY to a random value of at least 32 characters")
         if self.credentials_key == DEV_CREDENTIALS_KEY or len(self.credentials_key) < 32:
             raise RuntimeError("Set ZIIRA_CREDENTIALS_KEY to a random value of at least 32 characters")
+        if "*" in self.cors_origin_list():
+            raise RuntimeError("ZIIRA_CORS_ORIGINS must list origins, never *")
+        if self.log_format not in ("text", "json"):
+            raise RuntimeError("ZIIRA_LOG_FORMAT must be text or json")
+        if self.metrics_token and len(self.metrics_token) < 24:
+            raise RuntimeError("ZIIRA_METRICS_TOKEN must be at least 24 characters (or empty to switch /metrics off)")
+        if self.mfa_default_policy not in ("off", "privileged", "everyone"):
+            raise RuntimeError("ZIIRA_MFA_DEFAULT_POLICY must be off, privileged or everyone")
+        if self.mfa_default_policy == "off":
+            raise RuntimeError("Set ZIIRA_MFA_DEFAULT_POLICY to privileged or everyone: owners, finance and admin "
+                               "roles must use a second factor before real customer data")
         if self.registration_mode not in ("open", "invite", "closed"):
             raise RuntimeError("ZIIRA_REGISTRATION_MODE must be open, invite or closed")
         if self.registration_mode != "closed" and not self.platform_email_provider:

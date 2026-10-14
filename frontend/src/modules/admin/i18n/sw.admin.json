@@ -297,5 +297,27 @@
  "widgetSerious_one": "{{count}} ni kikubwa",
  "widgetSerious_other": "{{count}} ni vikubwa",
  "widgetError": "Imeshindwa kupakia",
- "createdOn": "Uliundwa"
+ "createdOn": "Uliundwa",
+ "tabSecurity": "Usalama",
+ "resetMfa": "Weka upya uthibitisho wa hatua mbili",
+ "resetMfaAsk": "Zima uthibitisho wa hatua mbili kwa {{name}}? Tumia hili anapopoteza simu yake. Atatolewa kila mahali alipoingia, na ataingia kwa nenosiri tu. Ikiwa biashara yako inahitaji uthibitisho wa hatua mbili, ataulazimika kuuweka tena atakapoingia mara nyingine.",
+ "resetMfaDone": "Uthibitisho wa hatua mbili umewekwa upya kwa {{name}}.",
+ "securityTitle": "Uthibitisho wa hatua mbili",
+ "securityHint": "Nambari kutoka kwenye simu ya mtu, pamoja na nenosiri lake, kila anapoingia.",
+ "mfaRequiredFor": "Uthibitisho wa hatua mbili unahitajika kwa",
+ "mfaPolicy": {
+  "off": "Hakuna",
+  "privileged": "Watu wenye majukumu makubwa (wasimamizi, fedha, mishahara)",
+  "everyone": "Kila mtu"
+ },
+ "mfaPolicyHelp": {
+  "off": "Mtu yeyote bado anaweza kuuwasha mwenyewe kupitia Akaunti yangu.",
+  "privileged": "Yeyote anayeweza kusimamia watumiaji, majukumu, mipangilio, idhini, hesabu, mishahara au uingizaji wa data.",
+  "everyone": "Kila mtu anayeingia kwenye biashara hii."
+ },
+ "mfaPolicyWarn": "Watu wanaohusika lazima waweke uthibitisho wa hatua mbili watakapoingia mara nyingine. Hadi wauweke, hawawezi kufanya jambo lingine lolote. Hakikisha kila mmoja ana programu ya uthibitisho kwenye simu yake.",
+ "mfaPolicyConfirm": "Kuhitaji uthibitisho wa hatua mbili kwa \"{{who}}\"? Watu hao watazuiwa watakapoingia mara nyingine hadi waweke.",
+ "securitySaved": "Mipangilio ya usalama imehifadhiwa.",
+ "securitySave": "Hifadhi",
+ "securityConfirmTitle": "Hitaji uthibitisho wa hatua mbili"
 }

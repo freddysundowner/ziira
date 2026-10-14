@@ -70,3 +70,5 @@ for _metric in (intel_checks.CashierVoidRateMetric, intel_checks.CashierRefundRa
                 intel_checks.CashierDiscountRateMetric, intel_checks.BranchDailySalesMetric):
     provides(INTEL_BASELINE_METRIC)(_metric)
 provides(COMMAND_PULSE_SOURCE)(PosPulse)
+
+from ziira.modules.pos import privacy as _privacy  # noqa: E402, F401, I001 - registers personal-data provider

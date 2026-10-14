@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from ziira.kernel.errors import Forbidden
+from ziira.kernel.observability import bind_tenant
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,8 @@ class RequestContext:
     # Where the request came from, for the audit log.
     device_id: str | None = None
     ip_address: str | None = None
+    # The business requires a second factor of this person and it is not set up: only the setup calls may be made.
+    mfa_setup_required: bool = False
 
     def can(self, permission: str, *, company_id: UUID | None = None, branch_id: UUID | None = None,
             owner_id: UUID | None = None) -> bool:
@@ -118,6 +121,7 @@ _current: ContextVar[RequestContext | None] = ContextVar("ziira_request_context"
 def set_context(ctx: RequestContext) -> None:
     """Set the context for the current task or request."""
     _current.set(ctx)
+    bind_tenant(ctx.tenant_id)             # the access log line names the business
 
 
 def get_context() -> RequestContext:

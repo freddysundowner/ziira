@@ -6,24 +6,30 @@ only for tenants that have the unit enabled.
 
 import importlib
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy import text
 from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
 from ziira.kernel import notifications  # noqa: F401 - registers the send job and the channel socket
 from ziira.kernel.api.notification_routes import router as notification_router
+from ziira.kernel.api.ops_routes import router as ops_router
+from ziira.kernel.api.privacy_routes import router as privacy_router
 from ziira.kernel.api.routes import router as kernel_router
+from ziira.kernel.api.security_routes import router as security_router
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
+from ziira.kernel.export_audit import ExportAuditMiddleware
+from ziira.kernel.http_middleware import HttpMiddleware
+from ziira.kernel.observability import configure_logging, current_request_id
 from ziira.kernel.registry import discover, load_event_handlers
 from ziira.sdk import db_session
 
 log = logging.getLogger("ziira")
-MAX_BODY_BYTES = 2_000_000          # no request of ours needs more; bigger ones are refused before they are read
 
 
 def require_unit(name: str) -> Callable[[Session], None]:
@@ -39,12 +45,22 @@ def require_unit(name: str) -> Callable[[Session], None]:
     return check
 
 
+def _with_request_id(body: dict[str, object]) -> dict[str, object]:
+    """Add the request id to an error body so a user can quote it to support."""
+    rid = current_request_id()
+    return {**body, "request_id": rid} if rid else body
+
+
 def create_app() -> FastAPI:
     """Build the application with all discovered units mounted."""
     get_settings().check_safe_for_production()
+    configure_logging()
     app = FastAPI(title="Ziira Core", version="1.0.0.dev0")
+    app.include_router(ops_router)
     app.include_router(kernel_router)
+    app.include_router(security_router)
     app.include_router(notification_router)
+    app.include_router(privacy_router)
     units = discover()
     load_event_handlers(units)
 
@@ -84,31 +100,37 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(ZiiraError)
     def ziira_error(_: Request, exc: ZiiraError) -> JSONResponse:
-        return JSONResponse(status_code=exc.status,
-                            content={"error": exc.code, "message": exc.message, **(exc.details or {})})
+        body = {"error": exc.code, "message": exc.message, **(exc.details or {})}
+        wait = (exc.details or {}).get("retry_after")
+        return JSONResponse(status_code=exc.status, content=_with_request_id(body),
+                            headers={"Retry-After": str(wait)} if wait else None)
 
     @app.exception_handler(IntegrityError)
     def integrity_error(_: Request, exc: IntegrityError) -> JSONResponse:
         # The database's own wording names tables and constraints; keep that in the log, not in the reply.
         log.info("Constraint violated: %s", str(exc.orig).splitlines()[0] if exc.orig else "")
-        return JSONResponse(status_code=409, content={
-            "error": "conflict", "message": "This conflicts with something that already exists or changed meanwhile"})
+        return JSONResponse(status_code=409, content=_with_request_id({
+            "error": "conflict", "message": "This conflicts with something that already exists or changed meanwhile"}))
 
     @app.exception_handler(DataError)
     def data_error(_: Request, exc: DataError) -> JSONResponse:
         # A value the database cannot store (too large, wrong shape, NUL characters). The usual cases are caught
         # earlier by the request types; this keeps the rest from becoming a server error.
         log.warning("Rejected a value the database cannot store: %s", str(exc.orig).splitlines()[0] if exc.orig else "")
-        return JSONResponse(status_code=422, content={
+        return JSONResponse(status_code=422, content=_with_request_id({
             "error": "validation_failed", "message": "A value is too large, too long or contains characters "
-                                                     "that are not allowed"})
+                                                     "that are not allowed"}))
 
-    @app.middleware("http")
-    async def limit_body_size(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
-        declared = request.headers.get("content-length", "0")
-        if declared.isdigit() and int(declared) > MAX_BODY_BYTES:
-            return JSONResponse(status_code=413, content={"error": "too_large", "message": "The request is too large"})
-        return await call_next(request)
+    origins = get_settings().cors_origin_list()
+    if origins:
+        # Bearer tokens travel in a header, not a cookie, so no credentials are allowed cross-origin.
+        app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
+                           allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+                           allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "X-API-Key",
+                                          "X-Request-ID", "X-Device-ID", "Accept-Language"],
+                           expose_headers=["X-Request-ID"], max_age=600)
+    app.add_middleware(ExportAuditMiddleware)
+    app.add_middleware(HttpMiddleware)          # outermost: request id, access log, security headers, size limit
 
     return app
 

@@ -8,24 +8,23 @@ push (see the end-of-session steps in `CLAUDE.md`).
 
 | | |
 |---|---|
-| Phase | **Phases 1, 2, 3, 4, 6, 7, 8, 9 and 10 done**, MFA and CD deferred · **next: phase 11, hardening** · eTIMS is parked (below) |
+| Phase | **Phases 1-4 and 6-11 built** (CD deferred) · **next: what stands between this and real customers ("Phase 11 left open"): external penetration test, operations set-up, real-service tests** · eTIMS is parked (below) |
 | Architecture | One database per tenant + master database ([decision 0004](decisions/0004-database-per-tenant.md)) |
-| Tests | 1400 backend (PostgreSQL 16; incl. fuzzing, security, Hypothesis properties, concurrency, offline sync) + 146 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
+| Tests | 1617 backend (PostgreSQL 16; incl. fuzzing, security, Hypothesis properties, concurrency, offline sync) + 168 web · lint clean (ruff, mypy strict, import-linter; eslint, tsc) · see `docs/testing.md` |
 | CI | GitHub Actions: backend lint + tests, and a web job (API types up to date, lint, types, tests, build) |
 | Repository | https://github.com/freddysundowner/ziira.git, branch `main` |
 | Last updated | 2026-10-14 |
 
 ## Start here (next session)
 
-**Order (decided with the owner):** ... 9 People and payroll -> 10 Intelligence (done) -> **11 Hardening**. Pull MFA and sign-in rate limiting
-forward if a customer goes live before phase 11. **eTIMS is parked**, not planned: taxes are entered by hand until it is settled
-with KRA, and it will then be an installable plugin (`docs/parked/etims.md`).
+**Order (decided with the owner):** ... 10 Intelligence -> 11 Hardening: all built. What is left before a first real customer is mostly
+not code: the checklist in `docs/go-live-checklist.md` and "Phase 11 left open" below. **eTIMS is parked**, not planned: taxes are entered by
+hand until it is settled with KRA, and it will then be an installable plugin (`docs/parked/etims.md`).
 
-Phase 10 is done (`docs/intelligence.md`): the checks engine, baselines, findings with a life cycle, alerts, the Command Center
-(pulse figures, briefs), about 90 checks supplied by the units, and the web screens. What to try first on a real business:
-`ziira enable <tenant> intel`, `ziira enable <tenant> command`, set the company `timezone`, then `ziira run-task <tenant> intel.run_checks`.
-Open items from phase 10 are under "Phase 10 left open" below. Next: **phase 11, hardening** (performance, security test, backups,
-monitoring, MFA, rate limiting, PgBouncer).
+Phase 11 gave: sign-in protection (throttling, TOTP second factor with a business policy, password reset, password blocklist, audited exports:
+`docs/security.md`), operations plumbing (health/ready/metrics, request ids and redacted structured logs, security headers, backups with a
+restore test, PgBouncer readiness, CI scans: `docs/operations.md`), privacy tooling (subject requests, retention: `docs/privacy.md`), data import
+(CSV wizard and CLI: `docs/data-import.md`) and a performance pass (`docs/performance.md`: sales 3x faster, reports 4x, intelligence run 227 s -> 11 s).
 
 **Rule from the owner (2026-10-14): no country in code** (`CLAUDE.md` rule 15, `docs/localisation.md`). Statutory deductions
 are rules each business defines; currency, phone calling code and tax numbers are company data; mobile money is a generic
@@ -36,6 +35,19 @@ once (credit costs go through supplier bills); bank reconciliation clears ledger
 the QuickBooks and Sage export layouts are untried in the real software (go-live checklist).
 
 To do before real use (they need credentials and accounts, not code): the go-live checklist in `docs/go-live-checklist.md`.
+
+Phase 11 left open:
+- [ ] **External penetration test** (spec exit criterion) and fixing what it finds: scope and operator checklist are in `docs/security.md`. Nothing here replaces it.
+- [ ] **Operator set-up that code cannot do**: schedule the daily `ziira backup` and monthly `ziira restore-test`, encrypted off-site copies, WAL archiving for
+      point-in-time recovery (documented, never run), `ZIIRA_CREDENTIALS_KEY` kept apart from the database, `ZIIRA_METRICS_TOKEN`, TLS and the static-site CSP
+      at the proxy, a real PgBouncer try-out (only connection-level behaviour is tested), alert rules wired to on-call.
+- [ ] Re-measure on the real server: a sale makes ~150 queries (p95 228 ms with 20 tills here, target 150 ms); company-wide journal numbering caps sales near 13/s
+      (per-branch series or numbering at commit would lift it); trigram indexes for customer/product search past ~100k rows; receivables ageing and `ziira verify` load too much into memory.
+- [ ] The finance `journal_line.entry_date` migration rewrites the table (about 50 s for 1.2M lines): run it in a quiet period on a big business.
+- [ ] Support-access (consent-based, time-limited, logged staff access to a business's data) is **not built**; privacy page in the web app not built; backups still hold erased data (documented).
+- [ ] Import: no Excel upload, no customer/supplier opening balances or opening trial balance (the units have no clean way in), nothing reversible; real exports from other systems
+      will need header aliases. `tests/test_finance_intel.py::test_a_reopened_period_is_flagged` failed once in a big batch, passed on reruns: cause not found.
+- [ ] Two moderate `npm audit` findings remain (dev tooling); re-run the scans before each release.
 
 Phase 10 left open (small):
 - [ ] **Hard-coded Kenya time zone** (`Africa/Nairobi`) computes the business date in inventory, finance, payments, products, purchasing and POS
@@ -107,7 +119,7 @@ Local development: Docker PostgreSQL 16 on port **5433** (`.env`); demo business
 | 8 | Finance reports: expenses, bank recon, P&L, balance sheet, cash flow, VAT, exports | ✅ Done | QuickBooks/Sage layouts untried live |
 | 9 | People and payroll: employees, pay with approvals, attendance, leave, user-defined statutory rules, payroll runs, payslips, returns | ✅ Done | Statutory rules are the business's data; golden cases are hand-calculated |
 | 10 | Command Center, Intelligence (owner alerts by SMS or email) | ✅ Done | Checks engine, baselines, findings, alerts, briefs, pulse figures, ~90 checks from the units, web screens. AI layer / Ask Ziira, action levels 3-4 and standalone mode are not built |
-| 11 | Hardening: performance, security test, backups, monitoring | ⬜ | Includes MFA, rate limiting, PgBouncer |
+| 11 | Hardening: performance, security test, backups, monitoring | ✅ Built | MFA, throttling, reset, headers, logging, metrics, backups + restore test, PgBouncer readiness, privacy, import, performance. **External pen test and operator set-up still to do** |
 
 ## Backend gaps for the UI
 
@@ -132,8 +144,6 @@ Found while building the screens; each is a small backend change that would impr
 | FEFO picking on transfers (lines name their batch for now) | Simplicity | When asked |
 | Cancelling a dispatched transfer (receive with a reason instead) | Rare; reversal flow | When asked |
 | Product edit screen (create and view exist) | Small | When asked |
-| MFA and one-time codes (spec 18) | Need an SMS/email gateway; **required before real customer data** | Phase 11 |
-| Rate limiting / lockout on sign-in | Failed sign-ins are audited meanwhile | Phase 11 |
 | Redis/Celery for jobs | `ziira worker` (database queue) is enough for now | When load needs it |
 | CD (deployment pipeline) | No server yet; CI exists | When hosting is set up |
 | OAuth 2.0 for third-party apps; webhooks | No third-party apps yet | Phase 10 at the latest |
@@ -164,7 +174,9 @@ Open:
 
 | Date | What was done |
 |---|---|
+| 2026-10-14 (privacy) | **Phase 11: data protection and privacy** (`docs/privacy.md`). Kernel socket `kernel.personal_data` (find / export / anonymise / linked / retention) implemented by kernel (users, notification log), crm, people, pos, purchasing and payments. `kernel.privacy_request` (migration 0009) with `/api/v1/privacy` (search, audited export, erase with confirmation, reason and a second person's approval through the approval matrix `privacy.erasure`, close, retention view); permission `privacy.manage` (Owner only). Retention settings (`privacy_response_days`, `privacy_erasure_needs_approval`, `retention_*`) and the daily task `privacy.apply_retention`. Notifications can be redacted (trigger allows one masking). Tests `tests/test_privacy.py`. Web screen not built. |
 | 2026-10-13 (o) | **Email providers Brevo, Resend and SendGrid added** (with SMTP); **SMS through BlessedTexts; WhatsApp removed.** New provider `blessedtexts` (JSON POST, status_code "1000" = sent). WhatsApp left out for now: provider, fake, tests, channel values and docs removed; messages go by SMS or email, and Intelligence alerts will use those. Daraja stays as built, to be run in Safaricom's sandbox (`docs/go-live-checklist.md`). `make lint` clean; `make test` 1090 passed. |
+| 2026-10-14 (w) | **Phase 11: hardening.** Mine (kernel): sign-in throttling in the master database (per login+address 5, per login 20, per address 60 in 15 min; 429 + Retry-After; also for second-factor codes and reset requests), TOTP second factor verified against the RFC 6238 vectors (replay protection, backup codes, business policy off/privileged/everyone, limited session until set up, admin reset, production refuses policy off), forgotten-password links, password blocklist, audited CSV exports, new company-level `kernel.tenant.mfa_policy` and migrations kernel 0008, master 0005. Agents: operations (health/ready/metrics, request ids, redaction, security headers, body limit, backup/restore-test/restore CLI, PgBouncer settings, CI scans, `docs/operations.md`), performance (seed + load harness, indexes, books/audit/numbering locking, check engine batching: see `docs/performance.md`), data import (`imports` unit, six importers, wizard, CLI), data protection (`kernel.personal_data` socket, subject requests, retention, `docs/privacy.md`), web screens for two-step sign-in/reset. Fixes on the way: react-router 6.30.6 and cryptography 50 (audit findings), the demo books repaired with `ziira verify --fix` (finance had been enabled after stock existed), new businesses now get every business module (a registrant saw no Findings or Command Center), menus no longer clipped by tables, wide pages. Not verified: real PgBouncer, WAL/PITR, the CSP in a browser. |
 | 2026-10-14 (v) | **Phase 10: Intelligence and the Command Center.** Design: units *supply* checks (`intel.check`), baseline metrics (`intel.baseline_metric`) and pulse figures (`command.pulse_source`) through extension points, so `intel` and `command` read no other unit's tables and each check is tested beside its data. Built: the checks engine (savepoint per check; findings deduped by fingerprint; state checks auto-resolve, event checks stay; reopen on return; dismissed stays dismissed; a failing check goes to the exceptions inbox), baselines (mean, standard deviation, 95th percentile; "unusual" = over 3 deviations and above p95 with 14+ samples), the finding life cycle with history, branch-scoped visibility, alerts (off by default; to people whose role covers the finding), level-2 "ask someone to explain", per-business tuning of checks, run-now; the Command Center (hourly figures, overview against yesterday, briefs with schedules in the company time zone, stored briefs); new company settings `timezone`, `intel_alert_channel`, `intel_alert_min_severity`, `intel_action_level`; `ziira run-task`; `recipients_with_permission` in the SDK. Seven agents wrote about 90 checks, 5 baseline metrics and ~45 figures in pos, inventory, purchasing, payments, finance, people and crm, each with hand-calculated tests; one built the web screens (Command Center, briefs, findings inbox and detail, check settings, widgets). Verified live on the demo business (real findings, figures, acting on a finding). Fixes found on the way: pulse upsert used a bound parameter that PostgreSQL could not match to the index expression (literal now); test sessions now queue on a lock (the databases have fixed names, concurrent sessions dropped each other's). Found, not fixed: Kenya's time zone is hard-coded in six units (task suggested). Not built: AI layer, action levels 3-4, standalone mode. |
 | 2026-10-14 (u) | **Whole web UI rebuilt** (owner: "i hate everything, it must be robust"). Foundation: CSS-variable design tokens with dark mode, a component kit (`DataTable`, `Drawer`, `Modal`, `Combobox`, `Field`, toasts, states for loading/empty/error), new shell, auth screens, one failure policy (`unwrap` + query/mutation caches; a network or server outage keeps the session and offers retry). Then eight agents built the screens of every unit on that base (inventory, POS back office, POS terminal, CRM, payments, purchasing, finance, people, admin extras, messaging); about 47 routes; all load against the live API; a real sale was rung up in the terminal (receipt, books and dashboard updated). Small backend changes the UI needed: `/auth/me` returns name and email, companies return currency and country. **Backend bug found and fixed:** a unit upgrade that adds permissions never reached the Owner of existing businesses (`till.review`, `devices.manage`), so the Owner could not open Sales/Tills; `install` now grants the Owner new permissions (test added). Not browser-tested beyond smoke: most forms and flows (agents verified types, lint and unit tests only): walk each workflow before relying on it. Backend gaps found are listed under "Backend gaps for the UI" below. |
 | 2026-10-14 (s) | **Self-service registration** (owner: this is a SaaS, businesses must register themselves). `POST /api/v1/register` saves a request (password hashed, token only as a hash, nothing provisioned) and emails a link; `POST /api/v1/register/verify` creates the business (own database and login, owner, default units `ZIIRA_REGISTRATION_UNITS`, login directory entry) and signs the owner in. Workspace codes are generated from the business name. Abuse: email step, per-email and per-address rate limits (a real defect found by the tests: replacing an earlier request must not erase its history), modes open/invite/closed with `ziira invite create`, failed provisioning cleans up and leaves the link usable, purge by the worker. The platform sends the verification email through a configured provider (`ZIIRA_PLATFORM_EMAIL_*`); production refuses to start with open registration and no way to send. Web: two-step Register (country picks calling code and currency) and Verify screens and a link from sign-in (English and Swahili). Not built: CAPTCHA, billing and plans, operator console. See `docs/registration.md`. Suite: 1,259 passed. |

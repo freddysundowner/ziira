@@ -48,6 +48,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
 @pytest.fixture(autouse=True)
 def balances(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setattr(pos_public, "customer_balance", lambda session, customer_id: OWED.get(str(customer_id), Dec(0)))
+    monkeypatch.setattr(pos_public, "customer_balances", lambda session, ids: {i: OWED.get(str(i), Dec(0)) for i in ids})
 
 
 def sql(shop, stmt: str, **params: Any) -> list[Any]:  # type: ignore[no-untyped-def]

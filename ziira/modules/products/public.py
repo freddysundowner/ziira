@@ -76,6 +76,17 @@ def find_product(session: Session, product_id: UUID) -> ProductView | None:
                        reorder_level=p.reorder_level)
 
 
+def find_product_by_sku(session: Session, company_id: UUID, sku: str) -> ProductView | None:
+    """The company's product with this SKU (case and spaces ignored), or None. Used by file imports."""
+    from sqlalchemy import select
+
+    from ziira.modules.products.repository.models import Product
+
+    found = session.scalar(select(Product.id).where(Product.company_id == company_id,
+                                                      Product.sku == sku.strip().upper()))
+    return find_product(session, found) if found is not None else None
+
+
 def product_labels(session: Session, product_ids: set[UUID]) -> dict[UUID, tuple[str, str]]:
     """(sku, name) for each existing product id: for screens that list other units' records."""
     return {p.id: (p.sku, p.name) for p in products_repo.get_products(session, product_ids)}

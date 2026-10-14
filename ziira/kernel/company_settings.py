@@ -77,6 +77,15 @@ def _days(maximum: int) -> Callable[[Any], int]:
     return parse
 
 
+def _count(low: int, high: int, unit: str) -> Callable[[Any], int]:
+    def parse(value: Any) -> int:
+        if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+            raise ValidationFailed(f"Expected a whole number of {unit} from {low} to {high}")
+        return value
+
+    return parse
+
+
 def _footer(value: Any) -> str:
     if not isinstance(value, str) or len(value) > 200 or "\n" in value:
         raise ValidationFailed("Expected one line of text, up to 200 characters")
@@ -196,14 +205,37 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "Findings at or above this severity are sent as alerts; the rest wait for the daily brief"),
     Setting("intel_action_level", 1, _action_level,
             "What Intelligence may do: 1 reports only, 2 also asks people to explain a finding on your instruction"),
+    Setting("privacy_response_days", 30, _count(1, 365, "days"),
+            "A data subject request (access, correction, erasure) is due this many days after it is received"),
+    Setting("privacy_erasure_needs_approval", True, _boolean,
+            "Erasing a person's data needs a second person's approval (approval matrix, document type "
+            "'privacy.erasure')"),
+    Setting("retention_notifications_days", 0, _count(0, 3650, "days"),
+            "Messages sent to customers and suppliers keep their recipient and text this many days, then both are "
+            "masked (0 keeps them)"),
+    Setting("retention_audit_years", 7, _count(1, 100, "years"),
+            "How long the business keeps its audit trail and financial records. The audit log is never deleted; this "
+            "is the period the business states it keeps them (shown in the retention view)"),
+    Setting("retention_employee_records_years", 7, _count(0, 100, "years"),
+            "Payroll and employment records of a former employee must be kept this many years after employment ended "
+            "or the last payslip; until then an erasure request removes only contact details (0: no minimum)"),
+    Setting("retention_inactive_customers_years", 0, _count(0, 100, "years"),
+            "A customer who is not active and has not been touched for this many years is put in the exceptions inbox "
+            "for review (0 turns the review off)"),
 )}
 
 
 def _stored(session: Session, company_id: UUID) -> dict[str, Any]:
-    row = session.execute(text("select settings from kernel.company where id = :c"), {"c": str(company_id)}).first()
-    if row is None:
-        raise NotFound("Company not found")
-    return dict(row.settings or {})
+    """The settings as stored. Read once per transaction and company (a posting asks for several policies); a change
+    made through `update_settings` updates the copy, so the transaction always sees its own writes."""
+    cache: dict[UUID, dict[str, Any]] = session.info.setdefault("company_settings", {})
+    if company_id not in cache:
+        row = session.execute(text("select settings from kernel.company where id = :c"),
+                              {"c": str(company_id)}).first()
+        if row is None:
+            raise NotFound("Company not found")
+        cache[company_id] = dict(row.settings or {})
+    return dict(cache[company_id])
 
 
 def get_settings(session: Session, company_id: UUID) -> dict[str, Any]:
@@ -244,6 +276,7 @@ def update_settings(session: Session, company_id: UUID, changes: dict[str, Any])
     session.execute(text(
         "update kernel.company set settings = cast(:s as jsonb), updated_at = now(), updated_by = :u where id = :c"),
         {"s": json.dumps(stored), "u": str(user_id) if user_id else None, "c": str(company_id)})
+    session.info.setdefault("company_settings", {})[company_id] = dict(stored)
     after = get_settings(session, company_id)
     audit.record(session, "update", "kernel.company_settings", company_id,
                  {key: {"from": before[key], "to": after[key]} for key in parsed if before[key] != after[key]})

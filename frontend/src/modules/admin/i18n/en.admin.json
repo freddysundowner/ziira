@@ -297,5 +297,27 @@
  "widgetSerious_one": "{{count}} is serious",
  "widgetSerious_other": "{{count}} are serious",
  "widgetError": "Could not load",
- "createdOn": "Created"
+ "createdOn": "Created",
+ "tabSecurity": "Security",
+ "resetMfa": "Reset two-step verification",
+ "resetMfaAsk": "Switch off two-step verification for {{name}}? Use this when they lost their phone. They will be signed out everywhere, and will sign in with just their password. If your business requires two-step verification, they must set it up again at their next sign-in.",
+ "resetMfaDone": "Two-step verification reset for {{name}}.",
+ "securityTitle": "Two-step verification",
+ "securityHint": "A code from the person's phone, as well as their password, each time they sign in.",
+ "mfaRequiredFor": "Two-step verification required for",
+ "mfaPolicy": {
+  "off": "Nobody",
+  "privileged": "People with powerful roles (admins, finance, payroll)",
+  "everyone": "Everyone"
+ },
+ "mfaPolicyHelp": {
+  "off": "Anyone can still switch it on for themselves from My account.",
+  "privileged": "Anyone who can manage users, roles, settings, approvals, accounts, payroll or imports.",
+  "everyone": "Every person who signs in to this business."
+ },
+ "mfaPolicyWarn": "People this applies to must set up two-step verification at their next sign-in. Until they have, they cannot do anything else. Make sure they each have an authenticator app on their phone.",
+ "mfaPolicyConfirm": "Require two-step verification for \"{{who}}\"? Those people will be stopped at their next sign-in until they set it up.",
+ "securitySaved": "Security settings saved.",
+ "securitySave": "Save",
+ "securityConfirmTitle": "Require two-step verification"
 }

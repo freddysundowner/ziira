@@ -25,10 +25,13 @@ import {
 } from "@/sdk";
 
 import { ErrorBoundary } from "./ErrorBoundary";
+import { ForgotPassword } from "./ForgotPassword";
 import { Home } from "./Home";
 import { Layout } from "./Layout";
+import { MfaSetupRequired } from "./MfaSetupRequired";
 import { NotFound } from "./NotFound";
 import { Register } from "./Register";
+import { ResetPassword } from "./ResetPassword";
 import { SignIn } from "./SignIn";
 import { VerifyRegistration } from "./VerifyRegistration";
 
@@ -94,11 +97,14 @@ function Gate() {
       </div>
     );
   }
+  if (status === "mfa-setup") return <MfaSetupRequired />;
   if (status === "signed-out") {
     return (
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/register/verify" element={<VerifyRegistration />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<SignIn />} />
       </Routes>
     );

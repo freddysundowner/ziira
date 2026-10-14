@@ -41,3 +41,22 @@ def customer_balance(session: Session, customer_id: UUID) -> Decimal:
         "select coalesce(sum(unallocated), 0) from pos.customer_receipt where customer_id = :c and status = 'posted'"),
         {"c": str(customer_id)}).scalar_one())
     return owed - held
+
+
+def customer_balances(session: Session, customer_ids: list[UUID]) -> dict[UUID, Decimal]:
+    """`customer_balance` for many customers at once (two queries, not two per customer)."""
+    ids = [str(c) for c in customer_ids]
+    balances: dict[UUID, Decimal] = {c: Decimal(0) for c in customer_ids}
+    if not ids:
+        return balances
+    for r in session.execute(text(
+            "select customer_id, sum(total - amount_paid - credited) as owed from pos.sales_invoice "
+            "where customer_id = any(cast(:ids as uuid[])) and status in ('issued', 'part_paid') group by customer_id"),
+            {"ids": ids}):
+        balances[r.customer_id] += Decimal(r.owed)
+    for r in session.execute(text(
+            "select customer_id, sum(unallocated) as held from pos.customer_receipt "
+            "where customer_id = any(cast(:ids as uuid[])) and status = 'posted' group by customer_id"),
+            {"ids": ids}):
+        balances[r.customer_id] -= Decimal(r.held)
+    return balances

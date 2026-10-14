@@ -5,7 +5,7 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = ["products"]
-optional = ["purchasing", "pos", "intel", "command"]
+optional = ["purchasing", "pos", "intel", "command", "imports"]
 
 [provides]
 api_prefix = "/api/v1/inventory"
@@ -14,7 +14,7 @@ subscribes = ["approval.decided", "sale.posted", "sale.returned", "goods.receive
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source"]
+implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer"]
 
 [permissions]
 "stock.view" = "View stock"

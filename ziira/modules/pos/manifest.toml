@@ -15,7 +15,7 @@ extension_points = ["pos.receipt_extras"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source"]
+implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "kernel.personal_data"]
 
 [permissions]
 "sales.sell" = "Make sales"

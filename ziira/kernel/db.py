@@ -12,6 +12,7 @@ from collections import OrderedDict
 from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import lru_cache
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import Engine, create_engine, make_url, text
@@ -25,7 +26,10 @@ from ziira.kernel.security import decrypt
 @lru_cache
 def master_engine() -> Engine:
     """Engine for the master database (owner)."""
-    return create_engine(get_settings().master_database_url, pool_pre_ping=True)
+    settings = get_settings()
+    return create_engine(settings.master_database_url, pool_pre_ping=True, pool_size=settings.master_pool_size,
+                         max_overflow=settings.db_max_overflow, pool_timeout=settings.db_pool_timeout,
+                         pool_recycle=settings.db_pool_recycle, **_driver_args())
 
 
 def ensure_master_database() -> None:
@@ -51,9 +55,23 @@ def server_database_url(database: str) -> str:
     return make_url(get_settings().tenant_server_url).set(database=database).render_as_string(hide_password=False)
 
 
+def _driver_args() -> dict[str, Any]:
+    """Driver settings for connecting through a transaction-pooling PgBouncer (`ZIIRA_PGBOUNCER=true`).
+
+    Such a pooler hands a different server connection to each transaction, so nothing may be remembered on the
+    server connection between transactions. psycopg's automatic server-side prepared statements would be: switched off.
+    Everything else we keep per transaction already (`set_config(..., true)`, `pg_advisory_xact_lock`).
+    """
+    return {"connect_args": {"prepare_threshold": None}} if get_settings().pgbouncer else {}
+
+
 def _new_engine(url: str) -> Engine:
-    # Small pools: there is one pool per tenant database.
-    return create_engine(url, pool_pre_ping=True, pool_size=2, max_overflow=8, pool_recycle=1800)
+    # Small pools: there is one pool per tenant database (sizes: ZIIRA_DB_POOL_SIZE, _MAX_OVERFLOW, _POOL_TIMEOUT).
+    settings = get_settings()
+    return create_engine(url, pool_pre_ping=True, pool_size=settings.db_pool_size,
+                         max_overflow=settings.db_max_overflow,
+                         pool_timeout=settings.db_pool_timeout, pool_recycle=settings.db_pool_recycle,
+                         **_driver_args())
 
 
 # Least recently used last. Capped (config.max_cached_tenant_engines): every tenant has its own database and pool, and
@@ -113,8 +131,12 @@ def tenant_session(tenant_id: UUID, *, admin: bool = False) -> Iterator[Session]
     """Open a transaction in the tenant's own database; commit on success, roll back on error."""
     session = _session_factory(tenant_engine(tenant_id, admin=admin))()
     try:
+        # Both settings are transaction-local (third argument true), so they never leak to the next user of a pooled
+        # connection, and a transaction-pooling PgBouncer keeps working.
+        timeout = 0 if admin else max(get_settings().statement_timeout_ms, 0)
         session.execute(
-            text("select set_config('app.tenant_id', :tenant, true)"), {"tenant": str(tenant_id)}
+            text("select set_config('app.tenant_id', :tenant, true), set_config('statement_timeout', :t, true)"),
+            {"tenant": str(tenant_id), "t": str(timeout)}
         )
         yield session
         session.commit()

@@ -5,12 +5,13 @@ when the check says it can be (a stockout fixed), and kept for a person otherwis
 never stops the others: it is reported in the exceptions inbox.
 """
 
+import json
 import logging
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 from ziira.modules.intel.domain.model import SEVERITIES, Candidate
@@ -18,7 +19,7 @@ from ziira.modules.intel.domain.rules import severity_rank
 from ziira.modules.intel.public import INTEL_CHECK, CheckContext, IntelCheck
 from ziira.modules.intel.repository import findings_repo as repo
 from ziira.modules.intel.services import baselines as baseline_service
-from ziira.sdk import Event, Session, company_setting, flag_for_review, implementations, publish
+from ziira.sdk import Event, Session, company_setting, flag_for_review, implementations, publish_many
 
 log = logging.getLogger("ziira.intel")
 
@@ -85,43 +86,54 @@ def run_company(session: Session, company_id: UUID, *, today: date | None = None
 
 def _apply(session: Session, check: IntelCheck, check_id: UUID, company_id: UUID, candidates: list[Candidate],
            result: RunResult) -> None:
+    """Turn a check's candidates into findings. Works in batches (one read of the check's findings, then a few bulk
+    writes) because a check can find thousands of things; the effect is the same as handling them one at a time."""
     open_before = repo.open_ids_for_check(session, check.code, company_id)
+    existing = repo.existing_by_fingerprint(session, check.code)
     seen: set[str] = set()
+    created: list[dict[str, Any]] = []
+    refreshed: list[dict[str, Any]] = []
+    events: list[tuple[UUID, str, str | None]] = []
+    announced: list[Event] = []
     for c in candidates:
         if c.company_id != company_id or c.severity not in SEVERITIES or c.fingerprint in seen:
             if c.fingerprint not in seen:
                 log.warning("Check %s returned an unusable candidate %s; ignored", check.code, c.fingerprint)
             continue
         seen.add(c.fingerprint)
-        evidence = _evidence(c)
+        evidence = json.dumps(_evidence(c), default=str)
         amount = c.amount.quantize(Decimal("0.01")) if c.amount is not None else None
-        row = repo.find_by_fingerprint(session, check.code, c.fingerprint)
+        row = existing.get(c.fingerprint)
         if row is None:
-            finding_id = repo.insert_finding(
-                session, check_id=check_id, code=check.code, area=check.area, fingerprint=c.fingerprint,
-                severity=c.severity, company_id=c.company_id, branch_id=c.branch_id, entity_type=c.entity_type,
-                entity_id=c.entity_id, period_start=c.period_start, period_end=c.period_end, value=c.value,
-                expected_value=c.expected_value, amount=amount, summary=c.summary, action=c.recommended_action,
-                evidence=evidence)
-            repo.add_event(session, finding_id, "detected")
-            publish(session, Event("finding.created", "intel.finding", finding_id, {
+            finding_id = uuid4()
+            created.append({
+                "id": str(finding_id), "ci": str(check_id), "cc": check.code, "ar": check.area, "fp": c.fingerprint,
+                "sv": c.severity, "co": str(c.company_id), "br": str(c.branch_id) if c.branch_id else None,
+                "et": c.entity_type, "ei": str(c.entity_id) if c.entity_id else None, "ps": c.period_start,
+                "pe": c.period_end, "v": c.value, "ev": c.expected_value, "am": amount, "su": c.summary[:1000],
+                "ra": c.recommended_action[:1000], "evd": evidence})
+            events.append((finding_id, "detected", None))
+            announced.append(Event("finding.created", "intel.finding", finding_id, {
                 "check": check.code, "severity": c.severity, "company_id": c.company_id, "branch_id": c.branch_id,
                 "summary": c.summary, "amount": amount}))
             result.created += 1
             continue
         reopen = row.status == "resolved"
-        repo.refresh_finding(session, row.id, severity=c.severity, value=c.value, expected_value=c.expected_value,
-                             amount=amount, summary=c.summary, action=c.recommended_action, evidence=evidence,
-                             reopen=reopen)
+        refreshed.append({"sv": c.severity, "v": c.value, "ev": c.expected_value, "am": amount,
+                          "su": c.summary[:1000], "ra": c.recommended_action[:1000], "evd": evidence,
+                          "reopen": reopen, "i": str(row.id)})
         if reopen:
-            repo.add_event(session, row.id, "reopened", note="The problem is back")
+            events.append((row.id, "reopened", "The problem is back"))
             result.reopened += 1
         elif severity_rank(c.severity) != severity_rank(row.severity):
-            repo.add_event(session, row.id, "severity_changed", note=f"{row.severity} -> {c.severity}")
+            events.append((row.id, "severity_changed", f"{row.severity} -> {c.severity}"))
         result.updated += 1
+    repo.insert_findings(session, created)
+    repo.refresh_findings(session, refreshed)
     if check.auto_resolves:
-        for fingerprint, finding_id in open_before.items():
-            if fingerprint not in seen:
-                repo.set_status(session, finding_id, "resolved")
-                repo.add_event(session, finding_id, "auto_resolved", note="No longer detected")
-                result.resolved += 1
+        gone = [finding_id for fingerprint, finding_id in open_before.items() if fingerprint not in seen]
+        repo.resolve_many(session, gone)
+        events += [(finding_id, "auto_resolved", "No longer detected") for finding_id in gone]
+        result.resolved += len(gone)
+    repo.add_events(session, events)
+    publish_many(session, announced)

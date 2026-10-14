@@ -28,7 +28,7 @@ One person can register several businesses with the same email; signing in then 
 | Setting | Meaning |
 |---|---|
 | `REGISTRATION_MODE` | `open` (anyone), `invite` (needs a code from `ziira invite create`), `closed` (operator creates businesses) |
-| `REGISTRATION_UNITS` | units switched on for every new business, comma separated (default `pos,finance`; what they require comes along) |
+| `REGISTRATION_UNITS` | units switched on for every new business, comma separated (default: every business module: `pos,finance,crm,purchasing,people,imports,intel,command`; what they require comes along) |
 | `REGISTRATION_PER_EMAIL_PER_HOUR`, `REGISTRATION_PER_IP_PER_HOUR` | rate limits (default 3 and 10): over them the answer is `429` |
 | `REGISTRATION_TOKEN_HOURS` | how long the emailed link lasts (default 24) |
 | `PUBLIC_WEB_URL` | where the emailed link points: the web app |

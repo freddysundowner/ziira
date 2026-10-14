@@ -55,9 +55,11 @@ def next_document_number(s: Session, *, company_id: UUID, branch_id: UUID | None
         raise ValidationFailed("doc_type and prefix are required")
     if s.execute(text("select 1 from kernel.company where id = :c"), {"c": str(company_id)}).first() is None:
         raise NotFound("Company not found")
-    # Serialise creation of a missing series (the unique constraint does not cover a null branch).
-    s.execute(text("select pg_advisory_xact_lock(hashtext(:k))"),
-              {"k": f"series:{company_id}:{branch_id}:{doc_type}"})
+    # Serialise creation of a missing series (the unique constraint does not cover a null branch). An existing series
+    # needs no lock for that: the update below locks its row, so the usual case takes one lock, not two.
+    if _find(s, company_id, branch_id, doc_type) is None:
+        s.execute(text("select pg_advisory_xact_lock(hashtext(:k))"),
+                  {"k": f"series:{company_id}:{branch_id}:{doc_type}"})
     if _find(s, company_id, branch_id, doc_type) is None:
         s.execute(text(
             "insert into kernel.document_series (tenant_id, company_id, branch_id, doc_type, prefix) "

@@ -114,6 +114,7 @@ class JournalLine(TenantColumns, Base):
     party_type: Mapped[str | None]
     party_id: Mapped[UUID | None]
     description: Mapped[str | None]
+    entry_date: Mapped[date | None]        # copy of the entry's date, filled by the database (migration 0007)
 
 
 class ManualJournal(TenantColumns, Base):

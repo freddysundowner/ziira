@@ -65,7 +65,10 @@ def test_a_business_registers_verifies_and_is_signed_in(client, registry) -> Non
         assert s.execute(text("select country, base_currency from kernel.company")).one() == ("GB", "USD")
     assert client.get("/api/v1/pos/tills", headers=headers).status_code == 200                # pos is enabled
     assert client.get("/api/v1/finance/accounts", headers=headers).status_code == 200         # so is finance
-    assert client.get("/api/v1/purchasing/suppliers", headers=headers).status_code == 404     # purchasing is not
+    for path in ("/api/v1/purchasing/suppliers", "/api/v1/crm/customers", "/api/v1/people/employees",
+                 "/api/v1/intel/findings", "/api/v1/command/overview"):                      # every business module is
+        assert client.get(path, headers=headers).status_code == 200, path
+    assert client.get("/api/v1/plugins/messaging/channels", headers=headers).status_code == 404   # a plugin is not
 
 
 def test_the_link_works_once_and_the_token_is_only_stored_as_a_hash(client, registry) -> None:  # type: ignore[no-untyped-def]
@@ -198,7 +201,8 @@ def test_when_the_email_cannot_be_sent_registration_says_so(client, registry, mo
 def test_production_refuses_open_registration_without_a_way_to_send_email(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from ziira.kernel.config import Settings
 
-    secure = {"env": "production", "dev_tenant_header": False, "secret_key": "s" * 40, "credentials_key": "c" * 40}
+    secure = {"env": "production", "dev_tenant_header": False, "secret_key": "s" * 40, "credentials_key": "c" * 40,
+              "mfa_default_policy": "privileged"}
     with pytest.raises(RuntimeError, match="PLATFORM_EMAIL_PROVIDER"):
         Settings(**secure, registration_mode="open").check_safe_for_production()
     Settings(**secure, registration_mode="closed").check_safe_for_production()

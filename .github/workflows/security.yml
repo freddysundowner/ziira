@@ -1,0 +1,46 @@
+# Dependency and secret scanning. Runs on every push and pull request, and weekly, because new advisories appear for
+# code that did not change. A finding fails the run: fix or upgrade the package, or note the decision in the PR.
+name: Security
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 5 * * 1"
+
+jobs:
+  python-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Audit the Python dependencies (what production installs, not the dev tools)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -U pip pip-audit
+          .venv/bin/pip install -e .
+          .venv/bin/pip-audit --skip-editable --progress-spinner off
+
+  web-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Audit the web app's runtime dependencies (high and critical fail the run)
+        run: npm --prefix frontend audit --omit=dev --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Scan tracked files for secrets
+        run: python scripts/secret_scan.py

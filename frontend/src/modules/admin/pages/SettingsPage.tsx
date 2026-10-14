@@ -6,8 +6,9 @@ import { useSelectedCompany } from "../components/useSelectedCompany";
 import NumberingTab from "./settings/NumberingTab";
 import PoliciesTab from "./settings/PoliciesTab";
 import ReasonsTab from "./settings/ReasonsTab";
+import SecurityTab from "./settings/SecurityTab";
 
-type Tab = "policies" | "numbering" | "reasons";
+type Tab = "policies" | "numbering" | "reasons" | "security";
 
 export default function SettingsPage() {
   const { t } = useTranslation("kernel");
@@ -18,11 +19,12 @@ export default function SettingsPage() {
       <PageHeader title={t("settings")} description={t("settingsHint")} />
       {tab === "policies" && picker && <div className="mb-4">{picker}</div>}
       <Tabs value={tab} onChange={setTab} tabs={[
-        { id: "policies", label: t("tabPolicies") }, { id: "numbering", label: t("tabNumbering") }, { id: "reasons", label: t("tabReasons") },
+        { id: "policies", label: t("tabPolicies") }, { id: "numbering", label: t("tabNumbering") }, { id: "reasons", label: t("tabReasons") }, { id: "security", label: t("tabSecurity") },
       ]} />
       {tab === "policies" && <PoliciesTab companyId={companyId} />}
       {tab === "numbering" && <NumberingTab />}
       {tab === "reasons" && <ReasonsTab />}
+      {tab === "security" && <SecurityTab />}
     </>
   );
 }

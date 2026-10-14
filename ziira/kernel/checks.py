@@ -50,13 +50,19 @@ class CheckResult:
     problems: list[str]
 
 
+def run_integrity_checks_in(session: Session, *, fix: bool = False, unit: str | None = None) -> list[CheckResult]:
+    """Run the integrity checks of the units enabled in the database this session is connected to. The caller has set
+    the context (`system_context`) and the session's tenant; used for a restored copy of a tenant database as well."""
+    results = []
+    for check in implementations(session, INTEGRITY_CHECK):
+        owner = unit_of(type(check).__module__)
+        if unit is None or owner == unit:
+            results.append(CheckResult(owner, check.name, check.run(session, fix=fix)))
+    return results
+
+
 def run_integrity_checks(tenant_id: UUID, *, fix: bool = False, unit: str | None = None) -> list[CheckResult]:
     """Run every integrity check of the units enabled for the tenant (or only one unit's)."""
     system_context(tenant_id)
-    results = []
     with tenant_session(tenant_id) as session:
-        for check in implementations(session, INTEGRITY_CHECK):
-            owner = unit_of(type(check).__module__)
-            if unit is None or owner == unit:
-                results.append(CheckResult(owner, check.name, check.run(session, fix=fix)))
-    return results
+        return run_integrity_checks_in(session, fix=fix, unit=unit)

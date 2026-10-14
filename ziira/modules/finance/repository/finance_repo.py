@@ -43,6 +43,16 @@ def has_accounts(session: Session, company_id: UUID) -> bool:
     return session.scalar(select(Account.id).where(Account.company_id == company_id).limit(1)) is not None
 
 
+def account_codes(session: Session, company_id: UUID) -> set[str]:
+    """The codes of all the company's accounts, in one query."""
+    return set(session.scalars(select(Account.code).where(Account.company_id == company_id)))
+
+
+def rule_doc_types(session: Session, company_id: UUID) -> set[str]:
+    """The document types the company has posting rules for, in one query."""
+    return set(session.scalars(select(PostingRule.doc_type).where(PostingRule.company_id == company_id).distinct()))
+
+
 # --------------------------------------------------------------------------- accounts
 def get_account(session: Session, account_id: UUID) -> Account | None:
     return session.get(Account, account_id)
@@ -293,7 +303,7 @@ def ledger_candidates(session: Session, company_id: UUID, account_id: UUID, up_t
              .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
              .outerjoin(ReconciliationLine, ReconciliationLine.journal_line_id == JournalLine.id)
              .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
-                    JournalEntry.entry_date <= up_to,
+                    JournalLine.entry_date <= up_to,
                     or_(ReconciliationLine.reconciliation_id.is_(None),
                         ReconciliationLine.reconciliation_id == recon_id))
              .order_by(JournalEntry.entry_date, JournalEntry.number, JournalLine.created_at, JournalLine.id))
@@ -304,9 +314,8 @@ def ledger_candidates(session: Session, company_id: UUID, account_id: UUID, up_t
 def book_balance_until(session: Session, company_id: UUID, account_id: UUID, day: date) -> Decimal:
     value = session.scalar(
         select(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0))
-        .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
         .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
-               JournalEntry.entry_date <= day))
+               JournalLine.entry_date <= day))
     return Decimal(value or 0)
 
 
@@ -363,8 +372,7 @@ def trial_balance(session: Session, scopes: Scopes, company_id: UUID, as_of: dat
     """Debit and credit totals per account of the company up to (and including) a date."""
     lines = (select(JournalLine.account_id, func.sum(JournalLine.debit).label("d"),
                     func.sum(JournalLine.credit).label("c"))
-             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
-             .where(JournalLine.company_id == company_id, JournalEntry.entry_date <= as_of, _in_scope(scopes))
+             .where(JournalLine.company_id == company_id, JournalLine.entry_date <= as_of, _in_scope(scopes))
              .group_by(JournalLine.account_id))
     if branch_id:
         lines = lines.where(JournalLine.branch_id == branch_id)
@@ -393,9 +401,8 @@ def ledger_before(session: Session, scopes: Scopes, company_id: UUID, account_id
                   branch_id: UUID | None = None) -> tuple[Decimal, Decimal]:
     """Debits and credits posted to an account before a date (the opening position)."""
     query = (select(func.coalesce(func.sum(JournalLine.debit), 0), func.coalesce(func.sum(JournalLine.credit), 0))
-             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
              .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
-                    JournalEntry.entry_date < day, _in_scope(scopes)))
+                    JournalLine.entry_date < day, _in_scope(scopes)))
     if branch_id:
         query = query.where(JournalLine.branch_id == branch_id)
     row = session.execute(query).one()
@@ -406,7 +413,7 @@ def ledger_lines(session: Session, scopes: Scopes, company_id: UUID, account_id:
                  date_to: date, branch_id: UUID | None = None, limit: int = 1000, offset: int = 0) -> list[LedgerLine]:
     query = (select(JournalLine, JournalEntry).join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
              .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
-                    JournalEntry.entry_date >= date_from, JournalEntry.entry_date <= date_to, _in_scope(scopes))
+                    JournalLine.entry_date >= date_from, JournalLine.entry_date <= date_to, _in_scope(scopes))
              .order_by(JournalEntry.entry_date, JournalEntry.posted_at, JournalLine.created_at, JournalLine.id)
              .limit(limit).offset(offset))
     if branch_id:
@@ -436,13 +443,12 @@ def account_totals(session: Session, scopes: Scopes, company_id: UUID, date_to: 
                func.sum(JournalLine.debit).label("d"), func.sum(JournalLine.credit).label("c")]
     query = (select(*columns, *([JournalLine.branch_id] if group_branch else []))
              .join(JournalLine, JournalLine.account_id == Account.id)
-             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
-             .where(JournalLine.company_id == company_id, JournalEntry.entry_date <= date_to, _in_scope(scopes))
+             .where(JournalLine.company_id == company_id, JournalLine.entry_date <= date_to, _in_scope(scopes))
              .group_by(Account.id, Account.code, Account.name, Account.type, Account.subtype,
                        *([JournalLine.branch_id] if group_branch else []))
              .order_by(Account.code))
     if date_from is not None:
-        query = query.where(JournalEntry.entry_date >= date_from)
+        query = query.where(JournalLine.entry_date >= date_from)
     if branch_id:
         query = query.where(JournalLine.branch_id == branch_id)
     if subtypes is not None:
@@ -458,7 +464,7 @@ def totals_by_source(session: Session, scopes: Scopes, company_id: UUID, date_fr
              .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
              .join(Account, Account.id == JournalLine.account_id)
              .where(JournalLine.company_id == company_id, Account.subtype.in_(subtypes),
-                    JournalEntry.entry_date >= date_from, JournalEntry.entry_date <= date_to, _in_scope(scopes))
+                    JournalLine.entry_date >= date_from, JournalLine.entry_date <= date_to, _in_scope(scopes))
              .group_by(JournalEntry.source_type))
     if branch_id:
         query = query.where(JournalLine.branch_id == branch_id)
@@ -539,8 +545,7 @@ def balance_by_subtype_until(session: Session, company_id: UUID, subtypes: list[
     value = session.scalar(
         select(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0))
         .join(Account, Account.id == JournalLine.account_id)
-        .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
-        .where(JournalLine.company_id == company_id, Account.subtype.in_(subtypes), JournalEntry.entry_date <= day))
+        .where(JournalLine.company_id == company_id, Account.subtype.in_(subtypes), JournalLine.entry_date <= day))
     return Decimal(value or 0)
 
 

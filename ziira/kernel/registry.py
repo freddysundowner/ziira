@@ -95,7 +95,7 @@ def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
     import importlib
     import importlib.util
 
-    from ziira.kernel import checks  # noqa: F401  (declares the kernel's own extension points)
+    from ziira.kernel import checks, privacy  # noqa: F401  (the kernel's own extension points and privacy task)
     from ziira.kernel.events import register_unit_package
 
     found = units or discover()

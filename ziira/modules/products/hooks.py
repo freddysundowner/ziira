@@ -1,7 +1,9 @@
-"""Sockets the Products module offers to other units (see public.py for their contracts)."""
+"""Sockets the Products module offers to other units (see public.py for their contracts), and the one it plugs into."""
 
+from ziira.modules.imports.public import IMPORTS_IMPORTER
+from ziira.modules.products.importers import ProductImporter
 from ziira.modules.products.public import PRODUCT_BEFORE_CREATE, SKU_SUGGESTER, SkuSuggester
-from ziira.sdk import define_extension_point, define_validation_hook
+from ziira.sdk import define_extension_point, define_validation_hook, provides
 
 define_validation_hook(
     PRODUCT_BEFORE_CREATE,
@@ -10,3 +12,5 @@ define_validation_hook(
 define_extension_point(
     SKU_SUGGESTER, SkuSuggester,
     "Suggests SKUs for a new product name; Products shows every enabled unit's suggestions.")
+
+provides(IMPORTS_IMPORTER)(ProductImporter)

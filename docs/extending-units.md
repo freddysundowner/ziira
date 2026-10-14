@@ -51,6 +51,8 @@ validates = ["products.product.before_create"]
 | Socket | Contract | Used for |
 |---|---|---|
 | `kernel.integrity_check` (extension point) | `IntegrityCheck.run(session, fix=False) -> list[str]` | A unit verifies its derived data against its source records. `ziira verify` runs every enabled unit's checks for every tenant (`--unit`, `--fix`; exit code 1 while problems remain); `ziira stock-verify` is Inventory's. Run it nightly. |
+| `kernel.personal_data` (extension point) | `PersonalDataProvider.find / export / anonymise` (+ `linked`, `retention`) | A unit that stores data about people lets the business answer access, correction and erasure requests and apply retention rules. A unit that holds a customer, employee, supplier, payer or recipient implements it. See `docs/privacy.md`. |
 | `intel.check` (extension point, owned by Intelligence) | `IntelCheck.run(session, ctx) -> list[Candidate]` | A unit checks its own data every few hours and raises findings (a void spike, stock out, supplier price rise). See `docs/intelligence.md`. |
 | `intel.baseline_metric` (extension point) | `BaselineMetric.samples(...)` | A unit supplies observations per day so Intelligence learns what is normal. |
 | `command.pulse_source` (extension point, owned by the Command Center) | `PulseSource.figures(session, company_id, day) -> list[Figure]` | A unit adds its numbers to the dashboard and the daily brief. |
+| `imports.importer` (extension point, owned by Data Import) | `Importer.validate_row / import_row / totals / imported_totals` | A unit that owns data lets a business bring it in from a CSV file (products, customers, opening stock ...). See `docs/data-import.md`. |

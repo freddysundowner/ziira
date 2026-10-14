@@ -5,7 +5,7 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = ["products"]
-optional = ["inventory", "finance", "payments", "intel", "command"]
+optional = ["inventory", "finance", "payments", "intel", "command", "imports"]
 
 [provides]
 api_prefix = "/api/v1/purchasing"
@@ -14,7 +14,7 @@ subscribes = ["approval.decided", "payment.reversed"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["intel.check", "command.pulse_source"]
+implements = ["intel.check", "command.pulse_source", "imports.importer", "kernel.personal_data"]
 
 [permissions]
 "suppliers.manage" = "Manage suppliers"

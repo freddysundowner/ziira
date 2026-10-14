@@ -35,10 +35,11 @@ def _unb64(text: str) -> bytes:
 # --------------------------------------------------------------------------- passwords
 def hash_password(password: str) -> str:
     """Return a salted scrypt hash, e.g. `scrypt$16384$8$1$<salt>$<hash>`."""
-    if len(password) < 8:
-        raise ValidationFailed("Password must be at least 8 characters")
+    from ziira.kernel import passwords
+
     if len(password) > MAX_PASSWORD_LENGTH:
         raise ValidationFailed(f"Password can be at most {MAX_PASSWORD_LENGTH} characters")
+    passwords.check(password)
     salt = secrets.token_bytes(16)
     digest = hashlib.scrypt(password.encode(), salt=salt, n=_SCRYPT_N, r=_SCRYPT_R, p=_SCRYPT_P)
     return f"scrypt${_SCRYPT_N}${_SCRYPT_R}${_SCRYPT_P}${_b64(salt)}${_b64(digest)}"

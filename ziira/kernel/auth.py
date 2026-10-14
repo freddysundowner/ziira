@@ -21,11 +21,11 @@ from fastapi import Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit, directory
+from ziira.kernel import audit, directory, mfa, throttle
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import Assignment, RequestContext, get_context, set_context
 from ziira.kernel.db import master_session, tenant_engine, tenant_session
-from ziira.kernel.errors import ChooseBusiness, NotFound, Unauthorized, ValidationFailed
+from ziira.kernel.errors import ChallengeExpired, ChooseBusiness, MfaRequired, NotFound, Unauthorized, ValidationFailed
 from ziira.kernel.security import hash_secret, new_secret, read_token, sign_token, verify_password
 
 CHANNELS = ("web", "pos", "api")
@@ -101,6 +101,9 @@ def _try_tenant(tenant_id: UUID, login: str, password: str, channel: str, device
             "where lower(email) = lower(:l) or phone = :l"), {"l": login.strip()}).first()
         if verify_password(password, user.password_hash if user else None) and user and user.status == "active":
             if open_session:
+                if mfa.is_enabled(s, user.id):
+                    raise MfaRequired("Enter the code from your authenticator app", {"challenge": _challenge(
+                        tenant_id, user.id, channel, device_id, device_name)})
                 return _open_session(s, tenant_id, user.id, channel, device_id, device_name, ip_address)
             return True
         set_context(RequestContext(tenant_id=tenant_id, channel=channel, device_id=device_id, ip_address=ip_address))
@@ -111,7 +114,28 @@ def _try_tenant(tenant_id: UUID, login: str, password: str, channel: str, device
 
 def sign_in(workspace: str | None, login: str, password: str, *, device_id: str, device_name: str | None = None,
             channel: str = "web", ip_address: str | None = None) -> Tokens:
-    """Check the password and open a session on this device. Raises Unauthorized.
+    """Check the password and open a session on this device. Raises Unauthorized (wrong login or password),
+    TooManyRequests (too many wrong tries: wait), MfaRequired (the password was right; send the code with the
+    challenge to `complete_mfa`) or ChooseBusiness.
+    """
+    counters = throttle.sign_in_counters(login, ip_address)
+    throttle.guard(counters)
+    try:
+        tokens = _sign_in(workspace, login, password, device_id=device_id, device_name=device_name, channel=channel,
+                          ip_address=ip_address)
+    except (MfaRequired, ChooseBusiness):
+        throttle.succeeded(counters[:2])          # the password was right
+        raise
+    except Unauthorized:
+        throttle.failed(counters)
+        raise
+    throttle.succeeded(counters[:2])
+    return tokens
+
+
+def _sign_in(workspace: str | None, login: str, password: str, *, device_id: str, device_name: str | None = None,
+             channel: str = "web", ip_address: str | None = None) -> Tokens:
+    """The sign-in itself (see `sign_in`).
 
     With a workspace code the business is known. Without one, the login directory lists the businesses that have a
     user with this login; the password is checked in each, and if it is right in exactly one the person is signed in
@@ -162,6 +186,40 @@ def sign_in(workspace: str | None, login: str, password: str, *, device_id: str,
                          {"businesses": named})
 
 
+MFA_CHALLENGE_MINUTES = 5
+
+
+def _challenge(tenant_id: UUID, user_id: UUID, channel: str, device_id: str, device_name: str | None) -> str:
+    """A short-lived signed note that the password was right, to be sent back with the second-factor code."""
+    return sign_token({"k": "mfa", "t": str(tenant_id), "u": str(user_id), "c": channel, "d": device_id,
+                       "n": device_name}, MFA_CHALLENGE_MINUTES)
+
+
+def complete_mfa(challenge: str, code: str, *, ip_address: str | None = None) -> Tokens:
+    """Second step of a sign-in with a second factor: the challenge from the password step and a code (an authenticator
+    code, or a backup code). Wrong codes count against the same limits as passwords."""
+    try:
+        payload = read_token(challenge)
+    except Unauthorized as error:
+        raise ChallengeExpired("This sign-in took too long or is not valid: enter your password again") from error
+    if payload.get("k") != "mfa":
+        raise ChallengeExpired("That is not a sign-in challenge: enter your password again")
+    tenant_id, user_id = UUID(payload["t"]), UUID(payload["u"])
+    counters = throttle.action_counters("mfa", str(user_id), ip_address, per_subject=5, per_ip=30)
+    throttle.guard(counters)
+    _require_active_tenant(tenant_id)
+    with tenant_session(tenant_id) as s:
+        active = s.execute(text("select status from kernel.app_user where id = :u"), {"u": str(user_id)}).scalar()
+        if active == "active" and mfa.verify(s, user_id, code):
+            throttle.succeeded(counters[:1])
+            return _open_session(s, tenant_id, user_id, payload["c"], payload["d"], payload.get("n"), ip_address)
+        set_context(RequestContext(tenant_id=tenant_id, channel=payload["c"], device_id=payload["d"],
+                                   ip_address=ip_address))
+        audit.record(s, "mfa_failed", "kernel.app_user", user_id, {"device_id": payload["d"]})
+    throttle.failed(counters)
+    raise Unauthorized("That code is not right")
+
+
 def open_session_for(tenant_id: UUID, user_id: UUID, *, device_id: str, device_name: str | None = None,
                      channel: str = "web", ip_address: str | None = None) -> Tokens:
     """Open a session for a user who has just proved who they are in some other way (the owner who verified their email
@@ -185,12 +243,15 @@ def _open_session(s: Session, tenant_id: UUID, user_id: UUID, channel: str, devi
     set_context(RequestContext(tenant_id=tenant_id, user_id=user_id, channel=channel, session_id=session_id,
                                device_id=device_id, ip_address=ip_address))
     audit.record(s, "login", "kernel.app_user", user_id, {"device_id": device_id, "session_id": session_id})
-    return _tokens(tenant_id, user_id, session_id, refresh)
+    return _tokens(tenant_id, user_id, session_id, refresh, setup_required=mfa.must_set_up(s, user_id))
 
 
-def _tokens(tenant_id: UUID, user_id: UUID, session_id: UUID, refresh: str) -> Tokens:
+def _tokens(tenant_id: UUID, user_id: UUID, session_id: UUID, refresh: str, *, setup_required: bool = False) -> Tokens:
     minutes = get_settings().access_token_minutes
-    access = sign_token({"t": str(tenant_id), "u": str(user_id), "s": str(session_id)}, minutes)
+    claims: dict[str, object] = {"t": str(tenant_id), "u": str(user_id), "s": str(session_id)}
+    if setup_required:
+        claims["m"] = 1          # a second factor is compulsory and not set up: only the setup calls work
+    access = sign_token(claims, minutes)
     return Tokens(access_token=access, refresh_token=refresh, expires_in=minutes * 60,
                   session_id=session_id, user_id=user_id, tenant_id=tenant_id)
 
@@ -218,7 +279,8 @@ def refresh(refresh_token: str, device_id: str) -> Tokens:
         new_refresh = f"zr_{tenant_id.hex}_{new_secret()}"
         s.execute(text("update kernel.user_session set refresh_hash = :h, last_used_at = now() where id = :i"),
                   {"h": hash_secret(new_refresh), "i": str(row.id)})
-    return _tokens(tenant_id, row.user_id, row.id, new_refresh)
+        setup_required = mfa.must_set_up(s, row.user_id)
+    return _tokens(tenant_id, row.user_id, row.id, new_refresh, setup_required=setup_required)
 
 
 def sign_out(s: Session, session_id: UUID) -> None:
@@ -282,7 +344,8 @@ def context_from_access_token(token: str) -> RequestContext:
             raise Unauthorized("Session is no longer valid; sign in again")
         assignments = load_assignments(s, user_id)
     return RequestContext(tenant_id=tenant_id, user_id=user_id, channel=row.channel, session_id=session_id,
-                          assignments=assignments, device_id=row.device_id)
+                          assignments=assignments, device_id=row.device_id,
+                          mfa_setup_required=bool(payload.get("m")))
 
 
 def context_from_api_key(key: str) -> RequestContext:

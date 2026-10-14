@@ -146,6 +146,12 @@ class CompanySettingsOut(Out):
     intel_alert_channel: Literal["off", "sms", "email"]
     intel_alert_min_severity: Literal["low", "medium", "high", "critical"]
     intel_action_level: int
+    privacy_response_days: int
+    privacy_erasure_needs_approval: bool
+    retention_notifications_days: int
+    retention_audit_years: int
+    retention_employee_records_years: int
+    retention_inactive_customers_years: int
 
 
 class CompanySettingsIn(BaseModel):
@@ -170,6 +176,12 @@ class CompanySettingsIn(BaseModel):
     intel_alert_channel: Literal["off", "sms", "email"] | None = None
     intel_alert_min_severity: Literal["low", "medium", "high", "critical"] | None = None
     intel_action_level: Annotated[int, Field(ge=1, le=4)] | None = None
+    privacy_response_days: Annotated[int, Field(ge=1, le=365)] | None = None
+    privacy_erasure_needs_approval: bool | None = None
+    retention_notifications_days: Annotated[int, Field(ge=0, le=3650)] | None = None
+    retention_audit_years: Annotated[int, Field(ge=1, le=100)] | None = None
+    retention_employee_records_years: Annotated[int, Field(ge=0, le=100)] | None = None
+    retention_inactive_customers_years: Annotated[int, Field(ge=0, le=100)] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles

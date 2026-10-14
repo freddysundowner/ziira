@@ -76,8 +76,8 @@ def test_a_recurring_task_of_a_unit_that_is_off_does_not_run(client, registry) -
     from ziira.kernel import jobs
 
     other = make_stock_shop(client, registry, "Periodic Off Co")
-    assert jobs.run_periodic(other["tenant_id"]) == 0
-    assert one(other, "select count(*) from kernel.periodic_run") == 0
+    assert jobs.run_periodic(other["tenant_id"]) == 1                    # only the kernel's own daily privacy task
+    assert one(other, "select string_agg(name, ',') from kernel.periodic_run") == "privacy.apply_retention"
     assert uuid4()
     with pytest.raises(ValueError):
         jobs.periodic("too.fast", every_seconds=5)

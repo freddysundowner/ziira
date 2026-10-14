@@ -135,7 +135,7 @@ export function Layout() {
               { label: t("signOut"), icon: <LogOut className="h-4 w-4" />, onSelect: () => void signOut(), danger: true },
             ]} />
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-5 sm:px-6 sm:py-7">
+        <main className="w-full min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
           <ErrorBoundary resetKey={location.pathname}><Outlet /></ErrorBoundary>
         </main>
       </div>

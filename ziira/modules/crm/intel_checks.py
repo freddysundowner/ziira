@@ -52,11 +52,13 @@ class OverCreditLimit(IntelCheck):
             return []                                   # without sales there are no balances to compare
         currency = currency_of(session, ctx.company_id)
         found: list[Candidate] = []
-        for c in session.execute(text(
-                "select id, code, name, credit_limit from crm.customer where company_id = :c and credit_limit > 0 "
-                "and status <> 'inactive' order by credit_limit desc, code limit :n"),
-                {"c": str(ctx.company_id), "n": int(ctx.number("max_customers"))}).all():
-            owed = pos_public.customer_balance(session, c.id)
+        customers = session.execute(text(
+            "select id, code, name, credit_limit from crm.customer where company_id = :c and credit_limit > 0 "
+            "and status <> 'inactive' order by credit_limit desc, code limit :n"),
+            {"c": str(ctx.company_id), "n": int(ctx.number("max_customers"))}).all()
+        balances = pos_public.customer_balances(session, [c.id for c in customers])
+        for c in customers:
+            owed = balances[c.id]
             if owed <= c.credit_limit:
                 continue
             over = owed - c.credit_limit

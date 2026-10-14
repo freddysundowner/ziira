@@ -5,7 +5,7 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = []
-optional = ["finance", "payments", "pos", "intel", "command"]
+optional = ["finance", "payments", "pos", "intel", "command", "imports"]
 
 [provides]
 api_prefix = "/api/v1/people"
@@ -13,7 +13,7 @@ publishes = ["employee.pay_changed", "employee.bank_changed", "payroll.approved"
 subscribes = ["till.opened", "till.closed"]
 
 [extends]
-implements = ["intel.check", "intel.baseline_metric", "command.pulse_source"]
+implements = ["intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "kernel.personal_data"]
 
 [permissions]
 "employees.view" = "View employees"

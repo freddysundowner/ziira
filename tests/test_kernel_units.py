@@ -287,6 +287,8 @@ def test_company_settings_units(t) -> None:  # type: ignore[no-untyped-def]
             cs.get_setting(s, t["company_id"], "colour")
         cs.update_settings(s, t["company_id"], {"count_variance_threshold": "7.5"})
         assert cs.get_setting(s, t["company_id"], "count_variance_threshold") == Dec("7.5")
+        from ziira.kernel import audit
+        audit.flush_pending(s)                      # audit entries are written just before commit; read it now
         changes = s.execute(text("select changes from kernel.audit_log where entity_type = 'kernel.company_settings' "
                                  "order by id desc limit 1")).scalar_one()
         assert changes == {"count_variance_threshold": {"from": "0", "to": "7.5"}}

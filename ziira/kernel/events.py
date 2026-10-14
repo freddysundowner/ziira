@@ -96,21 +96,38 @@ def after_commit_handlers(event_type: str) -> list[tuple[str, Handler]]:
     return list(_after_commit.get(event_type, []))
 
 
+def _enabled_units(session: Session) -> set[str]:
+    """The units enabled for the tenant. Looked up once per transaction: an operation publishes many events."""
+    found: set[str] | None = session.info.get("enabled_units")
+    if found is None:
+        found = {"kernel", *session.execute(text(
+            "select unit_name from kernel.tenant_unit "
+            "where status = 'enabled' and tenant_id = kernel.current_tenant()")).scalars()}
+        session.info["enabled_units"] = found
+    return found
+
+
 def publish(session: Session, event: Event) -> None:
     """Dispatch to enabled in-transaction subscribers, then write to the outbox."""
+    publish_many(session, [event])
+
+
+def publish_many(session: Session, events: list[Event]) -> None:
+    """`publish` for a batch (a check that finds thousands of things): each event goes to the subscribers in order,
+    then all are written to the outbox with one statement."""
+    if not events:
+        return
     ctx = get_context()
-    enabled = {"kernel", *session.execute(text(
-        "select unit_name from kernel.tenant_unit "
-        "where status = 'enabled' and tenant_id = kernel.current_tenant()")).scalars()}
-    for unit, handler in _subscribers.get(event.type, []):
-        if unit in enabled:
-            handler(session, event)
+    enabled = _enabled_units(session)
+    for event in events:
+        for unit, handler in _subscribers.get(event.type, []):
+            if unit in enabled:
+                handler(session, event)
     session.execute(
         text("insert into kernel.event_outbox (tenant_id, event_type, aggregate_type, aggregate_id, payload) "
              "values (:t, :e, :a, :i, cast(:p as jsonb))"),
-        {"t": str(ctx.tenant_id), "e": event.type, "a": event.aggregate_type,
-         "i": str(event.aggregate_id), "p": json.dumps(event.payload, default=str)},
-    )
+        [{"t": str(ctx.tenant_id), "e": event.type, "a": event.aggregate_type, "i": str(event.aggregate_id),
+          "p": json.dumps(event.payload, default=str)} for event in events])
 
 
 def clear_subscribers() -> None:

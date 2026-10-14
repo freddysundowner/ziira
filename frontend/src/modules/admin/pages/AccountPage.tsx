@@ -6,6 +6,8 @@ import {
   toast, type Theme, unwrap, useFormState, useMutation, useQuery, useQueryClient, useSession, useTheme, useTranslation, type Schemas,
 } from "@/sdk";
 
+import TwoStepCard from "./TwoStepCard";
+
 type SessionRow = Schemas["SessionOut"];
 
 /** The signed-in person's own settings: profile, password, devices, language and theme. Any user may open it. */
@@ -22,6 +24,7 @@ export default function AccountPage() {
           </Card>
           <Preferences />
           <PasswordCard />
+          <TwoStepCard />
         </div>
         <Sessions />
       </div>

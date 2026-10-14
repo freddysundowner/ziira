@@ -1,4 +1,4 @@
-import { KeyRound, Plus, ShieldCheck, UserCheck, UserX } from "lucide-react";
+import { KeyRound, Plus, ShieldCheck, ShieldOff, UserCheck, UserX } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
 import {
@@ -15,11 +15,17 @@ export default function UsersPage() {
   const [rolesFor, setRolesFor] = useState<User | null>(null);
   const [passwordFor, setPasswordFor] = useState<User | null>(null);
   const [toggle, setToggle] = useState<User | null>(null);
+  const [resetFor, setResetFor] = useState<User | null>(null);
   const users = useQuery({ queryKey: ["users"], queryFn: () => unwrap(api.GET("/api/v1/users")) });
 
   const setActive = useMutation({
     mutationFn: (u: User) => unwrap(api.POST("/api/v1/users/{user_id}/status", { params: { path: { user_id: u.id } }, body: { active: u.status === "disabled" } })),
     onSuccess: (u) => { void qc.invalidateQueries({ queryKey: ["users"] }); toast(t(u.status === "disabled" ? "disabledDone" : "enabledDone", { name: u.full_name }), "ok"); setToggle(null); },
+  });
+
+  const resetMfa = useMutation({
+    mutationFn: (u: User) => unwrap(api.POST("/api/v1/users/{user_id}/mfa/reset", { params: { path: { user_id: u.id } } })),
+    onSuccess: (_d, u) => { toast(t("resetMfaDone", { name: u.full_name }), "ok"); setResetFor(null); },
   });
 
   return (
@@ -39,6 +45,7 @@ export default function UsersPage() {
               <Menu label={t("actions")} trigger={<span className="rounded-lg px-2 py-1 text-muted hover:bg-sunken">•••</span>} items={[
                 { label: t("manageRoles"), icon: <ShieldCheck className="h-4 w-4" />, onSelect: () => setRolesFor(u) },
                 { label: t("setPassword"), icon: <KeyRound className="h-4 w-4" />, onSelect: () => setPasswordFor(u) },
+                { label: t("resetMfa"), icon: <ShieldOff className="h-4 w-4" />, onSelect: () => setResetFor(u) },
                 "separator",
                 u.status === "disabled"
                   ? { label: t("enable"), icon: <UserCheck className="h-4 w-4" />, onSelect: () => setToggle(u) }
@@ -51,6 +58,8 @@ export default function UsersPage() {
       <NewUser open={creating} onClose={() => setCreating(false)} />
       <RolesDrawer user={rolesFor} onClose={() => setRolesFor(null)} />
       <PasswordModal user={passwordFor} onClose={() => setPasswordFor(null)} />
+      <ConfirmDialog open={!!resetFor} onClose={() => setResetFor(null)} busy={resetMfa.isPending} danger title={t("resetMfa")} confirmLabel={t("resetMfa")}
+        message={t("resetMfaAsk", { name: resetFor?.full_name })} onConfirm={() => resetFor && resetMfa.mutate(resetFor)} />
       <ConfirmDialog open={!!toggle} onClose={() => setToggle(null)} busy={setActive.isPending} danger={toggle?.status !== "disabled"}
         title={toggle?.status === "disabled" ? t("enable") : t("disable")} confirmLabel={toggle?.status === "disabled" ? t("enable") : t("disable")}
         message={toggle?.status === "disabled" ? t("enableAsk", { name: toggle?.full_name }) : t("disableAsk", { name: toggle?.full_name })}
