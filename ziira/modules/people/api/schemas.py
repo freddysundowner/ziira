@@ -1,6 +1,6 @@
 """Request and response shapes for the people API."""
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 from uuid import UUID
@@ -197,3 +197,118 @@ class RuleOut(BaseModel):
 
 class VerifyIn(BaseModel):
     note: str | None = Field(default=None, max_length=300)
+
+
+# --------------------------------------------------------------------------- shifts, attendance, leave
+class ShiftIn(BaseModel):
+    company_id: UUID
+    branch_id: UUID | None = None
+    name: str = Field(min_length=1, max_length=60)
+    start_time: time
+    end_time: time
+
+
+class ShiftOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    branch_id: UUID | None
+    name: str
+    start_time: time
+    end_time: time
+
+
+class AttendanceIn(BaseModel):
+    employee_id: UUID
+    work_date: date
+    clock_in: datetime | None = None
+    clock_out: datetime | None = None
+    hours: Annotated[Decimal, Field(ge=0, le=24, max_digits=5, decimal_places=2)] | None = None
+    overtime_hours: Annotated[Decimal, Field(ge=0, le=24, max_digits=5, decimal_places=2)] | None = None
+    shift_id: UUID | None = None
+
+
+class AttendanceUpdateIn(BaseModel):
+    """Only the fields sent are changed."""
+
+    model_config = ConfigDict(extra="forbid")
+    clock_in: datetime | None = None
+    clock_out: datetime | None = None
+    hours: Annotated[Decimal, Field(ge=0, le=24, max_digits=5, decimal_places=2)] | None = None
+    overtime_hours: Annotated[Decimal, Field(ge=0, le=24, max_digits=5, decimal_places=2)] | None = None
+
+
+class AttendanceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    employee_id: UUID
+    branch_id: UUID | None
+    work_date: date
+    shift_id: UUID | None
+    clock_in: datetime | None
+    clock_out: datetime | None
+    hours: Decimal | None
+    overtime_hours: Decimal
+    source: str
+
+
+class AttendanceSummaryOut(BaseModel):
+    employee_id: UUID
+    employee_no: str
+    full_name: str
+    days: int
+    hours: Decimal
+    overtime_hours: Decimal
+
+
+class LeaveTypeIn(BaseModel):
+    company_id: UUID
+    name: str = Field(min_length=1, max_length=60)
+    days_per_year: Annotated[Decimal, Field(gt=0, le=366, max_digits=6, decimal_places=2)] | None = None
+    is_paid: bool = True
+
+
+class LeaveTypeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    name: str
+    days_per_year: Decimal | None
+    is_paid: bool
+
+
+class LeaveIn(BaseModel):
+    employee_id: UUID | None = Field(default=None, description="Left out: the person's own employee record")
+    leave_type_id: UUID
+    start_date: date
+    end_date: date
+    days: Annotated[Decimal, Field(gt=0, le=366, max_digits=6, decimal_places=2)] | None = Field(
+        default=None, description="Left out: the working days from start to end. Half days allowed.")
+    reason: str | None = Field(default=None, max_length=300)
+
+
+class LeaveDecisionIn(BaseModel):
+    note: str | None = Field(default=None, max_length=300)
+
+
+class LeaveOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    employee_id: UUID
+    leave_type_id: UUID
+    start_date: date
+    end_date: date
+    days: Decimal
+    status: str
+    approved_by: UUID | None
+    reason: str | None
+    decided_note: str | None
+
+
+class LeaveBalanceOut(BaseModel):
+    leave_type_id: UUID
+    leave_type: str
+    is_paid: bool
+    days_per_year: Decimal | None
+    taken: Decimal
+    left: Decimal | None

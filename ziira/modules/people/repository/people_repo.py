@@ -1,18 +1,24 @@
 """Database access for the people schema. Row-level security scopes every query to the tenant."""
 
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import ColumnElement, and_, false, or_, select, true
+from sqlalchemy import ColumnElement, and_, false, func, or_, select, true
 from sqlalchemy.orm import Session
 
 from ziira.modules.people.repository.models import (
+    Attendance,
     Department,
     Employee,
     EmployeeBankAccount,
     EmployeePayItem,
     EmploymentTerms,
+    LeaveRequest,
+    LeaveType,
     PayComponent,
+    PayrollRun,
+    Shift,
 )
 
 Scopes = list[tuple[UUID | None, UUID | None]] | None
@@ -190,3 +196,146 @@ def pending_bank(session: Session, employee_id: UUID) -> EmployeeBankAccount | N
     return session.scalars(select(EmployeeBankAccount).where(
         EmployeeBankAccount.employee_id == employee_id, EmployeeBankAccount.approved_by.is_(None),
         EmployeeBankAccount.rejected.is_(False))).first()
+
+
+# --------------------------------------------------------------------------- shifts and attendance
+def get_shift(session: Session, shift_id: UUID) -> Shift | None:
+    return session.get(Shift, shift_id)
+
+
+def shift_by_name(session: Session, company_id: UUID, branch_id: UUID | None, name: str) -> Shift | None:
+    query = select(Shift).where(Shift.company_id == company_id, Shift.name == name)
+    query = query.where(Shift.branch_id == branch_id) if branch_id else query.where(Shift.branch_id.is_(None))
+    return session.scalars(query).first()
+
+
+def list_shifts(session: Session, company_ids: set[UUID] | None, company_id: UUID | None) -> list[Shift]:
+    query = select(Shift).order_by(Shift.name)
+    if company_ids is not None:
+        query = query.where(Shift.company_id.in_(company_ids))
+    if company_id:
+        query = query.where(Shift.company_id == company_id)
+    return list(session.scalars(query))
+
+
+def get_attendance(session: Session, attendance_id: UUID, *, lock: bool = False) -> Attendance | None:
+    query = select(Attendance).where(Attendance.id == attendance_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def attendance_on(session: Session, employee_id: UUID, day: date, shift_id: UUID | None) -> Attendance | None:
+    query = select(Attendance).where(Attendance.employee_id == employee_id, Attendance.work_date == day)
+    query = query.where(Attendance.shift_id == shift_id) if shift_id else query.where(Attendance.shift_id.is_(None))
+    return session.scalars(query).first()
+
+
+def list_attendance(session: Session, scopes: Scopes, *, employee_id: UUID | None, branch_id: UUID | None,
+                    date_from: date | None, date_to: date | None, limit: int, offset: int) -> list[Attendance]:
+    query = (select(Attendance).join(Employee, Employee.id == Attendance.employee_id).where(employee_scope(scopes))
+             .order_by(Attendance.work_date.desc(), Employee.employee_no).limit(limit).offset(offset))
+    if employee_id:
+        query = query.where(Attendance.employee_id == employee_id)
+    if branch_id:
+        query = query.where(Attendance.branch_id == branch_id)
+    if date_from:
+        query = query.where(Attendance.work_date >= date_from)
+    if date_to:
+        query = query.where(Attendance.work_date <= date_to)
+    return list(session.scalars(query))
+
+
+def attendance_totals(session: Session, employee_id: UUID, start: date, end: date) -> tuple[int, Decimal, Decimal]:
+    """Days present, hours and overtime hours of an employee in a period."""
+    row = session.execute(select(
+        func.count(), func.coalesce(func.sum(Attendance.hours), 0),
+        func.coalesce(func.sum(Attendance.overtime_hours), 0)
+    ).where(Attendance.employee_id == employee_id, Attendance.work_date >= start, Attendance.work_date <= end)).one()
+    return int(row[0]), Decimal(str(row[1])), Decimal(str(row[2]))
+
+
+def locked_run_covering(session: Session, company_id: UUID, day: date) -> PayrollRun | None:
+    """A payroll run that has been approved (or paid) for a period containing the day: its inputs are final."""
+    return session.scalars(select(PayrollRun).where(
+        PayrollRun.company_id == company_id, PayrollRun.period_start <= day, PayrollRun.period_end >= day,
+        PayrollRun.status.in_(("approved", "posted", "paid")))).first()
+
+
+# --------------------------------------------------------------------------- leave
+def get_leave_type(session: Session, leave_type_id: UUID) -> LeaveType | None:
+    return session.get(LeaveType, leave_type_id)
+
+
+def leave_type_by_name(session: Session, company_id: UUID, name: str) -> LeaveType | None:
+    return session.scalars(select(LeaveType).where(LeaveType.company_id == company_id,
+                                                   LeaveType.name == name)).first()
+
+
+def list_leave_types(session: Session, company_ids: set[UUID] | None, company_id: UUID | None) -> list[LeaveType]:
+    query = select(LeaveType).order_by(LeaveType.name)
+    if company_ids is not None:
+        query = query.where(LeaveType.company_id.in_(company_ids))
+    if company_id:
+        query = query.where(LeaveType.company_id == company_id)
+    return list(session.scalars(query))
+
+
+def get_leave(session: Session, leave_id: UUID, *, lock: bool = False) -> LeaveRequest | None:
+    query = select(LeaveRequest).where(LeaveRequest.id == leave_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def leave_of(session: Session, employee_id: UUID, *, statuses: tuple[str, ...] | None = None) -> list[LeaveRequest]:
+    query = select(LeaveRequest).where(LeaveRequest.employee_id == employee_id).order_by(
+        LeaveRequest.start_date.desc())
+    if statuses:
+        query = query.where(LeaveRequest.status.in_(statuses))
+    return list(session.scalars(query))
+
+
+def list_leave(session: Session, scopes: Scopes, *, employee_id: UUID | None, status: str | None,
+               date_from: date | None, date_to: date | None, limit: int, offset: int) -> list[LeaveRequest]:
+    query = (select(LeaveRequest).join(Employee, Employee.id == LeaveRequest.employee_id)
+             .where(employee_scope(scopes)).order_by(LeaveRequest.start_date.desc(), LeaveRequest.created_at.desc())
+             .limit(limit).offset(offset))
+    if employee_id:
+        query = query.where(LeaveRequest.employee_id == employee_id)
+    if status:
+        query = query.where(LeaveRequest.status == status)
+    if date_from:
+        query = query.where(LeaveRequest.end_date >= date_from)
+    if date_to:
+        query = query.where(LeaveRequest.start_date <= date_to)
+    return list(session.scalars(query))
+
+
+def approved_leave_in(session: Session, employee_id: UUID, start: date,
+                      end: date) -> list[tuple[LeaveRequest, LeaveType]]:
+    """Approved leave overlapping a period, with its type."""
+    rows = session.execute(select(LeaveRequest, LeaveType).join(LeaveType, LeaveType.id == LeaveRequest.leave_type_id)
+                           .where(LeaveRequest.employee_id == employee_id, LeaveRequest.status == "approved",
+                                  LeaveRequest.start_date <= end, LeaveRequest.end_date >= start))
+    return [(r, t) for r, t in rows]
+
+
+def days_taken(session: Session, employee_id: UUID, leave_type_id: UUID, year: int) -> Decimal:
+    value = session.scalar(select(func.coalesce(func.sum(LeaveRequest.days), 0)).where(
+        LeaveRequest.employee_id == employee_id, LeaveRequest.leave_type_id == leave_type_id,
+        LeaveRequest.status == "approved", func.extract("year", LeaveRequest.start_date) == year))
+    return Decimal(value or 0)
+
+
+def attendance_summary(session: Session, scopes: Scopes, company_id: UUID, start: date,
+                       end: date) -> list[tuple[Employee, int, Decimal, Decimal]]:
+    """Per employee: days present, hours and overtime hours in a period (employees with no attendance are left out)."""
+    rows = session.execute(
+        select(Employee, func.count(Attendance.id), func.coalesce(func.sum(Attendance.hours), 0),
+               func.coalesce(func.sum(Attendance.overtime_hours), 0))
+        .join(Attendance, Attendance.employee_id == Employee.id)
+        .where(employee_scope(scopes), Employee.company_id == company_id, Attendance.work_date >= start,
+               Attendance.work_date <= end)
+        .group_by(Employee.id).order_by(Employee.employee_no))
+    return [(e, int(n), Decimal(str(h)), Decimal(str(o))) for e, n, h, o in rows]

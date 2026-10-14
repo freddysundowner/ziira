@@ -44,7 +44,8 @@ alter table people.employee_bank_account drop constraint employee_bank_account_m
 alter table people.employee_bank_account add constraint employee_bank_account_method_check
   check (method in ('bank', 'mobile_money'));
 alter table people.leave_type add constraint leave_type_unique unique (company_id, name);
-create unique index shift_unique on people.shift (coalesce(branch_id, '00000000-0000-0000-0000-000000000000'::uuid), name);
+alter table people.shift add column company_id uuid not null references kernel.company(id);
+create unique index shift_unique on people.shift (company_id, coalesce(branch_id, '00000000-0000-0000-0000-000000000000'::uuid), name);
 
 -- A pay or bank detail change waits for a different person to approve it (approved_by is null until then).
 alter table people.employment_terms add column note text, add column rejected boolean not null default false;
@@ -53,6 +54,7 @@ alter table people.employee_pay_item add column description text;
 alter table people.leave_request
   add column reason text,
   add column decided_note text;
+create unique index attendance_one_per_day on people.attendance (employee_id, work_date) where shift_id is null;
 alter table people.attendance add constraint attendance_hours_check check (hours is null or (hours >= 0 and hours <= 24));
 
 -- Payroll runs

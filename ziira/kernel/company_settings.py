@@ -83,6 +83,38 @@ def _footer(value: Any) -> str:
     return value.strip()
 
 
+WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+
+
+def _weekend(value: Any) -> list[str]:
+    if not isinstance(value, list) or not all(isinstance(x, str) for x in value):
+        raise ValidationFailed("Expected a list of weekday names, such as ['sat', 'sun']")
+    days = {x.strip().lower()[:3] for x in value}
+    if not days <= set(WEEKDAYS) or len(days) > 3:
+        raise ValidationFailed("Weekend days are up to three of: " + ", ".join(WEEKDAYS))
+    return [d for d in WEEKDAYS if d in days]
+
+
+def _day_divisor(value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or not 20 <= value <= 31:
+        raise ValidationFailed("Expected a whole number of days from 20 to 31")
+    return value
+
+
+def _multiplier(value: Any) -> Decimal:
+    amount = _non_negative_amount(value)
+    if amount < 1 or amount > 5:
+        raise ValidationFailed("Expected a multiplier from 1 to 5")
+    return amount
+
+
+def _positive_hours(value: Any) -> Decimal:
+    amount = _non_negative_amount(value)
+    if amount < 1 or amount > 400:
+        raise ValidationFailed("Expected hours from 1 to 400")
+    return amount
+
+
 def _calling_code(value: Any) -> str:
     if not isinstance(value, str):
         raise ValidationFailed("Expected the country calling code as text, such as '44'")
@@ -114,6 +146,14 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "A customer is not chased about the same invoice more often than this"),
     Setting("phone_country_code", "", _calling_code,
             "The country calling code of the business's phone numbers (such as 44): national numbers are read with it"),
+    Setting("weekend_days", ["sat", "sun"], _weekend,
+            "The days of the week that are not working days (leave and absence are counted without them)"),
+    Setting("payroll_unpaid_day_divisor", 30, _day_divisor,
+            "A day of unpaid leave takes off the basic pay divided by this many days"),
+    Setting("overtime_multiplier", Decimal("1.5"), _multiplier,
+            "Overtime is paid at this multiple of the normal hourly rate"),
+    Setting("overtime_hours_per_month", Decimal("173.33"), _positive_hours,
+            "The normal hours in a month: basic pay divided by this is the hourly rate for overtime"),
     Setting("receipt_footer", "Thank you for shopping with us", _footer,
             "The line printed at the bottom of till receipts and payment receipts"),
     Setting("invoice_footer", "", _footer,

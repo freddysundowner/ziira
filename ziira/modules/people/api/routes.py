@@ -1,18 +1,20 @@
 """HTTP endpoints of the People, HR and Payroll module. Routes only convert HTTP to service calls."""
 
 from collections.abc import Callable
+from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
 
 from ziira.modules.people.api import schemas as sc
 from ziira.modules.people.permissions import (
+    ATTENDANCE_MANAGE,
     EMPLOYEE_PAY_EDIT,
     EMPLOYEES_MANAGE,
     PAYROLL_RATES,
 )
 from ziira.modules.people.repository.models import Employee
-from ziira.modules.people.services import access, employees, pay_setup, statutory_rules
+from ziira.modules.people.services import access, attendance, employees, leave, pay_setup, statutory_rules
 from ziira.sdk import Forbidden, RequestContext, Session, db_session, page_limit, page_offset, request_context
 
 router = APIRouter()
@@ -35,6 +37,8 @@ MANAGE = [Depends(any_of(EMPLOYEES_MANAGE))]
 PAY = [Depends(any_of(EMPLOYEE_PAY_EDIT))]
 RULES_READ = [Depends(any_of(*statutory_rules.READERS))]
 RULES_WRITE = [Depends(any_of(PAYROLL_RATES))]
+ATTEND = [Depends(any_of(ATTENDANCE_MANAGE))]
+SIGNED_IN = [Depends(request_context)]
 
 
 # --------------------------------------------------------------------------- departments and employees
@@ -195,4 +199,113 @@ def post_verify_rule(rule_id: UUID, body: sc.VerifyIn, session: Session = Depend
 @router.delete("/rules/{rule_id}", status_code=NO_CONTENT, dependencies=RULES_WRITE)
 def delete_rule(rule_id: UUID, session: Session = Depends(db_session)) -> None:
     statutory_rules.delete_rule(session, rule_id)
+
+
+
+# --------------------------------------------------------------------------- shifts and attendance
+@router.post("/shifts", response_model=sc.ShiftOut, status_code=status.HTTP_201_CREATED, dependencies=ATTEND)
+def post_shift(body: sc.ShiftIn, session: Session = Depends(db_session)) -> object:
+    return attendance.create_shift(session, company_id=body.company_id, name=body.name, start_time=body.start_time,
+                                   end_time=body.end_time, branch_id=body.branch_id)
+
+
+@router.get("/shifts", response_model=list[sc.ShiftOut], dependencies=READ)
+def get_shifts(company_id: UUID | None = None, session: Session = Depends(db_session)) -> object:
+    return attendance.list_shifts(session, company_id)
+
+
+@router.post("/attendance", response_model=sc.AttendanceOut, status_code=status.HTTP_201_CREATED, dependencies=ATTEND)
+def post_attendance(body: sc.AttendanceIn, session: Session = Depends(db_session)) -> object:
+    """Record that an employee worked on a day (clock times, or the hours; overtime from the shift)."""
+    return attendance.record_attendance(
+        session, employee_id=body.employee_id, work_date=body.work_date, clock_in=body.clock_in,
+        clock_out=body.clock_out, hours=body.hours, overtime_hours=body.overtime_hours, shift_id=body.shift_id)
+
+
+@router.patch("/attendance/{attendance_id}", response_model=sc.AttendanceOut, dependencies=ATTEND)
+def patch_attendance(attendance_id: UUID, body: sc.AttendanceUpdateIn,
+                     session: Session = Depends(db_session)) -> object:
+    return attendance.update_attendance(session, attendance_id, body.model_dump(exclude_unset=True))
+
+
+@router.get("/attendance", response_model=list[sc.AttendanceOut], dependencies=ATTEND)
+def get_attendance(employee_id: UUID | None = None, branch_id: UUID | None = None, date_from: date | None = None,
+                   date_to: date | None = None, limit: int = page_limit(100), offset: int = page_offset(),
+                   session: Session = Depends(db_session)) -> object:
+    return attendance.list_attendance(session, employee_id=employee_id, branch_id=branch_id, date_from=date_from,
+                                      date_to=date_to, limit=limit, offset=offset)
+
+
+@router.get("/attendance/summary", response_model=list[sc.AttendanceSummaryOut], dependencies=ATTEND)
+def get_attendance_summary(company_id: UUID, date_from: date, date_to: date,
+                           session: Session = Depends(db_session)) -> object:
+    """Days present, hours and overtime per employee in a period."""
+    return [sc.AttendanceSummaryOut(employee_id=e.id, employee_no=e.employee_no, full_name=e.full_name, days=d,
+                                    hours=h, overtime_hours=o)
+            for e, d, h, o in attendance.attendance_summary(session, company_id, date_from, date_to)]
+
+
+# --------------------------------------------------------------------------- leave
+@router.post("/leave-types", response_model=sc.LeaveTypeOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE)
+def post_leave_type(body: sc.LeaveTypeIn, session: Session = Depends(db_session)) -> object:
+    return leave.create_leave_type(session, company_id=body.company_id, name=body.name,
+                                   days_per_year=body.days_per_year, is_paid=body.is_paid)
+
+
+@router.get("/leave-types", response_model=list[sc.LeaveTypeOut], dependencies=SIGNED_IN)
+def get_leave_types(company_id: UUID | None = None, session: Session = Depends(db_session)) -> object:
+    return leave.list_leave_types(session, company_id)
+
+
+@router.post("/leave-requests", response_model=sc.LeaveOut, status_code=status.HTTP_201_CREATED,
+             dependencies=SIGNED_IN)
+def post_leave(body: sc.LeaveIn, session: Session = Depends(db_session)) -> object:
+    """Ask for leave: for yourself, or (with the right permission) for an employee."""
+    return leave.request_leave(session, employee_id=body.employee_id, leave_type_id=body.leave_type_id,
+                               start_date=body.start_date, end_date=body.end_date, days=body.days, reason=body.reason)
+
+
+@router.get("/leave-requests", response_model=list[sc.LeaveOut], dependencies=READ)
+def get_leave_requests(employee_id: UUID | None = None,
+                       status_: str | None = Query(default=None, alias="status",
+                                                   pattern="^(pending|approved|rejected|cancelled)$"),
+                       date_from: date | None = None, date_to: date | None = None, limit: int = page_limit(50),
+                       offset: int = page_offset(), session: Session = Depends(db_session)) -> object:
+    return leave.list_leave(session, employee_id=employee_id, status=status_, date_from=date_from, date_to=date_to,
+                            limit=limit, offset=offset)
+
+
+@router.get("/me/leave-requests", response_model=list[sc.LeaveOut], dependencies=SIGNED_IN)
+def get_my_leave(session: Session = Depends(db_session)) -> object:
+    return leave.my_leave(session)
+
+
+@router.get("/leave-requests/{leave_id}", response_model=sc.LeaveOut, dependencies=SIGNED_IN)
+def get_leave_request(leave_id: UUID, session: Session = Depends(db_session)) -> object:
+    return leave.get_leave(session, leave_id)
+
+
+@router.post("/leave-requests/{leave_id}/approve", response_model=sc.LeaveOut, dependencies=SIGNED_IN)
+def post_approve_leave(leave_id: UUID, body: sc.LeaveDecisionIn, session: Session = Depends(db_session)) -> object:
+    return leave.decide_leave(session, leave_id, approve=True, note=body.note)
+
+
+@router.post("/leave-requests/{leave_id}/reject", response_model=sc.LeaveOut, dependencies=SIGNED_IN)
+def post_reject_leave(leave_id: UUID, body: sc.LeaveDecisionIn, session: Session = Depends(db_session)) -> object:
+    return leave.decide_leave(session, leave_id, approve=False, note=body.note)
+
+
+@router.post("/leave-requests/{leave_id}/cancel", response_model=sc.LeaveOut, dependencies=SIGNED_IN)
+def post_cancel_leave(leave_id: UUID, session: Session = Depends(db_session)) -> object:
+    return leave.cancel_leave(session, leave_id)
+
+
+@router.get("/employees/{employee_id}/leave-balances", response_model=list[sc.LeaveBalanceOut],
+            dependencies=SIGNED_IN)
+def get_leave_balances(employee_id: UUID, year: int = Query(default=None, ge=2000, le=2100),
+                       session: Session = Depends(db_session)) -> object:
+    """Days taken and left of each kind of leave in a year (this year by default)."""
+    return [sc.LeaveBalanceOut(leave_type_id=t.id, leave_type=t.name, is_paid=t.is_paid,
+                               days_per_year=t.days_per_year, taken=taken, left=left)
+            for t, taken, left in leave.balances(session, employee_id, year or date.today().year)]
 

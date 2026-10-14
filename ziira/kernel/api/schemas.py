@@ -88,6 +88,9 @@ class CompanyOut(Out):
     branches: list[BranchOut]
 
 
+Weekday = Literal["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+
 class CompanySettingsOut(Out):
     negative_stock_allowed: bool
     count_variance_threshold: Decimal
@@ -97,6 +100,10 @@ class CompanySettingsOut(Out):
     reminder_min_days_overdue: int
     reminder_repeat_days: int
     phone_country_code: str
+    weekend_days: list[str]
+    payroll_unpaid_day_divisor: int
+    overtime_multiplier: Decimal
+    overtime_hours_per_month: Decimal
     receipt_footer: str
     invoice_footer: str
 
@@ -113,6 +120,10 @@ class CompanySettingsIn(BaseModel):
     reminder_min_days_overdue: Annotated[int, Field(ge=0, le=365)] | None = None
     reminder_repeat_days: Annotated[int, Field(ge=0, le=365)] | None = None
     phone_country_code: Annotated[str, Field(max_length=4, pattern=r"^\+?[0-9]{0,3}$")] | None = None
+    weekend_days: Annotated[list[Weekday], Field(max_length=3)] | None = None
+    payroll_unpaid_day_divisor: Annotated[int, Field(ge=20, le=31)] | None = None
+    overtime_multiplier: Annotated[Decimal, Field(ge=1, le=5, max_digits=4, decimal_places=2)] | None = None
+    overtime_hours_per_month: Annotated[Decimal, Field(ge=1, le=400, max_digits=6, decimal_places=2)] | None = None
     receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
     invoice_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
 

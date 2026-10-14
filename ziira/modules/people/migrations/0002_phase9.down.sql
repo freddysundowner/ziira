@@ -7,6 +7,7 @@ alter table people.payroll_run drop column if exists unpaid_day_divisor, drop co
   drop column if exists paid_by, drop column if exists paid_at, drop column if exists approved_at,
   drop column if exists submitted_at, drop column if exists exceptions;
 alter table people.attendance drop constraint if exists attendance_hours_check;
+drop index if exists people.attendance_one_per_day;
 alter table people.leave_request drop column if exists decided_note, drop column if exists reason;
 alter table people.employee_pay_item drop column if exists description;
 alter table people.employee_bank_account drop column if exists rejected;
@@ -14,6 +15,7 @@ alter table people.employee_bank_account drop constraint if exists employee_bank
 alter table people.employee_bank_account add constraint employee_bank_account_method_check check (method in ('bank', 'mpesa'));
 alter table people.employment_terms drop column if exists rejected, drop column if exists note;
 drop index if exists people.shift_unique;
+alter table people.shift drop column if exists company_id;
 alter table people.leave_type drop constraint if exists leave_type_unique;
 alter table people.employee drop column if exists is_director, drop column if exists residency,
   drop column if exists exempt_rules, drop column if exists registrations;

@@ -109,6 +109,7 @@ class EmployeeBankAccount(Audited, Base):
 class Shift(Audited, Base):
     __tablename__ = "shift"
     __table_args__ = {"schema": "people"}
+    company_id: Mapped[UUID]
     branch_id: Mapped[UUID | None]
     name: Mapped[str]
     start_time: Mapped[time]
