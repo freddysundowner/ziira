@@ -27,7 +27,7 @@ ziira_t_mamamboga            another business, its own database and login
 |---|---|
 | Database per tenant: master database, template, provisioning, per-tenant logins | Working, tested |
 | Kernel: row-level security (second layer), events and outbox processor, audit hash chain | Working, tested |
-| Sign-in (workspace code + email/phone + password), device-bound refresh tokens, API keys | Working, tested |
+| Sign-in (email/phone + password; the login directory finds the business), device-bound refresh tokens, API keys | Working, tested |
 | Users, roles and scopes (tenant, company, branch, own); permission checks on every endpoint | Working, tested |
 | Document numbering, reason codes, approval matrix with separation of duties | Working, tested |
 | Module and plugin registry: install, enable (creates tables in the tenant's database), disable, remove, uninstall | Working, tested |
@@ -54,7 +54,7 @@ PostgreSQL installed on the Mac), sets up the master database and template, crea
 business in its own database with sample products, and starts the API.
 Open **http://localhost:8000/docs**. In development, requests without credentials
 act as the demo tenant with every permission, so you can try endpoints straight from that page.
-To sign in for real: workspace `demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`.
+To sign in for real: login `owner@demo-hardware.test`, password `demo-pass-123` (no workspace code needed).
 
 If another PostgreSQL already uses port 5432, set `ZIIRA_DB_PORT=5433` in `.env` (and use 5433 in the
 database URLs there); Docker then publishes the database on that port.
@@ -95,7 +95,7 @@ Sign in, then send the access token on every request:
 
 ```bash
 curl -X POST localhost:8000/api/v1/auth/sign-in -H "Content-Type: application/json" \
-     -d '{"workspace":"pevma","login":"jane@pevma.co.ke","password":"<password>","device_id":"my-laptop"}'
+     -d '{"login":"jane@pevma.co.ke","password":"<password>","device_id":"my-laptop"}'
 # returns access_token (15 minutes) and refresh_token (use /api/v1/auth/refresh before it expires)
 
 curl -X POST localhost:8000/api/v1/products/uoms -H "Authorization: Bearer <access_token>" \

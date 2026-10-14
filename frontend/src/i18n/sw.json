@@ -1,8 +1,8 @@
 {
   "appName": "Ziira",
   "signIn": {
-    "title": "Ingia kwenye biashara yako",
-    "workspace": "Msimbo wa biashara",
+    "title": "Ingia",
+    "choose": "Unataka kuingia kwenye biashara gani?",
     "login": "Barua pepe au simu",
     "password": "Nenosiri",
     "submit": "Ingia",

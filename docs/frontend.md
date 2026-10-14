@@ -11,7 +11,7 @@ make web-check     # lint, types, tests, build (CI runs it)
 make api-types     # regenerate src/api/schema.d.ts after backend route/schema changes (CI checks it is committed)
 ```
 
-Demo sign-in: workspace `demo-hardware`, `owner@demo-hardware.test`, `demo-pass-123`.
+Demo sign-in: `owner@demo-hardware.test`, `demo-pass-123` (no workspace code; the screen asks which business only if the same login works for several).
 
 ## Layout
 

@@ -46,7 +46,8 @@ def signed_in_user(ctx: RequestContext = Depends(request_context)) -> RequestCon
 # --------------------------------------------------------------------------- auth
 @router.post("/auth/sign-in", response_model=sc.TokensOut, tags=["Auth"])
 def sign_in(body: sc.SignInIn, request: Request) -> object:
-    """Sign in with the workspace code, an email or phone, and the password."""
+    """Sign in with an email or phone and the password. A workspace code is needed only when the same login works for
+    more than one business (the reply then lists them and the client asks again with the chosen one)."""
     return auth.sign_in(body.workspace, body.login, body.password, device_id=body.device_id,
                         device_name=body.device_name, channel=body.channel, ip_address=auth.client_ip(request))
 

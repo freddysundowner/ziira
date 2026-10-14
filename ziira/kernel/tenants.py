@@ -15,7 +15,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import make_url, text
 
-from ziira.kernel import audit
+from ziira.kernel import audit, directory
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import system_context
 from ziira.kernel.db import (
@@ -171,6 +171,7 @@ def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id
                   {"t": str(tenant_id), "u": str(owner_id), "r": str(role_ids["Owner"])})
         seed_unit_defaults(s, reg.get("kernel"))
         audit.record(s, "create", "kernel.tenant", tenant_id, {"name": name, "code": code, "owner": owner_email})
+    directory.register(tenant_id, owner_email)
 
 
 def drop_tenant(tenant_id: UUID) -> None:

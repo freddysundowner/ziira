@@ -32,7 +32,7 @@ def test_wrong_credentials_are_refused_and_audited(client, tenant) -> None:  # t
         r = client.post("/api/v1/auth/sign-in", json={"workspace": workspace, "login": login,
                                                       "password": password, "device_id": "d1"})
         assert r.status_code == 401
-        assert r.json()["message"] == "Wrong workspace, login or password"   # same message every time
+        assert r.json()["message"] == "Wrong login or password"   # same message every time
     from ziira.kernel.context import system_context
     from ziira.kernel.db import tenant_session
 

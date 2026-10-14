@@ -51,7 +51,7 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 
 On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything at Docker on 5433.
 `make test` loads `.env`; running pytest directly needs `set -a; . ./.env; set +a` first.
-Demo business: workspace `demo-hardware`, login `owner@demo-hardware.test`, password `demo-pass-123`.
+Demo business: login `owner@demo-hardware.test`, password `demo-pass-123` (workspace `demo-hardware`, if asked).
 Key settings (`ZIIRA_*`): `MASTER_DATABASE_URL`, `TENANT_SERVER_URL`, `CREDENTIALS_KEY` (encrypts tenant
 connection strings; losing it locks out every tenant), `SECRET_KEY` (signs tokens), `ENV`.
 
@@ -140,7 +140,11 @@ tests/             unit tests for domain rules
   `plugins/messaging/providers.py`, are written from public documentation and have not been run against the real services:
   test in their sandboxes before any live use.
 - Never send a message in the caller's request: queue it. Respect the do-not-contact list (the kernel does).
-- Auth: sign-in with workspace code + email/phone + password; bearer tokens; API keys (`X-API-Key`).
+- Auth: sign-in with email/phone + password only (no workspace code): the master database's login directory
+  (`kernel/directory.py`, keyed hashes of logins -> tenants) says which business database to check; a `workspace` code is
+  optional and needed only when the same login (and password) works for several businesses (the reply is `409
+  choose_business` with the list). Users are registered in the directory when created; `ziira index-logins` rebuilds it.
+  Bearer tokens; API keys (`X-API-Key`).
   Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
 - New endpoints are covered by the fuzzer automatically (`tests/test_robustness.py`: add a valid baseline body to its
   `valid_body` if the generic sample cannot pass your rules). Request numbers use `ziira.sdk` `Quantity`, `UnitCost`,

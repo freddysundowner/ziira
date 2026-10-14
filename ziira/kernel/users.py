@@ -12,7 +12,7 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit
+from ziira.kernel import audit, directory
 from ziira.kernel.auth import sign_out_user
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import Conflict, Forbidden, NotFound, ValidationFailed
@@ -88,6 +88,7 @@ def create_user(s: Session, *, full_name: str, email: str | None = None, phone: 
          "h": hash_password(password) if password else None, "st": "active" if password else "invited"}).one()
     user = User(**row._mapping)
     audit.record(s, "create", "kernel.app_user", user.id, {"email": email, "phone": phone, "name": user.full_name})
+    directory.register(get_context().tenant_id, email, phone)             # so they can sign in without a workspace code
     return user
 
 

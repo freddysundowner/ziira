@@ -19,7 +19,7 @@ class SupplierIn(BaseModel):
     company_id: UUID
     code: str = Field(min_length=1, max_length=20, examples=["TOTAL01"])
     name: str = Field(min_length=1, max_length=200)
-    tax_id: str | None = Field(default=None, max_length=11, examples=["P051234567A"])
+    tax_id: str | None = Field(default=None, max_length=30, examples=["P051234567A"])
     phone: str | None = Field(default=None, max_length=30)
     email: str | None = Field(default=None, max_length=200)
     payment_terms_days: int = Field(default=0, ge=0, le=365)
@@ -27,7 +27,7 @@ class SupplierIn(BaseModel):
 
 class SupplierUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
-    tax_id: str | None = Field(default=None, max_length=11)
+    tax_id: str | None = Field(default=None, max_length=30)
     phone: str | None = Field(default=None, max_length=30)
     email: str | None = Field(default=None, max_length=200)
     payment_terms_days: int | None = Field(default=None, ge=0, le=365)

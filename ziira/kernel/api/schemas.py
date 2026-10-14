@@ -16,7 +16,8 @@ class Out(BaseModel):
 
 # --------------------------------------------------------------------------- auth
 class SignInIn(BaseModel):
-    workspace: str = Field(max_length=100, examples=["demo-hardware"])
+    workspace: str | None = Field(default=None, max_length=100, examples=["demo-hardware"],
+                                  description="Only needed when the same login is in several businesses")
     login: str = Field(max_length=254, description="Email or phone", examples=["owner@demo.co.ke"])
     password: str
     device_id: str = Field(min_length=1, max_length=200, description="Stable id of this browser or device")

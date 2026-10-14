@@ -1,8 +1,8 @@
 {
   "appName": "Ziira",
   "signIn": {
-    "title": "Sign in to your business",
-    "workspace": "Workspace code",
+    "title": "Sign in",
+    "choose": "Which business do you want to sign in to?",
     "login": "Email or phone",
     "password": "Password",
     "submit": "Sign in",

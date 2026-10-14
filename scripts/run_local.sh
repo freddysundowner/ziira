@@ -67,6 +67,9 @@ export ZIIRA_MASTER_DATABASE_URL="$MASTER_URL" ZIIRA_TENANT_SERVER_URL="$SERVER_
 say "Setting up the master database and the tenant template"
 .venv/bin/ziira install --all
 
+say "Updating the login directory (so people can sign in without a workspace code)"
+.venv/bin/ziira index-logins
+
 say "Creating demo data"
 TENANT="$(.venv/bin/python scripts/seed_demo.py | tail -1)"
 grep -q '^ZIIRA_DEV_DEFAULT_TENANT=' .env \
@@ -78,5 +81,5 @@ echo "Demo tenant: $TENANT"
 PORT=8000
 if lsof -nP -iTCP:$PORT -sTCP:LISTEN >/dev/null 2>&1; then PORT=8010; fi
 say "Ziira Core is running:  http://localhost:$PORT/docs     (Ctrl+C to stop)"
-echo "Sign in: workspace demo-hardware · owner@demo-hardware.test · demo-pass-123"
+echo "Sign in: owner@demo-hardware.test · demo-pass-123"
 exec .venv/bin/uvicorn ziira.kernel.app:app --port "$PORT" --reload

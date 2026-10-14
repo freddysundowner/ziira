@@ -22,6 +22,7 @@ ADMIN_URL = make_url(os.environ.get(
 MASTER_DB, TEMPLATE_DB = "ziira_test_master", "ziira_test_template"
 TENANT_DB_PREFIX, TENANT_ROLE_PREFIX = "ziira_test_t_", "ztest_"
 OWNER_PASSWORD = "owner-pass-123"   # test-only password for every tenant's owner
+LOCALE = {"currency": "KES", "phone_country_code": "254"}   # what make_tenant creates (a test may change it for a while)
 
 
 def _drop_test_databases() -> None:
@@ -86,8 +87,8 @@ def make_tenant(name: str) -> dict[str, UUID]:
     out = io.StringIO()
     with contextlib.redirect_stdout(out):
         assert cli.main(["create-tenant", name, "--code", code, "--company", f"{name} Ltd",
-                         "--branch-code", "HQ", "--branch-name", "Head office", "--currency", "KES",
-                         "--phone-country-code", "254",
+                         "--branch-code", "HQ", "--branch-name", "Head office", "--currency", LOCALE["currency"],
+                         "--phone-country-code", LOCALE["phone_country_code"],
                          "--owner-name", f"{name} Owner", "--owner-email", f"owner@{code}.test"]) == 0
     ids = dict(line.split(" = ") for line in out.getvalue().strip().splitlines())
     return {k.strip(): UUID(v.strip()) for k, v in ids.items()}

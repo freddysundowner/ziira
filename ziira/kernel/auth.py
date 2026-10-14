@@ -1,6 +1,7 @@
 """Authentication: sign in, refresh, sign out, API keys, and building the request context.
 
-- Sign in with a workspace code (the tenant), an email or phone, and a password.
+- Sign in with an email or phone and a password. The login directory (kernel/directory.py) says which business's
+  database to check; a workspace code is optional (needed only when the same login is in several businesses).
 - An access token lasts minutes; it names the session, which is checked on every request,
   so signing out or disabling a user takes effect immediately.
 - A refresh token is bound to the device that signed in and is replaced on every use.
@@ -20,11 +21,11 @@ from fastapi import Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit
+from ziira.kernel import audit, directory
 from ziira.kernel.config import get_settings
 from ziira.kernel.context import Assignment, RequestContext, get_context, set_context
 from ziira.kernel.db import master_session, tenant_engine, tenant_session
-from ziira.kernel.errors import NotFound, Unauthorized, ValidationFailed
+from ziira.kernel.errors import ChooseBusiness, NotFound, Unauthorized, ValidationFailed
 from ziira.kernel.security import hash_secret, new_secret, read_token, sign_token, verify_password
 
 CHANNELS = ("web", "pos", "api")
@@ -90,35 +91,75 @@ def tenant_by_code(code: str) -> UUID | None:
 
 
 # --------------------------------------------------------------------------- sign in / out
-def sign_in(workspace: str, login: str, password: str, *, device_id: str, device_name: str | None = None,
-            channel: str = "web", ip_address: str | None = None) -> Tokens:
-    """Check the password and open a session on this device. Raises Unauthorized."""
-    if channel not in CHANNELS:
-        raise ValidationFailed(f"Channel must be one of: {', '.join(CHANNELS)}")
-    if not device_id.strip():
-        raise ValidationFailed("device_id is required")
-    tenant_id = tenant_by_code(workspace)
-    if tenant_id is None:
-        verify_password(password, None)     # same effort as a real check
-        raise Unauthorized("Wrong workspace, login or password")
-
-    tokens: Tokens | None = None
+def _try_tenant(tenant_id: UUID, login: str, password: str, channel: str, device_id: str, device_name: str | None,
+                ip_address: str | None, *, open_session: bool) -> Tokens | bool:
+    """Check the password inside one business's database. With `open_session` a good password opens a session and
+    returns its tokens; otherwise it only says yes (True) or no (False). A refusal is audited in that business."""
     with tenant_session(tenant_id) as s:
         user = s.execute(text(
             "select id, password_hash, status from kernel.app_user "
             "where lower(email) = lower(:l) or phone = :l"), {"l": login.strip()}).first()
         if verify_password(password, user.password_hash if user else None) and user and user.status == "active":
-            tokens = _open_session(s, tenant_id, user.id, channel, device_id, device_name,
-                                   ip_address)
-        else:
-            set_context(RequestContext(tenant_id=tenant_id, channel=channel, device_id=device_id,
-                                       ip_address=ip_address))
-            audit.record(s, "login_failed", "kernel.app_user", user.id if user else None,
-                         {"login": login.strip(), "device_id": device_id})
-    # The failed-login audit entry is committed before refusing.
-    if tokens is None:
-        raise Unauthorized("Wrong workspace, login or password")
-    return tokens
+            if open_session:
+                return _open_session(s, tenant_id, user.id, channel, device_id, device_name, ip_address)
+            return True
+        set_context(RequestContext(tenant_id=tenant_id, channel=channel, device_id=device_id, ip_address=ip_address))
+        audit.record(s, "login_failed", "kernel.app_user", user.id if user else None,
+                     {"login": login.strip(), "device_id": device_id})
+    return False
+
+
+def sign_in(workspace: str | None, login: str, password: str, *, device_id: str, device_name: str | None = None,
+            channel: str = "web", ip_address: str | None = None) -> Tokens:
+    """Check the password and open a session on this device. Raises Unauthorized.
+
+    With a workspace code the business is known. Without one, the login directory lists the businesses that have a
+    user with this login; the password is checked in each, and if it is right in exactly one the person is signed in
+    there. If it is right in several (the same person works for more than one business), `ChooseBusiness` lists them
+    and the client asks again with the chosen workspace code. Nothing is revealed about businesses the password does
+    not open.
+    """
+    if channel not in CHANNELS:
+        raise ValidationFailed(f"Channel must be one of: {', '.join(CHANNELS)}")
+    if not device_id.strip():
+        raise ValidationFailed("device_id is required")
+    refused = "Wrong login or password"
+    if workspace is not None and workspace.strip():
+        tenant_id = tenant_by_code(workspace)
+        if tenant_id is None:
+            verify_password(password, None)     # same effort as a real check
+            raise Unauthorized(refused)
+        result = _try_tenant(tenant_id, login, password, channel, device_id, device_name, ip_address, open_session=True)
+        if isinstance(result, Tokens):
+            return result
+        raise Unauthorized(refused)
+
+    candidates = directory.tenants_for(login)
+    if not candidates:
+        verify_password(password, None)         # unknown login: same effort, same answer
+        raise Unauthorized(refused)
+    if len(candidates) == 1:
+        result = _try_tenant(candidates[0], login, password, channel, device_id, device_name, ip_address,
+                             open_session=True)
+        if isinstance(result, Tokens):
+            return result
+        raise Unauthorized(refused)
+    matching = [t for t in candidates if _try_tenant(t, login, password, channel, device_id, device_name, ip_address,
+                                                      open_session=False) is True]
+    if not matching:
+        raise Unauthorized(refused)
+    if len(matching) == 1:
+        result = _try_tenant(matching[0], login, password, channel, device_id, device_name, ip_address,
+                             open_session=True)
+        if isinstance(result, Tokens):
+            return result
+        raise Unauthorized(refused)
+    with master_session() as m:
+        named = [{"workspace": r.code, "name": r.name} for r in m.execute(
+            text("select code, name from master.tenant where id = any(:ids) order by name"),
+            {"ids": [str(t) for t in matching]})]
+    raise ChooseBusiness("This login works for more than one business: say which one",
+                         {"businesses": named})
 
 
 def _open_session(s: Session, tenant_id: UUID, user_id: UUID, channel: str, device_id: str,

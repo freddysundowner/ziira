@@ -84,7 +84,8 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(ZiiraError)
     def ziira_error(_: Request, exc: ZiiraError) -> JSONResponse:
-        return JSONResponse(status_code=exc.status, content={"error": exc.code, "message": exc.message})
+        return JSONResponse(status_code=exc.status,
+                            content={"error": exc.code, "message": exc.message, **(exc.details or {})})
 
     @app.exception_handler(IntegrityError)
     def integrity_error(_: Request, exc: IntegrityError) -> JSONResponse:

@@ -15,7 +15,8 @@ export interface paths {
         put?: never;
         /**
          * Sign In
-         * @description Sign in with the workspace code, an email or phone, and the password.
+         * @description Sign in with an email or phone and the password. A workspace code is needed only when the same login works for
+         *     more than one business (the reply then lists them and the client asks again with the chosen one).
          */
         post: operations["sign_in_api_v1_auth_sign_in_post"];
         delete?: never;
@@ -10292,8 +10293,11 @@ export interface components {
         };
         /** SignInIn */
         SignInIn: {
-            /** Workspace */
-            workspace: string;
+            /**
+             * Workspace
+             * @description Only needed when the same login is in several businesses
+             */
+            workspace?: string | null;
             /**
              * Login
              * @description Email or phone

@@ -13,8 +13,20 @@ export interface Session {
   enabledUnits: ReadonlySet<string>;
   /** True if the user holds the permission in at least one scope. The backend checks scope. */
   can: (permission: string) => boolean;
-  signIn: (workspace: string, login: string, password: string) => Promise<string | null>;
+  /** Signs in with a login and password. If the same login works for several businesses, says which (the caller asks
+   *  again with the chosen workspace code). */
+  signIn: (login: string, password: string, workspace?: string) => Promise<SignInResult>;
   signOut: () => Promise<void>;
+}
+
+export interface Business {
+  workspace: string;
+  name: string;
+}
+
+export interface SignInResult {
+  error: string | null;
+  businesses?: Business[];
 }
 
 const SessionContext = createContext<Session | null>(null);
@@ -45,14 +57,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [load]);
 
   const signIn = useCallback(
-    async (workspace: string, login: string, password: string) => {
+    async (login: string, password: string, workspace?: string): Promise<SignInResult> => {
       const { data, error } = await api.POST("/api/v1/auth/sign-in", {
-        body: { workspace, login, password, device_id: deviceId(), device_name: navigator.userAgent.slice(0, 60), channel: "web" },
+        body: { workspace: workspace ?? null, login, password, device_id: deviceId(), device_name: navigator.userAgent.slice(0, 60), channel: "web" },
       });
-      if (!data) return errorMessage(error);
+      if (!data) {
+        const choices = (error as { businesses?: Business[] } | undefined)?.businesses;
+        return choices?.length ? { error: null, businesses: choices } : { error: errorMessage(error) };
+      }
       setTokens(data.access_token, data.refresh_token);
       await load();
-      return null;
+      return { error: null };
     },
     [load],
   );

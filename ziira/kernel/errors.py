@@ -7,9 +7,10 @@ class ZiiraError(Exception):
     status = 400
     code = "error"
 
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str, details: dict[str, object] | None = None) -> None:
         super().__init__(message)
         self.message = message
+        self.details = details                  # extra fields the API adds to its reply (a list to choose from ...)
 
 
 class Unauthorized(ZiiraError):
@@ -45,6 +46,13 @@ class Conflict(ZiiraError):
 
     status = 409
     code = "conflict"
+
+
+class ChooseBusiness(ZiiraError):
+    """The credentials are right for more than one business: say which one (the reply lists them)."""
+
+    status = 409
+    code = "choose_business"
 
 
 class UnitNotEnabled(ZiiraError):

@@ -110,6 +110,13 @@ def cmd_verify(reg: Registry, a: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def cmd_index_logins(reg: Registry, a: argparse.Namespace) -> None:
+    from ziira.kernel import directory
+
+    done = directory.rebuild([_tenant(a.tenant)] if a.tenant else None)
+    print(f"Registered {done} login(s) in the login directory")
+
+
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
     from ziira.kernel import jobs, notifications  # noqa: F401 - notifications registers its send job
 
@@ -188,6 +195,9 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_worker)
+    s = sub.add_parser("index-logins", help="rebuild the login directory used to sign in without a workspace code")
+    s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
+    s.set_defaults(fn=cmd_index_logins)
     for name in ("verify", "stock-verify"):
         s = sub.add_parser(name)
         s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")

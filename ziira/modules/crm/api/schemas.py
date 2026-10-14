@@ -20,7 +20,7 @@ class CustomerIn(BaseModel):
     kind: Kind = "business"
     phone: str | None = Field(default=None, max_length=30, examples=["0712345678"])
     email: str | None = Field(default=None, max_length=200)
-    tax_id: str | None = Field(default=None, max_length=11)
+    tax_id: str | None = Field(default=None, max_length=30)
     customer_group: str | None = Field(default=None, max_length=60, description="Used by price lists")
     payment_terms_days: int = Field(default=0, ge=0, le=365)
     owner_user_id: UUID | None = None
@@ -31,7 +31,7 @@ class CustomerUpdate(BaseModel):
     kind: Kind | None = None
     phone: str | None = Field(default=None, max_length=30)
     email: str | None = Field(default=None, max_length=200)
-    tax_id: str | None = Field(default=None, max_length=11)
+    tax_id: str | None = Field(default=None, max_length=30)
     customer_group: str | None = Field(default=None, max_length=60)
     owner_user_id: UUID | None = None
     status: Literal["active", "on_hold", "inactive"] | None = None
