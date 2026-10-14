@@ -150,3 +150,20 @@ def test_the_database_itself_refuses_a_second_open_count(client, registry) -> No
         s.execute(text(insert), {**params, "n": "X3", "s": "cancelled"})
     with pytest.raises(IntegrityError), tenant_session(tenant, admin=True) as s:
         s.execute(text(insert), {**params, "n": "X4", "s": "review"})
+
+
+def test_upgrading_a_unit_gives_the_owner_its_new_permissions(registry) -> None:  # type: ignore[no-untyped-def]
+    """A permission added by a newer version of a unit must reach the Owner of businesses that already use it."""
+    from ziira.kernel.db import tenant_session
+
+    t = make_tenant("Upgrade Co")["tenant_id"]
+    registry.enable(t, "pos")
+    with tenant_session(t, admin=True) as s:
+        s.execute(text("delete from kernel.role_permission where permission_code in ('till.review', 'devices.manage') "
+                       "and role_id = (select id from kernel.role where name = 'Owner')"))
+    registry.install("pos")                                                  # an upgrade run
+    with tenant_session(t, admin=True) as s:
+        owner_has = set(s.execute(text(
+            "select permission_code from kernel.role_permission rp join kernel.role r on r.id = rp.role_id "
+            "where r.name = 'Owner' and rp.permission_code in ('till.review', 'devices.manage')")).scalars())
+    assert owner_has == {"till.review", "devices.manage"}

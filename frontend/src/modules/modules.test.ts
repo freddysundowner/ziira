@@ -17,6 +17,6 @@ describe("built-in modules", () => {
       expect(keys(m.translations!.sw).sort()).toEqual(keys(m.translations!.en).sort());
     });
   it("give every page a permission", () => {
-    expect(allModules.flatMap((m) => m.routes ?? []).filter((r) => !r.permission)).toEqual([]);
+    expect(allModules.flatMap((m) => m.routes ?? []).filter((r) => !r.permission && !r.anySignedIn)).toEqual([]);
   });
 });

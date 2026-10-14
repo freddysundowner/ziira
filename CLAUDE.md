@@ -89,7 +89,8 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
 11. **Sockets between units:** to block or extend another unit's action use validation hooks and extension
    points (`hooks.py`, `[extends]` in the manifest), not direct calls. See `docs/extending-units.md`.
 12. **Web modules mirror units** (`frontend/src/modules/<unit>`); they import only `@/sdk` and other modules'
-   `public.ts` (ESLint). Every web page names a permission. See `docs/frontend.md`.
+   `public.ts` (ESLint). Every web page names a permission (or `anySignedIn: true`, e.g. My account). New screens follow the kit and
+   patterns in `docs/frontend.md` ("Design system and screen patterns"): tokens not raw colours, `unwrap` on every request, all states designed.
 
 13. **Stock changes only through `inventory/services/ledger.py: post_movement`** (immutable movements, locked
    balances, weighted average cost). Other units publish `sale.posted`, `sale.returned`, `goods.received`

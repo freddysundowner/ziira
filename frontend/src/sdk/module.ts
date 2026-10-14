@@ -19,6 +19,8 @@ export interface PageRoute {
   page: Lazy<object>;
   /** Permission needed to open it (anywhere in the user's scope). */
   permission?: string;
+  /** Set instead of a permission for a page every signed-in user may open (e.g. their own account). */
+  anySignedIn?: boolean;
 }
 
 export interface MenuItem {

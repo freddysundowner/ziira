@@ -16,7 +16,7 @@ Demo sign-in: `owner@demo-hardware.test`, `demo-pass-123` (no workspace code; th
 ## Layout
 
 ```
-src/shell/      sign-in, layout (menu from active modules), home page
+src/shell/      sign-in/register, layout (menu from active modules, command palette), home dashboard, error boundary
 src/sdk/        the only thing modules import: api client, session, <Slot>, UI parts, i18n
 src/modules/<unit>/   module.ts (manifest), pages/, slots/, i18n/en.json + sw.json, public.ts
 src/api/schema.d.ts   generated from the backend; never edit
@@ -25,7 +25,7 @@ src/api/schema.d.ts   generated from the backend; never edit
 ## Adding a module
 
 1. Create `src/modules/<unit>/module.ts` with `defineModule({ unit, routes, menu, slots, translations })`
-   (`unit` = backend unit name; the kernel's own screens use `"kernel"`). Every route needs a permission.
+   (`unit` = backend unit name; the kernel's own screens use `"kernel"`). Every route needs a permission (or `anySignedIn: true` for pages every signed-in user may open).
 2. List it in `src/modules/index.ts`.
 3. Provide English and Swahili strings with the same keys (a test checks it).
 

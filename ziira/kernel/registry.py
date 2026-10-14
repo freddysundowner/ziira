@@ -169,17 +169,26 @@ def _run_script(conn: "Connection", sql: str) -> None:
         cur.execute(sql)
 
 
-def seed_unit_defaults(s: Session, m: Manifest) -> None:
-    """Give the tenant's default roles this unit's permissions and add its reason codes.
+def grant_owner_unit_permissions(s: Session, m: Manifest) -> None:
+    """The Owner role always holds every permission of every unit the tenant has: add any it is missing.
 
-    Safe to run again (re-enabling keeps what the tenant changed and adds what is missing).
-    The session must be scoped to the tenant.
+    Runs when a unit is enabled and again when a unit is upgraded, so a permission a new version introduces
+    reaches existing businesses. Other roles are never touched here (a business may have trimmed them).
     """
     s.execute(text(
         "insert into kernel.role_permission (tenant_id, role_id, permission_code) "
         "select r.tenant_id, r.id, p.code from kernel.role r cross join kernel.permission p "
         "where r.tenant_id = kernel.current_tenant() and r.is_system and r.name = 'Owner' "
         "and p.unit_name = :n on conflict (role_id, permission_code) do nothing"), {"n": m.name})
+
+
+def seed_unit_defaults(s: Session, m: Manifest) -> None:
+    """Give the tenant's default roles this unit's permissions and add its reason codes.
+
+    Safe to run again (re-enabling keeps what the tenant changed and adds what is missing).
+    The session must be scoped to the tenant.
+    """
+    grant_owner_unit_permissions(s, m)
     for role_name, permission_codes in m.roles.items():
         for code in permission_codes:
             s.execute(text(
@@ -328,10 +337,19 @@ class Registry:
                 for tenant_id in self.tenant_ids():
                     if unit_name in self.installed_in(tenant_id):
                         self._install_in_tenant(tenant_id, m)
+                        self._grant_new_permissions_to_owner(tenant_id, m)
                 continue
             installed.add(unit_name)
             done.append(unit_name)
         return done
+
+    def _grant_new_permissions_to_owner(self, tenant_id: UUID, m: Manifest) -> None:
+        """After an upgrade: the Owner gets any permission the new version added (only where the unit is enabled)."""
+        if m.core:
+            return
+        with tenant_session(tenant_id, admin=True) as s:
+            if m.name in self.enabled_for(s):
+                grant_owner_unit_permissions(s, m)
 
     def install_all(self) -> list[str]:
         done: list[str] = []

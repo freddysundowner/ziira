@@ -153,7 +153,8 @@ def change_password(body: sc.ChangePasswordIn, ctx: RequestContext = Depends(sig
 def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session = Depends(db_session)) -> object:
     """Companies and branches the user has any role in (all of them for a tenant-wide role)."""
     rows = s.execute(text(
-        "select c.id, c.name, c.base_currency, c.country, b.id as branch_id, b.code, b.name as branch_name from kernel.company c "
+        "select c.id, c.name, c.base_currency, c.country, b.id as branch_id, b.code, b.name as branch_name "
+        "from kernel.company c "
         "left join kernel.branch b on b.company_id = c.id and b.is_active order by c.name, b.code")).all()
     reach = None if ctx.all_permissions or any(a.company_id is None and a.scope != "own" for a in ctx.assignments) \
         else {a.company_id for a in ctx.assignments}
@@ -161,7 +162,8 @@ def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session =
     for r in rows:
         if reach is not None and r.id not in reach:
             continue
-        company = companies.setdefault(r.id, sc.CompanyOut(id=r.id, name=r.name, currency=r.base_currency, country=r.country, branches=[]))
+        company = companies.setdefault(r.id, sc.CompanyOut(
+            id=r.id, name=r.name, currency=r.base_currency, country=r.country, branches=[]))
         if r.branch_id:
             company.branches.append(sc.BranchOut(id=r.branch_id, code=r.code, name=r.branch_name))
     return list(companies.values())
