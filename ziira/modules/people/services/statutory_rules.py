@@ -24,6 +24,7 @@ from ziira.modules.people.permissions import (
 from ziira.modules.people.repository import people_repo
 from ziira.modules.people.repository.models import PayComponent, PayslipLine, RateTable
 from ziira.modules.people.services import access
+from ziira.modules.people.services.common import finance_enabled
 from ziira.sdk import (
     Conflict,
     Forbidden,
@@ -102,6 +103,13 @@ def create_rule(session: Session, *, company_id: UUID, code: str, effective_from
             PayComponent.company_id == company_id, PayComponent.code == code)):
         raise Conflict(f"{code} is already a pay component; choose another code")
     domain.check_new(rows_for(session, company_id), code, effective_from, effective_to)
+    if payable_account_id is not None:
+        if not finance_enabled(session):
+            raise ValidationFailed("A payable account needs Finance: enable it, or leave the account out")
+        from ziira.modules.finance.public import is_payable_account
+
+        if not is_payable_account(session, company_id, payable_account_id):
+            raise ValidationFailed("The payable account must be an active liability account of this company")
     rule = RateTable(tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, code=code,
                      effective_from=effective_from, effective_to=effective_to, definition=definition,
                      source_reference=reference, payable_account_id=payable_account_id)

@@ -21,6 +21,19 @@ def is_expense_account(session: Session, company_id: UUID, account_id: UUID) -> 
 
 
 
+def is_payable_account(session: Session, company_id: UUID, account_id: UUID) -> bool:
+    """True when the account is an active liability account of the company (somewhere an amount can be owed)."""
+    account = finance_repo.get_account(session, account_id)
+    return (account is not None and account.company_id == company_id and account.type == "liability"
+            and account.is_active)
+
+
+def entry_for_source(session: Session, company_id: UUID, source_type: str, source_id: UUID) -> UUID | None:
+    """The journal entry a document made, if it has been posted."""
+    entry = finance_repo.entry_by_source(session, company_id, source_type, source_id)
+    return entry.id if entry is not None else None
+
+
 def party_balances(session: Session, company_id: UUID, account_code: str) -> dict[UUID | None, Decimal]:
     """What each party (customer or supplier) owes or is owed on a control account, from the journal: debits less
     credits. A key of None holds lines with no party. Used by the sub-ledger checks."""

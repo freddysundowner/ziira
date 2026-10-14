@@ -4,17 +4,28 @@ from collections.abc import Callable
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from ziira.modules.people.api import schemas as sc
 from ziira.modules.people.permissions import (
     ATTENDANCE_MANAGE,
     EMPLOYEE_PAY_EDIT,
     EMPLOYEES_MANAGE,
+    PAYROLL_APPROVE,
+    PAYROLL_PAY,
+    PAYROLL_PREPARE,
     PAYROLL_RATES,
 )
-from ziira.modules.people.repository.models import Employee
-from ziira.modules.people.services import access, attendance, employees, leave, pay_setup, statutory_rules
+from ziira.modules.people.repository.models import Employee, PayrollRun, Payslip, PayslipLine
+from ziira.modules.people.services import (
+    access,
+    attendance,
+    employees,
+    leave,
+    pay_setup,
+    payroll,
+    statutory_rules,
+)
 from ziira.sdk import Forbidden, RequestContext, Session, db_session, page_limit, page_offset, request_context
 
 router = APIRouter()
@@ -39,6 +50,10 @@ RULES_READ = [Depends(any_of(*statutory_rules.READERS))]
 RULES_WRITE = [Depends(any_of(PAYROLL_RATES))]
 ATTEND = [Depends(any_of(ATTENDANCE_MANAGE))]
 SIGNED_IN = [Depends(request_context)]
+RUN_READ = [Depends(any_of(*payroll.READERS))]
+RUN_PREPARE = [Depends(any_of(PAYROLL_PREPARE))]
+RUN_APPROVE = [Depends(any_of(PAYROLL_APPROVE))]
+RUN_PAY = [Depends(any_of(PAYROLL_PAY))]
 
 
 # --------------------------------------------------------------------------- departments and employees
@@ -309,3 +324,112 @@ def get_leave_balances(employee_id: UUID, year: int = Query(default=None, ge=200
                                days_per_year=t.days_per_year, taken=taken, left=left)
             for t, taken, left in leave.balances(session, employee_id, year or date.today().year)]
 
+
+
+# --------------------------------------------------------------------------- payroll runs and payslips
+def _summary(slip: Payslip, employee: Employee) -> sc.PayslipSummaryOut:
+    return sc.PayslipSummaryOut(
+        id=slip.id, run_id=slip.run_id, employee_id=employee.id, employee_no=employee.employee_no,
+        full_name=employee.full_name, gross_pay=slip.gross_pay, taxable_pay=slip.taxable_pay,
+        total_deductions=slip.total_deductions, net_pay=slip.net_pay, employer_cost=slip.employer_cost,
+        status=slip.status, pay_method=slip.pay_method)
+
+
+@router.post("/payroll-runs", response_model=sc.RunOut, status_code=status.HTTP_201_CREATED, dependencies=RUN_PREPARE)
+def post_run(body: sc.RunIn, session: Session = Depends(db_session)) -> object:
+    """Start a payroll run for a period."""
+    return payroll.create_run(session, company_id=body.company_id, period_start=body.period_start,
+                              period_end=body.period_end, pay_date=body.pay_date)
+
+
+@router.get("/payroll-runs", response_model=list[sc.RunOut], dependencies=RUN_READ)
+def get_runs(company_id: UUID | None = None,
+             status_: str | None = Query(default=None, alias="status", pattern="^[a-z_]{1,20}$"),
+             limit: int = page_limit(50), offset: int = page_offset(),
+             session: Session = Depends(db_session)) -> object:
+    return payroll.list_runs(session, company_id=company_id, status=status_, limit=limit, offset=offset)
+
+
+@router.get("/payroll-runs/{run_id}", response_model=sc.RunOut, dependencies=RUN_READ)
+def get_run(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    return payroll.get_run(session, run_id)
+
+
+@router.post("/payroll-runs/{run_id}/calculate", response_model=sc.RunOut, dependencies=RUN_PREPARE)
+def post_calculate(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    """Work out every payslip and list what needs reviewing."""
+    return payroll.calculate_run(session, run_id)
+
+
+@router.post("/payroll-runs/{run_id}/submit", response_model=sc.RunOut, dependencies=RUN_PREPARE)
+def post_submit_run(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    return payroll.submit_run(session, run_id)
+
+
+@router.post("/payroll-runs/{run_id}/approve", response_model=sc.RunOut, dependencies=RUN_APPROVE)
+def post_approve_run(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    """Approve a submitted run (not the person who prepared it); Finance posts it."""
+    return payroll.approve_run(session, run_id)
+
+
+@router.post("/payroll-runs/{run_id}/reject", response_model=sc.RunOut, dependencies=RUN_APPROVE)
+def post_reject_run(run_id: UUID, body: sc.RejectIn, session: Session = Depends(db_session)) -> object:
+    return payroll.reject_run(session, run_id, body.note)
+
+
+@router.post("/payroll-runs/{run_id}/cancel", response_model=sc.RunOut, dependencies=RUN_PREPARE)
+def post_cancel_run(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    return payroll.cancel_run(session, run_id)
+
+
+@router.post("/payroll-runs/{run_id}/pay", response_model=sc.RunOut, dependencies=RUN_PAY)
+def post_pay_run(run_id: UUID, body: sc.PayIn, session: Session = Depends(db_session)) -> object:
+    """Record that the salaries were paid; Finance moves the net pay out of the bank."""
+    return payroll.pay_run(session, run_id, paid_on=body.paid_on)
+
+
+@router.get("/payroll-runs/{run_id}/payslips", response_model=list[sc.PayslipSummaryOut], dependencies=RUN_READ)
+def get_run_payslips(run_id: UUID, session: Session = Depends(db_session)) -> object:
+    return [_summary(slip, employee) for slip, employee in payroll.payslips(session, run_id)]
+
+
+@router.get("/payroll-runs/{run_id}/payment-file", response_model=list[sc.PaymentRowOut],
+            responses={200: {"content": {"text/csv": {}}}}, dependencies=RUN_PAY)
+def get_payment_file(run_id: UUID, format: str = Query(default="json", pattern="^(json|csv)$"),
+                     session: Session = Depends(db_session)) -> object:
+    """Who to pay, how and how much, with full account numbers (audited). `format=csv` for the bank's upload."""
+    rows = payroll.payment_file(session, run_id)
+    if format == "json":
+        return rows
+    from ziira.modules.finance.domain.exports import to_csv
+
+    text = to_csv(["employee_no", "name", "method", "bank_name", "account_no", "amount", "reference"],
+                  [[r["employee_no"], r["name"], r["method"], r["bank_name"], r["account_no"], r["amount"],
+                    r["reference"]] for r in rows])
+    return Response(text, media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="salary-payments-{run_id}.csv"'})
+
+
+def _payslip_out(slip: Payslip, run: PayrollRun, employee: Employee, lines: list[PayslipLine]) -> sc.PayslipOut:
+    return sc.PayslipOut(
+        **_summary(slip, employee).model_dump(), period_start=run.period_start, period_end=run.period_end,
+        pay_date=run.pay_date, benefits=slip.benefits, detail=slip.detail,
+        lines=[sc.PayslipLineOut(code=x.component_code, description=x.description, kind=x.kind, amount=x.amount)
+               for x in lines])
+
+
+@router.get("/payslips/{payslip_id}", response_model=sc.PayslipOut, dependencies=SIGNED_IN)
+def get_payslip(payslip_id: UUID, session: Session = Depends(db_session)) -> object:
+    """A payslip: for payroll staff, or for the employee it belongs to once the run is approved."""
+    slip, run, employee, lines = payroll.get_payslip(session, payslip_id)
+    return _payslip_out(slip, run, employee, lines)
+
+
+@router.get("/me/payslips", response_model=list[sc.PayslipSummaryOut], dependencies=SIGNED_IN)
+def get_my_payslips(session: Session = Depends(db_session)) -> object:
+    """The signed-in employee's own payslips from approved runs."""
+    out = []
+    for slip, _ in payroll.my_payslips(session):
+        employee = employees.get_employee_for_self(session, slip.employee_id)
+        out.append(_summary(slip, employee))
+    return out

@@ -139,7 +139,8 @@ def post_from_recipe(session: Session, *, company_id: UUID, doc_type: str, journ
     for item in recipe:
         account_id = item.account_id or rules.resolve_account(posting_rules, doc_type, item.role, context)
         lines.append(Line(account_id=account_id, debit=item.amount if item.side == "debit" else Decimal(0),
-                          credit=item.amount if item.side == "credit" else Decimal(0), branch_id=branch_id,
+                          credit=item.amount if item.side == "credit" else Decimal(0),
+                          branch_id=item.branch_id or branch_id,
                           party_type=item.party_type, party_id=item.party_id,
                           description=item.description or description))
     return post_entry(session, EntryRequest(

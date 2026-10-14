@@ -18,6 +18,7 @@ def ensure_books(session: Session, company_id: UUID) -> None:
     check_company(session, company_id)
     finance_repo.lock_books(session, company_id)                    # two postings at once: one sets up, one waits
     if finance_repo.has_accounts(session, company_id):
+        add_missing_accounts(session, company_id)
         add_missing_default_rules(session, company_id)
         return
     ctx = current_context()
@@ -54,6 +55,22 @@ def get_or_create_period(session: Session, company_id: UUID, day: date) -> Perio
                     end_date=end)
     finance_repo.add(session, period)
     return period
+
+
+def add_missing_accounts(session: Session, company_id: UUID) -> int:
+    """Give a company the template accounts added since its books were set up (a missing code is created; an account the
+    company already has under that code is left alone). Returns how many were added."""
+    ctx = current_context()
+    added = 0
+    for template in chart.CHART:
+        if finance_repo.account_by_code(session, company_id, template.code) is None:
+            finance_repo.add(session, Account(
+                tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, code=template.code,
+                name=template.name, type=template.type, subtype=template.subtype, is_control=template.is_control))
+            added += 1
+    if added:
+        audit_record(session, "add_default_accounts", "finance.books", company_id, {"accounts": added})
+    return added
 
 
 def add_missing_default_rules(session: Session, company_id: UUID) -> int:

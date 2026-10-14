@@ -214,3 +214,42 @@ def post_customer_payment(session: Session, event: Event, *, kind: str = "paymen
                                         party=_optional_uuid(p.get("customer_id"), "customer_id"), reverse=reverse),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type=f"customer_{kind}",
         source_id=event.aggregate_id, description=f"{label} {p.get('number') or ''}".strip())
+
+
+def _groups(p: dict[str, Any]) -> list[recipes.PayrollGroup]:
+    items = p.get("groups")
+    if not isinstance(items, list) or not items:
+        raise ValidationFailed("payroll.approved: groups must be a list")
+    found = []
+    for g in items:
+        payables = tuple((_optional_uuid(x.get("account_id"), "payable account"), _amount(x.get("amount"), "payable"))
+                         for x in g.get("payables", []))
+        found.append(recipes.PayrollGroup(
+            branch_id=_optional_uuid(g.get("branch_id"), "branch_id"), salaries=_amount(g.get("salaries"), "salaries"),
+            employer_costs=_amount(g.get("employer_costs", 0), "employer_costs"),
+            net_pay=_amount(g.get("net_pay"), "net_pay"),
+            other_deductions=_amount(g.get("other_deductions", 0), "other_deductions"), payables=payables))
+    return found
+
+
+def post_payroll(session: Session, event: Event) -> JournalEntry | None:
+    """`payroll.approved`: the pay and the employer's costs as expenses, against what is owed to employees and to the
+    bodies that collect taxes and contributions, with each branch's own lines."""
+    p = event.payload
+    label = f"Payroll {p.get('period_start')} to {p.get('period_end')}"
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="payroll", journal_code="PAY",
+        entry_date=_date(p.get("period_end")), recipe=recipes.payroll(_groups(p), description=label), context={},
+        branch_id=None, source_type="payroll", source_id=event.aggregate_id, description=label)
+
+
+def post_payroll_payment(session: Session, event: Event) -> JournalEntry | None:
+    """`payroll.paid`: net pay leaves the bank, mobile money or cash and no longer owed to employees."""
+    p = event.payload
+    payments = [(_optional_uuid(x.get("branch_id"), "branch_id"), str(x.get("method") or "other"),
+                 _amount(x.get("amount"), "amount")) for x in p.get("payments", [])]
+    label = f"Salaries paid for {p.get('period_start')} to {p.get('period_end')}"
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="payroll_payment", journal_code="PAY",
+        entry_date=_date(p.get("paid_on")), recipe=recipes.payroll_payment(payments, description=label), context={},
+        branch_id=None, source_type="payroll_payment", source_id=event.aggregate_id, description=label)

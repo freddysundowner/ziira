@@ -3,6 +3,8 @@ alter table people.payslip_line drop column if exists description;
 alter table people.payslip drop column if exists pay_method, drop column if exists detail, drop column if exists benefits,
   drop column if exists branch_id;
 alter table people.payroll_run drop constraint if exists payroll_run_period_check;
+drop index if exists people.payroll_run_one_per_period;
+alter table people.payroll_run add constraint payroll_run_company_id_period_start_key unique (company_id, period_start);
 alter table people.payroll_run drop column if exists unpaid_day_divisor, drop column if exists reject_note,
   drop column if exists paid_by, drop column if exists paid_at, drop column if exists approved_at,
   drop column if exists submitted_at, drop column if exists exceptions;

@@ -312,3 +312,86 @@ class LeaveBalanceOut(BaseModel):
     days_per_year: Decimal | None
     taken: Decimal
     left: Decimal | None
+
+
+# --------------------------------------------------------------------------- payroll
+class RunIn(BaseModel):
+    company_id: UUID
+    period_start: date
+    period_end: date
+    pay_date: date
+
+
+class RejectIn(BaseModel):
+    note: str = Field(min_length=1, max_length=300)
+
+
+class PayIn(BaseModel):
+    paid_on: date | None = Field(default=None, description="Left out: today")
+
+
+class ExceptionOut(BaseModel):
+    code: str
+    severity: Literal["blocker", "warning", "info"]
+    message: str
+    employee_id: UUID | None = None
+    employee_no: str | None = None
+
+
+class RunOut(BaseModel):
+    id: UUID
+    company_id: UUID
+    period_start: date
+    period_end: date
+    pay_date: date
+    status: str
+    totals: dict[str, Any]
+    exceptions: list[ExceptionOut]
+    prepared_by: UUID | None
+    approved_by: UUID | None
+    submitted_at: datetime | None
+    approved_at: datetime | None
+    paid_at: datetime | None
+    reject_note: str | None
+    journal_entry_id: UUID | None
+
+
+class PayslipSummaryOut(BaseModel):
+    id: UUID
+    run_id: UUID
+    employee_id: UUID
+    employee_no: str
+    full_name: str
+    gross_pay: Decimal
+    taxable_pay: Decimal
+    total_deductions: Decimal
+    net_pay: Decimal
+    employer_cost: Decimal
+    status: str
+    pay_method: str | None
+
+
+class PayslipLineOut(BaseModel):
+    code: str
+    description: str | None
+    kind: str
+    amount: Decimal
+
+
+class PayslipOut(PayslipSummaryOut):
+    period_start: date
+    period_end: date
+    pay_date: date
+    benefits: Decimal
+    detail: dict[str, Any]
+    lines: list[PayslipLineOut]
+
+
+class PaymentRowOut(BaseModel):
+    employee_no: str
+    name: str
+    method: str
+    bank_name: str
+    account_no: str
+    amount: Decimal
+    reference: str

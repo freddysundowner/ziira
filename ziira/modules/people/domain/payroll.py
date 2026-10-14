@@ -145,7 +145,8 @@ def calculate(pay: PayInput, rules: list[ActiveRule]) -> PayResult:
         statutory_base=base, taxable_pay=taxable, statutory_employee=statutory, other_deductions=other,
         total_deductions=total_deductions, net_pay=gross_cash - total_deductions,
         employer_statutory=employer_statutory, employer_cost=employer_statutory + employer_other,
-        detail={"statutory_base": str(base), "rules": {
+        detail={"statutory_base": str(base), "gross_cash": str(gross_cash), "other_deductions": str(other),
+                "employer_other": str(employer_other), "rules": {
             r.code: {"base": str(r.base), "employee": str(r.employee), "employer": str(r.employer),
                      "before_credit": str(r.before_credit), "credit": str(r.credit), "capped": r.capped}
             for r in results}})

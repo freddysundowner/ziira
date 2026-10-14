@@ -3,7 +3,7 @@
 Publishes: journal.posted, period.closed, expense.approved
 Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed, bill.posted,
 bill.reversed, supplier.paid, supplier.payment_reversed, supplier.refunded, supplier.refund_reversed,
-credit_note.posted, customer.paid, customer.payment_reversed,
+credit_note.posted, payroll.approved, payroll.paid, customer.paid, customer.payment_reversed,
 customer.advance_refunded, customer.refund_reversed, approval.decided (kernel)
 """
 
@@ -123,3 +123,15 @@ def on_supplier_refunded(session: Session, event: Event) -> None:
 def on_supplier_refund_reversed(session: Session, event: Event) -> None:
     """A refund from a supplier was cancelled: the supplier owes the business again."""
     event_postings.post_supplier_payment(session, event, kind="refund_reversal")
+
+
+@subscribe("payroll.approved")
+def on_payroll_approved(session: Session, event: Event) -> None:
+    """Post an approved payroll run."""
+    event_postings.post_payroll(session, event)
+
+
+@subscribe("payroll.paid")
+def on_payroll_paid(session: Session, event: Event) -> None:
+    """Post the payment of a payroll run's net pay."""
+    event_postings.post_payroll_payment(session, event)

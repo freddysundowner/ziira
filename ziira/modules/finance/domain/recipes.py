@@ -25,11 +25,14 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
     "supplier_credit_note": ("payable", "grni", "purchase_variance", "vat_input"),
     "customer_payment": ("receivable", "cash", "bank", "mpesa", "card", "other"),
     "expense": ("vat_input", "cash", "bank", "mpesa", "card", "other"),
+    "payroll": ("salaries", "employer_costs", "net_pay", "statutory_payable", "other_deductions"),
+    "payroll_payment": ("net_pay", "bank", "mobile_money", "cash", "other"),
 }
 RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
                                                "settlement": (), "cash_deposit": (), "till_variance": (),
                                                "supplier_bill": (), "supplier_payment": (),
-                                               "supplier_credit_note": (), "customer_payment": (), "expense": ()}
+                                               "supplier_credit_note": (), "customer_payment": (), "expense": (),
+                                               "payroll": (), "payroll_payment": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -45,6 +48,7 @@ class RecipeLine:
     party_id: Any = None
     description: str | None = None
     account_id: Any = None        # a line that names its own account (a bill's expense line) skips the posting rules
+    branch_id: Any = None         # a line for another branch than the entry's (payroll posts each branch's own)
 
 
 def stock_movement(movement_type: str, value: Decimal, location_kind: str) -> list[RecipeLine]:
@@ -153,7 +157,7 @@ def till_variance(variance: Decimal, *, description: str | None = None) -> list[
 def _flip(lines: list[RecipeLine]) -> list[RecipeLine]:
     """The mirror image of an entry: every debit becomes a credit and the other way round."""
     return [RecipeLine(x.role, "credit" if x.side == "debit" else "debit", x.amount, x.party_type, x.party_id,
-                       x.description, x.account_id) for x in lines]
+                       x.description, x.account_id, x.branch_id) for x in lines]
 
 
 def supplier_bill(stock_received_value: Decimal, stock_billed_value: Decimal, vat: Decimal,
@@ -210,6 +214,60 @@ def expense(method: str, amount: Decimal, tax: Decimal, account_id: Any, *, desc
         lines.append(RecipeLine("vat_input", "debit", tax, description=description))
     lines.append(RecipeLine(role, "credit", amount, description=description))
     return _flip(lines) if reverse else lines
+
+
+@dataclass(frozen=True)
+class PayrollGroup:
+    """What one branch's payslips come to in a payroll run (all amounts in the company currency)."""
+
+    branch_id: Any
+    salaries: Decimal                              # cash pay before deductions
+    employer_costs: Decimal                        # employer contributions: the rules' employer parts and others
+    net_pay: Decimal
+    other_deductions: Decimal                      # loans, advances and the like taken from pay
+    payables: tuple[tuple[Any, Decimal], ...]      # (account or None for the default, amount) owed to the bodies that
+    #                                                collect the rules' employee and employer parts
+
+
+def payroll(groups: list[PayrollGroup], *, description: str | None = None) -> list[RecipeLine]:
+    """A payroll run: the pay and the employer's costs are expenses; what the employees are owed (net pay), what is owed
+    to the bodies that collect taxes and contributions, and what was taken for other deductions are liabilities.
+
+    Dr salaries (cash pay)   Dr employer payroll costs
+    Cr net pay payable   Cr each rule's account   Cr other deductions
+    """
+    lines: list[RecipeLine] = []
+    for g in groups:
+        credits = g.net_pay + g.other_deductions + sum((a for _, a in g.payables), Decimal(0))
+        if g.salaries + g.employer_costs != credits:
+            raise ValidationFailed("The payroll does not balance: pay and employer costs differ from what is owed")
+        if g.salaries:
+            lines.append(RecipeLine("salaries", "debit", g.salaries, description=description, branch_id=g.branch_id))
+        if g.employer_costs:
+            lines.append(RecipeLine("employer_costs", "debit", g.employer_costs, description=description,
+                                    branch_id=g.branch_id))
+        if g.net_pay:
+            lines.append(RecipeLine("net_pay", "credit", g.net_pay, description=description, branch_id=g.branch_id))
+        for account, amount in g.payables:
+            if amount:
+                lines.append(RecipeLine("statutory_payable", "credit", amount, description=description,
+                                        account_id=account, branch_id=g.branch_id))
+        if g.other_deductions:
+            lines.append(RecipeLine("other_deductions", "credit", g.other_deductions, description=description,
+                                    branch_id=g.branch_id))
+    return lines
+
+
+def payroll_payment(payments: list[tuple[Any, str, Decimal]], *, description: str | None = None) -> list[RecipeLine]:
+    """Net pay paid out: Dr net pay payable  Cr bank / mobile money / cash, by branch and method."""
+    lines: list[RecipeLine] = []
+    for branch_id, method, amount in payments:
+        if amount <= 0:
+            continue
+        role = method if method in ("bank", "mobile_money", "cash") else "other"
+        lines.append(RecipeLine("net_pay", "debit", amount, description=description, branch_id=branch_id))
+        lines.append(RecipeLine(role, "credit", amount, description=description, branch_id=branch_id))
+    return lines
 
 
 def supplier_credit_note(stock_value: Decimal, goods_credit: Decimal, vat: Decimal,

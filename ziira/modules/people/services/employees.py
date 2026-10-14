@@ -201,3 +201,11 @@ def require_found(employee: Employee | None) -> Employee:
     if employee is None:
         raise NotFound("Employee not found")
     return employee
+
+
+def get_employee_for_self(session: Session, employee_id: UUID) -> Employee:
+    """An employee record, for its own owner (used to label their payslips)."""
+    employee = people_repo.get_employee(session, employee_id)
+    if employee is None or employee.user_id != current_context().user_id:
+        raise NotFound("Employee not found")
+    return employee

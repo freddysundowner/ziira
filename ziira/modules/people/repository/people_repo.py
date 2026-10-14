@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import ColumnElement, and_, false, func, or_, select, true
+from sqlalchemy import ColumnElement, and_, false, func, or_, select, text, true
 from sqlalchemy.orm import Session
 
 from ziira.modules.people.repository.models import (
@@ -18,6 +18,8 @@ from ziira.modules.people.repository.models import (
     LeaveType,
     PayComponent,
     PayrollRun,
+    Payslip,
+    PayslipLine,
     Shift,
 )
 
@@ -339,3 +341,67 @@ def attendance_summary(session: Session, scopes: Scopes, company_id: UUID, start
                Attendance.work_date <= end)
         .group_by(Employee.id).order_by(Employee.employee_no))
     return [(e, int(n), Decimal(str(h)), Decimal(str(o))) for e, n, h, o in rows]
+
+
+# --------------------------------------------------------------------------- payroll runs and payslips
+def get_run(session: Session, run_id: UUID, *, lock: bool = False) -> PayrollRun | None:
+    query = select(PayrollRun).where(PayrollRun.id == run_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def list_runs(session: Session, company_ids: set[UUID] | None, *, company_id: UUID | None, status: str | None,
+              limit: int, offset: int) -> list[PayrollRun]:
+    query = select(PayrollRun).order_by(PayrollRun.period_start.desc()).limit(limit).offset(offset)
+    if company_ids is not None:
+        query = query.where(PayrollRun.company_id.in_(company_ids))
+    if company_id:
+        query = query.where(PayrollRun.company_id == company_id)
+    if status:
+        query = query.where(PayrollRun.status == status)
+    return list(session.scalars(query))
+
+
+def overlapping_run(session: Session, company_id: UUID, start: date, end: date) -> PayrollRun | None:
+    return session.scalars(select(PayrollRun).where(
+        PayrollRun.company_id == company_id, PayrollRun.status != "cancelled", PayrollRun.period_start <= end,
+        PayrollRun.period_end >= start)).first()
+
+
+def payslips_of(session: Session, run_id: UUID) -> list[tuple[Payslip, Employee]]:
+    rows = session.execute(select(Payslip, Employee).join(Employee, Employee.id == Payslip.employee_id)
+                           .where(Payslip.run_id == run_id).order_by(Employee.employee_no))
+    return [(p, e) for p, e in rows]
+
+
+def get_payslip(session: Session, payslip_id: UUID) -> Payslip | None:
+    return session.get(Payslip, payslip_id)
+
+
+def payslip_lines(session: Session, payslip_id: UUID) -> list[PayslipLine]:
+    return list(session.scalars(select(PayslipLine).where(PayslipLine.payslip_id == payslip_id)
+                                .order_by(PayslipLine.created_at, PayslipLine.id)))
+
+
+def delete_payslips(session: Session, run_id: UUID) -> None:
+    session.execute(text("delete from people.payslip_line where payslip_id in "
+                         "(select id from people.payslip where run_id = :r)"), {"r": str(run_id)})
+    session.execute(text("delete from people.payslip where run_id = :r"), {"r": str(run_id)})
+    session.flush()
+
+
+def payslips_of_employee(session: Session, employee_id: UUID) -> list[tuple[Payslip, PayrollRun]]:
+    """An employee's payslips from runs that have been approved, newest first."""
+    rows = session.execute(select(Payslip, PayrollRun).join(PayrollRun, PayrollRun.id == Payslip.run_id)
+                           .where(Payslip.employee_id == employee_id,
+                                  PayrollRun.status.in_(("approved", "posted", "paid")))
+                           .order_by(PayrollRun.period_start.desc()))
+    return [(p, r) for p, r in rows]
+
+
+def previous_payslip(session: Session, employee_id: UUID, before: date) -> Payslip | None:
+    """The employee's payslip from the latest approved run that ended before a date."""
+    return session.scalars(select(Payslip).join(PayrollRun, PayrollRun.id == Payslip.run_id).where(
+        Payslip.employee_id == employee_id, PayrollRun.period_end < before,
+        PayrollRun.status.in_(("approved", "posted", "paid"))).order_by(PayrollRun.period_end.desc())).first()

@@ -58,6 +58,8 @@ create unique index attendance_one_per_day on people.attendance (employee_id, wo
 alter table people.attendance add constraint attendance_hours_check check (hours is null or (hours >= 0 and hours <= 24));
 
 -- Payroll runs
+alter table people.payroll_run drop constraint payroll_run_company_id_period_start_key;
+create unique index payroll_run_one_per_period on people.payroll_run (company_id, period_start) where status <> 'cancelled';
 alter table people.payroll_run
   add column exceptions jsonb not null default '[]',
   add column submitted_at timestamptz,
