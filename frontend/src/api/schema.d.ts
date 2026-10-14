@@ -1403,6 +1403,189 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/finance/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Expenses */
+        get: operations["get_expenses_api_v1_finance_expenses_get"];
+        put?: never;
+        /**
+         * Post Expense
+         * @description Write a draft expense: a cost paid at once from cash, bank, M-Pesa or card, with its receipt reference.
+         */
+        post: operations["post_expense_api_v1_finance_expenses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/expenses/{expense_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Expense */
+        get: operations["get_expense_api_v1_finance_expenses__expense_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/expenses/{expense_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Submit Expense
+         * @description Send the draft for approval; it posts at once when no approval rule applies to its size.
+         */
+        post: operations["post_submit_expense_api_v1_finance_expenses__expense_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/expenses/{expense_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reverse Expense
+         * @description Cancel a posted expense by posting its mirror image.
+         */
+        post: operations["post_reverse_expense_api_v1_finance_expenses__expense_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/bank-reconciliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Reconciliations */
+        get: operations["get_reconciliations_api_v1_finance_bank_reconciliations_get"];
+        put?: never;
+        /**
+         * Post Reconciliation
+         * @description Start reconciling a bank, M-Pesa or card account to a statement (its date and closing balance).
+         */
+        post: operations["post_reconciliation_api_v1_finance_bank_reconciliations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/bank-reconciliations/{recon_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Reconciliation
+         * @description The reconciliation with the lines cleared and the lines still waiting (the reconciling items).
+         */
+        get: operations["get_reconciliation_api_v1_finance_bank_reconciliations__recon_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Reconciliation
+         * @description Throw away a reconciliation that is still in progress.
+         */
+        delete: operations["delete_reconciliation_api_v1_finance_bank_reconciliations__recon_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/bank-reconciliations/{recon_id}/clear": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Clear
+         * @description Mark ledger lines as on the statement (or take the mark off): by id, or everything up to a date.
+         */
+        post: operations["post_clear_api_v1_finance_bank_reconciliations__recon_id__clear_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/bank-reconciliations/{recon_id}/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Suggestions
+         * @description Match statement lines (JSON, or CSV text) to ledger lines; `apply` clears the matches.
+         */
+        post: operations["post_suggestions_api_v1_finance_bank_reconciliations__recon_id__suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/finance/bank-reconciliations/{recon_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Complete Reconciliation
+         * @description Finish the reconciliation: only when the cleared lines add up to the statement's balance. Final.
+         */
+        post: operations["post_complete_reconciliation_api_v1_finance_bank_reconciliations__recon_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/inventory/locations": {
         parameters: {
             query?: never;
@@ -4874,6 +5057,21 @@ export interface components {
             /** Problems */
             problems: string[];
         };
+        /** ClearIn */
+        ClearIn: {
+            /** Line Ids */
+            line_ids?: string[] | null;
+            /**
+             * Until
+             * @description Clear every line dated up to this day
+             */
+            until?: string | null;
+            /**
+             * Cleared
+             * @default true
+             */
+            cleared: boolean;
+        };
         /** CloseOut */
         CloseOut: {
             /**
@@ -5936,6 +6134,106 @@ export interface components {
             status: "explained" | "resolved" | "dismissed";
             /** Note */
             note: string;
+        };
+        /** ExpenseIn */
+        ExpenseIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /**
+             * Expense Date
+             * Format: date
+             */
+            expense_date: string;
+            /** Description */
+            description: string;
+            /**
+             * Account Id
+             * Format: uuid
+             * @description An expense account of the chart
+             */
+            account_id: string;
+            /**
+             * Amount
+             * @description Everything paid, VAT included
+             */
+            amount: number | string;
+            /**
+             * Tax Amount
+             * @description The VAT inside the amount
+             * @default 0
+             */
+            tax_amount: number | string;
+            /**
+             * Paid From
+             * @enum {string}
+             */
+            paid_from: "cash" | "bank" | "mpesa" | "card" | "other";
+            /** Payee */
+            payee?: string | null;
+            /**
+             * Receipt Ref
+             * @description The receipt's number or file name
+             */
+            receipt_ref?: string | null;
+        };
+        /** ExpenseOut */
+        ExpenseOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Number */
+            number: string;
+            /**
+             * Expense Date
+             * Format: date
+             */
+            expense_date: string;
+            /** Payee */
+            payee: string | null;
+            /** Description */
+            description: string;
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Amount */
+            amount: string;
+            /** Tax Amount */
+            tax_amount: string;
+            /** Paid From */
+            paid_from: string;
+            /** Receipt Ref */
+            receipt_ref: string | null;
+            /** Status */
+            status: string;
+            /** Created By */
+            created_by: string | null;
+            /** Approved By */
+            approved_by: string | null;
+            /** Entry Id */
+            entry_id: string | null;
+            /** Reverse Reason */
+            reverse_reason: string | null;
+        };
+        /** ExpenseReverseIn */
+        ExpenseReverseIn: {
+            /** Reason */
+            reason: string;
         };
         /** ExternalOut */
         ExternalOut: {
@@ -7564,6 +7862,146 @@ export interface components {
              */
             reason_code_id?: string | null;
         };
+        /** ReconLineOut */
+        ReconLineOut: {
+            /**
+             * Line Id
+             * Format: uuid
+             */
+            line_id: string;
+            /** Number */
+            number: string;
+            /**
+             * Entry Date
+             * Format: date
+             */
+            entry_date: string;
+            /** Description */
+            description: string | null;
+            /** Debit */
+            debit: string;
+            /** Credit */
+            credit: string;
+            /**
+             * Amount
+             * @description Money in is positive, money out negative
+             */
+            amount: string;
+            /** Cleared */
+            cleared: boolean;
+        };
+        /** ReconcileStartIn */
+        ReconcileStartIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Account Id
+             * Format: uuid
+             * @description A bank, M-Pesa or card account of the chart
+             */
+            account_id: string;
+            /**
+             * Statement Date
+             * Format: date
+             */
+            statement_date: string;
+            /**
+             * Statement Balance
+             * @description The statement's closing balance (negative if overdrawn)
+             */
+            statement_balance: number | string;
+        };
+        /** ReconciliationOut */
+        ReconciliationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+            /** Account Code */
+            account_code: string;
+            /** Account Name */
+            account_name: string;
+            /**
+             * Statement Date
+             * Format: date
+             */
+            statement_date: string;
+            /** Statement Balance */
+            statement_balance: string;
+            /**
+             * Book Balance
+             * @description What the books say at the statement date
+             */
+            book_balance: string;
+            /** Cleared Balance */
+            cleared_balance: string;
+            /**
+             * Difference
+             * @description Statement balance less cleared lines: zero when reconciled
+             */
+            difference: string;
+            /**
+             * Outstanding
+             * @description Net of the lines in the books that are not on the statement
+             */
+            outstanding: string;
+            /** Status */
+            status: string;
+            /** Completed By */
+            completed_by: string | null;
+            /** Completed At */
+            completed_at: string | null;
+            /** Cleared */
+            cleared: components["schemas"]["ReconLineOut"][];
+            /** Uncleared */
+            uncleared: components["schemas"]["ReconLineOut"][];
+        };
+        /** ReconciliationSummaryOut */
+        ReconciliationSummaryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Account Id */
+            account_id: string | null;
+            /**
+             * Statement Date
+             * Format: date
+             */
+            statement_date: string;
+            /** Statement Balance */
+            statement_balance: string;
+            /** Book Balance */
+            book_balance: string;
+            /** Cleared Balance */
+            cleared_balance: string;
+            /** Difference */
+            difference: string;
+            /** Status */
+            status: string;
+            /** Completed At */
+            completed_at: string | null;
+        };
         /** RefreshIn */
         RefreshIn: {
             /** Refresh Token */
@@ -8288,6 +8726,29 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** StatementItemIn */
+        StatementItemIn: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * Reference
+             * @default
+             */
+            reference: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Amount
+             * @description Money in positive, money out negative
+             */
+            amount: number | string;
+        };
         /** StatementItemOut */
         StatementItemOut: {
             /**
@@ -8393,6 +8854,53 @@ export interface components {
             duplicates: number;
             /** Skipped */
             skipped: string[];
+        };
+        /** SuggestIn */
+        SuggestIn: {
+            /** Lines */
+            lines?: components["schemas"]["StatementItemIn"][] | null;
+            /**
+             * Csv
+             * @description date,reference,description,amount
+             */
+            csv?: string | null;
+            /**
+             * Apply
+             * @description Clear the matched lines at once
+             * @default false
+             */
+            apply: boolean;
+        };
+        /** SuggestResultOut */
+        SuggestResultOut: {
+            /** Suggestions */
+            suggestions: components["schemas"]["SuggestionOut"][];
+            /** Unmatched */
+            unmatched: components["schemas"]["SuggestionLineOut"][];
+            /** Applied */
+            applied: boolean;
+            reconciliation: components["schemas"]["ReconciliationOut"];
+        };
+        /** SuggestionLineOut */
+        SuggestionLineOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Reference */
+            reference: string;
+            /** Description */
+            description: string;
+            /** Amount */
+            amount: string;
+        };
+        /** SuggestionOut */
+        SuggestionOut: {
+            statement: components["schemas"]["SuggestionLineOut"];
+            ledger: components["schemas"]["ReconLineOut"];
+            /** Reason */
+            reason: string;
         };
         /** SupplierIn */
         SupplierIn: {
@@ -13943,6 +14451,485 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_expenses_api_v1_finance_expenses_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                status?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_expense_api_v1_finance_expenses_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_expense_api_v1_finance_expenses__expense_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_submit_expense_api_v1_finance_expenses__expense_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reverse_expense_api_v1_finance_expenses__expense_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                expense_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseReverseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_reconciliations_api_v1_finance_bank_reconciliations_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                account_id?: string | null;
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationSummaryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reconciliation_api_v1_finance_bank_reconciliations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconcileStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_reconciliation_api_v1_finance_bank_reconciliations__recon_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_reconciliation_api_v1_finance_bank_reconciliations__recon_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_clear_api_v1_finance_bank_reconciliations__recon_id__clear_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClearIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_suggestions_api_v1_finance_bank_reconciliations__recon_id__suggestions_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuggestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestResultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_complete_reconciliation_api_v1_finance_bank_reconciliations__recon_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconciliationOut"];
+                };
             };
             /** @description Validation Error */
             422: {

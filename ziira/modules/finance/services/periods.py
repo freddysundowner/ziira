@@ -27,11 +27,20 @@ def open_period(session: Session, company_id: UUID, day: date) -> Period:
 
 
 def closing_problems(session: Session, period: Period) -> list[str]:
-    """What stops a period from being closed: the checklist of specification section 07 that exists so far."""
+    """What stops a period from being closed (specification section 07): approvals waiting, reconciliations in
+    progress, and sub-ledgers that differ from their control accounts."""
     problems = []
     pending = finance_repo.pending_manuals_in(session, period.company_id, period.start_date, period.end_date)
     if pending:
         problems.append(f"{pending} manual journal(s) dated in this period are waiting for approval")
+    waiting = finance_repo.pending_expenses_in(session, period.company_id, period.start_date, period.end_date)
+    if waiting:
+        problems.append(f"{waiting} expense(s) dated in this period are waiting for approval")
+    open_accounts = finance_repo.open_reconciliations_in(session, period.company_id, period.start_date,
+                                                         period.end_date)
+    if open_accounts:
+        problems.append("A bank reconciliation is still in progress for account(s) " + ", ".join(open_accounts)
+                        + ": complete or cancel it")
     problems.extend(_subledger_problems(session, period))
     return problems
 

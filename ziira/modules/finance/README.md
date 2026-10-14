@@ -1,21 +1,22 @@
 # Finance and Accounting
 
-**Status:** working for phase 3 (the ledger). Chart of accounts, posting engine, periods and closing, manual journals with
-approval, reversals, posting rules as data, trial balance, general ledger and the books check are built and tested.
-Not built yet: expenses, bank reconciliation, P&L / balance sheet / VAT reports, exports (phase 8); postings for supplier
-bills, customer payments and payroll (when those units exist).
+**Status:** working for phases 3 and 8. The ledger (chart of accounts, posting engine, periods and closing, manual journals
+with approval, reversals, posting rules as data, trial balance, general ledger, books check) and, on top of it, the
+**financial statements** (profit and loss consolidated or by branch, balance sheet, cash flow summary, VAT summary), their
+**CSV downloads**, the **journal export** for the accountant's software (generic, QuickBooks, Sage; account mapping per
+company), **expenses** with approval, and **bank reconciliation**. Payroll postings arrive with People (phase 9).
 
 | | |
 |---|---|
-| Schema | `finance` (migrations `0001_init`, `0002_manual_journals`) |
+| Schema | `finance` (migrations `0001_init`, `0002_manual_journals`, `0003_account_mapping`, `0004_expenses`, `0005_bank_reconciliation`) |
 | Requires | kernel only |
 | Optional | pos, payments, purchasing, inventory, people |
-| Publishes | `journal.posted`, `period.closed` |
+| Publishes | `journal.posted`, `period.closed`, `expense.approved`, `reconciliation.completed` |
 | Subscribes | `stock.moved`, `sale.posted`, `sale.returned`, `approval.decided` (kernel) |
 | Plugs into | `kernel.integrity_check` (the books check) |
 | API | `/api/v1/finance` |
-| Permissions | `accounts.manage`, `journal.post_manual`, `journal.approve`, `period.close`, `reports.view` (and `expenses.*`, later) |
-| Default roles | Finance Manager: all · Accountant: chart, manual journals, reports · Branch Manager: reports (own branch) · Owner: all |
+| Permissions | `accounts.manage`, `journal.post_manual`, `journal.approve`, `period.close`, `reports.view`, `expenses.submit`, `expenses.approve`, `bank.reconcile` |
+| Default roles | Finance Manager: all · Accountant: chart, manual journals, reports, expenses (submit), bank reconciliation · Branch Manager: reports and expenses (own branch) · Owner: all |
 | Company setting | `late_posting` (`redirect` or `reject`): what happens to a document dated in a closed period |
 
 ## The rules (specification section 07)
@@ -52,9 +53,51 @@ bills, customer payments and payroll (when those units exist).
 | POST | `/journal-entries/{id}/reverse` | Reverse a manual entry | `journal.approve` |
 | POST, GET | `/manual-journals`, `/{id}`; POST `/{id}/submit` | Draft, submit (posts at once or waits for approval) | `journal.post_manual` |
 | GET | `/reports/trial-balance`, `/reports/general-ledger` | Reports, reproducible for any past date | `reports.view` |
+| GET | `/reports/profit-and-loss` (`by_branch`, `branch_id`), `/reports/balance-sheet`, `/reports/cash-flow`, `/reports/vat-summary` | Statements; add `format=csv` to download | `reports.view` (a branch grant sees its branch) |
+| GET | `/exports/journal?format=generic\|quickbooks\|sage` | The journal lines of a period as CSV | `reports.view` |
+| GET, PUT, DELETE | `/account-mappings`, `/account-mappings/{account_id}` | What the accountant calls each account | read: any finance permission · write: `accounts.manage` |
+| POST, GET | `/expenses`, `/expenses/{id}`; POST `/{id}/submit`, `/{id}/reverse` | Draft, submit (posts at once or waits for approval), reverse | `expenses.submit` · reverse: `expenses.approve` |
+| POST, GET, DELETE | `/bank-reconciliations`, `/{id}`; POST `/{id}/clear`, `/{id}/suggestions`, `/{id}/complete` | Reconcile an account to a statement | `bank.reconcile` |
 
 Manual journals use the kernel's approval matrix (`doc_type` `manual_journal`); the approver must hold the role named in the
 rule and `journal.approve`.
+
+## Statements and exports
+
+- **They read the journal lines**, so each is reproducible for any past date and reconciles to the books by construction
+  (`balanced` and `reconciles` in the answers prove it). `domain/statements.py` is plain arithmetic over account totals.
+- **Profit and loss:** income, less *cost of sales* (cost of goods sold, shrinkage, purchase price variance) = gross profit,
+  less the other expenses = net profit. `by_branch=true` adds a statement per branch (lines with no branch are shown
+  separately); `branch_id` restricts to one. **Balance sheet:** assets, liabilities, equity, and the profit that has not been
+  closed into equity on its own line, so assets always equal liabilities plus equity. **Cash flow:** the cash, bank, M-Pesa
+  and card accounts: opening balance, what moved them by kind of document, closing balance. **VAT summary:** VAT charged
+  (account 2200) less VAT paid (1300) with the net sales behind it: the figure for the VAT return. Rates come from the tax
+  codes entered by hand on products; there is no per-rate split because the ledger holds one VAT account.
+- **CSV** cells that start with `= + - @` are prefixed with an apostrophe so a spreadsheet never runs them as formulas.
+- **Journal export:** `generic` (every column), `quickbooks` (QuickBooks Online journal import: `*JournalNo`, date as
+  dd/mm/yyyy, account name) and `sage` (Sage 50 journal import: `JD`/`JC`, nominal code). Each account is exported under its
+  *mapping* (external code and name) when one is set. These two layouts were written from the products' public import
+  documentation and **have not been imported into the real software**: have the accountant try a small file first.
+
+## Expenses
+
+A cost paid at once from cash, bank, M-Pesa or card (`paid_from`); `amount` is everything paid and `tax_amount` the VAT inside
+it. Posting: Dr the expense account (amount less VAT), Dr VAT input, Cr the account the money came from. Costs bought on
+credit go through Purchasing's supplier bills so accounts payable equals the supplier ledger. `draft` -> `submit` -> posted
+at once, or `pending_approval` when an approval rule (`doc_type` `expense`) matches the amount, then posted by the approver
+(`expenses.approve`) or rejected. A posted expense is cancelled by `reverse` (a mirror entry, with a reason). The receipt is
+recorded by reference (its number or file name); storing the file itself waits for the files service.
+
+## Bank reconciliation
+
+For a bank, M-Pesa or card account: start with the statement's date and closing balance, then *clear* the ledger lines that
+appear on the statement (by id, or `until` a date for everything settled before the statement began). It can be completed
+only when the cleared lines add up to the statement's balance (`difference` is zero); the lines still not cleared are the
+reconciling items (a deposit in transit, a cheque not yet presented). Upload the statement's lines (JSON or CSV; signed
+amounts, or paid-in and withdrawn columns) to get suggested matches, one to one by amount, the same reference first, then the
+nearest date within five days; `apply` clears them. Statement lines with nothing in the books (bank charges) are listed so
+they can be entered as an expense or manual journal first. One reconciliation is open per account, a completed one is final
+and its lines are never cleared again, and a period with one still open cannot be closed.
 
 ## Events other units publish (payloads: `services/event_postings.py`)
 

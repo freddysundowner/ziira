@@ -9,8 +9,10 @@ from fastapi import APIRouter, Depends, Query, Response, status
 
 from ziira.modules.finance.api import schemas as sc
 from ziira.modules.finance.domain import exports as csv_export
+from ziira.modules.finance.domain import reconciliation as recon_rules
 from ziira.modules.finance.permissions import (
     ACCOUNTS_MANAGE,
+    BANK_RECONCILE,
     EXPENSES_APPROVE,
     EXPENSES_SUBMIT,
     JOURNAL_APPROVE,
@@ -20,6 +22,7 @@ from ziira.modules.finance.permissions import (
 )
 from ziira.modules.finance.services import (
     accounts,
+    bank_reconciliation,
     entries,
     expenses,
     manual_journals,
@@ -35,7 +38,16 @@ from ziira.modules.finance.services import (
     statements as statement_service,
 )
 from ziira.modules.finance.services.access import READERS
-from ziira.sdk import Forbidden, RequestContext, Session, db_session, page_limit, page_offset, request_context
+from ziira.sdk import (
+    Forbidden,
+    RequestContext,
+    Session,
+    ValidationFailed,
+    db_session,
+    page_limit,
+    page_offset,
+    request_context,
+)
 
 router = APIRouter()
 NO_CONTENT = status.HTTP_204_NO_CONTENT
@@ -57,6 +69,7 @@ REPORT = [Depends(any_of(REPORTS_VIEW))]
 MANAGE_CHART = [Depends(any_of(ACCOUNTS_MANAGE))]
 MANUAL = [Depends(any_of(JOURNAL_POST_MANUAL))]
 CLOSE = [Depends(any_of(PERIOD_CLOSE))]
+RECON = [Depends(any_of(BANK_RECONCILE))]
 EXPENSE_READ = [Depends(any_of(EXPENSES_SUBMIT, EXPENSES_APPROVE, REPORTS_VIEW))]
 EXPENSE_WRITE = [Depends(any_of(EXPENSES_SUBMIT))]
 EXPENSE_DECIDE = [Depends(any_of(EXPENSES_APPROVE))]
@@ -372,3 +385,82 @@ def post_submit_expense(expense_id: UUID, session: Session = Depends(db_session)
 def post_reverse_expense(expense_id: UUID, body: sc.ExpenseReverseIn, session: Session = Depends(db_session)) -> object:
     """Cancel a posted expense by posting its mirror image."""
     return expenses.reverse_expense(session, expense_id, body.reason)
+
+
+# --------------------------------------------------------------------------- bank reconciliation
+def _line(c: bank_reconciliation.LedgerCandidate, cleared: bool | None = None) -> sc.ReconLineOut:
+    return sc.ReconLineOut(line_id=c.line_id, number=c.number, entry_date=c.entry_date, description=c.description,
+                           debit=c.debit, credit=c.credit, amount=c.debit - c.credit,
+                           cleared=c.cleared if cleared is None else cleared)
+
+
+def _recon_out(d: bank_reconciliation.ReconciliationDetail) -> sc.ReconciliationOut:
+    r = d.reconciliation
+    assert r.account_id is not None
+    return sc.ReconciliationOut(
+        id=r.id, company_id=r.company_id, account_id=r.account_id, account_code=d.account_code,
+        account_name=d.account_name, statement_date=r.statement_date, statement_balance=r.statement_balance,
+        book_balance=d.book_balance, cleared_balance=r.cleared_balance, difference=r.difference,
+        outstanding=d.outstanding, status=r.status, completed_by=r.completed_by, completed_at=r.completed_at,
+        cleared=[_line(x) for x in d.cleared], uncleared=[_line(x) for x in d.uncleared])
+
+
+@router.post("/bank-reconciliations", response_model=sc.ReconciliationOut, status_code=status.HTTP_201_CREATED,
+             dependencies=RECON)
+def post_reconciliation(body: sc.ReconcileStartIn, session: Session = Depends(db_session)) -> object:
+    """Start reconciling a bank, M-Pesa or card account to a statement (its date and closing balance)."""
+    return _recon_out(bank_reconciliation.start_reconciliation(
+        session, company_id=body.company_id, account_id=body.account_id, statement_date=body.statement_date,
+        statement_balance=body.statement_balance))
+
+
+@router.get("/bank-reconciliations", response_model=list[sc.ReconciliationSummaryOut], dependencies=RECON)
+def get_reconciliations(company_id: UUID | None = None, account_id: UUID | None = None,
+                        status_: str | None = Query(default=None, alias="status", pattern="^(in_progress|completed)$"),
+                        limit: int = page_limit(50), offset: int = page_offset(),
+                        session: Session = Depends(db_session)) -> object:
+    return bank_reconciliation.list_reconciliations(session, company_id=company_id, account_id=account_id,
+                                                    status=status_, limit=limit, offset=offset)
+
+
+@router.get("/bank-reconciliations/{recon_id}", response_model=sc.ReconciliationOut, dependencies=RECON)
+def get_reconciliation(recon_id: UUID, session: Session = Depends(db_session)) -> object:
+    """The reconciliation with the lines cleared and the lines still waiting (the reconciling items)."""
+    return _recon_out(bank_reconciliation.get_reconciliation(session, recon_id))
+
+
+@router.post("/bank-reconciliations/{recon_id}/clear", response_model=sc.ReconciliationOut, dependencies=RECON)
+def post_clear(recon_id: UUID, body: sc.ClearIn, session: Session = Depends(db_session)) -> object:
+    """Mark ledger lines as on the statement (or take the mark off): by id, or everything up to a date."""
+    return _recon_out(bank_reconciliation.clear_lines(session, recon_id, line_ids=body.line_ids, until=body.until,
+                                                      cleared=body.cleared))
+
+
+@router.post("/bank-reconciliations/{recon_id}/suggestions", response_model=sc.SuggestResultOut, dependencies=RECON)
+def post_suggestions(recon_id: UUID, body: sc.SuggestIn, session: Session = Depends(db_session)) -> object:
+    """Match statement lines (JSON, or CSV text) to ledger lines; `apply` clears the matches."""
+    if (body.lines is None) == (body.csv is None):
+        raise ValidationFailed("Send either lines or csv")
+    items = ([recon_rules.item(x.date, x.reference, x.description, x.amount) for x in body.lines]
+             if body.lines is not None else recon_rules.parse_csv(body.csv or ""))
+    r = bank_reconciliation.suggest_matches(session, recon_id, items, apply=body.apply)
+
+    def plain(x: recon_rules.StatementItem) -> sc.SuggestionLineOut:
+        return sc.SuggestionLineOut(date=x.day, reference=x.reference, description=x.description, amount=x.amount)
+
+    return sc.SuggestResultOut(
+        suggestions=[sc.SuggestionOut(statement=plain(x.item), ledger=_line(x.line, cleared=r.applied), reason=x.reason)
+                     for x in r.suggestions],
+        unmatched=[plain(x) for x in r.unmatched], applied=r.applied, reconciliation=_recon_out(r.detail))
+
+
+@router.post("/bank-reconciliations/{recon_id}/complete", response_model=sc.ReconciliationOut, dependencies=RECON)
+def post_complete_reconciliation(recon_id: UUID, session: Session = Depends(db_session)) -> object:
+    """Finish the reconciliation: only when the cleared lines add up to the statement's balance. Final."""
+    return _recon_out(bank_reconciliation.complete_reconciliation(session, recon_id))
+
+
+@router.delete("/bank-reconciliations/{recon_id}", status_code=NO_CONTENT, dependencies=RECON)
+def delete_reconciliation(recon_id: UUID, session: Session = Depends(db_session)) -> None:
+    """Throw away a reconciliation that is still in progress."""
+    bank_reconciliation.cancel_reconciliation(session, recon_id)

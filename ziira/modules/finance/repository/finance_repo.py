@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ziira.modules.finance.repository.models import (
     Account,
     AccountMapping,
+    BankReconciliation,
     Expense,
     Journal,
     JournalEntry,
@@ -19,6 +20,7 @@ from ziira.modules.finance.repository.models import (
     ManualJournalLine,
     Period,
     PostingRule,
+    ReconciliationLine,
 )
 
 Scopes = list[tuple[UUID | None, UUID | None]] | None
@@ -197,6 +199,21 @@ def pending_manuals_in(session: Session, company_id: UUID, start: date, end: dat
         ManualJournal.entry_date >= start, ManualJournal.entry_date <= end)) or 0)
 
 
+def pending_expenses_in(session: Session, company_id: UUID, start: date, end: date) -> int:
+    return int(session.scalar(select(func.count()).select_from(Expense).where(
+        Expense.company_id == company_id, Expense.status == "pending_approval",
+        Expense.expense_date >= start, Expense.expense_date <= end)) or 0)
+
+
+def open_reconciliations_in(session: Session, company_id: UUID, start: date, end: date) -> list[str]:
+    """Codes of the accounts with a reconciliation in progress whose statement date falls in the span."""
+    return [code for code in session.scalars(
+        select(Account.code).join(BankReconciliation, BankReconciliation.account_id == Account.id)
+        .where(BankReconciliation.company_id == company_id, BankReconciliation.status == "in_progress",
+               BankReconciliation.statement_date >= start, BankReconciliation.statement_date <= end)
+        .order_by(Account.code))]
+
+
 # --------------------------------------------------------------------------- expenses
 def get_expense(session: Session, expense_id: UUID, *, lock: bool = False) -> Expense | None:
     query = select(Expense).where(Expense.id == expense_id)
@@ -220,6 +237,106 @@ def list_expenses(session: Session, scopes: Scopes, *, company_id: UUID | None, 
     if date_to:
         query = query.where(Expense.expense_date <= date_to)
     return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- bank reconciliation
+@dataclass(frozen=True)
+class LedgerCandidate:
+    line_id: UUID
+    number: str
+    entry_date: date
+    description: str | None
+    debit: Decimal
+    credit: Decimal
+    cleared: bool                 # cleared in the reconciliation asked about
+
+
+def get_reconciliation(session: Session, recon_id: UUID, *, lock: bool = False) -> BankReconciliation | None:
+    query = select(BankReconciliation).where(BankReconciliation.id == recon_id)
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def list_reconciliations(session: Session, company_ids: set[UUID] | None, *, company_id: UUID | None,
+                         account_id: UUID | None, status: str | None, limit: int,
+                         offset: int) -> list[BankReconciliation]:
+    query = (select(BankReconciliation)
+             .order_by(BankReconciliation.statement_date.desc(), BankReconciliation.created_at.desc())
+             .limit(limit).offset(offset))
+    if company_ids is not None:
+        query = query.where(BankReconciliation.company_id.in_(company_ids))
+    if company_id:
+        query = query.where(BankReconciliation.company_id == company_id)
+    if account_id:
+        query = query.where(BankReconciliation.account_id == account_id)
+    if status:
+        query = query.where(BankReconciliation.status == status)
+    return list(session.scalars(query))
+
+
+def open_reconciliation(session: Session, account_id: UUID) -> BankReconciliation | None:
+    return session.scalars(select(BankReconciliation).where(
+        BankReconciliation.account_id == account_id, BankReconciliation.status == "in_progress")).first()
+
+
+def last_completed_date(session: Session, account_id: UUID) -> date | None:
+    return session.scalar(select(func.max(BankReconciliation.statement_date)).where(
+        BankReconciliation.account_id == account_id, BankReconciliation.status == "completed"))
+
+
+def ledger_candidates(session: Session, company_id: UUID, account_id: UUID, up_to: date,
+                      recon_id: UUID) -> list[LedgerCandidate]:
+    """The account's journal lines dated up to a day that are free to clear: not cleared by any other reconciliation.
+    `cleared` says whether this reconciliation has cleared the line."""
+    query = (select(JournalLine, JournalEntry, ReconciliationLine.reconciliation_id)
+             .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+             .outerjoin(ReconciliationLine, ReconciliationLine.journal_line_id == JournalLine.id)
+             .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
+                    JournalEntry.entry_date <= up_to,
+                    or_(ReconciliationLine.reconciliation_id.is_(None),
+                        ReconciliationLine.reconciliation_id == recon_id))
+             .order_by(JournalEntry.entry_date, JournalEntry.number, JournalLine.created_at, JournalLine.id))
+    return [LedgerCandidate(line.id, e.number, e.entry_date, line.description or e.description, line.debit, line.credit,
+                            cleared_in is not None) for line, e, cleared_in in session.execute(query)]
+
+
+def book_balance_until(session: Session, company_id: UUID, account_id: UUID, day: date) -> Decimal:
+    value = session.scalar(
+        select(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0))
+        .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+        .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
+               JournalEntry.entry_date <= day))
+    return Decimal(value or 0)
+
+
+def cleared_balance(session: Session, account_id: UUID, recon_id: UUID) -> Decimal:
+    """What the cleared lines of the account add up to: those of completed reconciliations and of this one."""
+    value = session.scalar(
+        select(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0))
+        .join(ReconciliationLine, ReconciliationLine.journal_line_id == JournalLine.id)
+        .join(BankReconciliation, BankReconciliation.id == ReconciliationLine.reconciliation_id)
+        .where(JournalLine.account_id == account_id,
+               or_(BankReconciliation.status == "completed", BankReconciliation.id == recon_id)))
+    return Decimal(value or 0)
+
+
+def cleared_line_ids(session: Session, recon_id: UUID) -> set[UUID]:
+    return set(session.scalars(select(ReconciliationLine.journal_line_id).where(
+        ReconciliationLine.reconciliation_id == recon_id)))
+
+
+def remove_cleared(session: Session, recon_id: UUID, line_ids: set[UUID]) -> None:
+    for row in session.scalars(select(ReconciliationLine).where(
+            ReconciliationLine.reconciliation_id == recon_id, ReconciliationLine.journal_line_id.in_(line_ids))):
+        session.delete(row)
+    session.flush()
+
+
+def delete_reconciliation(session: Session, recon: BankReconciliation) -> None:
+    session.execute(text("delete from finance.reconciliation_line where reconciliation_id = :r"), {"r": str(recon.id)})
+    session.delete(recon)
+    session.flush()
 
 
 # --------------------------------------------------------------------------- reports

@@ -181,3 +181,29 @@ class Expense(TenantColumns, Base):
     entry_id: Mapped[UUID | None]
     reversed_at: Mapped[datetime | None]
     reverse_reason: Mapped[str | None]
+
+
+class BankReconciliation(TenantColumns, Base):
+    __tablename__ = "bank_reconciliation"
+    __table_args__ = {"schema": "finance"}
+    created_by: Mapped[UUID | None]
+    updated_at: Mapped[datetime | None]
+    updated_by: Mapped[UUID | None]
+    company_id: Mapped[UUID]
+    account_id: Mapped[UUID | None]
+    statement_date: Mapped[date]
+    statement_balance: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    book_balance: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    cleared_balance: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    difference: Mapped[Decimal] = mapped_column(Numeric(18, 2))
+    status: Mapped[str] = mapped_column(server_default=text("'in_progress'"))
+    completed_by: Mapped[UUID | None]
+    completed_at: Mapped[datetime | None]
+
+
+class ReconciliationLine(TenantColumns, Base):
+    __tablename__ = "reconciliation_line"
+    __table_args__ = {"schema": "finance"}
+    created_by: Mapped[UUID | None]
+    reconciliation_id: Mapped[UUID]
+    journal_line_id: Mapped[UUID]

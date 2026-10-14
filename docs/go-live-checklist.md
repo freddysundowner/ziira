@@ -27,6 +27,14 @@ service**. Tick each off (with the date and who did it) before a customer relies
 - [ ] `ziira verify` and `ziira stock-verify` scheduled nightly and their output watched.
 - [ ] A worker running (`ziira worker`, `ziira outbox-run`) and restarted automatically.
 
+## Accounting software
+
+- [ ] **QuickBooks and Sage journal imports**: export a small month (`GET /api/v1/finance/exports/journal?format=quickbooks`
+      or `sage`) and import it into the accountant's real software; fix the layouts in
+      `ziira/modules/finance/domain/exports.py` if it is refused. Set each account's mapping first.
+- [ ] **Bank reconciliation** with a real statement: upload its CSV to the suggestions endpoint and check the column names
+      the bank uses are understood (`domain/reconciliation.py: ALIASES`).
+
 ## Business decisions
 
 - [ ] Chart of accounts, tax codes and VAT rates entered for each company (taxes are entered by hand for now).

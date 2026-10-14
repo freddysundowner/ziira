@@ -342,3 +342,97 @@ class ExpenseOut(BaseModel):
 
 class ExpenseReverseIn(BaseModel):
     reason: str = Field(min_length=1, max_length=500)
+
+
+# --------------------------------------------------------------------------- bank reconciliation
+SignedMoney = Annotated[Decimal, Field(max_digits=18, decimal_places=2)]
+
+
+class ReconcileStartIn(BaseModel):
+    company_id: UUID
+    account_id: UUID = Field(description="A bank, M-Pesa or card account of the chart")
+    statement_date: date
+    statement_balance: SignedMoney = Field(description="The statement's closing balance (negative if overdrawn)")
+
+
+class ReconLineOut(BaseModel):
+    line_id: UUID
+    number: str
+    entry_date: date
+    description: str | None
+    debit: Decimal
+    credit: Decimal
+    amount: Decimal = Field(description="Money in is positive, money out negative")
+    cleared: bool
+
+
+class ReconciliationOut(BaseModel):
+    id: UUID
+    company_id: UUID
+    account_id: UUID
+    account_code: str
+    account_name: str
+    statement_date: date
+    statement_balance: Decimal
+    book_balance: Decimal = Field(description="What the books say at the statement date")
+    cleared_balance: Decimal
+    difference: Decimal = Field(description="Statement balance less cleared lines: zero when reconciled")
+    outstanding: Decimal = Field(description="Net of the lines in the books that are not on the statement")
+    status: str
+    completed_by: UUID | None
+    completed_at: datetime | None
+    cleared: list[ReconLineOut]
+    uncleared: list[ReconLineOut]
+
+
+class ReconciliationSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    account_id: UUID | None
+    statement_date: date
+    statement_balance: Decimal
+    book_balance: Decimal
+    cleared_balance: Decimal
+    difference: Decimal
+    status: str
+    completed_at: datetime | None
+
+
+class ClearIn(BaseModel):
+    line_ids: list[UUID] | None = Field(default=None, max_length=5000)
+    until: date | None = Field(default=None, description="Clear every line dated up to this day")
+    cleared: bool = True
+
+
+class StatementItemIn(BaseModel):
+    date: date
+    reference: str = Field(default="", max_length=100)
+    description: str = Field(default="", max_length=300)
+    amount: SignedMoney = Field(description="Money in positive, money out negative")
+
+
+class SuggestIn(BaseModel):
+    lines: list[StatementItemIn] | None = Field(default=None, max_length=5000)
+    csv: str | None = Field(default=None, max_length=3_000_000, description="date,reference,description,amount")
+    apply: bool = Field(default=False, description="Clear the matched lines at once")
+
+
+class SuggestionLineOut(BaseModel):
+    date: date
+    reference: str
+    description: str
+    amount: Decimal
+
+
+class SuggestionOut(BaseModel):
+    statement: SuggestionLineOut
+    ledger: ReconLineOut
+    reason: str
+
+
+class SuggestResultOut(BaseModel):
+    suggestions: list[SuggestionOut]
+    unmatched: list[SuggestionLineOut]
+    applied: bool
+    reconciliation: ReconciliationOut
