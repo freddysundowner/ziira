@@ -1,0 +1,5 @@
+{"code": 0, "message": "success", "invoice": {"invoice_id": "982000000567114", "created_by_id": "982000000100001", "tax_total": 689.65, "line_items": [
+  {"item_id": "982000000030049", "name": "Cement 50kg", "quantity": 10, "rate": 500.0, "discount": "10%", "discount_amount": 500.0, "item_total": 4500.0},
+  {"item_id": "982000000030050", "name": "Nails", "quantity": 2, "rate": 250.0, "discount": 20, "item_total": 480.0},
+  {"item_id": null, "name": "Delivery", "quantity": 1, "rate": 20.0, "discount": 0, "item_total": 20.0}],
+ "payments": [{"payment_id": "p1", "payment_mode": "M-Pesa", "amount": 3000.0, "reference_number": "SHK12ABC34"}]}}

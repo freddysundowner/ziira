@@ -114,6 +114,7 @@
   "anyBranch": "Hakuna tawi",
   "holdBalance": "Weka kilichozidi kama salio la mteja kwenye akaunti yake",
   "settlesOldest": "Malipo hulipa ankara za zamani zaidi ambazo hazijalipwa kwanza.",
+  "settlesInvoice": "Inalipa ankara {{number}} pekee.",
   "receiptRecorded": "Malipo {{number}} yamehifadhiwa.",
   "receiptReversed": "Malipo yamebatilishwa. Ankara zinadaiwa tena.",
   "reverseReceipt": "Batilisha malipo",

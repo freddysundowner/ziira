@@ -1,0 +1,5 @@
+[
+ {"id": 1, "pos_order_id": [101, "Shop/0001"], "payment_method_id": [1, "Cash"], "amount": 660.0, "transaction_id": false},
+ {"id": 2, "pos_order_id": [101, "Shop/0001"], "payment_method_id": [2, "M-Pesa"], "amount": 500.0, "transaction_id": "SHK12ABC34"},
+ {"id": 3, "pos_order_id": [103, "Shop/0003 REFUND"], "payment_method_id": [1, "Cash"], "amount": -300.0}
+]

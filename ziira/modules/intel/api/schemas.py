@@ -253,3 +253,110 @@ class AskSessionOut(BaseModel):
 
 class AskConversationOut(AskSessionOut):
     messages: list[AskMessageOut]
+
+
+# --------------------------------------------------------------------------- actions (levels 3 and 4)
+class ActionTypeOut(BaseModel):
+    type: str
+    title: str
+    description: str
+    check_codes: list[str]
+    needs_permission: str
+    can_run_by_rule: bool = Field(description="True only for routine actions that move no money and change no price, "
+                                              "credit limit or stock: an owner may let these run by themselves")
+    why_not_by_rule: str | None
+    params_schema: dict[str, Any] = Field(description="The parameters of the action: type, title, limits, editable")
+    rule_schema: dict[str, Any] = Field(description="The conditions a rule for this action may set")
+
+
+class ActionResultOut(BaseModel):
+    ok: bool
+    message: str
+    created: list[RecordOut] = []
+
+
+class ProposalOut(BaseModel):
+    id: UUID
+    finding_id: UUID
+    finding_summary: str | None
+    finding_severity: str
+    finding_status: str
+    company_id: UUID
+    branch_id: UUID | None
+    action_type: str
+    action_title: str
+    description: str
+    facts: dict[str, str]
+    params: dict[str, Any]
+    params_schema: dict[str, Any]
+    status: str
+    level_at_proposal: int
+    proposed_at: datetime
+    decided_by: UUID | None
+    decided_by_name: str | None
+    decided_at: datetime | None
+    decision_note: str | None
+    executed_at: datetime | None
+    result: ActionResultOut | None
+    needs_permission: str
+    can_decide: bool = Field(description="The signed-in user holds the permission to approve it where it applies")
+
+
+class ApproveIn(BaseModel):
+    params: dict[str, Any] | None = Field(default=None, description="Changed parameters (only those marked editable)")
+    note: str | None = Field(default=None, max_length=500)
+
+
+class RejectIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)
+
+
+class RuleIn(BaseModel):
+    company_id: UUID
+    action_type: str = Field(max_length=100)
+    conditions: dict[str, Any] = Field(default_factory=dict)
+    daily_cap: int = Field(default=20, ge=1, le=1000, description="Most times this rule may act in one day")
+    note: str | None = Field(default=None, max_length=300)
+
+
+class RuleUpdateIn(BaseModel):
+    conditions: dict[str, Any] | None = None
+    daily_cap: int | None = Field(default=None, ge=1, le=1000)
+    note: str | None = Field(default=None, max_length=300)
+    enabled: bool | None = None
+    paused: bool | None = Field(default=None, description="Pause or resume the rule without losing it")
+
+
+class RuleOut(BaseModel):
+    id: UUID
+    company_id: UUID
+    action_type: str
+    action_title: str
+    enabled: bool
+    paused: bool
+    conditions: dict[str, Any]
+    daily_cap: int
+    note: str | None
+    created_at: datetime
+    times_used: int
+
+
+class ActionLogOut(BaseModel):
+    id: UUID
+    created_at: datetime
+    proposal_id: UUID | None
+    finding_id: UUID | None
+    finding_summary: str | None
+    company_id: UUID
+    branch_id: UUID | None
+    action_type: str
+    action_title: str
+    mode: Literal["manual", "automatic"]
+    actor_user_id: UUID | None
+    actor_name: str | None
+    rule_id: UUID | None
+    level: int
+    params: dict[str, Any]
+    outcome: Literal["executed", "failed"]
+    message: str
+    result: ActionResultOut | None

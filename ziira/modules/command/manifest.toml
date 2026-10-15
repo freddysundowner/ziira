@@ -1,6 +1,7 @@
 [unit]
 name = "command"
 title = "Command Center"
+description = "Owner dashboard: today's figures across branches and the daily brief."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

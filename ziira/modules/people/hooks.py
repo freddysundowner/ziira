@@ -2,11 +2,14 @@
 metrics, the figures it adds to the Command Center, and the importer for employees."""
 
 from ziira.modules.imports.public import IMPORTS_IMPORTER
+from ziira.modules.intel.public import INTEL_ACTION
 from ziira.modules.people import intel_checks, pulse  # noqa: F401 - importing registers the implementations
+from ziira.modules.people.action_providers import NudgeApprover
 from ziira.modules.people.importers import EmployeeImporter
 from ziira.sdk import provides
 
 provides(IMPORTS_IMPORTER)(EmployeeImporter)
+provides(INTEL_ACTION)(NudgeApprover)
 
 from ziira.modules.people import privacy as _privacy  # noqa: E402, F401, I001 - registers personal-data provider
 

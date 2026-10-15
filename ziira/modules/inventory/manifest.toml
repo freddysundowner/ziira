@@ -1,6 +1,7 @@
 [unit]
 name = "inventory"
 title = "Inventory and Branches"
+description = "Stock by location and batch, receiving, transfers, counts and adjustments, with a full movement history."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

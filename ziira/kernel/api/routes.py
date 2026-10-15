@@ -70,7 +70,7 @@ def register(body: sc.RegisterIn, request: Request) -> object:
     started = registration.register(
         business_name=body.business_name, owner_name=body.owner_name, email=body.email, password=body.password,
         currency=body.currency, phone_country_code=body.phone_country_code, country=body.country,
-        tax_id=body.tax_id, timezone=body.timezone,
+        tax_id=body.tax_id, timezone=body.timezone, mode=body.mode,
         invite_code=body.invite_code, ip_address=auth.client_ip(request))
     return sc.RegisterOut(message="Check your email for a link to finish creating your business.",
                           dev_token=started.dev_token)

@@ -1,0 +1,8 @@
+[
+ {"id": 8, "usage": "internal", "warehouse_id": [1, "Main"]},
+ {"id": 9, "usage": "internal", "warehouse_id": [1, "Main"]},
+ {"id": 18, "usage": "internal", "warehouse_id": [2, "Second"]},
+ {"id": 5, "usage": "customer", "warehouse_id": false},
+ {"id": 4, "usage": "supplier", "warehouse_id": false},
+ {"id": 14, "usage": "inventory", "warehouse_id": false}
+]

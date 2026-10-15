@@ -1,0 +1,7 @@
+{"data": {"name": "POS-INV-2024-00001", "docstatus": 1, "items": [
+  {"item_code": "HAM-001", "qty": 2.0, "rate": 450.0, "price_list_rate": 500.0, "discount_amount": 50.0, "warehouse": "Main Store - Z"},
+  {"item_code": "NAIL-5", "qty": 1.0, "rate": 260.0, "price_list_rate": null, "discount_amount": 0.0, "warehouse": null}],
+ "payments": [
+  {"mode_of_payment": "Cash", "amount": 1000.0, "type": "Cash", "account": "Cash - Z"},
+  {"mode_of_payment": "M-Pesa", "amount": 500.0, "type": "Phone", "account": "Mpesa - Z"},
+  {"mode_of_payment": "Card", "amount": 0.0, "type": "Bank", "account": "Bank - Z"}]}}

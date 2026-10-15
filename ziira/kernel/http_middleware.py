@@ -36,6 +36,12 @@ SECURITY_HEADERS = {
 API_CSP = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 
 
+
+def _is_file_upload(method: str, path: str) -> bool:
+    """Statement and export uploads (a file is the request body) may be larger than other requests."""
+    return method == "POST" and path.startswith("/api/v1/connect/") and path.endswith(("/upload", "/files/detect"))
+
+
 class RequestTooLarge(Exception):
     """The body is bigger than ZIIRA_MAX_BODY_BYTES."""
 
@@ -75,7 +81,7 @@ class HttpMiddleware:
         status = 500
         response_started = False
         exceeded = False                    # the body went over the limit (the app may hide that, see send_wrapper)
-        limit = settings.max_body_bytes
+        limit = settings.max_upload_bytes if _is_file_upload(method, path) else settings.max_body_bytes
         received = 0
 
         async def limited_receive() -> Message:

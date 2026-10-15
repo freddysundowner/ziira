@@ -8,7 +8,11 @@ import {
 const METHODS = ["cash", "mobile_money", "bank", "card", "cheque", "other"] as const;
 
 /** Record money a customer paid. By default it settles their oldest invoices first (the server decides how). */
-export function ReceivePayment({ open, onClose, customer }: { open: boolean; onClose: () => void; customer: Schemas["CustomerOut"] }) {
+export function ReceivePayment({ open, onClose, customer, invoice }: {
+  open: boolean; onClose: () => void; customer: Schemas["CustomerOut"];
+  /** Pay this one invoice (amount prefilled with what is owed on it) instead of the oldest first. */
+  invoice?: { id: string; number: string; outstanding: string };
+}) {
   const { t } = useTranslation("crm");
   const qc = useQueryClient();
   const { companies } = useCompany(customer.company_id);
@@ -18,7 +22,7 @@ export function ReceivePayment({ open, onClose, customer }: { open: boolean; onC
   const effectiveBranch = f.values.branch_id || branches[0]?.id || "";
   const [hold, setHold] = useState(false);
   const { reset } = f;
-  useEffect(() => { if (open) { reset(); setHold(false); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (open) { reset(); setHold(false); if (invoice) f.set("amount", invoice.outstanding); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const needsAccount = f.values.method !== "cash";
   const accounts = useQuery({
@@ -31,7 +35,8 @@ export function ReceivePayment({ open, onClose, customer }: { open: boolean; onC
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/pos/receipts", { body: {
       customer_id: customer.id, amount: f.values.amount, method: f.values.method as "cash", branch_id: effectiveBranch || null,
-      payment_account_id: orNull(f.values.payment_account_id), external_ref: orNull(f.values.external_ref), received_on: f.values.received_on || null, hold_balance: hold } })),
+      payment_account_id: orNull(f.values.payment_account_id), external_ref: orNull(f.values.external_ref), received_on: f.values.received_on || null, hold_balance: hold,
+      allocations: invoice ? [{ invoice_id: invoice.id, amount: f.values.amount }] : null } })),
     onSuccess: (r) => {
       for (const key of ["customer-balance", "customer-statement", "customer-receipts", "customer-invoices", "ageing"]) void qc.invalidateQueries({ queryKey: [key] });
       toast(t("receiptRecorded", { number: r.number }), "ok");
@@ -66,7 +71,7 @@ export function ReceivePayment({ open, onClose, customer }: { open: boolean; onC
           </Field>
         )}
         <Checkbox label={t("holdBalance")} checked={hold} onChange={(e) => setHold(e.target.checked)} />
-        <p className="text-xs text-muted">{t("settlesOldest")}</p>
+        <p className="text-xs text-muted">{invoice ? t("settlesInvoice", { number: invoice.number }) : t("settlesOldest")}</p>
       </form>
     </Drawer>
   );

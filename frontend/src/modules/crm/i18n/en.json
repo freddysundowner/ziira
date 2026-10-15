@@ -114,6 +114,7 @@
   "anyBranch": "No branch",
   "holdBalance": "Keep any extra as credit on the customer's account",
   "settlesOldest": "The payment settles the oldest unpaid invoices first.",
+  "settlesInvoice": "Pays invoice {{number}} only.",
   "receiptRecorded": "Payment {{number}} recorded.",
   "receiptReversed": "Payment reversed. The invoices are owed again.",
   "reverseReceipt": "Reverse payment",

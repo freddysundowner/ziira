@@ -32,7 +32,7 @@ from ziira.kernel.auth import client_ip, context_from_access_token, context_from
 from ziira.kernel.checks import IntegrityCheck
 from ziira.kernel.clock import company_date_of, company_today
 from ziira.kernel.config import Settings, get_settings
-from ziira.kernel.context import RequestContext, get_context, set_context, system_context
+from ziira.kernel.context import Assignment, RequestContext, get_context, set_context, system_context
 from ziira.kernel.csvutil import safe, to_csv
 from ziira.kernel.db import tenant_session
 from ziira.kernel.errors import (
@@ -85,7 +85,8 @@ __all__ = [
     "Subject",
     "json_one", "json_rows", "like_pattern", "mask_text", "sql_digits", "sql_identifier", "sql_phone_matches",
     "check_calling_code", "normalise_phone",
-    "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
+    "Amount", "Assignment", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel",
+    "Outgoing",
     "Quantity", "Rate", "Recipient", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized",
     "UnitCost",
     "ValidationFailed", "ZiiraError", "audit_record", "check_branch_open", "check_company", "check_reason",
@@ -97,7 +98,8 @@ __all__ = [
     "recipients_with_permission", "request_context", "require_permission", "run_validators", "send_notification",
     "platform_settings", "provider_named", "settings_public_base_url", "sign_value", "tenant_transaction",
     "unbound_periodic", "update_company_settings",
-    "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session", "validate",
+    "set_context", "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session",
+    "validate",
     "verify_value",
 ]
 

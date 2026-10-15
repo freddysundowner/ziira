@@ -26,6 +26,15 @@ Stock-like modules keep derived figures (balances, running totals). Keep them up
 the records they come from, and provide an integrity check (`kernel.integrity_check`, see `docs/extending-units.md`)
 that recomputes them, so `ziira verify` can find and rebuild any difference. Inventory is the example.
 
+## Showing up in Apps & plugins
+
+Settings > Apps & plugins (permission `units.manage`, Owner only) lets a business switch units on or off and delete a
+switched-off unit's data. It reads your manifest: add `description = "one plain sentence"` under `[unit]` (shown on the
+card), and keep `requires` honest (switching on enables what a unit requires; switching off or removing is refused while
+another unit needs it). Removal runs your `down.sql` migrations, so every unit needs working ones. Platform install and
+uninstall stay CLI jobs: a unit not installed shows as "Not available yet". Code: `ziira/kernel/unit_admin.py`,
+`ziira/kernel/api/unit_routes.py` (`/api/v1/units/catalog`, `/{name}/enable|disable|remove`), web `modules/admin/pages/AppsPage.tsx`.
+
 ## Permissions, scope and kernel services
 
 Everything below comes from `ziira.sdk`. Products shows the pattern.

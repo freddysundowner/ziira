@@ -5,6 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
+from ziira.modules.intel.api.action_routes import router as action_router
 from ziira.modules.intel.api.ai_routes import router as ai_router
 from ziira.modules.intel.api.schemas import (
     AiExplainIn,
@@ -38,6 +39,7 @@ from ziira.sdk import (
 
 router = APIRouter()
 router.include_router(ai_router)
+router.include_router(action_router)
 VIEW = [Depends(require_permission(FINDINGS_VIEW))]
 MANAGE = [Depends(require_permission(FINDINGS_MANAGE))]
 

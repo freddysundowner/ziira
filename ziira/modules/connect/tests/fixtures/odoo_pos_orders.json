@@ -1,0 +1,5 @@
+[
+ {"id": 101, "name": "Shop/0001", "date_order": "2024-05-03 11:22:10", "amount_total": 1160.0, "amount_tax": 160.0, "state": "paid", "config_id": [1, "Main Till"], "user_id": [7, "Cash Ier"], "partner_id": false, "create_date": "2024-05-03 11:22:12", "write_date": "2024-05-03 11:22:12", "write_uid": [7, "Cash Ier"]},
+ {"id": 102, "name": "Shop/0002", "date_order": "2024-05-03 12:00:00", "amount_total": 500.0, "amount_tax": 0.0, "state": "cancel", "config_id": [1, "Main Till"], "user_id": [8, "Other"], "partner_id": [55, "Acme"], "create_date": "2024-05-03 12:00:01", "write_date": "2024-05-03 13:00:00", "write_uid": [3, "Manager"]},
+ {"id": 103, "name": "Shop/0003 REFUND", "date_order": "2024-05-04 09:00:00", "amount_total": -300.0, "amount_tax": -41.38, "state": "done", "config_id": false, "user_id": false, "partner_id": false, "create_date": "2024-05-04 09:00:02", "write_date": "2024-05-04 09:00:02", "write_uid": [7, "Cash Ier"]}
+]

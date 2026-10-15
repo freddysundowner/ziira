@@ -2,7 +2,7 @@
 
 Ziira Intelligence checks the business every day and says what needs attention; the Command Center shows the figures and
 sends the briefs. Both are built into Core (the "inside Ziira Core" mode of `docs/specs/Ziira_Intelligence_1.0.txt`).
-Standalone mode on other ERPs is not part of Core 1.0.
+Standalone mode (Intelligence on a business's existing system) is the `connect` unit: `docs/standalone-mode.md`.
 
 ```
 units (pos, inventory, ...)                  intel                              command
@@ -40,9 +40,10 @@ can add more. Only units enabled for the business take part.
 - **Alerts**: with the company setting `intel_alert_channel` (`off` by default, `sms` or `email`), new findings at or above
   `intel_alert_min_severity` (default `high`) are queued to the people whose role covers them (`kernel.notification`, so opt-outs and
   retries apply). Anything below waits for the brief. The finding becomes `sent`.
-- **Levels of action** (company setting `intel_action_level`): 1 reports only (the default); 2 also lets a manager ask a named
-  person to explain a finding (they are messaged and see it as *assigned to me*). Levels 3 (prepare drafts) and 4 (act within limits)
-  are **not built**: nothing involving money changes without a person.
+- **Levels of action** (company setting `intel_action_level`; every business starts at 1, and moving up is its choice): 1 reports
+  only; 2 also lets a manager ask a named person to explain a finding; **3 prepares** suggested actions for a person to approve;
+  **4 acts within limits** (routine actions under the owner's rules). Raising it to 3 or 4 needs the Owner (permission
+  `intel.automation`); lowering needs only `settings.manage`. Details in "Actions: levels 3 and 4" below.
 - Intelligence's own checks (`controls.*`, `ziira/modules/intel/kernel_checks.py`) read what the platform records: an approval decided
   by its requester, someone given wide access, a burst of activity outside working hours (read in the company's time zone), and
   exceptions nobody has reviewed.
@@ -82,6 +83,82 @@ In the unit's `manifest.toml`: `optional = [..., "intel"]` and `[extends] implem
 real engine (`engine.run_company`) as `tests/test_intel.py` does. Keep summaries plain and give every check a limit a business
 can change; false alarms train people to ignore the system.
 
+## Actions: levels 3 and 4
+
+Rules that hold everywhere (they are tested): nothing involving money, prices, credit or stock changes without a person unless
+the owner has set a rule **and** the action is one that moves no money; **Ziira never moves money**; every action is recorded (the
+action log, the finding's history and the audit log); an action is done through the owning unit's normal services, **as the person who
+approved it**, so that unit's permissions and approval rules apply to them.
+
+```
+finding ──▶ providers propose ──▶ suggestion (waiting) ──▶ a person approves (optionally edits) ──▶ executed as them ──▶ log
+                                        └─▶ level 4 + provider auto_allowed + owner's rule covers it + daily cap left
+                                            ──▶ executed as "Intelligence" (channel `intelligence`, ONE permission) ──▶ log
+```
+
+- **Proposing** (`services/actions.py`, called by the checks engine at the end of each company run): at level 3 or 4 each open finding
+  that no provider has looked at yet (new, or come back after being resolved) is offered to the providers whose `check_codes` match.
+  A suggestion is unique per finding + action + parameters; a turned-down or failed one is not made again; a done one is not repeated
+  for 7 days; a run looks at no more than 100 findings and adds no more than 100 suggestions per company. When the finding closes
+  (by itself or by a person) its waiting suggestions expire. Lowering the level below 3 withdraws what was waiting (and approving is
+  refused meanwhile). A provider that raises an error is put in the exceptions inbox and skipped.
+- **Approving** (`POST /api/v1/intel/actions/{id}/approve`): needs the provider's `needs_permission` for the finding's company and branch
+  (a branch manager cannot approve another branch's). Parameters may be edited if the provider's schema marks them editable; they are
+  validated again, and the provider checks them against the world again at execution. Success and failure are both recorded (a failure
+  is shown, changes nothing, and may be tried again by a person). Approving twice does nothing the second time. `reject` needs a reason.
+- **Rules** (`/intel/automation/rules`): **creating, editing, resuming or switching on a rule needs `intel.automation` (Owner)** because the
+  rule is the owner's decision; with `findings.manage` a person can list the rules and pause or switch one off (doing less is always allowed). per action type, conditions from a safe vocabulary (every
+  provider: `branch_id`, `max_amount`; plus its own `rule_schema`), a daily limit (counted in the company's time zone), pause/resume.
+  A rule only works at level 4, only for a provider with `auto_allowed = True` whose `needs_permission` is not a money permission
+  (`domain/action_rules.py: MONEY_PERMISSIONS`); the engine re-checks this at run time, so a rule written straight into the database for a
+  draft, a price or a credit limit is ignored. An automatic action that fails is recorded, put in the exceptions inbox and **never retried
+  by itself**.
+- **What the providers do today** (each in its unit's `action_providers.py`):
+
+| Action | For findings of | Needs | Automatic? | What it does |
+|---|---|---|---|---|
+| `purchasing.draft_purchase_request` | `inventory.out_of_stock`, `low_stock` | `po.create` | no | A draft request for the branch: the larger of the gap to the reorder level and the last 30 days' sales; the usual suppliers (most receipts, then most recent) go in the line's note |
+| `purchasing.propose_price_update` | `purchasing.margin_squeeze`, `supplier_price_rise` | `prices.manage` | no | A new tax-inclusive price on the default list from tomorrow that gives the new cost the margin the old cost had (`purchasing/domain/repricing.py`); through Products' price service |
+| `pos.send_payment_reminder` | `pos.customer_overdue` | `receivables.manage` | **yes** | The business's usual reminder (the company's `reminder_channel`; opt-outs respected) for the customer's oldest overdue invoices (3 at most); rule conditions `min_days_overdue`, `channel` |
+| `pos.hold_credit` | `pos.customer_overdue`, `pos.credit_to_overdue_customer` | `customers.manage` | no | Lowers the credit limit to what the customer owes, through CRM's credit-change flow |
+| `people.nudge_approver` | `people.leave_waiting`, `people.payroll_overdue` | `findings.manage` | **yes** | A message to whoever holds `leave.approve` (or `payroll.approve`/`payroll.pay`) for the branch, by the alert channel |
+| `finance.ask_for_reconciliation` | `finance.stale_reconciliation` | `findings.manage` | **yes** | A message to those holding `bank.reconcile` |
+| `intel.nudge_exceptions_reviewers` | `controls.exceptions_backlog` | `findings.manage` | **yes** | A message to those holding `exceptions.manage` |
+
+  The nudges need `intel_alert_channel` set and a person with an address on file; otherwise nothing is proposed. There are no quiet hours
+  yet: an automatic message goes out when the run finds the finding.
+- **Adding a provider** (in the unit that owns the effect; "intel" under `optional` and `"intel.action"` under `[extends] implements`
+  in the manifest):
+
+```python
+# ziira/modules/<unit>/action_providers.py, registered in hooks.py with provides(INTEL_ACTION)(MyAction)
+from ziira.modules.intel.public import ActionContext, ActionProvider, ActionResult, FindingInfo, Proposal
+
+class MyAction(ActionProvider):
+    type = "<unit>.<name>"                      # unique
+    title = "Plain title"; description = "What it does, in a sentence"
+    check_codes = ("<unit>.<check>",)           # the findings it can act on
+    needs_permission = "<unit>.<permission>"    # held by the approver, with scope for the finding's company/branch
+    auto_allowed = False                        # True ONLY for routine, reversible, non-monetary actions
+    params_schema = {"properties": {"quantity": {"type": "number", "title": "Quantity", "minimum": "0.0001"}},
+                     "required": ["quantity"]}  # string/integer/number/boolean/uuid/date; editable: False fixes a value
+    rule_schema = {}                            # the conditions an owner's rule may set (auto_allowed only)
+
+    def proposes(self, session, finding: FindingInfo) -> list[Proposal]: ...      # read only; [] when nothing sensible
+    def execute(self, session, context: ActionContext, params) -> ActionResult: ...   # services of your own unit or others' public.py
+```
+
+  Rules for providers: `proposes` reads and never writes; `execute` calls the owning unit's service functions (never SQL into
+  another unit's tables), re-checks its parameters and the facts (the world may have changed), is safe to run twice, returns what it
+  created as `created_refs` for the screen to link to, and returns `ActionResult(False, message)` rather than half-doing it. An
+  automatic provider's class must not mention the books, payments, stock movements, prices or credit limits
+  (`FORBIDDEN_FOR_AUTO`; `tests/test_intel_actions.py` scans every registered one). Test it end to end with the real engine as
+  `tests/test_intel_action_providers.py` does.
+- **Screens**: the finding page has a "Suggested actions" card; **Findings > Actions** is the inbox of suggestions waiting for the
+  signed-in person plus the history; **Settings > Intelligence actions** has the level, the rules and the action log.
+- **Not built**: a quiet-hours setting for automatic messages; approving by SMS (the spec's WhatsApp approvals are out); rule
+  conditions on the customer's group or the size of one invoice (only the finding's branch and amount).
+
 ## The Command Center (`ziira/modules/command`)
 
 - **Pulse figures**: units supply numbers for a day through `command.pulse_source` (`PulseSource.figures(session, company_id, day)`
@@ -103,13 +180,20 @@ can change; false alarms train people to ignore the system.
 | `timezone` | `UTC` | The company's time zone (IANA name): briefs and "odd hours" are read in it. **Set it for every business.** |
 | `intel_alert_channel` | `off` | `sms` or `email`: where urgent findings are sent |
 | `intel_alert_min_severity` | `high` | Findings at or above this are sent as alerts |
-| `intel_action_level` | `1` | `2` lets managers ask people to explain a finding |
+| `intel_action_level` | `1` | `2` lets managers ask people to explain a finding; `3` prepares suggested actions for approval; `4` also runs the owner's automation rules. Raising it to 3 or 4 needs `intel.automation` (Owner) |
 | `ai_enabled`, `ai_explanations`, `ai_auto_explain`, `ai_ask`, `ai_monthly_token_limit` | off, on, off, on, 2,000,000 | The AI assistant (changed on **Settings > AI assistant**, which records the consent); see `docs/ai.md` |
+
+## Standalone checks
+
+The `connect` unit supplies `standalone.<name>` checks, baselines and pulse figures that read only its own read-only copy of another system's
+data (`connect.src_*`). They run only where connections exist and only for the entities a connection supplies; a check whose entity was never
+connected stays silent and the Coverage panel says so. A day is judged only once its data is complete. They never look at a Core unit's tables,
+so a business using both gets each set about its own data. See `docs/standalone-mode.md`.
 
 ## Extension points Intelligence offers
 
 `intel.check` (a unit's checks), `intel.baseline_metric` (what is normal), `intel.ask_tool` (a question Ask Ziira may put to a unit's
-data: `docs/ai.md`, "Adding an ask tool") and `intel.llm` (an AI provider).
+data: `docs/ai.md`, "Adding an ask tool"), `intel.llm` (an AI provider) and `intel.action` (something Intelligence may propose and do).
 
 ## Operations
 

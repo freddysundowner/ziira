@@ -32,6 +32,9 @@ class RunResult:
     reopened: int = 0
     failed: list[str] = field(default_factory=list)
     checks_run: int = 0
+    reopened_ids: list[UUID] = field(default_factory=list)
+    proposed: int = 0                 # actions proposed for findings (levels 3 and 4)
+    acted: int = 0                    # actions carried out under an owner's rule (level 4)
 
 
 def local_today(session: Session, company_id: UUID) -> date:
@@ -81,7 +84,21 @@ def run_company(session: Session, company_id: UUID, *, today: date | None = None
             continue
         result.checks_run += 1
         _apply(session, check, check_id, company_id, candidates, result)
+    _actions(session, company_id, result)
     return result
+
+
+def _actions(session: Session, company_id: UUID, result: RunResult) -> None:
+    """Levels 3 and 4: let the action providers look at the findings. Never stops or fails the run."""
+    from ziira.modules.intel.services import actions
+
+    try:
+        with session.begin_nested():
+            ran = actions.after_checks(session, company_id, result.reopened_ids)
+    except Exception:  # noqa: BLE001 - suggestions are an extra; the findings must always be saved
+        log.exception("Preparing actions failed for company %s", company_id)
+        return
+    result.proposed, result.acted = ran.proposed, ran.executed + ran.failed
 
 
 def _apply(session: Session, check: IntelCheck, check_id: UUID, company_id: UUID, candidates: list[Candidate],
@@ -125,6 +142,7 @@ def _apply(session: Session, check: IntelCheck, check_id: UUID, company_id: UUID
         if reopen:
             events.append((row.id, "reopened", "The problem is back"))
             result.reopened += 1
+            result.reopened_ids.append(row.id)
         elif severity_rank(c.severity) != severity_rank(row.severity):
             events.append((row.id, "severity_changed", f"{row.severity} -> {c.severity}"))
         result.updated += 1

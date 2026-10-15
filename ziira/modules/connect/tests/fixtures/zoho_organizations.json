@@ -1,0 +1,3 @@
+{"code": 0, "message": "success", "organizations": [
+ {"organization_id": "10234695", "name": "Shop Ltd", "is_default_org": true, "currency_code": "KES", "time_zone": "Africa/Nairobi"},
+ {"organization_id": "10234999", "name": "Shop Two", "is_default_org": false, "currency_code": "KES"}]}

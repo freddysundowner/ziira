@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Request, Response, status
 from pydantic import BaseModel, Field
 
-from ziira.kernel import auth, mfa, password_reset, throttle, users
+from ziira.kernel import auth, mfa, password_reset, passwords, throttle, users
 from ziira.kernel.api import schemas as sc
 from ziira.kernel.api.routes import NO_CONTENT, admin, signed_in_user
 from ziira.kernel.context import RequestContext
@@ -58,6 +58,16 @@ class SecuritySettingsIn(BaseModel):
 
 class ForgotIn(BaseModel):
     login: str = Field(max_length=254, description="The email or phone you sign in with")
+
+
+class PasswordCheckIn(BaseModel):
+    password: str = Field(max_length=1024)
+    login: str | None = Field(default=None, max_length=254, description="The email it will be used with")
+
+
+class PasswordCheckOut(BaseModel):
+    ok: bool
+    message: str | None = Field(default=None, description="Why it is not acceptable, in plain words")
 
 
 class ForgotOut(BaseModel):
@@ -177,6 +187,19 @@ def patch_security(body: SecuritySettingsIn, ctx: RequestContext = SETTINGS_ADMI
 
 
 # --------------------------------------------------------------------------- forgotten passwords
+@router.post("/auth/password/check", response_model=PasswordCheckOut, tags=["Auth"])
+def check_password(body: PasswordCheckIn, request: Request) -> object:
+    """Say whether a password would be accepted, so a sign-up form can tell the person at once (nothing is stored)."""
+    counters = throttle.action_counters("pwcheck", "any", auth.client_ip(request), per_subject=100000, per_ip=120)
+    throttle.guard(counters)
+    throttle.failed(counters)
+    try:
+        passwords.check(body.password, login=body.login)
+    except ValidationFailed as problem:
+        return PasswordCheckOut(ok=False, message=str(problem))
+    return PasswordCheckOut(ok=True)
+
+
 @router.post("/auth/password/forgot", response_model=ForgotOut, status_code=status.HTTP_202_ACCEPTED, tags=["Auth"])
 def forgot_password(body: ForgotIn, request: Request) -> object:
     """Ask for an email with a link to choose a new password. The answer is the same whether or not the login exists."""

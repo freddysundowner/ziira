@@ -1,6 +1,7 @@
 [unit]
 name = "crm"
 title = "CRM and Customers"
+description = "Customers, credit limits and balances, loyalty and customer follow-up."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

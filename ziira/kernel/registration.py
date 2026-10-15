@@ -33,6 +33,16 @@ log = logging.getLogger("ziira.registration")
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 TAX_ID = re.compile(r"^[A-Z0-9][A-Z0-9/\-. ]{2,29}$")
 TOKEN_PREFIX = "zg_"
+MODES = ("core", "standalone")
+
+
+def units_for_mode(mode: str) -> list[str]:
+    """The units switched on for a new business: the business modules ('core') or just what Ziira needs to watch the
+    system the business already has ('standalone'). Both lists are settings (`ZIIRA_REGISTRATION_UNITS`,
+    `ZIIRA_STANDALONE_UNITS`)."""
+    settings = get_settings()
+    raw = settings.standalone_units if mode == "standalone" else settings.registration_units
+    return [u.strip() for u in raw.split(",") if u.strip()]
 
 
 @dataclass(frozen=True)
@@ -87,7 +97,8 @@ def _check_invite(code: str | None) -> str:
 
 def register(*, business_name: str, owner_name: str, email: str, password: str, currency: str,
              phone_country_code: str = "", country: str | None = None, tax_id: str | None = None,
-             timezone: str | None = None, invite_code: str | None = None, ip_address: str | None = None) -> Started:
+             timezone: str | None = None, invite_code: str | None = None, ip_address: str | None = None,
+             mode: str = "core") -> Started:
     """Ask for a business. Saves the request and emails a verification link; creates nothing else."""
     settings = get_settings()
     if settings.registration_mode == "closed":
@@ -108,6 +119,8 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
     tax = " ".join(tax_id.upper().split()) if tax_id and tax_id.strip() else None
     if tax is not None and not TAX_ID.match(tax):
         raise ValidationFailed("A tax number is 3 to 30 letters, digits, '-', '/' or '.'")
+    if mode not in MODES:
+        raise ValidationFailed("Mode is 'core' (run the business on Ziira) or 'standalone' (watch the system you have)")
     password_hash = hash_password(password)                                   # checks the password's length
     invite = _check_invite(invite_code) if settings.registration_mode == "invite" else None
 
@@ -125,11 +138,12 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
                        "and expires_at > now()"), {"e": address})
         s.execute(text(
             "insert into master.registration (email, business_name, owner_name, password_hash, currency, "
-            "phone_country_code, country, timezone, tax_id, invite_code_hash, token_hash, ip_address, expires_at) "
+            "phone_country_code, country, timezone, tax_id, invite_code_hash, token_hash, ip_address, expires_at, "
+            "mode) "
             "values "
-            "(:e, :b, :o, :p, :c, :pc, :n, :z, :t, :i, :h, :ip, :x)"),
+            "(:e, :b, :o, :p, :c, :pc, :n, :z, :t, :i, :h, :ip, :x, :m)"),
             {"e": address, "b": business, "o": owner, "p": password_hash, "c": currency, "pc": code, "n": nation,
-             "z": zone, "t": tax, "i": invite, "h": hash_secret(token), "ip": ip_address,
+             "z": zone, "t": tax, "i": invite, "h": hash_secret(token), "ip": ip_address, "m": mode,
              "x": datetime.now(UTC) + timedelta(hours=settings.registration_token_hours)})
     link = f"{settings.public_web_url.rstrip('/')}/register/verify?token={token}"
     platform_mail.send(address, "Confirm your email to create your business",
@@ -180,7 +194,7 @@ def complete(token: str, *, device_id: str, device_name: str | None = None,
             owner_name=row.owner_name, owner_email=row.email, owner_password_hash=row.password_hash,
             currency=row.currency, phone_country_code=row.phone_country_code, country=row.country,
             timezone=row.timezone, tax_id=row.tax_id, registry=registry)
-        for unit in [u.strip() for u in get_settings().registration_units.split(",") if u.strip()]:
+        for unit in units_for_mode(row.mode):
             registry.enable(created.tenant_id, unit)
     except Exception:
         log.exception("Could not create the business for registration %s", row.id)

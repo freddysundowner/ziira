@@ -1,0 +1,5 @@
+[
+ {"id": 1, "order_id": [101, "Shop/0001"], "product_id": [11, "Hammer"], "qty": 2.0, "price_unit": 500.0, "discount": 10.0},
+ {"id": 2, "order_id": [101, "Shop/0001"], "product_id": [12, "Nails 5kg"], "qty": 1.0, "price_unit": 260.0, "discount": 0.0},
+ {"id": 3, "order_id": [103, "Shop/0003 REFUND"], "product_id": [11, "Hammer"], "qty": -1.0, "price_unit": 300.0, "discount": 0.0}
+]

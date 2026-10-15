@@ -1,6 +1,7 @@
 [unit]
 name = "catalog_stats"
 title = "Catalog statistics (example plugin)"
+description = "A small example plugin that shows product counts; useful to see how plugins work."
 kind = "plugin"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

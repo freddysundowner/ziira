@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     registration_mode: str = "open"
     # Units switched on for every new business, comma separated (what they require comes along).
     registration_units: str = "pos,finance,crm,purchasing,people,imports,intel,command"
+    # Units for a business that registers (or is created) in standalone mode: Ziira Intelligence watching the system it
+    # already has (docs/standalone-mode.md). What they require comes along.
+    standalone_units: str = "connect,intel,command,imports"
     registration_per_email_per_hour: int = 3
     registration_per_ip_per_hour: int = 10
     registration_token_hours: int = 24
@@ -111,12 +114,17 @@ class Settings(BaseSettings):
     # Browser origins allowed to call the API from another site, comma separated (empty: none). Never "*" in production.
     cors_origins: str = ""
     max_body_bytes: int = 2_000_000         # larger requests are refused with 413
+    max_upload_bytes: int = 10_500_000      # the same for a statement or export upload (a file is the body)
     hsts_max_age: int = 31_536_000          # Strict-Transport-Security, production only
     # Backups (docs/operations.md). Empty: use pg_dump / pg_restore from PATH. Set when the local client is older than
     # the server, e.g. "docker exec -i -e PGPASSWORD ziira-core-db-1 pg_dump" (the command reads/writes stdin/stdout).
     pg_dump_command: str = ""
     pg_restore_command: str = ""
     pg_tool_host: str = ""                  # host/port the tool above uses to reach the server (inside the container)
+    # Reading pictures (scanned statements, photos): self-hosted Tesseract, so statements never leave the server.
+    ocr_command: str = "tesseract"           # the program (a full path if it is not on PATH)
+    ocr_languages: str = "eng"               # language codes joined with + (e.g. "eng+swa"); packs installed
+    ocr_max_pages: int = 30                  # most pages read from one scanned file
     pg_tool_port: int = 0
 
     # AI layer (docs/ai.md). The provider's name (a plugin implementing the `intel.llm` extension point; "fake" is for

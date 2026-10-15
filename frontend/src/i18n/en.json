@@ -38,7 +38,14 @@
     "back": "Back",
     "startAgain": "Register again",
     "devOnly": "Development only: no email is sent here.",
-    "devLink": "Open the verification link"
+    "devLink": "Open the verification link",
+    "modeLegend": "How will you use Ziira?",
+    "mode": {
+      "core": "I want to run my business on Ziira",
+      "coreHint": "Sales, stock, accounts and people in one system.",
+      "standalone": "I already have a system and want Ziira to watch it",
+      "standaloneHint": "Keep what you use today. Ziira reads it (never changes it) and tells you what needs attention."
+    }
   },
   "signOut": "Sign out",
   "home": {
@@ -48,7 +55,10 @@
     "morning": "Good morning",
     "afternoon": "Good afternoon",
     "evening": "Good evening",
-    "subtitle": "Here is where your business stands."
+    "subtitle": "Here is where your business stands.",
+    "connectTitle": "Connect your first system",
+    "connectHint": "Ziira checks your business once it can read your sales, payments or books. Connect a system or upload a file to start.",
+    "connectAction": "Connect a system"
   },
   "loading": "Loading…",
   "notFound": "This page does not exist, or you do not have access to it.",

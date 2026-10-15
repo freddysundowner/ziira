@@ -1,6 +1,7 @@
 [unit]
 name = "finance"
 title = "Finance and Accounting"
+description = "Books of account: journal, ledgers, expenses, bank reconciliation and financial reports."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -14,7 +15,7 @@ subscribes = ["stock.moved", "sale.posted", "sale.returned", "payment.settled", 
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "intel.ask_tool"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "imports.importer", "intel.ask_tool"]
 
 [permissions]
 "accounts.manage" = "Manage chart of accounts"

@@ -178,7 +178,9 @@ def _message(session: Session, invoice: Any, customer: Any, channel: str) -> tup
     owed = invoices.outstanding(invoice)
     late = (tills.today(session, invoice.company_id) - invoice.due_date).days
     when = f"was due on {invoice.due_date}" if late > 0 else f"is due on {invoice.due_date}"
-    body = (f"Dear {customer.name}, invoice {invoice.number} for KES {owed:,.2f} {when}. "
+    currency = session.execute(text("select base_currency from kernel.company where id = :c"),
+                               {"c": str(invoice.company_id)}).scalar_one()
+    body = (f"Dear {customer.name}, invoice {invoice.number} for {currency} {owed:,.2f} {when}. "
             f"Please pay at your earliest convenience. If you have already paid, thank you and please ignore this. "
             f"- {company}")
     return (f"Reminder: invoice {invoice.number} from {company}" if channel == "email" else None), body

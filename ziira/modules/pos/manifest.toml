@@ -1,6 +1,7 @@
 [unit]
 name = "pos"
 title = "Point of Sale and Sales"
+description = "Sell at the till or online: sales, returns, shifts, receipts and credit sales."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -15,7 +16,7 @@ extension_points = ["pos.receipt_extras"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "kernel.personal_data", "imports.importer", "intel.ask_tool"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "kernel.personal_data", "imports.importer", "intel.ask_tool"]
 
 [permissions]
 "sales.sell" = "Make sales"

@@ -7,6 +7,7 @@ import type { ModuleDefinition } from "@/sdk";
 import admin from "./admin/module";
 import catalogStats from "./catalog_stats/module";
 import command from "./command/module";
+import connect from "./connect/module";
 import products from "./products/module";
 import crm from "./crm/module";
 import finance from "./finance/module";
@@ -20,5 +21,5 @@ import pos from "./pos/module";
 import purchasing from "./purchasing/module";
 
 export const allModules: readonly ModuleDefinition[] = [
-  admin, products, inventory, pos, crm, payments, purchasing, finance, people, messaging, catalogStats, command, intel, imports,
+  admin, products, inventory, pos, crm, payments, purchasing, finance, people, messaging, catalogStats, command, intel, imports, connect,
 ];

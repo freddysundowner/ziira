@@ -1,6 +1,7 @@
 [unit]
 name = "imports"
 title = "Data Import"
+description = "Bring products, customers and opening stock in from spreadsheet files."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

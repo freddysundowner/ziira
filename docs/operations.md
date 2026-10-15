@@ -107,6 +107,24 @@ without a unit version bump: bump the unit's version in `manifest.toml` with its
 
 There is no per-request time limit inside the application: the proxy and the statement timeout bound a request.
 
+## Reading pictures of statements (OCR)
+
+Scanned statements and photos are read by Tesseract on the server (nothing is sent to a third party). It is optional: without it
+the web app says "Reading pictures is not switched on on this server yet" and everything else works.
+
+```bash
+sudo apt install tesseract-ocr                 # plus a language pack per language, e.g. tesseract-ocr-swa
+.venv/bin/ziira connect ocr-check              # OK / NOT AVAILABLE with the reason; GET /api/v1/connect/ocr says the same to the web app
+```
+
+Settings: `ZIIRA_OCR_COMMAND` (default `tesseract`), `ZIIRA_OCR_LANGUAGES` (default `eng`; join packs with `+`, for example
+`eng+swa`), `ZIIRA_OCR_MAX_PAGES` (default 30). Reading runs in `ziira worker` as the job `connect.read_scan` (a few seconds per
+page; one worker slot is busy meanwhile), so the worker must be running. Uploads of statements and exports may be up to 10 MB
+(`ZIIRA_MAX_UPLOAD_BYTES`, 10,500,000): raise the proxy's body limit for `/api/v1/connect/connections/*/upload` and
+`/api/v1/connect/files/detect` to match. Uploaded pictures and the lines read from them are kept in `connect.scan` only until the
+person confirms or a day passes; the PDF password is never stored. Another engine can be plugged in with
+`@provides("connect.ocr_engine")`; an engine that sends pictures elsewhere must be a deliberate, documented choice.
+
 ## Application security plumbing
 
 Everything here is done by `ziira/kernel/http_middleware.py` (one pure-ASGI middleware, outermost) and

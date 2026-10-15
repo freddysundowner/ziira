@@ -1,6 +1,7 @@
 [unit]
 name = "payments"
 title = "Payments and Reconciliation"
+description = "Take M-Pesa and other payments and match them to sales and bank statements."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

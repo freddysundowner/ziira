@@ -210,7 +210,9 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("intel_alert_min_severity", "high", _alert_severity,
             "Findings at or above this severity are sent as alerts; the rest wait for the daily brief"),
     Setting("intel_action_level", 1, _action_level,
-            "What Intelligence may do: 1 reports only, 2 also asks people to explain a finding on your instruction"),
+            "What Intelligence may do: 1 reports only, 2 also asks people to explain a finding on your instruction, "
+            "3 also prepares drafts for a person to approve, 4 also carries out routine actions the owner has set "
+            "rules for (raising it to 3 or 4 needs the permission 'intel.automation')"),
     Setting("ai_enabled", False, _boolean,
             "The AI assistant (explanations, ranking, Ask Ziira) may be used. It works only after an Owner has "
             "consented in Settings > AI assistant; this switch alone does nothing"),
@@ -288,6 +290,9 @@ def update_settings(session: Session, company_id: UUID, changes: dict[str, Any])
     stored = _stored(session, company_id)
     before = get_settings(session, company_id)
     parsed = {key: SETTINGS[key].parse(value) for key, value in changes.items()}
+    if parsed.get("intel_action_level", 0) >= 3 and parsed["intel_action_level"] > before["intel_action_level"]:
+        # Letting Intelligence prepare or carry out actions is the owner's decision, not any settings editor's.
+        get_context().require("intel.automation", company_id=company_id)
     stored.update({key: str(v) if isinstance(v, Decimal) else v for key, v in parsed.items()})
     user_id = get_context().user_id
     session.execute(text(

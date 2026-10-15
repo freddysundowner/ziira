@@ -23,6 +23,9 @@ Every business (tenant) has its own database; the master database lists them.
     ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
     ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
     ziira import <tenant> <kind> FILE.csv [--company NAME] [--commit]   check (and with --commit import) a file
+    ziira connect sync <tenant> [--connection NAME]      read the connected systems now (standalone mode)
+    ziira connect upload <tenant> <connection> FILE [--check]   upload a CSV, Excel or text-PDF file or statement
+    ziira connect ocr-check                              can this server read pictures (scanned statements, photos)?
 """
 
 import argparse
@@ -67,6 +70,11 @@ def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
                       owner_password=password, tax_id=a.tax_id, currency=a.currency,
                       phone_country_code=a.phone_country_code, country=a.country,
                       vat_registered=a.vat_registered, timezone=a.timezone, registry=reg)
+    if a.mode == "standalone":                 # Ziira only watches the business's existing system
+        from ziira.kernel.registration import units_for_mode
+
+        for unit in units_for_mode("standalone"):
+            reg.enable(t.tenant_id, unit)
     print(f"tenant_id  = {t.tenant_id}\ncompany_id = {t.company_id}\nbranch_id  = {t.branch_id}\n"
           f"owner_id   = {t.owner_id}")
 
@@ -174,6 +182,22 @@ def cmd_import(reg: Registry, a: argparse.Namespace) -> int:
                       decimal_separator=a.decimal, date_format=a.date_format, mapping=mapping,
                       rejected=Path(a.rejected) if a.rejected else None, as_of=a.as_of, tolerance=a.tolerance,
                       confirm=a.confirm)
+
+
+def cmd_connect(reg: Registry, a: argparse.Namespace) -> int:
+    """Standalone mode from the command line: read connected systems now, or upload a file or statement."""
+    from pathlib import Path
+
+    from ziira.modules.connect.cli import run_sync, run_upload
+
+    if a.action == "ocr-check":
+        from ziira.modules.connect.cli import run_ocr_check
+        return run_ocr_check()
+    load_event_handlers(reg.units)
+    tenant = _tenant(a.tenant)
+    if a.action == "sync":
+        return run_sync(tenant, a.connection)
+    return run_upload(tenant, a.connection, Path(a.file), check_only=a.check)
 
 
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
@@ -312,6 +336,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--phone-country-code", default="", help="Calling code of the business's phone numbers, such as 44")
     s.add_argument("--timezone", help="IANA time zone of the business, such as Europe/London (default UTC)")
     s.add_argument("--vat-registered", action="store_true")
+    s.add_argument("--mode", choices=["core", "standalone"], default="core",
+                   help="standalone: enable only what Ziira needs to watch the system the business already has")
     s.set_defaults(fn=cmd_create_tenant)
     sub.add_parser("tenants").set_defaults(fn=cmd_tenants)
     s = sub.add_parser("drop-tenant")
@@ -342,6 +368,18 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--confirm", action="store_true", help="opening_trial_balance: post a difference to opening "
                                                           "balance equity")
     s.set_defaults(fn=cmd_import)
+    s = sub.add_parser("connect", help="standalone mode: sync connected systems, or upload a file or statement")
+    c = s.add_subparsers(dest="action", required=True)
+    cs = c.add_parser("sync", help="read the connected systems now")
+    cs.add_argument("tenant", help="workspace code or id")
+    cs.add_argument("--connection", help="only this connection (its name)")
+    cu = c.add_parser("upload", help="upload a CSV file or statement to a file connection")
+    cu.add_argument("tenant", help="workspace code or id")
+    cu.add_argument("connection", help="the connection's name")
+    cu.add_argument("file", help="the CSV file")
+    cu.add_argument("--check", action="store_true", help="show what would be read, store nothing")
+    c.add_parser("ocr-check", help="can this server read pictures of statements (Tesseract installed)?")
+    s.set_defaults(fn=cmd_connect)
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_worker)

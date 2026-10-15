@@ -1,6 +1,7 @@
 [unit]
 name = "people"
 title = "People, HR and Payroll"
+description = "Employees, attendance, leave, advances and payroll."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -13,7 +14,7 @@ publishes = ["employee.pay_changed", "employee.bank_changed", "payroll.approved"
 subscribes = ["till.opened", "till.closed"]
 
 [extends]
-implements = ["intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
+implements = ["intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
 
 [permissions]
 "employees.view" = "View employees"

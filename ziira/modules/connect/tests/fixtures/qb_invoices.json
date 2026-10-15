@@ -1,0 +1,14 @@
+{"QueryResponse": {"Invoice": [
+ {"Id": "130", "SyncToken": "2", "MetaData": {"CreateTime": "2024-05-04T00:00:05-07:00", "LastUpdatedTime": "2024-05-04T09:10:00-07:00"},
+  "DocNumber": "1037", "TxnDate": "2024-05-04", "DueDate": "2024-06-03", "CurrencyRef": {"value": "USD", "name": "United States Dollar"},
+  "CustomerRef": {"value": "20", "name": "Acme Builders"}, "DepartmentRef": {"value": "1", "name": "Main"},
+  "Line": [
+   {"Id": "1", "LineNum": 1, "Amount": 450.0, "DetailType": "SalesItemLineDetail", "SalesItemLineDetail": {"ItemRef": {"value": "11", "name": "Hammer"}, "UnitPrice": 50, "Qty": 10}},
+   {"Id": "2", "LineNum": 2, "Amount": 25.0, "DetailType": "SalesItemLineDetail", "SalesItemLineDetail": {"ItemRef": {"value": "12", "name": "Delivery"}}},
+   {"Amount": 50.0, "DetailType": "DiscountLineDetail", "DiscountLineDetail": {"PercentBased": true, "DiscountPercent": 10}},
+   {"Amount": 475.0, "DetailType": "SubTotalLineDetail", "SubTotalLineDetail": {}}],
+  "TxnTaxDetail": {"TotalTax": 38.0}, "TotalAmt": 513.0, "Balance": 200.0, "PrivateNote": null},
+ {"Id": "131", "SyncToken": "1", "MetaData": {"CreateTime": "2024-05-05T10:00:05-07:00", "LastUpdatedTime": "2024-05-05T11:00:00-07:00"},
+  "DocNumber": "1038", "TxnDate": "2024-05-05", "DueDate": "2024-06-04", "CustomerRef": {"value": "20"},
+  "Line": [], "TotalAmt": 0, "Balance": 0, "PrivateNote": "Voided"}
+ ], "startPosition": 1, "maxResults": 2}, "time": "2024-05-06T07:00:00.123-07:00"}

@@ -356,3 +356,12 @@ def test_a_bad_or_old_challenge_has_its_own_error_code(client, shop) -> None:  #
                                                           "casey-new-pass-9").json().get("access_token", "x")):
         r = client.post(f"{API}/auth/mfa/verify", json={"challenge": challenge, "code": "123456"})
         assert r.status_code == 401 and r.json()["error"] == "challenge_expired"
+
+
+def test_password_check_endpoint_tells_the_form_at_once(client) -> None:  # type: ignore[no-untyped-def]
+    """The sign-up form asks before moving on: a common password, a short one and the login are refused with a reason."""
+    ask = lambda **b: client.post("/api/v1/auth/password/check", json=b).json()  # noqa: E731
+    assert ask(password="a-long-unusual-phrase-77") == {"ok": True, "message": None}
+    assert ask(password="password123")["ok"] is False
+    assert "8 characters" in ask(password="short")["message"]
+    assert ask(password="owner@shop.test", login="owner@shop.test")["ok"] is False

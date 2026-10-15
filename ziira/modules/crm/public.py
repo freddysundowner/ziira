@@ -49,3 +49,17 @@ def find_customer_by_code(session: Session, company_id: UUID, code: str) -> Cust
     """A company's customer by code (codes are upper case), or None."""
     customer = crm_repo.customer_by_code(session, company_id, code.strip().upper())
     return _view(customer) if customer is not None else None
+
+
+def change_credit_limit(session: Session, customer_id: UUID, credit_limit: Decimal, reason: str) -> str:
+    """Change a customer's credit limit (their payment terms stay) through CRM's own credit-change flow: lowering takes
+    effect at once, raising goes to an approver. The caller needs 'customers.manage'. Returns the change's status."""
+    from ziira.modules.crm.services import customers
+    from ziira.sdk import NotFound
+
+    customer = crm_repo.get_customer(session, customer_id)
+    if customer is None:
+        raise NotFound("Customer not found")
+    version = customers.request_credit_change(session, customer_id, credit_limit=credit_limit,
+                                              payment_terms_days=customer.payment_terms_days, reason=reason)
+    return str(version.status)

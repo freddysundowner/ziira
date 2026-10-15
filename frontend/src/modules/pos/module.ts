@@ -2,12 +2,14 @@ import { defineModule } from "@/sdk";
 
 import en from "./i18n/en.json";
 import sw from "./i18n/sw.json";
+import { salesDocsMenu, salesDocsRoutes, salesDocsTranslations } from "./salesdocs";
 import { terminalMenu, terminalRoutes, terminalTranslations } from "./terminal";
 
 export default defineModule({
   unit: "pos",
   routes: [
     ...terminalRoutes,
+    ...salesDocsRoutes,
     { path: "/pos/sales", page: () => import("./pages/SalesPage"), permission: "till.review" },
     { path: "/pos/sales/:saleId", page: () => import("./pages/SalePage"), permission: "till.review" },
     { path: "/pos/returns", page: () => import("./pages/ReturnsPage"), permission: "till.review" },
@@ -23,6 +25,7 @@ export default defineModule({
     { label: "pos:tills", to: "/pos/tills", permission: "till.review", order: 23, group: "sell", icon: "cash" },
     { label: "pos:devices", to: "/pos/devices", permission: "devices.manage", order: 24, group: "sell", icon: "payments" },
     { label: "pos:settingsMenu", to: "/pos/settings", permission: "settings.manage", order: 25, group: "sell", icon: "settings" },
+    ...salesDocsMenu,
   ],
   slots: {
     "dashboard.widgets": [
@@ -30,5 +33,5 @@ export default defineModule({
       { label: "pos:openTills", component: () => import("./slots/OpenTillsWidget"), permission: "till.review", order: 11 },
     ],
   },
-  translations: { en: { ...en, terminal: terminalTranslations.en }, sw: { ...sw, terminal: terminalTranslations.sw } },
+  translations: { en: { ...en, terminal: terminalTranslations.en, docs: salesDocsTranslations.en }, sw: { ...sw, terminal: terminalTranslations.sw, docs: salesDocsTranslations.sw } },
 });

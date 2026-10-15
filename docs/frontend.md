@@ -74,3 +74,14 @@ Rules every screen follows:
 6. English and Swahili strings with the same keys (a test checks it). No text in components.
 7. Works at phone width (tables hide low-priority columns with `hideBelow`), keyboard friendly, labelled controls, 44px-ish targets.
 8. No country in code: currency, tax names, phone codes come from the company and the API.
+
+## Document families and one-menu-entry modules
+
+The menu has no sub-headings, so a family of related screens takes **one menu entry** and a **tab bar on each list**
+(`pos/salesdocs/DocsTabs.tsx`: quotations, orders, invoices, payments received, refunds). Details open as a page
+(documents with lines) or as a drawer opened by `?open=<id>` on the list (receipts, refunds, offline rejections), so a
+row link works with the back button and can be shared. A module may put a feature area in its own folder with an `index.ts`
+that exports `routes`, `menu` and `translations` (placed under a sub-key of the module's namespace, as the till does with
+`terminal`); keep it flat, because ESLint forbids `../../` imports. Line editors reuse the product `Combobox`, show price and
+discount only to people holding `price.override`, and show the server's figures after saving (the estimate is labelled).
+Another module's component is shared through its `public.ts` (`ReceivePayment` from Customers).

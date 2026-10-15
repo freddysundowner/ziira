@@ -24,6 +24,7 @@ from ziira.kernel.api.privacy_routes import router as privacy_router
 from ziira.kernel.api.routes import router as kernel_router
 from ziira.kernel.api.security_routes import router as security_router
 from ziira.kernel.api.support_routes import router as support_router
+from ziira.kernel.api.unit_routes import router as unit_router
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
 from ziira.kernel.export_audit import ExportAuditMiddleware
@@ -68,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(support_router)
     app.include_router(operator_router)
     app.include_router(organisation_router)
+    app.include_router(unit_router)
     units = discover()
     load_event_handlers(units)
 

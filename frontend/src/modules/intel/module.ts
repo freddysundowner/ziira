@@ -8,11 +8,13 @@ export default defineModule({
   unit: "intel",
   routes: [
     { path: "/findings", page: () => import("./pages/FindingsPage"), permission: "findings.view" },
+    { path: "/findings/actions", page: () => import("./pages/ActionsPage"), permission: "findings.view" },
     { path: "/findings/checks", page: () => import("./pages/ChecksPage"), permission: "findings.manage" },
     { path: "/findings/:findingId", page: () => import("./pages/FindingPage"), permission: "findings.view" },
   ],
   menu: [
     { label: "intel:menu", to: "/findings", permission: "findings.view", order: 2, icon: "spark" },
+    { label: "intel:actionsMenu", to: "/findings/actions", permission: "findings.view", order: 2.5, icon: "document" },
     { label: "intel:checksMenu", to: "/findings/checks", permission: "findings.manage", order: 3, group: "admin", icon: "settings" },
   ],
   slots: {

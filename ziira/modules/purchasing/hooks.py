@@ -7,7 +7,8 @@ from sqlalchemy import text
 
 from ziira.modules.command.public import COMMAND_PULSE_SOURCE
 from ziira.modules.imports.public import IMPORTS_IMPORTER
-from ziira.modules.intel.public import INTEL_CHECK
+from ziira.modules.intel.public import INTEL_ACTION, INTEL_CHECK
+from ziira.modules.purchasing.action_providers import DraftPurchaseRequest, ProposePriceUpdate
 from ziira.modules.purchasing.importers import SupplierBalanceImporter, SupplierImporter
 from ziira.modules.purchasing.intel_checks import (
     BillMismatchWaiting,
@@ -26,6 +27,8 @@ from ziira.sdk import IntegrityCheck, Session, provides
 for _check in (SupplierPriceRise, OrderAboveUsualPrice, MarginSqueeze, DuplicateSupplierBill, DuplicateSupplierPayment,
                SupplierBankChanged, PaidWithoutReceipt, OverdueSupplierBills, BillMismatchWaiting):
     provides(INTEL_CHECK)(_check)
+provides(INTEL_ACTION)(DraftPurchaseRequest)
+provides(INTEL_ACTION)(ProposePriceUpdate)
 
 
 @provides("kernel.integrity_check")

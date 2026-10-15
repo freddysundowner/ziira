@@ -1,0 +1,8 @@
+[
+ {"id": 901, "date": "2024-05-03 11:22:12", "product_id": [11, "Hammer"], "qty_done": 2.0, "location_id": [8, "WH/Stock"], "location_dest_id": [5, "Partners/Customers"], "reference": "Shop/0001", "create_uid": [7, "Cash Ier"], "create_date": "2024-05-03 11:22:12", "write_date": "2024-05-03 11:22:12"},
+ {"id": 902, "date": "2024-05-03 08:00:00", "product_id": [11, "Hammer"], "qty_done": 10.0, "location_id": [4, "Partners/Vendors"], "location_dest_id": [8, "WH/Stock"], "reference": "WH/IN/0001", "create_uid": [3, "Store"], "create_date": "2024-05-03 08:00:00", "write_date": "2024-05-03 08:00:00"},
+ {"id": 903, "date": "2024-05-03 09:00:00", "product_id": [12, "Nails"], "qty_done": 4.0, "location_id": [8, "WH/Stock"], "location_dest_id": [18, "WH2/Stock"], "reference": "WH/INT/0001", "create_uid": [3, "Store"], "create_date": "2024-05-03 09:00:00", "write_date": "2024-05-03 09:00:01"},
+ {"id": 904, "date": "2024-05-03 09:30:00", "product_id": [12, "Nails"], "qty_done": 1.0, "location_id": [8, "WH/Stock"], "location_dest_id": [9, "WH/Shelf A"], "reference": "WH/INT/0002", "create_uid": [3, "Store"], "create_date": "2024-05-03 09:30:00", "write_date": "2024-05-03 09:30:01"},
+ {"id": 905, "date": "2024-05-04 09:30:00", "product_id": [12, "Nails"], "qty_done": 3.0, "location_id": [14, "Virtual/Inventory adjustment"], "location_dest_id": [8, "WH/Stock"], "reference": "Product Quantity Updated", "create_uid": false, "create_date": "2024-05-04 09:30:00", "write_date": "2024-05-04 09:30:01"},
+ {"id": 906, "date": "2024-05-04 10:30:00", "product_id": false, "qty_done": 3.0, "location_id": [14, "x"], "location_dest_id": [8, "y"], "reference": false, "write_date": "2024-05-04 10:30:01"}
+]

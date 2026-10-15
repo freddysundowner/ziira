@@ -19,6 +19,7 @@ class Manifest:
     package: str                   # Python package, e.g. "ziira.modules.products"
     path: Path                     # folder containing manifest.toml
     sdk: str = ">=1.0,<2.0"
+    description: str = ""        # one plain sentence for the Apps & plugins screen
     core: bool = False             # kernel only: always installed and enabled
     requires: tuple[str, ...] = ()
     optional: tuple[str, ...] = ()
@@ -81,6 +82,7 @@ def load_manifest(manifest_file: Path, package: str) -> Manifest:
         package=package,
         path=manifest_file.parent,
         sdk=unit.get("sdk", ">=1.0,<2.0"),
+        description=unit.get("description", ""),
         core=bool(unit.get("core", False)),
         requires=tuple(unit.get("requires", [])),
         optional=tuple(unit.get("optional", [])),

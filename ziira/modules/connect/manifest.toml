@@ -1,0 +1,27 @@
+[unit]
+name = "connect"
+title = "Connectors (Intelligence on other systems)"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["intel", "command", "imports"]
+
+[provides]
+api_prefix = "/api/v1/connect"
+publishes = ["connect.synced"]
+subscribes = []
+extension_points = ["connect.connector", "connect.ocr_engine"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["connect.connector", "connect.ocr_engine", "intel.check", "intel.baseline_metric", "command.pulse_source", "kernel.personal_data"]
+
+[permissions]
+"connect.view" = "See connected systems, what was last read from them, and what Intelligence can check"
+"connect.manage" = "Connect, change, upload files to and disconnect other systems"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["connect.view"]
+"Accountant" = ["connect.view"]

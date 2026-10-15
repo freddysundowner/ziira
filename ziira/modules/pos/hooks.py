@@ -8,8 +8,9 @@ from sqlalchemy import text
 
 from ziira.modules.command.public import COMMAND_PULSE_SOURCE
 from ziira.modules.imports.public import IMPORTS_IMPORTER
-from ziira.modules.intel.public import INTEL_BASELINE_METRIC, INTEL_CHECK
+from ziira.modules.intel.public import INTEL_ACTION, INTEL_BASELINE_METRIC, INTEL_CHECK
 from ziira.modules.pos import intel_checks
+from ziira.modules.pos.action_providers import HoldCredit, SendPaymentReminder
 from ziira.modules.pos.importers import CustomerBalanceImporter
 from ziira.modules.pos.public import RECEIPT_EXTRAS, ReceiptExtra
 from ziira.modules.pos.pulse import PosPulse
@@ -84,6 +85,8 @@ for _check in (intel_checks.TillCashVariance, intel_checks.CashierVoidRate, inte
 for _metric in (intel_checks.CashierVoidRateMetric, intel_checks.CashierRefundRateMetric,
                 intel_checks.CashierDiscountRateMetric, intel_checks.BranchDailySalesMetric):
     provides(INTEL_BASELINE_METRIC)(_metric)
+provides(INTEL_ACTION)(SendPaymentReminder)
+provides(INTEL_ACTION)(HoldCredit)
 provides(COMMAND_PULSE_SOURCE)(PosPulse)
 provides(IMPORTS_IMPORTER)(CustomerBalanceImporter)
 

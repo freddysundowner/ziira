@@ -9,7 +9,8 @@ POST /api/v1/register/verify   the link is used                   -> the busines
 ```
 
 1. **Register** (`POST /api/v1/register`): business name, owner name, email, password, currency, phone country code, and
-   optionally a tax number and an invitation code. The request is saved in the master database (`master.registration`)
+   optionally a tax number and an invitation code, and a `mode`: `core` (default: run the business on Ziira) or `standalone` (Ziira only
+   watches the system the business already has, `docs/standalone-mode.md`). The request is saved in the master database (`master.registration`)
    with the password already hashed and the emailed token only as a hash. **No database, login or tenant exists yet.**
    The reply is the same whatever the email, so it reveals nothing. Outside production it also carries `dev_token` (the
    token the email holds) so tests and local development need no mailbox.
@@ -28,6 +29,7 @@ One person can register several businesses with the same email; signing in then 
 | Setting | Meaning |
 |---|---|
 | `REGISTRATION_MODE` | `open` (anyone), `invite` (needs a code from `ziira invite create`), `closed` (operator creates businesses) |
+| `STANDALONE_UNITS` | units switched on for a business that registers in `standalone` mode (default `connect,intel,command,imports`; what they require comes along) |
 | `REGISTRATION_UNITS` | units switched on for every new business, comma separated (default: every business module: `pos,finance,crm,purchasing,people,imports,intel,command`; what they require comes along) |
 | `REGISTRATION_PER_EMAIL_PER_HOUR`, `REGISTRATION_PER_IP_PER_HOUR` | rate limits (default 3 and 10): over them the answer is `429` |
 | `REGISTRATION_TOKEN_HOURS` | how long the emailed link lasts (default 24) |

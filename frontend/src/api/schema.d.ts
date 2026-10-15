@@ -837,6 +837,26 @@ export interface paths {
         patch: operations["patch_security_api_v1_settings_security_patch"];
         trace?: never;
     };
+    "/api/v1/auth/password/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Password
+         * @description Say whether a password would be accepted, so a sign-up form can tell the person at once (nothing is stored).
+         */
+        post: operations["check_password_api_v1_auth_password_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/password/forgot": {
         parameters: {
             query?: never;
@@ -1450,6 +1470,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/units/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Unit Catalog
+         * @description Every module and plugin with its state for this business and what can be done with it now.
+         */
+        get: operations["unit_catalog_api_v1_units_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/units/{name}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enable
+         * @description Switch a unit on, together with the units it requires. Reports everything newly switched on.
+         */
+        post: operations["enable_api_v1_units__name__enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/units/{name}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable
+         * @description Switch a unit off. Its data is kept. Refused while another switched-on unit needs it.
+         */
+        post: operations["disable_api_v1_units__name__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/units/{name}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remove
+         * @description Delete a switched-off unit's data for this business (cannot be undone). `confirm` must be the unit's name.
+         */
+        post: operations["remove_api_v1_units__name__remove_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/command/overview": {
         parameters: {
             query?: never;
@@ -1640,6 +1740,377 @@ export interface paths {
          */
         put: operations["put_widgets_api_v1_command_dashboard_widgets_put"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/oauth/{kind}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start
+         * @description Begin approving Ziira in the other system: returns the address to send the person's browser to.
+         */
+        post: operations["start_api_v1_connect_oauth__kind__start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/kinds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Kinds
+         * @description The systems that can be connected: ERPs, and statements and exports (grouped), with what each needs and gives.
+         */
+        get: operations["get_kinds_api_v1_connect_kinds_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Connections
+         * @description The connections the user may see, oldest first.
+         */
+        get: operations["get_connections_api_v1_connect_connections_get"];
+        put?: never;
+        /**
+         * Post Connection
+         * @description Connect a system. Secrets in `config` are stored encrypted and never shown again.
+         */
+        post: operations["post_connection_api_v1_connect_connections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Coverage
+         * @description What Intelligence can check with what is connected today, by area, and what to connect to check more.
+         */
+        get: operations["get_coverage_api_v1_connect_coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Connection */
+        get: operations["get_connection_api_v1_connect_connections__connection_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Connection
+         * @description Rename, change settings (a blank secret keeps the one stored), the freshness window, or the branch choice.
+         */
+        patch: operations["patch_connection_api_v1_connect_connections__connection_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Test
+         * @description Try the credentials with the lightest read the system offers. Changes nothing anywhere.
+         */
+        post: operations["post_test_api_v1_connect_connections__connection_id__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Sync
+         * @description Read the system now: queued for the background worker, so this reply is immediate.
+         */
+        post: operations["post_sync_api_v1_connect_connections__connection_id__sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Pause */
+        post: operations["post_pause_api_v1_connect_connections__connection_id__pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Resume */
+        post: operations["post_resume_api_v1_connect_connections__connection_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Disconnect
+         * @description Stop reading the system and forget its key. With `delete_data` everything read from it is deleted too.
+         */
+        post: operations["post_disconnect_api_v1_connect_connections__connection_id__disconnect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Runs
+         * @description The history of reads: what was read, how much was new or changed, what was skipped and why.
+         */
+        get: operations["get_runs_api_v1_connect_connections__connection_id__runs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Counts
+         * @description How many records of each kind have been read from the system.
+         */
+        get: operations["get_counts_api_v1_connect_connections__connection_id__counts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/branches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Branches
+         * @description Which Ziira branch each branch (store, till) of the other system is. Unmapped ones are company level.
+         */
+        get: operations["get_branches_api_v1_connect_connections__connection_id__branches_get"];
+        /**
+         * Put Branch
+         * @description Map a branch of the other system to a Ziira branch, ignore it, or have a Ziira branch made for it.
+         */
+        put: operations["put_branch_api_v1_connect_connections__connection_id__branches_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/file-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put File Settings
+         * @description Remember which column is which, and how this connection's files write numbers and dates.
+         */
+        put: operations["put_file_settings_api_v1_connect_connections__connection_id__file_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/files/detect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Detect
+         * @description Which kind of file this is (a bank statement, a mobile-money statement, a sales export ...), so a person can
+         *     just drop it. Stores nothing. A protected PDF needs its password in the `X-File-Password` header.
+         */
+        post: operations["post_detect_api_v1_connect_files_detect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/ocr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Ocr
+         * @description Whether pictures (scanned statements, photos) can be read on this server.
+         */
+        get: operations["get_ocr_api_v1_connect_ocr_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/scans/{scan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Scan
+         * @description How far the reading of a picture has got (poll this while the preview says 'reading').
+         */
+        get: operations["get_scan_api_v1_connect_connections__connection_id__scans__scan_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Scan
+         * @description Correct cells of a picture that was read wrongly (before confirming it).
+         */
+        patch: operations["patch_scan_api_v1_connect_connections__connection_id__scans__scan_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Upload
+         * @description Upload a file (the request body): CSV, Excel, PDF or a photo. `preview` shows what was found (layout worked out
+         *     automatically), a sample and every problem line, and stores nothing; `commit` stores the valid rows. Uploading
+         *     overlapping files again adds nothing twice. A picture is read in the background: the preview says 'reading' with a
+         *     `scan` to poll; then send the same request with `scan_id` and no body.
+         */
+        post: operations["post_upload_api_v1_connect_connections__connection_id__upload_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2909,6 +3380,191 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/actions/types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Action Types
+         * @description Every kind of action Intelligence can propose for this business, with its parameters and whether it may run by a
+         *     rule.
+         */
+        get: operations["get_action_types_api_v1_intel_actions_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/actions/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Action Log
+         * @description Everything Intelligence did or tried to do, by approval or by rule, newest first.
+         */
+        get: operations["get_action_log_api_v1_intel_actions_log_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Proposals
+         * @description Suggestions Intelligence has prepared, in the user's scope. `mine`: those waiting for a decision this person is
+         *     allowed to make.
+         */
+        get: operations["get_proposals_api_v1_intel_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/actions/{proposal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Proposal */
+        get: operations["get_proposal_api_v1_intel_actions__proposal_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/actions/{proposal_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Approve
+         * @description Approve a suggestion (optionally with changed parameters) and do it now, as the signed-in user. Needs the
+         *     permission the action itself needs, where the finding is. Approving what is already done changes nothing.
+         */
+        post: operations["post_approve_api_v1_intel_actions__proposal_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/actions/{proposal_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reject
+         * @description Turn a suggestion down, with a reason. It is not made again for the same finding.
+         */
+        post: operations["post_reject_api_v1_intel_actions__proposal_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Finding Actions
+         * @description The suggestions made for one finding, waiting or done.
+         */
+        get: operations["get_finding_actions_api_v1_intel_findings__finding_id__actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/automation/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rules
+         * @description The owner's rules for actions that may run by themselves (level 4).
+         */
+        get: operations["get_rules_api_v1_intel_automation_rules_get"];
+        put?: never;
+        /**
+         * Post Rule
+         * @description Let a routine action run by itself within conditions and a daily limit. Only actions that move no money and
+         *     change no price, credit limit or stock may be made automatic. It acts only while the business is at level 4.
+         */
+        post: operations["post_rule_api_v1_intel_automation_rules_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/automation/rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Rule
+         * @description Change a rule's conditions or limit, switch it off, or pause and resume it.
+         */
+        patch: operations["patch_rule_api_v1_intel_automation_rules__rule_id__patch"];
         trace?: never;
     };
     "/api/v1/intel/findings": {
@@ -6799,6 +7455,107 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** ActionLogOut */
+        ActionLogOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Proposal Id */
+            proposal_id: string | null;
+            /** Finding Id */
+            finding_id: string | null;
+            /** Finding Summary */
+            finding_summary: string | null;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Action Type */
+            action_type: string;
+            /** Action Title */
+            action_title: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "manual" | "automatic";
+            /** Actor User Id */
+            actor_user_id: string | null;
+            /** Actor Name */
+            actor_name: string | null;
+            /** Rule Id */
+            rule_id: string | null;
+            /** Level */
+            level: number;
+            /** Params */
+            params: {
+                [key: string]: unknown;
+            };
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "executed" | "failed";
+            /** Message */
+            message: string;
+            result: components["schemas"]["ActionResultOut"] | null;
+        };
+        /** ActionResultOut */
+        ActionResultOut: {
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+            /**
+             * Created
+             * @default []
+             */
+            created: components["schemas"]["RecordOut"][];
+        };
+        /** ActionTypeOut */
+        ActionTypeOut: {
+            /** Type */
+            type: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Check Codes */
+            check_codes: string[];
+            /** Needs Permission */
+            needs_permission: string;
+            /**
+             * Can Run By Rule
+             * @description True only for routine actions that move no money and change no price, credit limit or stock: an owner may let these run by themselves
+             */
+            can_run_by_rule: boolean;
+            /** Why Not By Rule */
+            why_not_by_rule: string | null;
+            /**
+             * Params Schema
+             * @description The parameters of the action: type, title, limits, editable
+             */
+            params_schema: {
+                [key: string]: unknown;
+            };
+            /**
+             * Rule Schema
+             * @description The conditions a rule for this action may set
+             */
+            rule_schema: {
+                [key: string]: unknown;
+            };
+        };
         /** ActiveIn */
         ActiveIn: {
             /** Active */
@@ -7288,6 +8045,18 @@ export interface components {
              * @description Default: the oldest invoices first
              */
             allocations?: components["schemas"]["AllocationIn"][] | null;
+        };
+        /** ApproveIn */
+        ApproveIn: {
+            /**
+             * Params
+             * @description Changed parameters (only those marked editable)
+             */
+            params?: {
+                [key: string]: unknown;
+            } | null;
+            /** Note */
+            note?: string | null;
         };
         /** AskAnswerOut */
         AskAnswerOut: {
@@ -7904,6 +8673,37 @@ export interface components {
             /** Phone */
             phone?: string | null;
         };
+        /** BranchMapIn */
+        BranchMapIn: {
+            /** External Ref */
+            external_ref: string;
+            /** Branch Id */
+            branch_id?: string | null;
+            /**
+             * Ignored
+             * @default false
+             */
+            ignored: boolean;
+            /**
+             * Create Branch
+             * @description Make a new Ziira branch for it and map to that
+             * @default false
+             */
+            create_branch: boolean;
+        };
+        /** BranchMapOut */
+        BranchMapOut: {
+            /** External Ref */
+            external_ref: string;
+            /** External Name */
+            external_name: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Branch Name */
+            branch_name: string | null;
+            /** Ignored */
+            ignored: boolean;
+        };
         /** BranchOut */
         BranchOut: {
             /**
@@ -8173,6 +8973,21 @@ export interface components {
              * @default []
              */
             barcodes: string[];
+        };
+        /** CellFix */
+        CellFix: {
+            /**
+             * Row
+             * @description the line number shown in the problem list
+             */
+            row: number;
+            /**
+             * Column
+             * @description position of the column
+             */
+            column: number;
+            /** Value */
+            value: string;
         };
         /** ChallengeOut */
         ChallengeOut: {
@@ -8635,6 +9450,209 @@ export interface components {
             /** Is Taxable */
             is_taxable: boolean;
         };
+        /** ConfigFieldOut */
+        ConfigFieldOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Secret */
+            secret: boolean;
+            /** Required */
+            required: boolean;
+            /** Help */
+            help: string;
+            /** Example */
+            example: string;
+        };
+        /** ConnectionDetailOut */
+        ConnectionDetailOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Kind */
+            kind: string;
+            /** Kind Title */
+            kind_title: string;
+            /** Group */
+            group: string;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "paused" | "error" | "disconnected";
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            /** Secrets Set */
+            secrets_set: string[];
+            /** Freshness */
+            freshness: string;
+            /** Entities */
+            entities: components["schemas"]["EntityStatusOut"][];
+            /** Auto Create Branches */
+            auto_create_branches: boolean;
+            /** Sync Every Minutes */
+            sync_every_minutes: number;
+            /** Last Sync At */
+            last_sync_at: string | null;
+            /** Last Success At */
+            last_success_at: string | null;
+            /** Next Sync At */
+            next_sync_at: string | null;
+            /** Failures */
+            failures: number;
+            /** Last Error */
+            last_error: string | null;
+            /** Needs Oauth */
+            needs_oauth: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Unmapped Branches */
+            unmapped_branches: number;
+        };
+        /** ConnectionIn */
+        ConnectionIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Kind */
+            kind: string;
+            /** Name */
+            name: string;
+            /**
+             * Config
+             * @description The settings of the kind; secrets are stored encrypted
+             */
+            config?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Auto Create Branches
+             * @default false
+             */
+            auto_create_branches: boolean;
+            /** Sync Every Minutes */
+            sync_every_minutes?: number | null;
+        };
+        /** ConnectionOut */
+        ConnectionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Kind */
+            kind: string;
+            /** Kind Title */
+            kind_title: string;
+            /** Group */
+            group: string;
+            /** Name */
+            name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "paused" | "error" | "disconnected";
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            /** Secrets Set */
+            secrets_set: string[];
+            /** Freshness */
+            freshness: string;
+            /** Entities */
+            entities: components["schemas"]["EntityStatusOut"][];
+            /** Auto Create Branches */
+            auto_create_branches: boolean;
+            /** Sync Every Minutes */
+            sync_every_minutes: number;
+            /** Last Sync At */
+            last_sync_at: string | null;
+            /** Last Success At */
+            last_success_at: string | null;
+            /** Next Sync At */
+            next_sync_at: string | null;
+            /** Failures */
+            failures: number;
+            /** Last Error */
+            last_error: string | null;
+            /** Needs Oauth */
+            needs_oauth: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ConnectionPatch */
+        ConnectionPatch: {
+            /** Name */
+            name?: string | null;
+            /**
+             * Config
+             * @description Settings to change; a blank secret is kept as it is
+             */
+            config?: {
+                [key: string]: unknown;
+            } | null;
+            /** Auto Create Branches */
+            auto_create_branches?: boolean | null;
+            /** Sync Every Minutes */
+            sync_every_minutes?: number | null;
+        };
+        /** ConnectorKindOut */
+        ConnectorKindOut: {
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Group */
+            group: string;
+            /** Entities */
+            entities: string[];
+            /** Config Fields */
+            config_fields: components["schemas"]["ConfigFieldOut"][];
+            /** Needs Oauth */
+            needs_oauth: boolean;
+            /**
+             * Freshness
+             * @enum {string}
+             */
+            freshness: "live" | "daily" | "on_upload";
+            /** How To */
+            how_to: string;
+            /** File Fields */
+            file_fields: components["schemas"]["FileFieldOut"][];
+        };
         /** ContactIn */
         ContactIn: {
             /** Name */
@@ -8854,6 +9872,44 @@ export interface components {
             failed: number;
             /** Reverted */
             reverted: number;
+        };
+        /** CoverageAreaOut */
+        CoverageAreaOut: {
+            /** Area */
+            area: string;
+            /** Active */
+            active: number;
+            /** Total */
+            total: number;
+            /** Checks */
+            checks: components["schemas"]["CoverageCheckOut"][];
+        };
+        /** CoverageCheckOut */
+        CoverageCheckOut: {
+            /** Code */
+            code: string;
+            /** Title */
+            title: string;
+            /** Active */
+            active: boolean;
+            /** Needs */
+            needs: string[];
+            /** Connect */
+            connect: string[];
+        };
+        /** CoverageOut */
+        CoverageOut: {
+            /** Connected */
+            connected: {
+                [key: string]: number;
+            };
+            /** Areas */
+            areas: components["schemas"]["CoverageAreaOut"][];
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
         };
         /** CredentialsIn */
         CredentialsIn: {
@@ -9192,6 +10248,26 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** DetectOut */
+        DetectOut: {
+            /** Kind */
+            kind: string | null;
+            /** Title */
+            title: string;
+            /** Confidence */
+            confidence: number;
+            /** Picture */
+            picture: boolean;
+            /** Alternatives */
+            alternatives: components["schemas"]["WrongKindOut"][];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "ready" | "password_required" | "wrong_password";
+            /** Message */
+            message: string;
+        };
         /** DeviceIn */
         DeviceIn: {
             /**
@@ -9267,6 +10343,22 @@ export interface components {
              * @enum {string}
              */
             status: "active" | "blocked";
+        };
+        /** DisconnectIn */
+        DisconnectIn: {
+            /**
+             * Delete Data
+             * @description Also delete everything read from the system
+             * @default false
+             */
+            delete_data: boolean;
+        };
+        /** DisconnectOut */
+        DisconnectOut: {
+            /** Removed */
+            removed: {
+                [key: string]: number;
+            };
         };
         /** DismissIn */
         DismissIn: {
@@ -9581,6 +10673,18 @@ export interface components {
             residency?: ("resident" | "non_resident") | null;
             /** Is Director */
             is_director?: boolean | null;
+        };
+        /** EntityStatusOut */
+        EntityStatusOut: {
+            /** Entity */
+            entity: string;
+            /**
+             * Complete At
+             * @description When the entity was last read to the end
+             */
+            complete_at: string | null;
+            /** Data Through */
+            data_through?: string | null;
         };
         /** EntryLineOut */
         EntryLineOut: {
@@ -9929,6 +11033,21 @@ export interface components {
             /** Match Status */
             match_status: string;
         };
+        /** FieldGuessOut */
+        FieldGuessOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Required */
+            required: boolean;
+            /** Column */
+            column: string | null;
+            /** Examples */
+            examples: string[];
+            /** Simple */
+            simple: boolean;
+        };
         /** FigureOut */
         FigureOut: {
             /** Metric */
@@ -9968,6 +11087,61 @@ export interface components {
              * @default []
              */
             notes: string[];
+        };
+        /** FileFieldOut */
+        FileFieldOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Required */
+            required: boolean;
+            /** Help */
+            help: string;
+            /** Example */
+            example: string;
+            /** Aliases */
+            aliases: string[];
+        };
+        /** FileSettingsIn */
+        FileSettingsIn: {
+            /**
+             * Mapping
+             * @description field -> the file's column ('' means: not in my file)
+             */
+            mapping: {
+                [key: string]: string | null;
+            };
+            /**
+             * Decimal Separator
+             * @default auto
+             * @enum {string}
+             */
+            decimal_separator: "." | "," | "auto";
+            /**
+             * Date Format
+             * @default auto
+             * @enum {string}
+             */
+            date_format: "iso" | "dmy" | "mdy" | "auto";
+            /** Delimiter */
+            delimiter?: ("," | ";" | "\t" | "|") | null;
+            /** Options */
+            options?: {
+                [key: string]: unknown;
+            };
+        };
+        /** FileUploadOut */
+        FileUploadOut: {
+            preview: components["schemas"]["PreviewOut"];
+            /** Committed */
+            committed: boolean;
+            /** New */
+            new: number;
+            /** Changed */
+            changed: number;
+            /** Skipped */
+            skipped: number;
         };
         /** FindingDetailOut */
         FindingDetailOut: {
@@ -11363,6 +12537,37 @@ export interface components {
             /** Sent At */
             sent_at: string | null;
         };
+        /** OAuthStartIn */
+        OAuthStartIn: {
+            /**
+             * Connection Id
+             * Format: uuid
+             */
+            connection_id: string;
+            /**
+             * Client Id
+             * @description Your own app's client id (optional)
+             */
+            client_id?: string | null;
+            /** Client Secret */
+            client_secret?: string | null;
+        };
+        /** OAuthStartOut */
+        OAuthStartOut: {
+            /** Authorization Url */
+            authorization_url: string;
+            /** Redirect Uri */
+            redirect_uri: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+        };
+        /** OcrStatusOut */
+        OcrStatusOut: {
+            /** Available */
+            available: boolean;
+            /** Message */
+            message: string;
+        };
         /** OpResultOut */
         OpResultOut: {
             /**
@@ -11728,6 +12933,26 @@ export interface components {
             };
             /** Top Findings */
             top_findings: components["schemas"]["TopFindingOut"][];
+        };
+        /** PasswordCheckIn */
+        PasswordCheckIn: {
+            /** Password */
+            password: string;
+            /**
+             * Login
+             * @description The email it will be used with
+             */
+            login?: string | null;
+        };
+        /** PasswordCheckOut */
+        PasswordCheckOut: {
+            /** Ok */
+            ok: boolean;
+            /**
+             * Message
+             * @description Why it is not acceptable, in plain words
+             */
+            message?: string | null;
         };
         /** PasswordIn */
         PasswordIn: {
@@ -12126,6 +13351,85 @@ export interface components {
             /** Description */
             description: string;
         };
+        /** PreviewOut */
+        PreviewOut: {
+            /** Filename */
+            filename: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "ready" | "reading" | "failed" | "password_required" | "wrong_password";
+            /** Message */
+            message: string;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "csv" | "excel" | "pdf" | "scan";
+            /** Delimiter */
+            delimiter: string;
+            /** Headers */
+            headers: string[];
+            /** Warnings */
+            warnings: string[];
+            /** Mapping */
+            mapping: {
+                [key: string]: string | null;
+            };
+            /** Suggested */
+            suggested: {
+                [key: string]: string | null;
+            };
+            /** Settings */
+            settings: {
+                [key: string]: unknown;
+            };
+            /** Sample */
+            sample: {
+                [key: string]: string;
+            }[];
+            /** Total Rows */
+            total_rows: number;
+            /** Valid Rows */
+            valid_rows: number;
+            /** Issues */
+            issues: components["schemas"]["RowIssueOut"][];
+            /** Issue Count */
+            issue_count: number;
+            /** Missing */
+            missing: string[];
+            /** Records */
+            records: {
+                [key: string]: number;
+            };
+            /** First Moment */
+            first_moment: string | null;
+            /** Last Moment */
+            last_moment: string | null;
+            /** Confidence */
+            confidence: number;
+            /** Needs Check */
+            needs_check: boolean;
+            /** Check Reasons */
+            check_reasons: string[];
+            /** Date Ambiguous */
+            date_ambiguous: boolean;
+            /** Date Examples */
+            date_examples: string[];
+            /** Money In */
+            money_in: string | null;
+            /** Money Out */
+            money_out: string | null;
+            /** Total */
+            total: string | null;
+            wrong_kind: components["schemas"]["WrongKindOut"] | null;
+            /** Fields */
+            fields: components["schemas"]["FieldGuessOut"][];
+            /** Review Rows */
+            review_rows: components["schemas"]["ReviewRowOut"][];
+            scan: components["schemas"]["ScanOut"] | null;
+        };
         /** PriceIn */
         PriceIn: {
             /**
@@ -12367,6 +13671,77 @@ export interface components {
             consolidated: components["schemas"]["ProfitAndLossOut"];
             /** Branches */
             branches: components["schemas"]["BranchProfitOut"][];
+        };
+        /** ProposalOut */
+        ProposalOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Finding Id
+             * Format: uuid
+             */
+            finding_id: string;
+            /** Finding Summary */
+            finding_summary: string | null;
+            /** Finding Severity */
+            finding_severity: string;
+            /** Finding Status */
+            finding_status: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Action Type */
+            action_type: string;
+            /** Action Title */
+            action_title: string;
+            /** Description */
+            description: string;
+            /** Facts */
+            facts: {
+                [key: string]: string;
+            };
+            /** Params */
+            params: {
+                [key: string]: unknown;
+            };
+            /** Params Schema */
+            params_schema: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Level At Proposal */
+            level_at_proposal: number;
+            /**
+             * Proposed At
+             * Format: date-time
+             */
+            proposed_at: string;
+            /** Decided By */
+            decided_by: string | null;
+            /** Decided By Name */
+            decided_by_name: string | null;
+            /** Decided At */
+            decided_at: string | null;
+            /** Decision Note */
+            decision_note: string | null;
+            /** Executed At */
+            executed_at: string | null;
+            result: components["schemas"]["ActionResultOut"] | null;
+            /** Needs Permission */
+            needs_permission: string;
+            /**
+             * Can Decide
+             * @description The signed-in user holds the permission to approve it where it applies
+             */
+            can_decide: boolean;
         };
         /** QuotationIn */
         QuotationIn: {
@@ -12710,6 +14085,13 @@ export interface components {
              * @description Needed when registration is by invitation
              */
             invite_code?: string | null;
+            /**
+             * Mode
+             * @description core: run the business on Ziira; standalone: only watch the system it already has
+             * @default core
+             * @enum {string}
+             */
+            mode: "core" | "standalone";
         };
         /** RegisterOut */
         RegisterOut: {
@@ -12762,11 +14144,6 @@ export interface components {
             workspace: string;
             /** Business Name */
             business_name: string;
-        };
-        /** RejectIn */
-        RejectIn: {
-            /** Note */
-            note: string;
         };
         /** RejectionOut */
         RejectionOut: {
@@ -12893,6 +14270,14 @@ export interface components {
             /** Failed */
             failed: number;
         };
+        /** RemoveIn */
+        RemoveIn: {
+            /**
+             * Confirm
+             * @description The unit's name, typed to confirm the data is deleted
+             */
+            confirm: string;
+        };
         /** ReportOut */
         ReportOut: {
             batch: components["schemas"]["BatchOut"];
@@ -12989,6 +14374,15 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** ReviewRowOut */
+        ReviewRowOut: {
+            /** Row */
+            row: number;
+            /** Problem */
+            problem: string;
+            /** Cells */
+            cells: string[];
+        };
         /** RoleIn */
         RoleIn: {
             /** Name */
@@ -13014,6 +14408,13 @@ export interface components {
         RolePermissionsIn: {
             /** Permissions */
             permissions: string[];
+        };
+        /** RowIssueOut */
+        RowIssueOut: {
+            /** Row */
+            row: number;
+            /** Message */
+            message: string;
         };
         /** RowOut */
         RowOut: {
@@ -13041,14 +14442,6 @@ export interface components {
             total: number;
             /** Rows */
             rows: components["schemas"]["RowOut"][];
-        };
-        /** RuleUpdateIn */
-        RuleUpdateIn: {
-            /**
-             * Account Id
-             * Format: uuid
-             */
-            account_id: string;
         };
         /** SaleIn */
         SaleIn: {
@@ -13313,6 +14706,30 @@ export interface components {
             status: string;
             /** Synced Offline */
             synced_offline: boolean;
+        };
+        /** ScanFixIn */
+        ScanFixIn: {
+            /** Fixes */
+            fixes: components["schemas"]["CellFix"][];
+        };
+        /** ScanOut */
+        ScanOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "reading" | "ready" | "failed";
+            /** Pages */
+            pages: number;
+            /** Pages Done */
+            pages_done: number;
+            /** Error */
+            error: string | null;
         };
         /** ScheduleIn */
         ScheduleIn: {
@@ -14017,6 +15434,59 @@ export interface components {
              */
             expires_at: string;
         };
+        /** SyncIn */
+        SyncIn: {
+            /**
+             * Full
+             * @description Read everything again from the start
+             * @default false
+             */
+            full: boolean;
+        };
+        /** SyncOut */
+        SyncOut: {
+            /**
+             * Queued
+             * @description False when a read of this connection is already waiting
+             */
+            queued: boolean;
+        };
+        /** SyncRunOut */
+        SyncRunOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Entity */
+            entity: string;
+            /** Trigger */
+            trigger: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "ok" | "partial" | "failed";
+            /** Records Read */
+            records_read: number;
+            /** Records New */
+            records_new: number;
+            /** Records Changed */
+            records_changed: number;
+            /** Records Skipped */
+            records_skipped: number;
+            /** Error */
+            error: string | null;
+            /** Notes */
+            notes: string[];
+        };
         /** TaxCardOut */
         TaxCardOut: {
             /**
@@ -14137,6 +15607,17 @@ export interface components {
             channel: "email" | "sms";
             /** Recipient */
             recipient: string;
+        };
+        /** TestOut */
+        TestOut: {
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
         };
         /** TillCloseIn */
         TillCloseIn: {
@@ -14562,6 +16043,67 @@ export interface components {
             /** Balanced */
             balanced: boolean;
         };
+        /** UnitCard */
+        UnitCard: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /**
+             * Kind
+             * @description module or plugin
+             */
+            kind: string;
+            /** Version */
+            version: string;
+            /** Requires */
+            requires: string[];
+            /** Optional */
+            optional: string[];
+            /**
+             * Dependants
+             * @description Enabled units that need this one
+             */
+            dependants: string[];
+            /**
+             * Installed
+             * @description False: the platform does not offer it yet (an operator installs it)
+             */
+            installed: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Has Data
+             * @description The unit's tables exist in this business's database
+             */
+            has_data: boolean;
+            /**
+             * Will Also Enable
+             * @description Units that switching this on will switch on too
+             */
+            will_also_enable: string[];
+            /** Can Enable */
+            can_enable: boolean;
+            /** Can Disable */
+            can_disable: boolean;
+            /** Why Not Disable */
+            why_not_disable: string | null;
+            /** Can Remove */
+            can_remove: boolean;
+            /** Why Not Remove */
+            why_not_remove: string | null;
+        };
+        /** UnitChange */
+        UnitChange: {
+            /**
+             * Enabled
+             * @description Units newly switched on by this change
+             */
+            enabled: string[];
+            unit: components["schemas"]["UnitCard"];
+        };
         /** UomIn */
         UomIn: {
             /** Code */
@@ -14710,6 +16252,13 @@ export interface components {
             };
             /** Position */
             position: number;
+        };
+        /** WrongKindOut */
+        WrongKindOut: {
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
         };
         /** RequestIn */
         ziira__kernel__api__privacy_routes__RequestIn: {
@@ -15031,6 +16580,14 @@ export interface components {
             /** Priority */
             priority: number;
         };
+        /** RuleUpdateIn */
+        ziira__modules__finance__api__schemas__RuleUpdateIn: {
+            /**
+             * Account Id
+             * Format: uuid
+             */
+            account_id: string;
+        };
         /** StatementLineOut */
         ziira__modules__finance__api__schemas__StatementLineOut: {
             /**
@@ -15072,6 +16629,87 @@ export interface components {
              * @description Why the whole import is being undone
              */
             reason: string;
+        };
+        /** RejectIn */
+        ziira__modules__intel__api__schemas__RejectIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** RuleIn */
+        ziira__modules__intel__api__schemas__RuleIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Action Type */
+            action_type: string;
+            /** Conditions */
+            conditions?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Daily Cap
+             * @description Most times this rule may act in one day
+             * @default 20
+             */
+            daily_cap: number;
+            /** Note */
+            note?: string | null;
+        };
+        /** RuleOut */
+        ziira__modules__intel__api__schemas__RuleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Action Type */
+            action_type: string;
+            /** Action Title */
+            action_title: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Paused */
+            paused: boolean;
+            /** Conditions */
+            conditions: {
+                [key: string]: unknown;
+            };
+            /** Daily Cap */
+            daily_cap: number;
+            /** Note */
+            note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Times Used */
+            times_used: number;
+        };
+        /** RuleUpdateIn */
+        ziira__modules__intel__api__schemas__RuleUpdateIn: {
+            /** Conditions */
+            conditions?: {
+                [key: string]: unknown;
+            } | null;
+            /** Daily Cap */
+            daily_cap?: number | null;
+            /** Note */
+            note?: string | null;
+            /** Enabled */
+            enabled?: boolean | null;
+            /**
+             * Paused
+             * @description Pause or resume the rule without losing it
+             */
+            paused?: boolean | null;
         };
         /** RunIn */
         ziira__modules__intel__api__schemas__RunIn: {
@@ -15288,6 +16926,11 @@ export interface components {
             label: string;
             /** Amount */
             amount: string;
+        };
+        /** RejectIn */
+        ziira__modules__people__api__schemas__RejectIn: {
+            /** Note */
+            note: string;
         };
         /** ReturnOut */
         ziira__modules__people__api__schemas__ReturnOut: {
@@ -18272,6 +19915,39 @@ export interface operations {
             };
         };
     };
+    check_password_api_v1_auth_password_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordCheckIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PasswordCheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     forgot_password_api_v1_auth_password_forgot_post: {
         parameters: {
             query?: never;
@@ -19596,6 +21272,160 @@ export interface operations {
             };
         };
     };
+    unit_catalog_api_v1_units_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitCard"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enable_api_v1_units__name__enable_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitChange"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_api_v1_units__name__disable_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitChange"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_api_v1_units__name__remove_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitChange"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_overview_api_v1_command_overview_get: {
         parameters: {
             query?: {
@@ -20040,6 +21870,884 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WidgetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_api_v1_connect_oauth__kind__start_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                kind: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OAuthStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthStartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_kinds_api_v1_connect_kinds_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectorKindOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_connections_api_v1_connect_connections_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_connection_api_v1_connect_connections_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_coverage_api_v1_connect_coverage_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_connection_api_v1_connect_connections__connection_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_connection_api_v1_connect_connections__connection_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectionPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_test_api_v1_connect_connections__connection_id__test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_sync_api_v1_connect_connections__connection_id__sync_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["SyncIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_pause_api_v1_connect_connections__connection_id__pause_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_resume_api_v1_connect_connections__connection_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_disconnect_api_v1_connect_connections__connection_id__disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisconnectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisconnectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_runs_api_v1_connect_connections__connection_id__runs_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncRunOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_counts_api_v1_connect_connections__connection_id__counts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_branches_api_v1_connect_connections__connection_id__branches_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMapOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_branch_api_v1_connect_connections__connection_id__branches_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BranchMapIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BranchMapOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_file_settings_api_v1_connect_connections__connection_id__file_settings_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FileSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_detect_api_v1_connect_files_detect_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-file-password"?: string | null;
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ocr_api_v1_connect_ocr_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OcrStatusOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_scan_api_v1_connect_connections__connection_id__scans__scan_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+                scan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_scan_api_v1_connect_connections__connection_id__scans__scan_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+                scan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScanFixIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_upload_api_v1_connect_connections__connection_id__upload_post: {
+        parameters: {
+            query?: {
+                filename?: string;
+                /** @description preview stores nothing */
+                mode?: "preview" | "commit";
+                /** @description a picture already uploaded: send no body */
+                scan_id?: string | null;
+            };
+            header?: {
+                /** @description opens a protected PDF; never stored */
+                "x-file-password"?: string | null;
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileUploadOut"];
                 };
             };
             /** @description Validation Error */
@@ -21159,7 +23867,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RuleUpdateIn"];
+                "application/json": components["schemas"]["ziira__modules__finance__api__schemas__RuleUpdateIn"];
             };
         };
         responses: {
@@ -23418,6 +26126,405 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AskConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_action_types_api_v1_intel_actions_types_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionTypeOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_action_log_api_v1_intel_actions_log_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+                action_type?: string | null;
+                mode?: ("manual" | "automatic") | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionLogOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_proposals_api_v1_intel_actions_get: {
+        parameters: {
+            query?: {
+                status?: ("proposed" | "approved" | "executed" | "failed" | "rejected" | "expired" | "cancelled")[] | null;
+                finding_id?: string | null;
+                company_id?: string | null;
+                mine?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_proposal_api_v1_intel_actions__proposal_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_approve_api_v1_intel_actions__proposal_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reject_api_v1_intel_actions__proposal_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                proposal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RejectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_finding_actions_api_v1_intel_findings__finding_id__actions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProposalOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rules_api_v1_intel_automation_rules_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RuleOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_rule_api_v1_intel_automation_rules_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RuleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RuleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_rule_api_v1_intel_automation_rules__rule_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RuleUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__modules__intel__api__schemas__RuleOut"];
                 };
             };
             /** @description Validation Error */
@@ -27903,7 +31010,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RejectIn"];
+                "application/json": components["schemas"]["ziira__modules__people__api__schemas__RejectIn"];
             };
         };
         responses: {

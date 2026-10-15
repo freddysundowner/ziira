@@ -15,7 +15,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from ziira.modules.products.repository import products_repo
-from ziira.sdk import Session
+from ziira.sdk import Session, ValidationFailed
 
 PRODUCT_BEFORE_CREATE = "products.product.before_create"
 SKU_SUGGESTER = "products.sku_suggester"
@@ -122,3 +122,17 @@ def tax_code_rate(session: Session, tax_code_id: UUID) -> Decimal | None:
     """The VAT rate (percent) of an active tax code, or None when it does not exist or is not in use."""
     tax = products_repo.get_tax_code(session, tax_code_id)
     return tax.vat_rate if tax is not None and tax.is_active else None
+
+
+def set_selling_price(session: Session, company_id: UUID, product_id: UUID, price: Decimal,
+                      valid_from: date | None = None) -> UUID:
+    """Set a product's tax-inclusive selling price on the company's default price list from a date (today by
+    default), through the price service: the caller needs 'prices.manage', the old price ends the day before and the
+    change is audited and announced. Returns the id of the new price. Raises if the company has no default list."""
+    from ziira.modules.products.services import pricing
+
+    lists = [x for x in products_repo.lists_for_branch(session, company_id, None) if x.is_default]
+    if not lists:
+        raise ValidationFailed("The company has no default price list to put the price on")
+    item = pricing.set_price(session, lists[0].id, product_id=product_id, price=price, valid_from=valid_from)
+    return item.id

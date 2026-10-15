@@ -38,7 +38,14 @@
     "back": "Rudi",
     "startAgain": "Jisajili tena",
     "devOnly": "Kwa maendeleo tu: barua pepe haitumwi hapa.",
-    "devLink": "Fungua kiungo cha uthibitisho"
+    "devLink": "Fungua kiungo cha uthibitisho",
+    "modeLegend": "Utatumiaje Ziira?",
+    "mode": {
+      "core": "Nataka kuendesha biashara yangu kwenye Ziira",
+      "coreHint": "Mauzo, hisa, hesabu na watu katika mfumo mmoja.",
+      "standalone": "Tayari nina mfumo na ninataka Ziira uufuatilie",
+      "standaloneHint": "Endelea na unachotumia leo. Ziira husoma (haubadilishi kamwe) na kukuambia kinachohitaji uangalizi."
+    }
   },
   "signOut": "Toka",
   "home": {
@@ -48,7 +55,10 @@
     "morning": "Habari ya asubuhi",
     "afternoon": "Habari ya mchana",
     "evening": "Habari ya jioni",
-    "subtitle": "Hali ya biashara yako ilivyo."
+    "subtitle": "Hali ya biashara yako ilivyo.",
+    "connectTitle": "Unganisha mfumo wako wa kwanza",
+    "connectHint": "Ziira hukagua biashara yako ikishaweza kusoma mauzo, malipo au vitabu vyako. Unganisha mfumo au pakia faili kuanza.",
+    "connectAction": "Unganisha mfumo"
   },
   "loading": "Inapakia…",
   "notFound": "Ukurasa huu haupo, au huna ruhusa ya kuuona.",

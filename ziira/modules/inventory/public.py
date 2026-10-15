@@ -80,3 +80,22 @@ def location_scope(session: Session, location_id: UUID) -> tuple[UUID, UUID | No
     if location is None or not location.is_active:
         return None
     return location.company_id, location.branch_id
+
+
+def branch_stock_position(session: Session, company_id: UUID, branch_id: UUID, product_id: UUID, *,
+                          sold_since: date) -> tuple[Decimal, Decimal]:
+    """(quantity on hand in the branch's stores and warehouses, quantity sold there since `sold_since` net of returns),
+    in the product's base unit. For deciding how much to reorder."""
+    from sqlalchemy import text
+
+    on_hand = session.execute(text(
+        "select coalesce(sum(b.quantity), 0) from inventory.stock_balance b "
+        "join inventory.location l on l.id = b.location_id where l.company_id = :c and l.branch_id = :b "
+        "and l.kind in ('store', 'warehouse') and b.product_id = :p"),
+        {"c": str(company_id), "b": str(branch_id), "p": str(product_id)}).scalar_one()
+    sold = session.execute(text(
+        "select coalesce(-sum(m.quantity), 0) from inventory.stock_movement m where m.company_id = :c "
+        "and m.branch_id = :b and m.product_id = :p and m.movement_type in ('sale', 'sale_return') "
+        "and m.business_date >= :since"),
+        {"c": str(company_id), "b": str(branch_id), "p": str(product_id), "since": sold_since}).scalar_one()
+    return Decimal(on_hand), max(Decimal(sold), Decimal(0))

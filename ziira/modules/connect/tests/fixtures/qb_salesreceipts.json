@@ -1,0 +1,6 @@
+{"QueryResponse": {"SalesReceipt": [
+ {"Id": "77", "MetaData": {"CreateTime": "2024-05-03T14:22:11+03:00", "LastUpdatedTime": "2024-05-03T14:22:11+03:00"},
+  "DocNumber": "SR-9", "TxnDate": "2024-05-03", "PaymentMethodRef": {"value": "3"}, "PaymentRefNum": "SHK12ABC34",
+  "CustomerRef": null, "Line": [{"Amount": 1000.0, "DetailType": "SalesItemLineDetail", "SalesItemLineDetail": {"ItemRef": {"value": "11"}, "UnitPrice": 500, "Qty": 2}}],
+  "TxnTaxDetail": {"TotalTax": 0}, "TotalAmt": 1000.0}
+ ], "startPosition": 1, "maxResults": 1}, "time": "2024-05-06T07:00:00.123-07:00"}

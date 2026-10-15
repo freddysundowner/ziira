@@ -127,6 +127,10 @@ def _move(session: Session, row: Row[Any], target: str, event: str, note: str | 
     if not can_move(row.status, target):
         raise ValidationFailed(f"A finding that is {row.status} cannot become {target}")
     repo.set_status(session, row.id, target, explanation=explanation)
+    if target in CLOSED_STATUSES:
+        from ziira.modules.intel.services import actions
+
+        actions.expire_for_finding(session, row.id)
     repo.add_event(session, row.id, event, user_id=current_context().user_id, channel="app", note=note)
     audit_record(session, f"finding.{event}", "intel.finding", row.id, {"from": row.status, "to": target})
     updated = repo.get_finding(session, row.id)

@@ -2,13 +2,16 @@
 the tools Ask Ziira may call. It also plugs its own ask tools and the fake AI provider (development and tests) in."""
 
 from ziira.modules.intel import kernel_checks  # noqa: F401 - registers Intelligence's own checks
+from ziira.modules.intel.action_providers import NudgeExceptionsReviewers
 from ziira.modules.intel.ask_tools import FindingDetail, ListFindings
 from ziira.modules.intel.fake_llm import FakeLlm
 from ziira.modules.intel.public import (
+    INTEL_ACTION,
     INTEL_ASK_TOOL,
     INTEL_BASELINE_METRIC,
     INTEL_CHECK,
     INTEL_LLM,
+    ActionProvider,
     AskTool,
     BaselineMetric,
     IntelCheck,
@@ -22,7 +25,11 @@ define_extension_point(INTEL_LLM, LlmProvider, "An AI provider that answers the 
 define_extension_point(INTEL_ASK_TOOL, AskTool,
                        "A question Ask Ziira may put to a unit's data, within the asker's access")
 
+define_extension_point(INTEL_ACTION, ActionProvider,
+                       "Something Intelligence may propose for a finding, done once a person or an owner's rule allows")
+
 provides(INTEL_LLM)(FakeLlm)
+provides(INTEL_ACTION)(NudgeExceptionsReviewers)
 provides(INTEL_ASK_TOOL)(ListFindings)
 provides(INTEL_ASK_TOOL)(FindingDetail)
 

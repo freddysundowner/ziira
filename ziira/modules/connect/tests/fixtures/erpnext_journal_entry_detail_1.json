@@ -1,0 +1,3 @@
+{"data": {"name": "ACC-JV-2024-00001", "accounts": [
+  {"account": "Rent - Z", "debit": 15000.0, "credit": 0.0, "party": null},
+  {"account": "Creditors - Z", "debit": 0.0, "credit": 15000.0, "party": "Landlord"}]}}

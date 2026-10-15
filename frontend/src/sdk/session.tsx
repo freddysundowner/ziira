@@ -32,6 +32,8 @@ export interface Session {
   signOut: () => Promise<void>;
   /** Tries again after the server could not be reached. */
   retry: () => void;
+  /** Re-reads who the user is, their permissions and the enabled units, without signing out (after Apps & plugins changed). */
+  refresh: () => Promise<void>;
   /** Asks for a business of your own; the person must then use the link emailed to them. */
   register: (input: RegisterInput) => Promise<{ error: string | null; devToken?: string }>;
   /** Uses the emailed link: creates the business and signs the owner in. */
@@ -48,6 +50,8 @@ export interface RegisterInput {
   phone_country_code: string;
   timezone?: string;
   invite_code?: string;
+  /** core: run the business on Ziira; standalone: only watch the system the business already has. */
+  mode?: "core" | "standalone";
 }
 
 export interface Business {
@@ -175,7 +179,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (input: RegisterInput) => {
     const { data, error, response } = await api.POST("/api/v1/register", {
-      body: { ...input, invite_code: input.invite_code || null },
+      body: { ...input, invite_code: input.invite_code || null, mode: input.mode ?? "core" },
     });
     return { error: response.ok ? null : errorMessage(error), devToken: data?.dev_token ?? undefined };
   }, []);
@@ -203,8 +207,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Session>(() => {
     const permissions = new Set(me?.roles.flatMap((r) => r.permissions) ?? []);
-    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, completeMfa, signOut, register, completeRegistration, retry: () => void start() };
-  }, [status, me, units, signIn, completeMfa, signOut, register, completeRegistration, start]);
+    return { status, me, enabledUnits: units, can: (p) => permissions.has(p), signIn, completeMfa, signOut, register, completeRegistration, retry: () => void start(), refresh: load };
+  }, [status, me, units, signIn, completeMfa, signOut, register, completeRegistration, start, load]);
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

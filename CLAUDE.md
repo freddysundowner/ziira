@@ -13,7 +13,7 @@ Read this first in every session, then read `docs/PROGRESS.md`: "Current state" 
 ## What this is
 
 Ziira Core is a modular ERP for small and medium businesses (first customers: multi-branch retail and distribution
-in Kenya). **It is used worldwide: nothing in the platform assumes a country** (see rule 15 and `docs/localisation.md`).
+in Kenya). **It is used worldwide: nothing in the platform assumes a country** (see rule 15 and `docs/localisation.md`). Standalone mode: a unit that reads another system must never write to it, and `connect.src_*` is read only by the `standalone.*` checks.
 It pairs with **Ziira Intelligence**, a layer that checks business data daily and alerts owners by
 message. Product and technical specifications are in `docs/specs/` (each PDF has a `.txt` copy
 with the same name; read the `.txt`, since the PDFs need extra tools to read):
@@ -50,6 +50,7 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
 .venv/bin/ziira index-logins [tenant]      # rebuild the login directory (sign-in without a workspace code)
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
 .venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + recurring tasks (checks, briefs) + purge
+.venv/bin/ziira connect upload <tenant> <connection> FILE [--check] | ocr-check   # statements/exports: CSV, Excel, PDF; ocr-check = can this server read pictures (Tesseract)?
 .venv/bin/ziira run-task <tenant> <name>    # run one recurring task now, e.g. intel.run_checks, command.refresh_pulse, command.send_briefs
 .venv/bin/ziira verify [tenant] [--unit U] [--fix]   # units' integrity checks; `stock-verify` = Inventory's (nightly)
 .venv/bin/python scripts/seed_demo_rich.py [--scale tiny|small|full] [--reset --confirm demo-hardware]   # ~90 days of demo history + 10 planted stories (docs/demo-data.md)
@@ -151,6 +152,9 @@ tests/             unit tests for domain rules
   under `optional` in its manifest; `intel` and `command` never read another unit's tables. A check never writes, is bounded by a
   look-back window, sets `branch_id` (it decides who sees it), keeps limits as `params` a business can change, and is tested end to
   end with the real engine. Alerts and briefs are queued through the notification layer, never sent in a request. See `docs/intelligence.md`.
+- **Intelligence actions (levels 3-4)**: a unit offers an `intel.action` provider (`action_providers.py`) that proposes and executes through its
+  own services; approving runs it as the approver (their permissions apply), only `auto_allowed` non-monetary providers may run under an owner's
+  rule, and Ziira never moves money, changes prices, credit limits or stock without a person. See "Actions: levels 3 and 4" in `docs/intelligence.md`.
 - **AI layer** (`docs/ai.md`): opt-in per business with a consent record; a model writes sentences, never figures (every number must be in the facts or tool results); all calls go through `intel/services/ai.py` (consent, budget, scrub, log) with **no database transaction open** (`@unbound_periodic`, `tenant_transaction`); Ask Ziira data comes only from `intel.ask_tool` tools that filter by the asker's `branch_scope`. The Anthropic request format is untested live (`scripts/live_check.py ai`).
 - Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
   (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
@@ -168,6 +172,7 @@ tests/             unit tests for domain rules
   `ZIIRA_MFA_DEFAULT_POLICY=off`) and a person who must use it but has not set it up gets a session limited to the setup calls
   (`MfaSetupRequired`); forgotten passwords use an emailed one-use link; every CSV download is audited. New guessable actions use
   `throttle.action_counters`; never add a sign-in path that skips `auth.sign_in`/`complete_mfa`.
+- **Apps & plugins** (Settings, `units.manage`, Owner): `ziira/kernel/unit_admin.py` + `api/unit_routes.py` enable/disable/remove units per business with the same `Registry` the CLI uses (audited; `remove` needs `confirm` = unit name; manifests carry a `description`); the web page then calls `session.refresh()` so menus update.
 - Auth: sign-in with email/phone + password only (no workspace code): the master database's login directory
   (`kernel/directory.py`, keyed hashes of logins -> tenants) says which business database to check; a `workspace` code is
   optional and needed only when the same login (and password) works for several businesses (the reply is `409
@@ -181,7 +186,7 @@ tests/             unit tests for domain rules
 
 ## Where things are
 
-`docs/security.md` · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/ai.md` (AI layer, ask tools, providers) · `docs/offline-pos.md` (selling offline) · `docs/registration.md` (how businesses join) · `docs/organisation.md` (companies and branches after registration) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/security.md` · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/standalone-mode.md` (Intelligence on a business's existing system: the `connect` unit, connectors, `connect.src_*`; `ziira connect sync|upload`, `create-tenant --mode standalone`) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/ai.md` (AI layer, ask tools, providers) · `docs/offline-pos.md` (selling offline) · `docs/registration.md` (how businesses join) · `docs/organisation.md` (companies and branches after registration) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

@@ -92,3 +92,10 @@ export async function seedPayslip(owner: Api, second: Api, companyId: string): P
   if (!slip) throw new Error("no payslip for the new employee");
   return { payslipId: slip.id, name };
 }
+
+/** A business customer with a credit limit and payment terms (the credit check applies to invoices), made through the API. */
+export async function customerWithCredit(api: Api, companyId: string, name: string, limit = 5000, termsDays = 30): Promise<{ id: string; name: string }> {
+  const customer = await api.post("/crm/customers", { company_id: companyId, name, payment_terms_days: termsDays });
+  await api.post(`/crm/customers/${customer.id}/credit`, { credit_limit: String(limit), payment_terms_days: termsDays, reason: "Test customer" });
+  return { id: customer.id, name };
+}

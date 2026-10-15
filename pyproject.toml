@@ -12,10 +12,12 @@ dependencies = [
     "pydantic-settings>=2.3",
     "cryptography>=50",       # encrypts tenant database credentials in the master database
     "httpx>=0.27",            # calls out to Safaricom Daraja and other providers
+    "pdfplumber>=0.11.10,<0.12",  # reads text PDF statements (MIT; brings pdfminer.six, pypdfium2, Pillow)
+    "openpyxl>=3.1,<3.2",     # reads Excel (.xlsx) uploads (MIT)
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "hypothesis>=6.100", "httpx>=0.27", "ruff>=0.5", "mypy>=1.10", "import-linter>=2.0"]
+dev = ["pytest>=8", "hypothesis>=6.100", "httpx>=0.27", "ruff>=0.5", "mypy>=1.10", "import-linter>=2.0", "reportlab>=4"]
 
 [project.scripts]
 ziira = "ziira.kernel.cli:main"

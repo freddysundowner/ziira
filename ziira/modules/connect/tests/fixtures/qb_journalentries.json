@@ -1,0 +1,8 @@
+{"QueryResponse": {"JournalEntry": [
+ {"Id": "301", "MetaData": {"CreateTime": "2024-05-06T12:00:00-07:00", "LastUpdatedTime": "2024-05-06T12:00:00-07:00"},
+  "DocNumber": "JE-1", "TxnDate": "2024-05-06", "PrivateNote": "Rent accrual", "Adjustment": false,
+  "Line": [
+   {"Id": "0", "Amount": 1500.0, "DetailType": "JournalEntryLineDetail", "JournalEntryLineDetail": {"PostingType": "Debit", "AccountRef": {"value": "61", "name": "Rent"}}},
+   {"Id": "1", "Amount": 1500.0, "DetailType": "JournalEntryLineDetail", "JournalEntryLineDetail": {"PostingType": "Credit", "AccountRef": {"value": "33", "name": "Accounts Payable"}, "Entity": {"Type": "Vendor", "EntityRef": {"value": "9", "name": "Landlord", "type": "Vendor"}}}},
+   {"Amount": 0, "DetailType": "Weird"}]}
+ ], "startPosition": 1, "maxResults": 1}}

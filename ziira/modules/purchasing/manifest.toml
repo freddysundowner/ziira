@@ -1,6 +1,7 @@
 [unit]
 name = "purchasing"
 title = "Purchasing and Suppliers"
+description = "Suppliers, purchase orders and goods received."
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -14,7 +15,7 @@ subscribes = ["approval.decided", "payment.reversed"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.integrity_check", "intel.check", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
+implements = ["kernel.integrity_check", "intel.check", "intel.action", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
 
 [permissions]
 "suppliers.manage" = "Manage suppliers"

@@ -55,6 +55,8 @@ class RegisterIn(BaseModel):
     tax_id: str | None = Field(default=None, max_length=40)
     invite_code: str | None = Field(default=None, max_length=40,
                                     description="Needed when registration is by invitation")
+    mode: Literal["core", "standalone"] = Field(
+        default="core", description="core: run the business on Ziira; standalone: only watch the system it already has")
 
 
 class RegisterOut(BaseModel):

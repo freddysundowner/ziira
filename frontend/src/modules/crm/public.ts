@@ -5,3 +5,6 @@ export const customerPath = (customerId: string): string => `/customers/${custom
 
 /** Tabs on a customer's page. Contributions receive { customerId: string, companyId: string }. */
 export const CUSTOMER_TABS = "crm.customer.tabs";
+
+/** The form that records money a customer paid (oldest invoices first, or one invoice when `invoice` is given). */
+export { ReceivePayment } from "./components/ReceivePayment";
