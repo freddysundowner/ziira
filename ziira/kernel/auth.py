@@ -209,12 +209,13 @@ def complete_mfa(challenge: str, code: str, *, ip_address: str | None = None) ->
     throttle.guard(counters)
     _require_active_tenant(tenant_id)
     with tenant_session(tenant_id) as s:
+        # Audit entries (a backup code being used, a failed attempt) need to know who and where from.
+        set_context(RequestContext(tenant_id=tenant_id, user_id=user_id, channel=payload["c"], device_id=payload["d"],
+                                   ip_address=ip_address))
         active = s.execute(text("select status from kernel.app_user where id = :u"), {"u": str(user_id)}).scalar()
         if active == "active" and mfa.verify(s, user_id, code):
             throttle.succeeded(counters[:1])
             return _open_session(s, tenant_id, user_id, payload["c"], payload["d"], payload.get("n"), ip_address)
-        set_context(RequestContext(tenant_id=tenant_id, channel=payload["c"], device_id=payload["d"],
-                                   ip_address=ip_address))
         audit.record(s, "mfa_failed", "kernel.app_user", user_id, {"device_id": payload["d"]})
     throttle.failed(counters)
     raise Unauthorized("That code is not right")

@@ -1,7 +1,7 @@
 {
   "menu": "Products",
   "title": "Products",
-  "search": "Search by name or SKU",
+  "search": "Search by name, SKU or barcode",
   "empty": "No products yet.",
   "new": "New product",
   "sku": "SKU",
@@ -71,5 +71,15 @@
   "customerGroup": "Customer group",
   "groupHint": "Optional: use this list only for one group of customers.",
   "makeDefault": "Use as the default price list",
-  "saved": "Saved."
+  "saved": "Saved.",
+  "barcodes": {
+    "title": "Barcodes",
+    "edit": "Edit barcodes",
+    "editTitle": "Barcodes",
+    "none": "No barcodes yet. Add the codes printed on the product so the till can scan it.",
+    "codes": "Codes",
+    "hint": "One per line. A code belongs to one product.",
+    "save": "Save barcodes",
+    "saved": "Barcodes saved"
+  }
 }

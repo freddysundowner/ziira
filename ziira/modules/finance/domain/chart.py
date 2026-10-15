@@ -122,4 +122,9 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("expense", "mobile_money", "1030", "credit"),
     ("expense", "card", "1040", "credit"),
     ("expense", "other", "1020", "credit"),
+    ("opening_receivable", "receivable", "1100", "debit"),
+    ("opening_receivable", "opening_equity", "3100", "credit"),
+    ("opening_payable", "payable", "2000", "credit"),
+    ("opening_payable", "opening_equity", "3100", "debit"),
+    ("opening_balance", "opening_equity", "3100", "credit"),
 )

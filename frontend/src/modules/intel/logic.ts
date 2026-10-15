@@ -97,3 +97,58 @@ export function groupChecks(checks: readonly Check[]): { area: string; checks: C
   for (const c of checks) byArea.set(c.area, [...(byArea.get(c.area) ?? []), c]);
   return [...byArea.entries()].sort((a, b) => rank(a[0]) - rank(b[0]) || a[0].localeCompare(b[0])).map(([area, list]) => ({ area, checks: list }));
 }
+
+// --------------------------------------------------------------------------- the AI assistant
+export type AskAnswer = Schemas["AskAnswerOut"];
+export type AskSource = Schemas["AskSourceOut"];
+
+/** Example questions offered in an empty conversation (their words are in the translations). */
+export const EXAMPLE_KEYS = ["sales", "lowStock", "overdue", "profit", "bills"] as const;
+
+const KNOWN_REASONS: readonly string[] = ["not_enabled", "no_consent", "purpose_off", "budget", "not_configured", "terms_unconfirmed"];
+/** Why the assistant cannot be used, as a translation key; a reason this screen does not know reads as the generic one. */
+export function reasonKey(reason: string | null | undefined): string {
+  return reason && KNOWN_REASONS.includes(reason) ? reason : "default";
+}
+
+/** True for the reasons an Owner can fix in Settings (the platform's own set-up is not theirs to change). */
+export function fixableInSettings(reason: string | null | undefined): boolean {
+  return ["not_enabled", "no_consent", "purpose_off", "budget"].includes(reason ?? "");
+}
+
+type Row = Record<string, unknown>;
+
+/** The columns to show for a source's rows: every key in order of first appearance, ids left out, at most `max`. */
+export function sourceColumns(rows: readonly Row[], max = 6): string[] {
+  const seen: string[] = [];
+  for (const row of rows) for (const key of Object.keys(row)) if (!seen.includes(key) && key !== "id" && !key.endsWith("_id")) seen.push(key);
+  return seen.slice(0, max);
+}
+
+/** True for a number or a string of one ("1250.00"): such cells line up to the right. */
+export function isNumeric(value: unknown): boolean {
+  return typeof value === "number" || (typeof value === "string" && /^-?\d+(\.\d+)?$/.test(value));
+}
+
+/** A cell as text: nothing for empty, the inner words for lists and objects. */
+export function cellText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return JSON.stringify(value);
+}
+
+/** The arguments a person would recognise ("2026-10-01 – 2026-10-07", a branch is left out): the period if there is one. */
+export function sourcePeriod(source: Pick<AskSource, "params">): string | null {
+  const { date_from: from, date_to: to } = source.params as { date_from?: unknown; date_to?: unknown };
+  if (typeof from !== "string" || typeof to !== "string") return null;
+  return from === to ? from : `${from} – ${to}`;
+}
+
+/** One question and what came of it, as the conversation shows it. */
+export interface Turn {
+  id: string;
+  question: string;
+  answer?: AskAnswer;
+  error?: string;
+}

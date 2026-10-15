@@ -4,7 +4,8 @@ Publishes: journal.posted, period.closed, expense.approved
 Subscribes: stock.moved, sale.posted, sale.returned, payment.settled, payment.banked, till.closed, bill.posted,
 bill.reversed, supplier.paid, supplier.payment_reversed, supplier.refunded, supplier.refund_reversed,
 credit_note.posted, payroll.approved, payroll.paid, customer.paid, customer.payment_reversed,
-customer.advance_refunded, customer.refund_reversed, approval.decided (kernel)
+customer.advance_refunded, customer.refund_reversed, customer.opening_balance, customer.opening_balance_reversed,
+supplier.opening_balance, supplier.opening_balance_reversed, approval.decided (kernel)
 """
 
 from ziira.modules.finance.services import event_postings, expenses, manual_journals
@@ -135,3 +136,27 @@ def on_payroll_approved(session: Session, event: Event) -> None:
 def on_payroll_paid(session: Session, event: Event) -> None:
     """Post the payment of a payroll run's net pay."""
     event_postings.post_payroll_payment(session, event)
+
+
+@subscribe("customer.opening_balance")
+def on_customer_opening_balance(session: Session, event: Event) -> None:
+    """Post a customer's opening balance against opening balance equity."""
+    event_postings.post_customer_opening_balance(session, event)
+
+
+@subscribe("customer.opening_balance_reversed")
+def on_customer_opening_balance_reversed(session: Session, event: Event) -> None:
+    """Take a customer's opening balance out again."""
+    event_postings.post_customer_opening_balance(session, event, reverse=True)
+
+
+@subscribe("supplier.opening_balance")
+def on_supplier_opening_balance(session: Session, event: Event) -> None:
+    """Post a supplier's opening balance against opening balance equity."""
+    event_postings.post_supplier_opening_balance(session, event)
+
+
+@subscribe("supplier.opening_balance_reversed")
+def on_supplier_opening_balance_reversed(session: Session, event: Event) -> None:
+    """Take a supplier's opening balance out again."""
+    event_postings.post_supplier_opening_balance(session, event, reverse=True)

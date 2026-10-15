@@ -250,7 +250,7 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
         if account_id is None and leg.method != "cash":
             account_id = account_for_method(session, company_id, till.branch_id, leg.method)
             if account_id is None:
-                raise ValidationFailed(f"No {leg.method} account is set up for this branch")
+                raise ValidationFailed(f"No {leg.method.replace('_', ' ')} account is set up for this branch")
         paid = record_payment(
             session, company_id=company_id, branch_id=till.branch_id, method=leg.method, amount=leg.amount,
             payment_account_id=account_id, business_date=day, external_ref=reference,

@@ -136,7 +136,10 @@
     "vat": "Muhtasari wa VAT",
     "trial": "Mizania ya majaribio",
     "ledger": "Taarifa ya akaunti",
-    "export": "Hamisha kwa mhasibu"
+    "export": "Hamisha kwa mhasibu",
+    "notFound": "Ripoti hii haipo",
+    "notFoundHint": "Anwani inataja ripoti isiyopo hapa. Chagua moja kutoka kwenye orodha.",
+    "allReports": "Nenda kwenye ripoti"
   },
   "accounts": {
     "title": "Orodha ya akaunti",

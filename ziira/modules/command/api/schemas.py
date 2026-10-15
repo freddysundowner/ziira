@@ -31,6 +31,7 @@ class TopFindingOut(BaseModel):
     status: str
     branch_id: UUID | None
     amount: Decimal | None
+    reason: str | None = None   # why the AI layer put it here, when it ranked it (show it as AI-written)
 
 
 class OverviewOut(BaseModel):

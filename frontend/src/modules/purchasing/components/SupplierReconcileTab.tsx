@@ -18,6 +18,7 @@ export function SupplierReconcileTab({ supplierId, companyId }: { supplierId: st
   const [theirBalance, setTheirBalance] = useState("");
   const [asOf, setAsOf] = useState("");
   const run = useMutation({
+    meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/purchasing/suppliers/{supplier_id}/statement-reconciliation", { params: { path: { supplier_id: supplierId } }, body: {
       csv, their_balance: theirBalance || null, as_of: asOf || null } })),
     onError: (e) => toast((e as Error).message, "bad"),

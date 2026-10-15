@@ -71,11 +71,14 @@ def txn(shop, account, ref, amount, days_ago, status="unmatched", direction="in"
         a=account, r=ref, d=days_ago, amt=amount, s=status, dir=direction)
 
 
-def intents(shop, account, status, n, branch=None):  # type: ignore[no-untyped-def]
+def intents(shop, account, status, n, branch=None, fixed_day=False):  # type: ignore[no-untyped-def]
+    """Payment prompts: created now, or on the fixed test day (for checks run as of that day)."""
     for _ in range(n):
         sql(shop, "insert into payments.payment_intent (tenant_id, payment_account_id, kind, amount, phone_masked, "
-                  "status, company_id, branch_id) values (:t, :a, 'stk_push', 100, '2547****1', :s, :c, :b)",
-            a=account, s=status, b=str(branch or shop["branch_id"]))
+                  "status, company_id, branch_id, created_at) values (:t, :a, 'stk_push', 100, '2547****1', :s, :c, :b, "
+                  "coalesce(cast(:at as timestamptz), now()))",
+            a=account, s=status, b=str(branch or shop["branch_id"]),
+            at=f"{TODAY.isoformat()} 09:00+00" if fixed_day else None)
 
 
 def close_row(shop, day, variance, status="locked", branch=None, explanation=None):  # type: ignore[no-untyped-def]
@@ -274,11 +277,11 @@ def test_possible_duplicate_payments(client, shop) -> None:  # type: ignore[no-u
 # --------------------------------------------------------------------------- failing prompts
 def test_failing_prompts_need_volume_and_a_high_rate(client, shop) -> None:  # type: ignore[no-untyped-def]
     code = "payments.failing_prompts"
-    intents(shop, shop["till"], "failed", 3)
-    intents(shop, shop["till"], "timeout", 2)
-    intents(shop, shop["till"], "succeeded", 5)                    # 5 of 10 failed: 50%
-    intents(shop, shop["till"], "pending", 20)                     # still waiting: not counted
-    intents(shop, shop["juja_till"], "failed", 3)                  # too few attempts: silent
+    intents(shop, shop["till"], "failed", 3, fixed_day=True)
+    intents(shop, shop["till"], "timeout", 2, fixed_day=True)
+    intents(shop, shop["till"], "succeeded", 5, fixed_day=True)                    # 5 of 10 failed: 50%
+    intents(shop, shop["till"], "pending", 20, fixed_day=True)                     # still waiting: not counted
+    intents(shop, shop["juja_till"], "failed", 3, fixed_day=True)                  # too few attempts: silent
     run(shop, code)
     items = found(client, shop, code)
     assert len(items) == 1

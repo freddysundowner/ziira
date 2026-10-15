@@ -35,6 +35,7 @@ export default function AttentionPanel({ overview }: { overview: Overview }) {
                   </div>
                   <p className="mt-1 text-sm font-medium">{f.summary}</p>
                   {f.recommended_action && <p className="mt-0.5 text-sm text-muted">{t("nextStep", { action: f.recommended_action })}</p>}
+                  {f.reason && <p className="mt-0.5 text-xs text-muted">{t("aiReason", { reason: f.reason })}</p>}
                 </>
               );
               return (

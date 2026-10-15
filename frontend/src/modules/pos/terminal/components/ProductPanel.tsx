@@ -1,16 +1,21 @@
 import { Search } from "lucide-react";
-import { type FormEvent, type KeyboardEvent, type RefObject, useEffect, useState } from "react";
+import { type FormEvent, type KeyboardEvent, type RefObject, useEffect, useMemo, useState } from "react";
 
-import { api, Badge, cx, ErrorState, money, quantity, Skeleton, toast, unwrap, useDebounced, useQuery, useQueryClient, useTranslation } from "@/sdk";
+import { api, Alert, Badge, cx, ErrorState, formatDate, money, quantity, Skeleton, toast, unwrap, useDebounced, useQuery, useQueryClient, useTranslation } from "@/sdk";
 
 import type { CatalogItem } from "../cart";
+import type { TerminalCache } from "../offline/cache";
+import { findByCode, searchLocal, withReserved } from "../offline/catalogSearch";
+import { freshnessOf, showAsOf } from "../offline/freshness";
 
 const PAGE = 60;
 
 /** Search by name or SKU and a grid to tap. A barcode scanner types the code and presses Enter, which adds the product. */
-export function ProductPanel({ branchId, locationId, currency, searchRef, onAdd, canSetPrice }: {
+export function ProductPanel({ branchId, locationId, currency, searchRef, onAdd, canSetPrice, cache, online, reserved }: {
   branchId: string; locationId: string | undefined; currency: string; searchRef: RefObject<HTMLInputElement>;
   onAdd: (item: CatalogItem) => void; canSetPrice: boolean;
+  /** The copy of products kept on this device: used when there is no connection, and to look a scanned code up first. */
+  cache: TerminalCache | null; online: boolean; reserved: ReadonlyMap<string, number>;
 }) {
   const { t } = useTranslation("pos");
   const qc = useQueryClient();
@@ -23,8 +28,12 @@ export function ProductPanel({ branchId, locationId, currency, searchRef, onAdd,
     queryFn: () => unwrap(api.GET("/api/v1/pos/catalog", { params: { query: { branch_id: branchId, location_id: locationId, search: search || undefined, limit: PAGE } } })),
     staleTime: 30_000,
   });
-  const items = useQuery({ ...lookup(q), placeholderData: (previous) => previous });
-  const shown = items.data ?? [];
+  const items = useQuery({ ...lookup(q), enabled: online, placeholderData: (previous) => previous });
+  // Without a connection (or when the server does not answer) the copy kept on this device is searched instead.
+  const useCopy = !online || (!!items.error && !items.data);
+  const copy = useMemo(() => (cache ? searchLocal(cache.items, q, PAGE) : []), [cache, q]);
+  const shown = useMemo(() => withReserved(useCopy ? copy : (items.data ?? []), reserved), [useCopy, copy, items.data, reserved]);
+  const freshness = freshnessOf(cache?.fetchedAt, Date.now());
   useEffect(() => setActive(-1), [q]);
 
   const add = (item: CatalogItem) => {
@@ -40,6 +49,15 @@ export function ProductPanel({ branchId, locationId, currency, searchRef, onAdd,
     const code = text.trim();
     if (!code) return;
     if (active >= 0 && shown[active]) { add(shown[active]!); return; }
+    // A scanned code is looked up on this device first: instant, and it works without a connection.
+    const known = cache ? findByCode(withReserved(cache.items, reserved), code) : undefined;
+    if (known) { add(known); return; }
+    if (useCopy) {
+      if (shown.length === 1) add(shown[0]!);
+      else if (shown.length === 0) { toast(t("terminal.products.notFound", { code }), "warn"); searchRef.current?.select(); }
+      else toast(t("terminal.products.several"), "info");
+      return;
+    }
     try {
       const found = await qc.fetchQuery(lookup(code));
       const exact = found.filter((i) => i.sku.toLowerCase() === code.toLowerCase());
@@ -68,17 +86,25 @@ export function ProductPanel({ branchId, locationId, currency, searchRef, onAdd,
             className="h-12 w-full rounded-xl border border-line bg-bg pl-11 pr-3 text-base focus:border-brand" />
         </div>
         <p className="mt-1.5 hidden text-xs text-muted sm:block">{t("terminal.products.scanHint")}</p>
+        {cache && showAsOf(freshness, online) && (
+          <p className={cx("mt-1 text-xs", freshness === "stale" ? "text-bad" : "text-warn")} data-testid="prices-as-of">
+            {t("terminal.sync.pricesAsOf", { time: formatDate(new Date(cache.fetchedAt), true) })}
+            {freshness === "stale" ? ` ${t("terminal.sync.mayBeOld")}` : !online ? ` ${t("terminal.sync.mayHaveChanged")}` : ""}
+          </p>
+        )}
       </form>
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        {items.isLoading ? (
+        {!online && !cache ? (
+          <Alert tone="warn">{t("terminal.sync.noCopy")}</Alert>
+        ) : items.isLoading && !useCopy ? (
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="h-24" />)}</div>
-        ) : items.error && !items.data ? (
+        ) : items.error && !items.data && !cache ? (
           <ErrorState title={t("terminal.products.failed")} message={items.error.message} onRetry={() => void items.refetch()} />
         ) : shown.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted">{q ? t("terminal.products.noMatch", { q }) : t("terminal.products.empty")}</p>
         ) : (
           <>
-            {items.error && <p role="alert" className="mb-2 rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">{items.error.message}</p>}
+            {items.error && !useCopy && <p role="alert" className="mb-2 rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">{items.error.message}</p>}
             <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-4">
               {shown.map((item, i) => {
                 const out = item.stock !== null && item.stock !== undefined && Number(item.stock) <= 0;

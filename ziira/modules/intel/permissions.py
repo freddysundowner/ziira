@@ -3,3 +3,5 @@
 FINDINGS_VIEW = "findings.view"
 FINDINGS_MANAGE = "findings.manage"
 FINDINGS_RESPOND = "findings.respond"
+AI_MANAGE = "ai.manage"
+AI_ASK = "ai.ask"

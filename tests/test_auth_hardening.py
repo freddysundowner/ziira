@@ -196,6 +196,20 @@ def test_a_person_sets_up_a_second_factor_and_then_needs_it_to_sign_in(client, s
     shop["secret"], shop["backup"] = secret, backup
 
 
+def test_a_backup_code_signs_in_in_a_request_with_no_earlier_context(client, shop) -> None:  # type: ignore[no-untyped-def]
+    """Found by the browser journey: the audit entry for a used backup code needs a context, and a real request starts
+    with none (the test client reuses its worker's, which hid the 500)."""
+    import contextvars
+
+    forget_attempts()
+    challenge = password_sign_in(client, shop["code"], f"owner@{shop['code']}.test", device="dev-b").json()["challenge"]
+    tokens = contextvars.Context().run(auth.complete_mfa, challenge, shop["backup"][7])
+    assert tokens.access_token
+    wrong = password_sign_in(client, shop["code"], f"owner@{shop['code']}.test", device="dev-c").json()["challenge"]
+    with pytest.raises(Unauthorized):
+        contextvars.Context().run(auth.complete_mfa, wrong, "zzzzz-zzzzz")             # a failed attempt is audited too
+
+
 def test_a_challenge_is_not_a_session_and_a_wrong_code_locks_after_a_few_tries(client, shop) -> None:  # type: ignore[no-untyped-def]
     forget_attempts()
     assert client.get(f"{API}/auth/me", headers={"Authorization": "Bearer nonsense"}).status_code == 401

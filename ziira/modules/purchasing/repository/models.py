@@ -176,6 +176,7 @@ class SupplierBill(Audited, Base):
     reversed_by: Mapped[UUID | None]
     reverse_reason: Mapped[str | None]
     posted_figures: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    kind: Mapped[str] = mapped_column(server_default=text("'bill'"))
 
 
 class SupplierBillLine(TenantColumns, Base):

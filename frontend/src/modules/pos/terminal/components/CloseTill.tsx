@@ -112,6 +112,7 @@ function ZReport({ report, currency, onDone }: { report: Schemas["TillReportOut"
           { label: t("terminal.close.countedDone"), value: money(report.counted_cash, currency) },
           { label: t("terminal.close.variance"), value: money(report.variance, currency) },
         ]} />
+        {report.held_expired > 0 && <p className="text-sm text-muted">{t("terminal.close.heldExpired", { count: report.held_expired })}</p>}
       </div>
     </Modal>
   );

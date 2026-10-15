@@ -50,6 +50,9 @@ test("J6 money: journal, trial balance, profit and loss, expense, reconciliation
   await page.getByRole("button", { name: "New expense" }).first().click();
   await drawer(page).getByLabel(lbl("Description")).fill("Diesel for the van");
   await drawer(page).getByRole("combobox", { name: /Category/ }).click();
+  // categories are what a person spends on: the accounts the system posts by itself are not offered
+  await expect(page.getByRole("listbox").getByRole("option", { name: /Transport/ })).toBeVisible();
+  for (const system of [/Cost of goods sold/, /Inventory shrinkage/, /Purchase price variance/]) await expect(page.getByRole("listbox").getByRole("option", { name: system })).toHaveCount(0);
   await page.getByRole("listbox").getByRole("option", { name: /Transport/ }).click();
   await drawer(page).getByLabel(lbl("Amount")).fill("35");
   await drawer(page).getByRole("button", { name: "Save and submit" }).click();
@@ -70,10 +73,19 @@ test("J6 money: journal, trial balance, profit and loss, expense, reconciliation
   await page.goto("/finance/bank");
   await page.getByRole("button", { name: "Start reconciliation" }).first().click();
   await drawer(page).getByRole("combobox", { name: /Account/ }).click();
+  // only places money is kept can be checked against a statement
+  await expect(page.getByRole("listbox").getByRole("option", { name: /1020 · Bank/ })).toBeVisible();
+  for (const other of [/Accounts receivable/, /Inventory/, /VAT input/]) await expect(page.getByRole("listbox").getByRole("option", { name: other })).toHaveCount(0);
   await page.getByRole("listbox").getByRole("option", { name: /1020 · Bank/ }).click();
   await drawer(page).getByLabel(lbl("Statement balance")).fill("1000");
   await drawer(page).getByRole("button", { name: "Start", exact: true }).click();
   await page.waitForURL(/\/finance\/bank\/[0-9a-f-]+$/);
   await expect(page.getByText("Statement of")).toBeVisible();
   await checkAccessibility(page, "reconciliation");
+
+  // --- a report name that does not exist is said so, not quietly replaced by another report
+  await page.goto("/finance/reports/nonsense");
+  await expect(page.getByText("This report does not exist")).toBeVisible();
+  await page.getByRole("link", { name: "Go to the reports" }).click();
+  await expect(page.getByRole("tab", { name: "Profit and loss" })).toBeVisible();
 });

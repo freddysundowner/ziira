@@ -5,6 +5,10 @@ export const ORDER_STATUSES = ["draft", "pending_approval", "approved", "sent", 
 export const BILL_STATUSES = ["draft", "pending_approval", "posted", "part_paid", "paid", "cancelled", "reversed"] as const;
 export const SUPPLIER_STATUSES = ["active", "on_hold", "inactive"] as const;
 export const PAY_METHODS = ["cash", "mobile_money", "bank", "card", "cheque", "other"] as const;
+/** The kinds of payment account each method can go through. The server checks this too; the screens use it to offer only accounts that fit. */
+export const ACCOUNT_KINDS_FOR_METHOD: Record<(typeof PAY_METHODS)[number], readonly string[]> = {
+  cash: ["cash"], mobile_money: ["mobile_money"], bank: ["bank"], card: ["card"], cheque: ["bank", "cash"], other: ["bank", "cash", "card", "mobile_money"],
+};
 export const AGE_BUCKETS = ["not_due", "1_30", "31_60", "61_90", "over_90"] as const;
 
 /** A bill the business still owes money on. */

@@ -2,6 +2,8 @@
 imports the valid rows. The same services as the web screens, so the same rules apply."""
 
 import sys
+from datetime import date
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import UUID
 
@@ -37,13 +39,21 @@ def _print_rows(session: Session, batch_id: UUID) -> None:
 
 
 def run_import(tenant_id: UUID, *, kind: str, path: Path, company: str | None, commit: bool, decimal_separator: str,
-               date_format: str, mapping: dict[str, str], rejected: Path | None) -> int:
-    """Validate a file (and import it with `commit`). Returns the exit code: 0 when every row was fine."""
+               date_format: str, mapping: dict[str, str], rejected: Path | None, as_of: str | None = None,
+               tolerance: str = "0", confirm: bool = False) -> int:
+    """Validate a file (and import it with `commit`). Returns the exit code: 0 when every row was fine. `as_of` is the
+    go-live date of opening balances; `confirm` accepts a trial balance's difference."""
     data = path.read_bytes()
+    try:
+        go_live = date.fromisoformat(as_of) if as_of else None
+        allowed = Decimal(tolerance)
+    except (ValueError, InvalidOperation):
+        raise ValidationFailed("--as-of is a date like 2026-01-31 and --tolerance a number") from None
     with system_session(tenant_id) as session:
         company_id = _company(session, company)
         detail = batches.create_batch(session, kind=kind, company_id=company_id, filename=path.name, data=data,
-                                      decimal_separator=decimal_separator, date_format=date_format)
+                                      decimal_separator=decimal_separator, date_format=date_format, as_of=go_live,
+                                      tolerance=allowed)
         chosen = {**detail.batch.mapping, **mapping}
         detail = batches.set_mapping(session, detail.batch.id, columns=chosen, decimal_separator=None,
                                      date_format=None)
@@ -55,11 +65,16 @@ def run_import(tenant_id: UUID, *, kind: str, path: Path, company: str | None, c
               f"{counts['skipped']} skipped (already in Ziira)")
         _print_rows(session, batch_id)
         problems = counts["invalid"]
+        for message in [*detail.batch.file_check.get("problems", []), *detail.batch.file_check.get("notes", [])]:
+            print(f"  ! {message}")
+        if detail.batch.file_check.get("confirm"):
+            print(f"  ! {detail.batch.file_check['confirm']} (add --confirm to accept)")
+        problems += len(detail.batch.file_check.get("problems", []))
     if not commit:
         print("Nothing was imported. Run again with --commit to import the valid rows.")
         return 1 if problems else 0
     with system_session(tenant_id) as session:
-        batches.commit_batch(session, batch_id)
+        batches.commit_batch(session, batch_id, confirm=confirm)
     while True:
         with system_session(tenant_id) as session:
             if batches.import_chunk(session, batch_id) == 0:

@@ -1,8 +1,8 @@
 import { type FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  Alert, api, Button, Card, EmptyState, ErrorState, Field, FormGrid, Select, Skeleton, unwrap, useCompany, useMutation, useQuery, useTranslation,
+  Alert, api, Button, Card, EmptyState, ErrorState, Field, FormGrid, Input, Select, Skeleton, today, unwrap, useCompany, useMutation, useQuery, useTranslation,
 } from "@/sdk";
 
 import { DownloadButton } from "./DownloadButton";
@@ -13,7 +13,10 @@ export function UploadStep() {
   const navigate = useNavigate();
   const { companies } = useCompany();
   const kinds = useQuery({ queryKey: ["import-kinds"], queryFn: () => unwrap(api.GET("/api/v1/imports/kinds")) });
-  const [kind, setKind] = useState("");
+  const [params] = useSearchParams();
+  const [kind, setKind] = useState(params.get("kind") ?? "");
+  const [goLive, setGoLive] = useState("");
+  const [tolerance, setTolerance] = useState("0");
   const [companyId, setCompanyId] = useState("");
   const [decimal, setDecimal] = useState<"." | ",">(".");
   const [dateFormat, setDateFormat] = useState<"iso" | "dmy" | "mdy">("iso");
@@ -24,7 +27,10 @@ export function UploadStep() {
   const upload = useMutation({
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/imports/batches", {
-      params: { query: { kind, company_id: company, filename: file!.name, decimal_separator: decimal, date_format: dateFormat } },
+      params: { query: {
+        kind, company_id: company, filename: file!.name, decimal_separator: decimal, date_format: dateFormat,
+        ...(chosen?.needs_go_live ? { as_of: goLive } : {}), ...(chosen?.whole_file ? { tolerance } : {}),
+      } },
       body: file as unknown as string,
       bodySerializer: (body) => body as BodyInit,
       headers: { "Content-Type": "application/octet-stream" },
@@ -61,6 +67,16 @@ export function UploadStep() {
                   <Select value={company} onChange={(e) => setCompanyId(e.target.value)}>{companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select>
                 </Field>
               )}
+              {chosen.needs_go_live && (
+                <Field label={t("upload.goLive")} hint={t("upload.goLiveHint")} required>
+                  <Input type="date" value={goLive} max={today()} onChange={(e) => setGoLive(e.target.value)} />
+                </Field>
+              )}
+              {chosen.whole_file && (
+                <Field label={t("upload.tolerance")} hint={t("upload.toleranceHint")}>
+                  <Input inputMode="decimal" value={tolerance} onChange={(e) => setTolerance(e.target.value)} />
+                </Field>
+              )}
               <Field label={t("upload.decimal")} hint={t("upload.decimalHint")}>
                 <Select value={decimal} onChange={(e) => setDecimal(e.target.value as "." | ",")}>
                   <option value=".">{t("upload.point")}</option><option value=",">{t("upload.comma")}</option>
@@ -76,6 +92,9 @@ export function UploadStep() {
               <input type="file" accept=".csv,.txt,text/csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                 className="block w-full text-sm file:mr-3 file:rounded-lg file:border file:border-line file:bg-surface file:px-3 file:py-2 file:text-sm file:font-medium hover:file:bg-sunken" />
             </Field>
+            {chosen.needs_go_live && (
+              <Alert tone="info">{t("upload.openingOrder")} <Link to="/imports/opening-balances" className="font-medium underline">{t("upload.openingGuide")}</Link></Alert>
+            )}
             {chosen.reversible ? null : <Alert tone="info">{chosen.reversal_note || t("upload.notReversible")}</Alert>}
             {upload.error && <Alert tone="bad">{upload.error.message}</Alert>}
           </div>
@@ -83,7 +102,7 @@ export function UploadStep() {
       )}
 
       <div className="flex justify-end">
-        <Button type="submit" loading={upload.isPending} disabled={!chosen || !file || !company}>{t("upload.next")}</Button>
+        <Button type="submit" loading={upload.isPending} disabled={!chosen || !file || !company || (chosen.needs_go_live && !goLive) || (chosen.whole_file && !(Number(tolerance) >= 0))}>{t("upload.next")}</Button>
       </div>
     </form>
   );

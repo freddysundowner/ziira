@@ -151,6 +151,7 @@ tests/             unit tests for domain rules
   under `optional` in its manifest; `intel` and `command` never read another unit's tables. A check never writes, is bounded by a
   look-back window, sets `branch_id` (it decides who sees it), keeps limits as `params` a business can change, and is tested end to
   end with the real engine. Alerts and briefs are queued through the notification layer, never sent in a request. See `docs/intelligence.md`.
+- **AI layer** (`docs/ai.md`): opt-in per business with a consent record; a model writes sentences, never figures (every number must be in the facts or tool results); all calls go through `intel/services/ai.py` (consent, budget, scrub, log) with **no database transaction open** (`@unbound_periodic`, `tenant_transaction`); Ask Ziira data comes only from `intel.ask_tool` tools that filter by the asker's `branch_scope`. The Anthropic request format is untested live (`scripts/live_check.py ai`).
 - Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
   (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
 - A business event that already happened (an offline sale) is accepted and its problems are flagged, not refused.
@@ -180,7 +181,7 @@ tests/             unit tests for domain rules
 
 ## Where things are
 
-`docs/security.md` · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/registration.md` (how businesses join) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/security.md` · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/ai.md` (AI layer, ask tools, providers) · `docs/offline-pos.md` (selling offline) · `docs/registration.md` (how businesses join) · `docs/organisation.md` (companies and branches after registration) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

@@ -46,9 +46,12 @@ can add more. Only units enabled for the business take part.
 - Intelligence's own checks (`controls.*`, `ziira/modules/intel/kernel_checks.py`) read what the platform records: an approval decided
   by its requester, someone given wide access, a burst of activity outside working hours (read in the company's time zone), and
   exceptions nobody has reviewed.
-- **AI**: the spec's AI layer (explanations, ranking by a model, "Ask Ziira") is **not built**: the provider is an open decision.
-  Explanations and ranking are deterministic (`domain/rules.py: rank_score`, the candidate's own sentences). When a provider is chosen
-  it plugs in behind an extension point; figures must still come only from checks and queries.
+- **AI** (`docs/ai.md`): an optional layer, **off until an Owner consents**. A model (provider behind the `intel.llm` extension point;
+  Anthropic's Messages API in the `ai_anthropic` plugin, request shapes not yet run against the live service) writes plain-language
+  **explanations** of findings (`explanation_ai`, labelled AI-written, kept only if every number in it is in the finding's own facts),
+  **orders** the top findings (kept only if it is exactly a permutation; otherwise `domain/rules.py: rank_score` decides), and answers
+  **Ask Ziira** questions by calling **tools** that units offer over their own data (`intel.ask_tool`) as the person asking, within
+  their branches. Figures still come only from checks and queries; the deterministic text is always there and always the fallback.
 
 ### Writing a check
 
@@ -101,6 +104,12 @@ can change; false alarms train people to ignore the system.
 | `intel_alert_channel` | `off` | `sms` or `email`: where urgent findings are sent |
 | `intel_alert_min_severity` | `high` | Findings at or above this are sent as alerts |
 | `intel_action_level` | `1` | `2` lets managers ask people to explain a finding |
+| `ai_enabled`, `ai_explanations`, `ai_auto_explain`, `ai_ask`, `ai_monthly_token_limit` | off, on, off, on, 2,000,000 | The AI assistant (changed on **Settings > AI assistant**, which records the consent); see `docs/ai.md` |
+
+## Extension points Intelligence offers
+
+`intel.check` (a unit's checks), `intel.baseline_metric` (what is normal), `intel.ask_tool` (a question Ask Ziira may put to a unit's
+data: `docs/ai.md`, "Adding an ask tool") and `intel.llm` (an AI provider).
 
 ## Operations
 

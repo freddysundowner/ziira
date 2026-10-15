@@ -27,12 +27,16 @@ DOC_ROLES: dict[str, tuple[str, ...]] = {
     "expense": ("vat_input", "cash", "bank", "mobile_money", "card", "other"),
     "payroll": ("salaries", "employer_costs", "net_pay", "statutory_payable", "other_deductions"),
     "payroll_payment": ("net_pay", "bank", "mobile_money", "cash", "other"),
+    "opening_receivable": ("receivable", "opening_equity"),
+    "opening_payable": ("payable", "opening_equity"),
+    "opening_balance": ("opening_equity",),
 }
 RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type",), "sale": (), "sale_return": (),
                                                "settlement": (), "cash_deposit": (), "till_variance": (),
                                                "supplier_bill": (), "supplier_payment": (),
                                                "supplier_credit_note": (), "customer_payment": (), "expense": (),
-                                               "payroll": (), "payroll_payment": ()}
+                                               "payroll": (), "payroll_payment": (), "opening_receivable": (),
+                                               "opening_payable": (), "opening_balance": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
                   "write_off", "transfer_in", "transfer_out")
 
@@ -308,4 +312,29 @@ def customer_payment(method: str, amount: Decimal, *, party: Any = None, descrip
     role = method if method in ("cash", "mobile_money", "card", "bank") else "other"
     lines = [RecipeLine(role, "debit", amount, description=description),
              RecipeLine("receivable", "credit", amount, party_type="customer", party_id=party, description=description)]
+    return _flip(lines) if reverse else lines
+
+
+def opening_receivable(balance: Decimal, *, party: Any = None, description: str | None = None,
+                       reverse: bool = False) -> list[RecipeLine]:
+    """A customer's balance brought in when the business starts on Ziira. `balance` is signed: positive means the
+    customer owes us (Dr accounts receivable  Cr opening balance equity), negative means they are in credit (the
+    other way). `reverse` takes the opening balance out again."""
+    if balance == 0:
+        raise ValidationFailed("An opening balance must be more than nothing")
+    amount = abs(balance).quantize(MONEY)
+    lines = [RecipeLine("receivable", "debit", amount, party_type="customer", party_id=party, description=description),
+             RecipeLine("opening_equity", "credit", amount, description=description)]
+    return _flip(lines) if (balance < 0) != reverse else lines
+
+
+def opening_payable(balance: Decimal, *, party: Any = None, description: str | None = None,
+                    reverse: bool = False) -> list[RecipeLine]:
+    """A supplier's balance brought in when the business starts on Ziira: positive means we owe the supplier (Dr opening
+    balance equity  Cr accounts payable). `reverse` takes it out again."""
+    if balance <= 0:
+        raise ValidationFailed("An opening supplier balance must be more than nothing")
+    amount = balance.quantize(MONEY)
+    lines = [RecipeLine("opening_equity", "debit", amount, description=description),
+             RecipeLine("payable", "credit", amount, party_type="supplier", party_id=party, description=description)]
     return _flip(lines) if reverse else lines

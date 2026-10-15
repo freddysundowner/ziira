@@ -26,6 +26,7 @@ from ziira.modules.finance.services import (
     entries,
     expenses,
     manual_journals,
+    opening_balances,
     periods,
     posting,
     posting_rules,
@@ -169,6 +170,20 @@ def post_reverse(entry_id: UUID, body: sc.ReverseIn, session: Session = DB_SESSI
     """Cancel an entry by posting its mirror image (once per entry; a reversal cannot be reversed)."""
     reversal = posting.reverse_entry(session, entry_id, entry_date=body.entry_date, reason=body.reason)
     return _entry_out(entries.get_entry(session, reversal.id))
+
+
+# --------------------------------------------------------------------------- opening balances
+@router.get("/opening-balances", response_model=list[sc.OpeningBalanceOut], dependencies=READ)
+def get_opening_balances(session: Session = DB_SESSION) -> object:
+    """The opening balance entries of the companies you can see (posted by the opening trial balance import)."""
+    return opening_balances.list_opening_balances(session)
+
+
+@router.post("/opening-balances/{opening_id}/reverse", response_model=sc.OpeningBalanceOut,
+             dependencies=[Depends(any_of(JOURNAL_APPROVE))])
+def post_reverse_opening_balance(opening_id: UUID, body: sc.ReverseIn, session: Session = DB_SESSION) -> object:
+    """Cancel a company's opening balance entry with a mirror entry, so a corrected one can be posted."""
+    return opening_balances.reverse_opening_balance(session, opening_id, reason=body.reason, entry_date=body.entry_date)
 
 
 # --------------------------------------------------------------------------- manual journals

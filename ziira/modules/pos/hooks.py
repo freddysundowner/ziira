@@ -1,13 +1,16 @@
 """Sockets the POS module plugs into (declared under [extends] in manifest.toml)."""
 
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import text
 
 from ziira.modules.command.public import COMMAND_PULSE_SOURCE
+from ziira.modules.imports.public import IMPORTS_IMPORTER
 from ziira.modules.intel.public import INTEL_BASELINE_METRIC, INTEL_CHECK
 from ziira.modules.pos import intel_checks
+from ziira.modules.pos.importers import CustomerBalanceImporter
 from ziira.modules.pos.public import RECEIPT_EXTRAS, ReceiptExtra
 from ziira.modules.pos.pulse import PosPulse
 from ziira.sdk import IntegrityCheck, Session, define_extension_point, provides
@@ -30,7 +33,7 @@ class CustomerLedgerCheck(IntegrityCheck):
             "and tenant_id = kernel.current_tenant()")).first()
         if enabled is None:
             return problems
-        from ziira.modules.finance.public import party_balances
+        from ziira.modules.finance.public import party_balances, posted_for_sources
 
         companies = [r.company_id for r in session.execute(text("select distinct company_id from pos.sales_invoice"))]
         for company_id in companies:
@@ -43,12 +46,24 @@ class CustomerLedgerCheck(IntegrityCheck):
                     "select customer_id, sum(unallocated) as held from pos.customer_receipt where company_id = :c and "
                     "status = 'posted' and unallocated > 0 group by customer_id"), {"c": str(company_id)}):
                 owed[r.customer_id] = owed.get(r.customer_id, Decimal(0)) - Decimal(r.held)    # in credit
+            problems += self._opening_documents_posted(session, company_id, posted_for_sources)
             ledger = party_balances(session, company_id, "1100")
             for customer in sorted({*owed, *ledger}, key=str):
                 if owed.get(customer, Decimal(0)) != ledger.get(customer, Decimal(0)):
                     problems.append(f"Customer {customer}: invoices say {owed.get(customer, 0)} is owed but the books "
                                     f"say {ledger.get(customer, 0)}")
         return problems
+
+    @staticmethod
+    def _opening_documents_posted(session: Session, company_id: UUID, posted_for_sources: Any) -> list[str]:
+        """Every opening invoice or credit still standing has its entry in the books (opening balances count on both
+        sides of the check above)."""
+        ids = {r.id: r.number for r in session.execute(text(
+            "select id, number from pos.sales_invoice where company_id = :c and kind = 'opening_balance' and "
+            "status <> 'cancelled' union all select id, number from pos.customer_receipt where company_id = :c and "
+            "method = 'opening' and status = 'posted'"), {"c": str(company_id)})}
+        missing = set(ids) - posted_for_sources(session, company_id, "opening_receivable", set(ids))
+        return [f"Opening balance {ids[i]} has not been posted to the books" for i in sorted(missing, key=str)]
 
     @staticmethod
     def _paid_amounts(session: Session) -> list[str]:
@@ -70,5 +85,10 @@ for _metric in (intel_checks.CashierVoidRateMetric, intel_checks.CashierRefundRa
                 intel_checks.CashierDiscountRateMetric, intel_checks.BranchDailySalesMetric):
     provides(INTEL_BASELINE_METRIC)(_metric)
 provides(COMMAND_PULSE_SOURCE)(PosPulse)
+provides(IMPORTS_IMPORTER)(CustomerBalanceImporter)
 
 from ziira.modules.pos import privacy as _privacy  # noqa: E402, F401, I001 - registers personal-data provider
+
+from ziira.modules.pos import organisation as _organisation  # noqa: E402, F401, I001
+
+from ziira.modules.pos import ask_tools as _ask_tools  # noqa: E402, F401, I001 - registers the Ask Ziira tools

@@ -1,11 +1,11 @@
 """Database access for the pos schema. Row-level security scopes every query to the tenant."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import ColumnElement, and_, false, func, or_, select, text, true
+from sqlalchemy import ColumnElement, and_, false, func, or_, select, text, true, update
 from sqlalchemy.orm import Session
 
 from ziira.modules.pos.repository.models import (
@@ -14,6 +14,7 @@ from ziira.modules.pos.repository.models import (
     CustomerReceiptAllocation,
     CustomerRefund,
     Device,
+    HeldSale,
     InvoiceReminder,
     Sale,
     SaleLine,
@@ -479,3 +480,70 @@ def list_refunds(session: Session, scopes: Scopes, *, customer_id: UUID | None, 
     if customer_id:
         query = query.where(CustomerRefund.customer_id == customer_id)
     return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- held sales
+def held_by_local_id(session: Session, local_id: UUID) -> HeldSale | None:
+    return session.scalar(select(HeldSale).where(HeldSale.local_id == local_id))
+
+
+def get_held(session: Session, key: UUID) -> HeldSale | None:
+    """A held sale by its id, or else by the `local_id` the terminal made for it (it may not have heard the id)."""
+    for column in (HeldSale.id, HeldSale.local_id):
+        found = session.scalars(select(HeldSale).where(column == key).with_for_update()
+                                .execution_options(populate_existing=True)).first()
+        if found is not None:
+            return found
+    return None
+
+
+def count_held(session: Session, till_id: UUID) -> int:
+    return int(session.scalar(select(func.count()).select_from(HeldSale).where(
+        HeldSale.till_session_id == till_id, HeldSale.status == "held")) or 0)
+
+
+def list_held(session: Session, till_id: UUID, status: str | None) -> list[HeldSale]:
+    query = select(HeldSale).where(HeldSale.till_session_id == till_id).order_by(
+        HeldSale.created_at.desc(), HeldSale.id)
+    if status is not None:
+        query = query.where(HeldSale.status == status)
+    return list(session.scalars(query.limit(200)))
+
+
+def expire_held(session: Session, till_id: UUID) -> int:
+    """End the sales still on hold at a till (it is closing). Returns how many."""
+    now = datetime.now(UTC)
+    result = session.execute(update(HeldSale).where(HeldSale.till_session_id == till_id, HeldSale.status == "held")
+                             .values(status="expired", status_at=now, updated_at=now))
+    return int(getattr(result, "rowcount", 0) or 0)
+
+
+def count_expired_held(session: Session, till_id: UUID) -> int:
+    return int(session.scalar(select(func.count()).select_from(HeldSale).where(
+        HeldSale.till_session_id == till_id, HeldSale.status == "expired")) or 0)
+
+
+# --------------------------------------------------------------------------- opening balances
+def opening_invoice_by_reference(session: Session, customer_id: UUID, reference: str) -> SalesInvoice | None:
+    """A customer's opening invoice that was brought in under this old-system reference (not cancelled)."""
+    return session.scalars(select(SalesInvoice).where(
+        SalesInvoice.customer_id == customer_id, SalesInvoice.kind == "opening_balance",
+        SalesInvoice.external_ref == reference, SalesInvoice.status != "cancelled")).first()
+
+
+def opening_receipt_by_reference(session: Session, customer_id: UUID, reference: str) -> CustomerReceipt | None:
+    """A customer's opening credit brought in under this reference (not reversed)."""
+    return session.scalars(select(CustomerReceipt).where(
+        CustomerReceipt.customer_id == customer_id, CustomerReceipt.method == "opening",
+        CustomerReceipt.reference == reference, CustomerReceipt.status == "posted")).first()
+
+
+def opening_documents(session: Session, ids: set[UUID]) -> tuple[list[SalesInvoice], list[CustomerReceipt]]:
+    """The opening invoices and opening credits among these document ids."""
+    if not ids:
+        return [], []
+    invoices = list(session.scalars(select(SalesInvoice).where(
+        SalesInvoice.id.in_(ids), SalesInvoice.kind == "opening_balance")))
+    receipts = list(session.scalars(select(CustomerReceipt).where(
+        CustomerReceipt.id.in_(ids), CustomerReceipt.method == "opening")))
+    return invoices, receipts

@@ -18,6 +18,12 @@ domain/          model (candidates, baselines), rules (severity, life of a findi
 services/        engine (run checks, keep findings in step), findings (what people do), alerts, baselines, checks_admin
 repository/      SQL for the intel schema
 kernel_checks.py Intelligence's own checks over approvals, role grants, the audit log and the exceptions inbox
-api/             findings, checks (tune), run now
-jobs.py          the recurring runs
+api/             findings, checks (tune), run now; ai_routes.py: the AI assistant (status, settings, call log, Ask Ziira)
+jobs.py          the recurring runs (and the AI background tasks)
+ask_tools.py     Intelligence's own ask tools; every unit has its own `ask_tools.py`
+fake_llm.py      the scripted AI provider for tests and development
+privacy.py       Ask Ziira conversations for data subject requests
 ```
+
+The optional **AI layer** (explanations, ranking, Ask Ziira; off until an Owner consents) is in `services/ai.py` (the one gateway),
+`ai_admin.py`, `explain.py`, `ask.py` and `domain/ai_rules.py`, `llm.py`, `scope.py`. See `docs/ai.md`.

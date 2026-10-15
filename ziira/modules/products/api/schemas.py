@@ -57,6 +57,12 @@ class ProductOut(BaseModel):
     is_batch_tracked: bool
     reorder_level: Decimal | None
     is_active: bool
+    barcodes: list[str] = Field(default_factory=list, description="Codes a scanner reads for this product")
+
+
+class BarcodesIn(BaseModel):
+    barcodes: list[Annotated[str, Field(max_length=64)]] = Field(
+        max_length=20, description="The product's complete list of codes; the ones left out are removed")
 
 
 class PriceListIn(BaseModel):

@@ -6,7 +6,7 @@ from uuid import UUID
 
 from sqlalchemy.engine import Row
 
-from ziira.modules.intel.domain.rules import CLOSED_STATUSES, OPEN_STATUSES, can_move, rank_score
+from ziira.modules.intel.domain.rules import CLOSED_STATUSES, OPEN_STATUSES, can_move, rank_score, reorder_by_preference
 from ziira.modules.intel.permissions import FINDINGS_MANAGE, FINDINGS_RESPOND, FINDINGS_VIEW
 from ziira.modules.intel.public import FindingBrief
 from ziira.modules.intel.repository import findings_repo as repo
@@ -25,10 +25,10 @@ from ziira.sdk import (
 )
 
 
-def _brief(r: Row[Any]) -> FindingBrief:
+def _brief(r: Row[Any], reason: str | None = None) -> FindingBrief:
     return FindingBrief(id=r.id, severity=r.severity, area=r.area, summary=r.summary or "",
                         recommended_action=r.recommended_action, status=r.status, company_id=r.company_id,
-                        branch_id=r.branch_id, amount=r.amount)
+                        branch_id=r.branch_id, amount=r.amount, reason=reason)
 
 
 def top_for(session: Session, context: RequestContext, limit: int) -> list[FindingBrief]:
@@ -39,7 +39,31 @@ def top_for(session: Session, context: RequestContext, limit: int) -> list[Findi
     rows = repo.open_for_ranking(session, sql, params, max(limit * 4, 20))
     now = datetime.now(UTC)
     ranked = sorted(rows, key=lambda r: -rank_score(r.severity, r.amount, (now - r.first_seen_at).days))
-    return [_brief(r) for r in ranked[:limit]]
+    ordered, reasons = _with_ai_order(session, ranked)
+    return [_brief(r, reasons.get(r.id)) for r in ordered[:limit]]
+
+
+def _with_ai_order(session: Session, ranked: list[Row[Any]]) -> tuple[list[Row[Any]], dict[UUID, str]]:
+    """The deterministic order, adjusted by the AI layer's stored order where there is a fresh one (same places, new
+    order among the findings it ranked). Any problem leaves the deterministic order as it is."""
+    from ziira.modules.intel.services import explain
+
+    preferred: dict[UUID, list[UUID]] = {}
+    reasons: dict[UUID, str] = {}
+    try:
+        with session.begin_nested():
+            for company_id in {r.company_id for r in ranked if r.company_id}:
+                stored = explain.fresh_ranking(session, company_id)
+                if stored:
+                    preferred[company_id] = [i for i, _ in stored]
+                    reasons.update({i: why for i, why in stored if why})
+        if not preferred:
+            return ranked, {}
+        by_id = {r.id: r for r in ranked}
+        order = reorder_by_preference([(r.id, r.company_id) for r in ranked], preferred)
+        return [by_id[i] for i in order], {i: why for i, why in reasons.items() if i in by_id}
+    except Exception:  # noqa: BLE001 - the deterministic order is always good enough
+        return ranked, {}
 
 
 def counts_by_severity(session: Session, context: RequestContext) -> dict[str, int]:

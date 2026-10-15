@@ -258,7 +258,8 @@ class DuplicateSupplierBill(IntelCheck):
         names = _supplier_names(session, ctx.company_id)
         rows = session.execute(text(
             "select id, number, branch_id, supplier_id, supplier_invoice_no, bill_date, total, amount_paid "
-            "from purchasing.supplier_bill where company_id = :c and status = any(:st) and bill_date >= :since"),
+            "from purchasing.supplier_bill where company_id = :c and status = any(:st) and bill_date >= :since "
+            "and kind = 'bill'"),
             {"c": ctx.company_id, "st": ["draft", *LIVE_BILL_STATES],
              "since": ctx.today - timedelta(days=int(ctx.number("days")))}).all()
         by_id = {r.id: r for r in rows}

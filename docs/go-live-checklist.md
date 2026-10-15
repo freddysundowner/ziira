@@ -68,7 +68,7 @@ How: `docs/live-checks.md` (`scripts/live_check.py`, with the go-live gate for e
 
 - [ ] Chart of accounts, tax codes and VAT rates entered for each company (taxes are entered by hand for now).
 - [ ] Receipt and invoice footers set per company (company settings `receipt_footer`, `invoice_footer`).
-- [ ] Credit limits and terms for existing customers loaded; opening balances for customers, suppliers and stock.
+- [ ] Credit limits and terms for existing customers loaded; opening balances for customers, suppliers and stock (Admin > Import data > Opening balances checklist; `docs/data-import.md`).
 - [ ] Approval rules (who approves credit raises, bank-detail changes, refunds) reviewed with the owner.
 
 Not on this list on purpose: eTIMS, which comes later as a plugin (see `docs/parked/etims.md`).

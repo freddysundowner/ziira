@@ -11,10 +11,22 @@ export function useAccounts(companyId: string, includeInactive = false) {
 
 export const accountLabel = (a: Pick<Account, "code" | "name">) => `${a.code} · ${a.name}`;
 
-/** Accounts as combobox options; `types` limits them (for example only expense accounts), control accounts are left out when `postable`. */
-export function accountOptions(accounts: readonly Account[] | undefined, opts: { types?: string[]; postable?: boolean } = {}): Option[] {
+/** Where money is kept: the accounts a bank statement can be checked against. */
+export const MONEY_SUBTYPES = ["cash", "bank", "mobile_money_clearing", "card_clearing"];
+/** Expense accounts the system posts by itself (cost of goods, stock shrinkage, price variances, till variances, employer payroll costs): not categories for an expense a person records. */
+export const SYSTEM_EXPENSE_SUBTYPES = ["cogs", "shrinkage", "purchase_variance", "till_variance", "payroll_employer_costs"];
+
+/**
+ * Accounts as combobox options. `types` limits them (for example only expense accounts), `subtypes` keeps only those kinds and
+ * `exceptSubtypes` leaves some out; control accounts are left out when `postable`.
+ */
+export function accountOptions(
+  accounts: readonly Account[] | undefined,
+  opts: { types?: string[]; postable?: boolean; subtypes?: string[]; exceptSubtypes?: string[] } = {},
+): Option[] {
   return (accounts ?? [])
-    .filter((a) => a.is_active && (!opts.types || opts.types.includes(a.type)) && !(opts.postable && a.is_control))
+    .filter((a) => a.is_active && (!opts.types || opts.types.includes(a.type)) && !(opts.postable && a.is_control)
+      && (!opts.subtypes || opts.subtypes.includes(a.subtype ?? "")) && !(opts.exceptSubtypes && opts.exceptSubtypes.includes(a.subtype ?? "")))
     .sort((x, y) => x.code.localeCompare(y.code, undefined, { numeric: true }))
     .map((a) => ({ value: a.id, label: accountLabel(a), hint: a.type }));
 }

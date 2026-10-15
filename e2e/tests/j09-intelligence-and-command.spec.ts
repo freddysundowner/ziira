@@ -26,6 +26,10 @@ test("J9 intelligence findings and the Command Center", async ({ page }) => {
   await page.getByRole("button", { name: "Run checks now" }).first().click();
   await expect(page.getByText(/checks run: \d+ new/)).toBeVisible();
 
+  // a new business is not greeted with a finding about the owner's own role, made when it was registered
+  const all = await api.get<any[]>("/intel/findings?limit=200");
+  expect(all.filter((f) => /Olive Owner was given the role/.test(f.summary))).toEqual([]);
+
   // --- the finding
   await page.goto("/findings");
   await page.getByRole("row").filter({ hasText: "closed USD 10.00 short" }).first().click();

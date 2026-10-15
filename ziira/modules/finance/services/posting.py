@@ -51,6 +51,7 @@ class EntryRequest:
     approved_by: UUID | None = None
     automatic: bool = False           # made by the system from a document (may be redirected out of a closed period)
     allow_control: bool = False       # reversals may touch control accounts
+    exact_date: bool = False          # opening balances: the date is the date; never redirected to another period
 
 
 def _check_accounts(session: Session, request: EntryRequest) -> None:
@@ -81,6 +82,9 @@ def post_entry(session: Session, request: EntryRequest) -> JournalEntry:
 
     description, entry_date = request.description, request.entry_date
     period = get_or_create_period(session, request.company_id, entry_date)
+    if request.exact_date and period.status != periods.OPEN:
+        raise ValidationFailed(f"The accounting period containing {entry_date} is {period.status.replace('_', ' ')}: "
+                               "this entry must be dated in an open period")
     decision = periods.decide(period.status, automatic=request.automatic,
                               can_close=ctx.can(PERIOD_CLOSE, company_id=request.company_id),
                               policy=str(company_setting(session, request.company_id, "late_posting")))
@@ -121,7 +125,8 @@ def post_entry(session: Session, request: EntryRequest) -> JournalEntry:
 
 def post_from_recipe(session: Session, *, company_id: UUID, doc_type: str, journal_code: str, entry_date: date,
                      recipe: list[RecipeLine], context: dict[str, Any], branch_id: UUID | None,
-                     source_type: str, source_id: UUID, description: str | None = None) -> JournalEntry | None:
+                     source_type: str, source_id: UUID, description: str | None = None,
+                     exact_date: bool = False) -> JournalEntry | None:
     """Turn a document's recipe lines into an entry using the company's posting rules. Posts nothing for an empty
     recipe (a free sale, a worthless movement)."""
     if not recipe:
@@ -139,10 +144,12 @@ def post_from_recipe(session: Session, *, company_id: UUID, doc_type: str, journ
                           description=item.description or description))
     return post_entry(session, EntryRequest(
         company_id=company_id, entry_date=entry_date, journal_code=journal_code, lines=lines,
-        description=description, source_type=source_type, source_id=source_id, automatic=True))
+        description=description, source_type=source_type, source_id=source_id, automatic=True,
+        exact_date=exact_date))
 
 
-def reverse_entry(session: Session, entry_id: UUID, *, entry_date: date | None, reason: str) -> JournalEntry:
+def reverse_entry(session: Session, entry_id: UUID, *, entry_date: date | None, reason: str,
+                  _opening_ok: bool = False) -> JournalEntry:
     """Cancel a posted entry by posting its mirror image. Needs 'journal.approve' for the company.
 
     Only manual entries can be reversed this way. An entry made from a sale or a stock movement is corrected in its
@@ -155,6 +162,9 @@ def reverse_entry(session: Session, entry_id: UUID, *, entry_date: date | None, 
     current_context().require(JOURNAL_APPROVE, company_id=original.company_id)
     if not reason.strip():
         raise ValidationFailed("A reason is required")
+    if original.source_type == "opening_balance" and not _opening_ok:
+        raise ValidationFailed("This is the company's opening balance entry: reverse it as an opening balance entry "
+                               "(Finance > Opening balances)")
     if original.reversal_of_id is not None:
         raise ValidationFailed("A reversal cannot be reversed; post a new entry instead")
     if not original.is_manual:

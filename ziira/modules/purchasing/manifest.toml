@@ -9,12 +9,12 @@ optional = ["inventory", "finance", "payments", "intel", "command", "imports"]
 
 [provides]
 api_prefix = "/api/v1/purchasing"
-publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid", "goods.returned", "bill.reversed", "supplier.payment_reversed", "supplier.refunded", "supplier.refund_reversed", "credit_note.posted"]
+publishes = ["po.approved", "goods.received", "bill.posted", "bill.match_exception", "supplier.bank_changed", "supplier.price_changed", "supplier.paid", "goods.returned", "bill.reversed", "supplier.payment_reversed", "supplier.refunded", "supplier.refund_reversed", "credit_note.posted", "supplier.opening_balance", "supplier.opening_balance_reversed"]
 subscribes = ["approval.decided", "payment.reversed"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["intel.check", "command.pulse_source", "imports.importer", "kernel.personal_data"]
+implements = ["kernel.integrity_check", "intel.check", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
 
 [permissions]
 "suppliers.manage" = "Manage suppliers"

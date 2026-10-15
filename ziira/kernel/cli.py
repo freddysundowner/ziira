@@ -157,7 +157,8 @@ def cmd_run_task(reg: Registry, a: argparse.Namespace) -> None:
     load_event_handlers(reg.units)
     if a.name not in jobs.periodic_names():
         raise ZiiraError(f"Unknown recurring task '{a.name}'. Known: {', '.join(jobs.periodic_names())}")
-    ran = jobs.run_periodic(_tenant(a.tenant), only=a.name, force=True)
+    tenant = _tenant(a.tenant)
+    ran = jobs.run_periodic(tenant, only=a.name, force=True) + jobs.run_unbound(tenant, only=a.name, force=True)
     print(f"Ran {a.name}" if ran else f"{a.name} did not run (is its unit enabled for {a.tenant}?)")
 
 
@@ -171,7 +172,8 @@ def cmd_import(reg: Registry, a: argparse.Namespace) -> int:
     mapping = dict(item.split("=", 1) for item in a.map or [] if "=" in item)
     return run_import(_tenant(a.tenant), kind=a.kind, path=Path(a.file), company=a.company, commit=a.commit,
                       decimal_separator=a.decimal, date_format=a.date_format, mapping=mapping,
-                      rejected=Path(a.rejected) if a.rejected else None)
+                      rejected=Path(a.rejected) if a.rejected else None, as_of=a.as_of, tolerance=a.tolerance,
+                      confirm=a.confirm)
 
 
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
@@ -333,6 +335,12 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--date-format", default="iso", choices=["iso", "dmy", "mdy"])
     s.add_argument("--map", action="append", metavar="FIELD=HEADER", help="choose a column (repeatable)")
     s.add_argument("--rejected", help="write the rejected rows (with an error column) to this CSV file")
+    s.add_argument("--as-of", metavar="YYYY-MM-DD", help="the go-live date (customer_balances, supplier_balances, "
+                                                         "opening_trial_balance)")
+    s.add_argument("--tolerance", default="0", help="opening_trial_balance: how far the file may be out of balance "
+                                                    "before it must be confirmed")
+    s.add_argument("--confirm", action="store_true", help="opening_trial_balance: post a difference to opening "
+                                                          "balance equity")
     s.set_defaults(fn=cmd_import)
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")

@@ -435,5 +435,18 @@
   "nothingDueSoon": "No bills due in the next 7 days.",
   "overdueSince": "Overdue since {{date}}",
   "dueOn": "Due {{date}}",
-  "seePayables": "See what you owe"
+  "seePayables": "See what you owe",
+  "noAccountFor": "No {{method}} account is set up.",
+  "noAccountCanAdd": "Add one now and this payment can go through it.",
+  "noAccountSetUpIn": "Set one up in Payments, then come back.",
+  "noAccountAskOwner": "Ask the owner or someone who manages payment accounts to add one, then come back.",
+  "addPayAccount": "Add a {{method}} account",
+  "openPaymentAccounts": "Open Payments accounts",
+  "chooseAccount": "Choose an account",
+  "branchTillCash": "The branch's till cash",
+  "payAccountAdded": "{{name}} added.",
+  "payAcctName": "Account name",
+  "payAcctNameHint": "What you call it, for example Main bank account.",
+  "payAcctNumber": "Account number (last digits)",
+  "payAcctNumberHint": "Optional. Only the last digits, so it is recognisable. The full number is never kept."
 }

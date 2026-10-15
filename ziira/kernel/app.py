@@ -19,6 +19,7 @@ from ziira.kernel import notifications  # noqa: F401 - registers the send job an
 from ziira.kernel.api.notification_routes import router as notification_router
 from ziira.kernel.api.operator_routes import router as operator_router
 from ziira.kernel.api.ops_routes import router as ops_router
+from ziira.kernel.api.organisation_routes import router as organisation_router
 from ziira.kernel.api.privacy_routes import router as privacy_router
 from ziira.kernel.api.routes import router as kernel_router
 from ziira.kernel.api.security_routes import router as security_router
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
     app.include_router(privacy_router)
     app.include_router(support_router)
     app.include_router(operator_router)
+    app.include_router(organisation_router)
     units = discover()
     load_event_handlers(units)
 

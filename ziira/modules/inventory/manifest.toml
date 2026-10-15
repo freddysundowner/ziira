@@ -14,7 +14,7 @@ subscribes = ["approval.decided", "sale.posted", "sale.returned", "goods.receive
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "intel.ask_tool"]
 
 [permissions]
 "stock.view" = "View stock"

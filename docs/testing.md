@@ -37,7 +37,7 @@ set -a; . ./.env; set +a
 
 ## Real-browser journeys (`make e2e`)
 
-Ten journeys drive the web app in Chromium (Playwright) against a **throwaway stack that the run starts and removes**:
+Eighteen journeys drive the web app in Chromium (Playwright) against a **throwaway stack that the run starts and removes**:
 `e2e/run.sh` creates scratch PostgreSQL databases (`ziira_e2e_master`, `ziira_e2e_template`, `ziira_e2e_t_*`, logins `ze2e_*`:
 never the dev, demo or pytest ones), installs every unit, starts the API on `:8765` (`ZIIRA_ENV=development`, two-step sign-in
 off, the platform's fake email so the registration response carries `dev_token`), `ziira worker` (imports and other
@@ -47,7 +47,7 @@ second run wait. Nothing touches `demo-hardware` or port 8000/5173.
 
 ```bash
 make e2e-setup                        # once: npm ci in e2e/ and the Chromium download
-make e2e                              # everything (about 3 minutes)
+make e2e                              # everything (about 8 minutes)
 bash e2e/run.sh tests/j03             # one journey; any Playwright arguments work
 E2E_SERVE=1 bash e2e/run.sh           # just start the stack (web :4175, api :8765) and keep it for poking around
 ```
@@ -58,12 +58,20 @@ E2E_SERVE=1 bash e2e/run.sh           # just start the stack (web :4175, api :87
 | J2 `j02-catalogue-and-stock` | unit, tax code, price list; products with a price; location, opening stock; stock page; adjustment with a reason; the API agrees |
 | J3 `j03-sell` | open a till, cash sale with change, hold and resume, mobile-money sale refused then retried once an account exists, void, return with a cash refund, close with a counted amount (variance), cash refund refused on a closed till; stock afterwards |
 | J4 `j04-buy` | supplier, order (approval if asked), receive into stock, bill from the receipt checked, paid; payables |
+| J4b `j04b-pay-without-account` | a business with no payment account: paying a supplier says so, offers to add a bank account in place (mobile money points to Payments), then the payment goes through |
 | J5 `j05-customers-and-credit` | customer, credit limit, credit sale over the limit refused then allowed, payment received, ageing |
 | J6 `j06-money` | journal lists the sale, trial balance balances, P&L income equals sales less returns (from the sales API), expense, reconciliation started |
 | J7 `j07-people` | employee; basic pay proposed by one person and approved by another; a rule defined and verified by someone else; a payroll run prepared by one and approved by another; the payslip (1,000.00 less 5% = 950.00) |
 | J8 `j08-admin` | a user with the Cashier role for one branch sees only the till and gets "does not exist" for finance, payroll and admin; a setting persists; an API key's secret is shown once |
+| J8b `j08b-branch-scoping` | a second branch added and edited in Settings > Organisation; a store, a till and a branch-scoped manager for it; a sale and a short till at each branch; the scoped manager sees only her branch's sales, stock, findings and Command Center figures (screens and API), the other branch's ids answer 403 or 404, the owner sees both |
 | J9 `j09-intelligence-and-command` | a check's limit lowered in the UI, the checks run from the UI, the finding is acknowledged and explained; the Command Center's sales equal the day's sales; a brief preview |
+| J11 `j11-offline-till` | barcode set on the product page; offline sales (scan), reload offline, hold offline, reconnect: each sale once with the right total even when an answer is lost, held sale uploaded and resumed; a browser without storage refuses offline selling |
 | J10 `j10-import` | CSV upload, column matching, one bad row flagged, three imported by the worker, the reconciliation; the products exist |
+| J12 `j12-two-step-sign-in` | the owner requires two-step verification for powerful roles; a second user is stopped until she sets it up (the code is made in the test from the secret on screen, RFC 6238), signs in with a code, with a backup code (once only), meets the wrong-code message, and is locked out after repeated wrong codes (the real throttle) |
+| J13 `j13-language-and-theme` | Swahili: menu and headings translated, no screen shows a raw key, `undefined`, `NaN` or `{{placeholder}}`; dark mode: the contrast scan on the main pages and no element with a light background of its own; both choices survive a reload |
+| J14 `j14-phone-width` | 390 x 844: the menu is a drawer, the main lists never scroll the page sideways, a form in a drawer fits and saves, the till terminal sells for cash from search to "Sale complete" |
+| J15 `j15-printing` | receipt, Z report, supplier statement and payslip in print mode: menu, top bar and buttons are gone, the document is there, and the browser makes a PDF with content from it |
+| J16 `j16-support-and-privacy` | support access given and ended in the UI; a platform operator (created by `ziira operator create` in `run.sh`, signing in with a code from its second factor) cannot open the business without a grant, opens a read-only session with one (looking works, changing is refused), the banner and the access log show it, ending the grant ends the session; a privacy request recorded, searched and exported as a JSON file |
 
 Every test also fails on an uncaught page error, a `console.error`, a request that failed, or any answer of 500 or more, and
 runs an `axe` accessibility scan (WCAG A and AA) on the main screens: serious or critical violations fail the test and are

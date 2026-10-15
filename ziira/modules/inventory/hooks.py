@@ -22,3 +22,7 @@ class StockLedgerCheck(IntegrityCheck):
 
 provides(INTEL_BASELINE_METRIC)(AdjustmentValueByUser)
 provides(IMPORTS_IMPORTER)(OpeningStockImporter)
+
+from ziira.modules.inventory import organisation as _organisation  # noqa: E402, F401, I001
+
+from ziira.modules.inventory import ask_tools as _ask_tools  # noqa: E402, F401, I001 - registers the Ask Ziira tools

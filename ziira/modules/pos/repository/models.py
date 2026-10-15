@@ -95,6 +95,25 @@ class Sale(Audited, Base):
     voided_note: Mapped[str | None]
 
 
+class HeldSale(Audited, Base):
+    """A cart parked at a till: a draft that touches neither stock nor the books."""
+
+    __tablename__ = "held_sale"
+    __table_args__ = {"schema": "pos"}
+
+    company_id: Mapped[UUID]
+    branch_id: Mapped[UUID]
+    till_session_id: Mapped[UUID]
+    cashier_id: Mapped[UUID]
+    local_id: Mapped[UUID]
+    label: Mapped[str] = mapped_column(server_default=text("''"))
+    customer_id: Mapped[UUID | None]
+    note: Mapped[str | None]
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    status: Mapped[str] = mapped_column(server_default=text("'held'"))
+    status_at: Mapped[datetime | None]
+
+
 class SaleLine(TenantColumns, Base):
     __tablename__ = "sale_line"
     __table_args__ = {"schema": "pos"}
@@ -202,6 +221,7 @@ class SalesInvoice(Audited, Base):
     cancelled_by: Mapped[UUID | None]
     cancel_reason: Mapped[str | None]
     notes: Mapped[str | None]
+    external_ref: Mapped[str | None]
 
 
 class SalesInvoiceLine(TenantColumns, Base):

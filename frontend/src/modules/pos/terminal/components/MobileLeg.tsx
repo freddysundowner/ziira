@@ -1,11 +1,11 @@
 import { CheckCircle2, Smartphone } from "lucide-react";
 import { useEffect } from "react";
 
-import { api, Alert, Button, Field, Input, Select, Spinner, unwrap, useMutation, useQuery, useTranslation, type Schemas } from "@/sdk";
+import { api, Alert, Button, Field, Input, Select, Spinner, unwrap, useMutation, useQuery, useTranslation } from "@/sdk";
 
 import type { PayLeg } from "../cart";
 
-export type PaymentAccount = Schemas["ziira__modules__payments__api__schemas__AccountOut"];
+export type PaymentAccount = { id: string; name: string };
 
 const FINAL = ["succeeded", "failed", "cancelled", "timeout"];
 
@@ -13,8 +13,8 @@ const FINAL = ["succeeded", "failed", "cancelled", "timeout"];
  * The mobile money part of a payment: send a prompt to the customer's phone and wait for them to approve it, or type the
  * code from the customer's confirmation message. The prompt carries an Idempotency-Key, so a retry never prompts twice.
  */
-export function MobileLeg({ leg, accounts, canPrompt, onChange }: {
-  leg: PayLeg; accounts: PaymentAccount[]; canPrompt: boolean; onChange: (patch: Partial<PayLeg>) => void;
+export function MobileLeg({ leg, accounts, canPrompt, offline, onChange }: {
+  leg: PayLeg; accounts: PaymentAccount[]; canPrompt: boolean; offline: boolean; onChange: (patch: Partial<PayLeg>) => void;
 }) {
   const { t } = useTranslation("pos");
   const accountId = leg.accountId || accounts[0]?.id || "";
@@ -74,6 +74,7 @@ export function MobileLeg({ leg, accounts, canPrompt, onChange }: {
           </Button>
         </div>
       )}
+      {offline && <p className="text-xs text-muted">{t("terminal.sync.promptOffline")}</p>}
       {send.error && <Alert tone="bad">{send.error.message} {t("terminal.pay.mobile.sendSafe")}</Alert>}
       {waiting && (
         <Alert tone="info">

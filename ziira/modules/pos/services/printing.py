@@ -14,12 +14,13 @@ from sqlalchemy import text
 
 from ziira.modules.crm.public import find_customer
 from ziira.modules.pos.domain.printing import PrintDocument, PrintLine, VatRow, render_html, render_text
+from ziira.modules.pos.permissions import SALES_SELL
 from ziira.modules.pos.public import RECEIPT_EXTRAS
 from ziira.modules.pos.repository import pos_repo
 from ziira.modules.pos.services import customer_receipts, invoices, sales
 from ziira.modules.pos.services.common import unit_enabled
 from ziira.modules.products.public import product_labels, tax_code_rate
-from ziira.sdk import Session, ValidationFailed, company_setting, implementations
+from ziira.sdk import NotFound, Session, ValidationFailed, company_setting, current_context, implementations
 
 log = logging.getLogger("ziira.pos.printing")
 FORMATS = ("json", "text", "html")
@@ -37,6 +38,16 @@ def _header(session: Session, company_id: UUID, branch_id: UUID | None) -> list[
     if company and company.tax_id:
         rows.append(f"PIN {company.tax_id}")
     return rows
+
+
+def receipt_template(session: Session, branch_id: UUID) -> tuple[list[str], list[str]]:
+    """(header, footer) lines of a till receipt at the branch: what a terminal needs to print a receipt itself while it
+    has no connection. Needs 'sales.sell' at the branch."""
+    company_id = pos_repo.branch_company(session, branch_id)
+    if company_id is None or not current_context().can(SALES_SELL, company_id=company_id, branch_id=branch_id):
+        raise NotFound("Branch not found")
+    footer = str(company_setting(session, company_id, "receipt_footer"))
+    return _header(session, company_id, branch_id), [footer] if footer else []
 
 
 def _user_name(session: Session, user_id: UUID | None) -> str | None:

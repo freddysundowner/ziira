@@ -86,7 +86,7 @@ def report(client, shop, batch_id: str) -> dict[str, Any]:  # type: ignore[no-un
 def test_the_kinds_follow_the_units_switched_on(client, shop) -> None:  # type: ignore[no-untyped-def]
     kinds = client.get(f"{IMP}/kinds", headers=shop["owner"]).json()
     assert {k["kind"] for k in kinds} == {"products", "opening_stock", "customers", "suppliers", "employees",
-                                          "accounts"}
+                                          "accounts", "supplier_balances", "opening_trial_balance"}
     products = next(k for k in kinds if k["kind"] == "products")
     assert [c["name"] for c in products["columns"] if c["required"]] == ["sku", "name", "unit", "tax_code"]
     assert not products["reversible"] and "cannot be deleted" in products["reversal_note"]
@@ -124,12 +124,12 @@ def test_products_check_commit_and_reconcile(client, shop) -> None:  # type: ign
     batch = upload(client, shop, "products", PRODUCTS, decimal=",")
     assert batch["delimiter"] == ";" and batch["status"] == "uploaded" and batch["total_rows"] == 7
     assert batch["mapping"] == {"sku": "Code", "name": "Item Name", "unit": "UoM", "tax_code": "VAT", "type": None,
-                                "batch_tracked": None, "reorder_level": "Reorder", "price": "Price"}
+                                "batch_tracked": None, "reorder_level": "Reorder", "barcode": None, "price": "Price"}
     assert sql(shop, "select count(*) from products.product where sku in ('BOLT-10', 'NUT-8')")[0][0] == 0
 
     checked = check(client, shop, batch["id"])
     assert checked["status"] == "validated"
-    assert checked["counts"] == {"pending": 0, "valid": 2, "invalid": 4, "imported": 0, "skipped": 1, "failed": 0}
+    assert checked["counts"] == {"pending": 0, "valid": 2, "invalid": 4, "imported": 0, "skipped": 1, "failed": 0, "reverted": 0}
     listing = by_row(rows(client, shop, batch["id"]))
     assert listing[2]["status"] == listing[3]["status"] == "valid"
     assert listing[2]["values"]["name"] == "Bolts, 10mm" and listing[2]["values"]["sku"] == "BOLT-10"
@@ -147,7 +147,7 @@ def test_products_check_commit_and_reconcile(client, shop) -> None:  # type: ign
     assert sql(shop, "select count(*) from products.product where sku in ('BOLT-10', 'NUT-8')")[0][0] == 0
 
     done = commit(client, shop, batch["id"])
-    assert done["counts"] == {"pending": 0, "valid": 0, "invalid": 4, "imported": 2, "skipped": 1, "failed": 0}
+    assert done["counts"] == {"pending": 0, "valid": 0, "invalid": 4, "imported": 2, "skipped": 1, "failed": 0, "reverted": 0}
     products = {r.sku: r for r in sql(shop, "select sku, name, reorder_level from products.product "
                                             "where sku in ('BOLT-10', 'NUT-8')")}
     assert products["BOLT-10"].name == "Bolts, 10mm" and products["BOLT-10"].reorder_level == Dec("20")

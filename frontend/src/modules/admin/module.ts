@@ -2,14 +2,19 @@
 import { defineModule } from "@/sdk";
 
 import en from "./i18n/en.json";
+import enAi from "./i18n/en.ai.json";
 import enMore from "./i18n/en.admin.json";
+import enOrg from "./i18n/en.org.json";
 import sw from "./i18n/sw.json";
+import swAi from "./i18n/sw.ai.json";
 import swMore from "./i18n/sw.admin.json";
+import swOrg from "./i18n/sw.org.json";
 
 export default defineModule({
   unit: "kernel",
   routes: [
     { path: "/admin/users", page: () => import("./pages/UsersPage"), permission: "users.manage" },
+    { path: "/admin/organisation", page: () => import("./pages/OrganisationPage"), permission: "organisation.manage" },
     { path: "/admin/roles", page: () => import("./pages/RolesPage"), permission: "roles.manage" },
     { path: "/admin/settings", page: () => import("./pages/SettingsPage"), permission: "settings.manage" },
     { path: "/admin/approvals", page: () => import("./pages/ApprovalsPage"), permission: "approvals.decide" },
@@ -27,6 +32,7 @@ export default defineModule({
     { label: "kernel:approvals", to: "/admin/approvals", permission: "approvals.decide", order: 10, group: "admin", icon: "document" },
     { label: "kernel:exceptions", to: "/admin/exceptions", permission: "exceptions.manage", order: 11, group: "admin", icon: "security" },
     { label: "kernel:users", to: "/admin/users", permission: "users.manage", order: 90, group: "admin", icon: "people" },
+    { label: "kernel:org.menu", to: "/admin/organisation", permission: "organisation.manage", order: 89, group: "admin", icon: "settings" },
     { label: "kernel:roles", to: "/admin/roles", permission: "roles.manage", order: 91, group: "admin", icon: "security" },
     { label: "kernel:settings", to: "/admin/settings", permission: "settings.manage", order: 92, group: "admin", icon: "settings" },
     { label: "kernel:approvalRules", to: "/admin/approval-rules", permission: "approvals.manage", order: 93, group: "admin", icon: "document" },
@@ -42,5 +48,5 @@ export default defineModule({
       { label: "kernel:widgetExceptionsTitle", component: () => import("./slots/ExceptionsWidget"), permission: "exceptions.manage", order: 6 },
     ],
   },
-  translations: { en: { ...en, ...enMore }, sw: { ...sw, ...swMore } },
+  translations: { en: { ...en, ...enMore, ...enOrg, ...enAi }, sw: { ...sw, ...swMore, ...swOrg, ...swAi } },
 });

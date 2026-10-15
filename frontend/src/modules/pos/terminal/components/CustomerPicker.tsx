@@ -3,17 +3,27 @@ import { useCallback, useRef } from "react";
 
 import { api, Combobox, unwrap, useTranslation } from "@/sdk";
 
+import type { CachedCustomer } from "../offline/cache";
+
 /** Attach a customer to the sale (optional): looked up on the server as the cashier types. Needed for credit sales. */
-export function CustomerPicker({ customerId, customerName, onChange }: {
-  customerId: string; customerName: string; onChange: (id: string, name: string, phone: string) => void;
+export function CustomerPicker({ customerId, customerName, online, saved, onChange }: {
+  customerId: string; customerName: string; online: boolean; saved: CachedCustomer[];
+  onChange: (id: string, name: string, phone: string) => void;
 }) {
   const { t } = useTranslation("pos");
   const phones = useRef(new Map<string, string>());
   const search = useCallback(async (text: string) => {
+    // Without a connection, the customers kept on this device are searched.
+    if (!online) {
+      const q = text.trim().toLowerCase();
+      const found = saved.filter((c) => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.phone ?? "").includes(q)).slice(0, 20);
+      for (const c of found) phones.current.set(c.id, c.phone ?? "");
+      return found.map((c) => ({ value: c.id, label: c.name, hint: [c.code, c.phone].filter(Boolean).join(" · ") }));
+    }
     const rows = await unwrap(api.GET("/api/v1/crm/customers", { params: { query: { search: text || undefined, status: "active", limit: 20 } } }));
     for (const c of rows) phones.current.set(c.id, c.phone ?? "");
     return rows.map((c) => ({ value: c.id, label: c.name, hint: [c.code, c.phone].filter(Boolean).join(" · ") }));
-  }, []);
+  }, [online, saved]);
 
   return (
     <div className="flex items-center gap-1.5">

@@ -108,7 +108,24 @@ exception) and the mail arrives (check spam; look at the headers for SPF and DKI
 an unverified sender and a bad recipient should each be tried once on purpose so you see the provider's real words;
 compare with doubts D5 and D6. With `--dry-run`, SMTP prints the message and the login step (password hidden) only.
 
-## 4. Go-live gate
+## 4. AI provider (Anthropic Messages API)
+
+The assistant's provider code (`ziira/plugins/ai_anthropic/provider.py`) was written from Anthropic's public documentation and has
+not been run against the live API. The check sends one harmless prompt, then a tool-use round trip with a made-up `echo` tool (the
+mapping most likely to need a fix), through the app's own provider class. It costs a few dozen tokens.
+
+```bash
+export ZIIRA_LIVE_AI_API_KEY=...            # a key you can revoke; optional: ZIIRA_LIVE_AI_MODEL, ZIIRA_LIVE_AI_BASE_URL
+.venv/bin/python scripts/live_check.py ai --dry-run     # prints the requests (key hidden); the key is not needed
+.venv/bin/python scripts/live_check.py ai               # add --no-tool for the plain prompt only
+```
+
+**A pass**: step 1 gets text back with token counts; step 2 shows a `tool_use` block for `echo` with `{"text": "ping"}` and then a
+final text after the `tool_result`. **On a failure** read the provider's own words: a 401 is the key, a 404 or "model" is the model
+id (default `claude-sonnet-5-5`; set `ZIIRA_LIVE_AI_MODEL`), a 400 about a field means the request shape needs a change in
+`build_request`. Then see `docs/ai.md` section 11 for what else is unverified.
+
+## 5. Go-live gate
 
 Tick these in `docs/go-live-checklist.md`, with the date and who did it, only when the real result is in front of you:
 
@@ -121,8 +138,10 @@ Tick these in `docs/go-live-checklist.md`, with the date and who did it, only wh
 - **Email**: `email` PASS for the provider the customer uses; the message arrived with SPF/DKIM passing; error replies
   seen (D5, D6).
 - Also: the registration email (`ZIIRA_PLATFORM_EMAIL_*`) item, since it uses the same email providers.
+- **AI provider** (only if the assistant will be offered): `ai` PASS with the live key; the provider's no-training and retention
+  terms in place (`docs/ai.md` section 9).
 
-## 5. Doubts found when reading the providers (nothing was changed in the code for these)
+## 6. Doubts found when reading the providers (nothing was changed in the code for these)
 
 These come from reviewing the code against the vendors' public documentation from memory. Each is a thing to look at
 in the real reply, not a known bug.

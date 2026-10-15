@@ -120,7 +120,8 @@ def create_invoice_return(session: Session, invoice_id: UUID, *, lines: list[tup
         raise NotFound("Invoice not found")
     current_context().require(SALES_REFUND, company_id=invoice.company_id, branch_id=invoice.branch_id)
     if invoice.kind != "invoice":
-        raise ValidationFailed("This invoice is for a sale on credit: take the goods back against the sale")
+        raise ValidationFailed("This invoice is an opening balance or a sale on credit, with no goods of its own: "
+                               "take goods back against the sale that made it")
     if invoice.status == "cancelled":
         raise Conflict("A cancelled invoice has nothing to return")
     return _create(session, _invoice_source(session, invoice), lines, reason_code_id, refund_method, note,
@@ -223,7 +224,7 @@ def _post(session: Session, ret: SalesReturn, source: Source, lines: list[SalesR
     elif method != "exchange":
         account_id = account_for_method(session, ret.company_id, ret.branch_id, method)
         if account_id is None and method != "cash":
-            raise ValidationFailed(f"No {method} account is set up for this branch")
+            raise ValidationFailed(f"No {method.replace('_', ' ')} account is set up for this branch")
         paid = record_payment(
             session, company_id=ret.company_id, branch_id=ret.branch_id, method=method, direction="out",
             amount=ret.total, payment_account_id=account_id, business_date=day, party_type="customer",

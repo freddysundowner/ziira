@@ -5,16 +5,16 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = []
-optional = ["pos", "payments", "purchasing", "inventory", "people", "intel", "command", "imports"]
+optional = ["pos", "crm", "payments", "purchasing", "inventory", "people", "intel", "command", "imports"]
 
 [provides]
 api_prefix = "/api/v1/finance"
 publishes = ["journal.posted", "period.closed", "expense.approved", "reconciliation.completed"]
-subscribes = ["stock.moved", "sale.posted", "sale.returned", "payment.settled", "payment.banked", "till.closed", "bill.posted", "bill.reversed", "supplier.paid", "supplier.payment_reversed", "supplier.refunded", "supplier.refund_reversed", "credit_note.posted", "payroll.approved", "payroll.paid", "customer.paid", "customer.payment_reversed", "customer.advance_refunded", "customer.refund_reversed", "approval.decided"]
+subscribes = ["stock.moved", "sale.posted", "sale.returned", "payment.settled", "payment.banked", "till.closed", "bill.posted", "bill.reversed", "supplier.paid", "supplier.payment_reversed", "supplier.refunded", "supplier.refund_reversed", "credit_note.posted", "payroll.approved", "payroll.paid", "customer.paid", "customer.payment_reversed", "customer.advance_refunded", "customer.refund_reversed", "customer.opening_balance", "customer.opening_balance_reversed", "supplier.opening_balance", "supplier.opening_balance_reversed", "approval.decided"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "intel.ask_tool"]
 
 [permissions]
 "accounts.manage" = "Manage chart of accounts"

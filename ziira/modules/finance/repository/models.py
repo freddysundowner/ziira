@@ -208,3 +208,22 @@ class ReconciliationLine(TenantColumns, Base):
     created_by: Mapped[UUID | None]
     reconciliation_id: Mapped[UUID]
     journal_line_id: Mapped[UUID]
+
+
+class OpeningBalance(TenantColumns, Base):
+    __tablename__ = "opening_balance"
+    __table_args__ = {"schema": "finance"}
+
+    created_by: Mapped[UUID | None]
+    company_id: Mapped[UUID]
+    number: Mapped[str]
+    go_live_date: Mapped[date]
+    entry_id: Mapped[UUID]
+    line_count: Mapped[int]
+    difference: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    note: Mapped[str | None]
+    status: Mapped[str] = mapped_column(server_default=text("'posted'"))
+    reversal_entry_id: Mapped[UUID | None]
+    reversed_at: Mapped[datetime | None]
+    reversed_by: Mapped[UUID | None]
+    reverse_reason: Mapped[str | None]

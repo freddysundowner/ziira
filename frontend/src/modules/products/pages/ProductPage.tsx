@@ -6,6 +6,7 @@ import {
 } from "@/sdk";
 
 import { PRODUCT_TABS } from "../public";
+import { BarcodesCard } from "./BarcodesCard";
 import { PricesTab } from "./PricesTab";
 
 /** A product's page. Other modules add tabs through the "products.product.tabs" slot. */
@@ -36,15 +37,18 @@ export default function ProductPage() {
         description={<span className="flex items-center gap-2"><span className="font-mono">{p.sku}</span><StatusBadge status={p.is_active ? "active" : "inactive"} /></span>} />
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
       {tab === "details" && (
-        <Card>
-          <DetailList items={[
-            { label: t("type"), value: <Badge>{t(`types.${p.product_type}`)}</Badge> },
-            { label: t("unit"), value: uom ? `${uom.code} · ${uom.name}` : "—" },
-            { label: t("taxCode"), value: tax ? `${tax.code} · ${tax.name} (${Number(tax.vat_rate)}%)` : "—" },
-            { label: t("reorderLevel"), value: p.reorder_level ?? "—" },
-            { label: t("batchTracked"), value: p.is_batch_tracked ? t("yes") : t("no") },
-          ]} />
-        </Card>
+        <div className="space-y-4">
+          <Card>
+            <DetailList items={[
+              { label: t("type"), value: <Badge>{t(`types.${p.product_type}`)}</Badge> },
+              { label: t("unit"), value: uom ? `${uom.code} · ${uom.name}` : "—" },
+              { label: t("taxCode"), value: tax ? `${tax.code} · ${tax.name} (${Number(tax.vat_rate)}%)` : "—" },
+              { label: t("reorderLevel"), value: p.reorder_level ?? "—" },
+              { label: t("batchTracked"), value: p.is_batch_tracked ? t("yes") : t("no") },
+            ]} />
+          </Card>
+          <BarcodesCard productId={p.id} barcodes={p.barcodes ?? []} />
+        </div>
       )}
       {tab === "prices" && <PricesTab productId={p.id} />}
       {slot && <Card><SlotContent contribution={slot} props={{ productId: p.id, companyId: p.company_id }} /></Card>}

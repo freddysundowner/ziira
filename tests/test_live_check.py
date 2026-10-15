@@ -97,3 +97,22 @@ def test_callback_dry_run_posts_a_success_body_and_hides_the_signature(capsys: p
 def test_refuses_to_run_in_production_without_the_flag(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ZIIRA_ENV", "production")
     assert lc.main(["sms", "--to", "1", "--dry-run"]) == 2
+
+
+def test_ai_dry_run_sends_the_documented_headers_and_a_tool_round_trip_without_the_key() -> None:
+    env = {"ZIIRA_LIVE_AI_API_KEY": "ai-key-secret-123", "ZIIRA_LIVE_AI_MODEL": "model-x"}
+    report = lc.ai_check(dry_run=True, echo=False, env=env)
+    assert report.passed
+    plain, asking, answering = report.exchanges
+    assert plain.url == "https://api.anthropic.com/v1/messages" and plain.headers["x-api-key"] == lc.HIDDEN
+    assert plain.headers["anthropic-version"] == "2023-06-01"
+    assert body(plain)["model"] == "model-x" and "tools" not in body(plain)
+    assert body(asking)["tools"][0]["name"] == "echo" and asking.status == 200
+    sent = body(answering)["messages"]
+    assert sent[1]["content"][0]["type"] == "tool_use" and sent[2]["content"][0]["type"] == "tool_result"
+    assert "ai-key-secret-123" not in json.dumps([vars(e) for e in report.exchanges])
+
+
+def test_ai_dry_run_can_skip_the_tool_step() -> None:
+    report = lc.ai_check(dry_run=True, tool_step=False, echo=False, env={"ZIIRA_LIVE_AI_API_KEY": "k-0123456789"})
+    assert report.passed and len(report.exchanges) == 1

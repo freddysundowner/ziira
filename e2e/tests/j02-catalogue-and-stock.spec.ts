@@ -43,7 +43,7 @@ test("J2 catalogue and stock", async ({ page }) => {
     await expect(page.getByText(`${name} added.`)).toBeVisible();
     await expect(page.getByRole("cell", { name })).toBeVisible();
   }
-  await page.getByPlaceholder("Search by name or SKU").fill(`Hammer ${tag}`);
+  await page.getByPlaceholder("Search by name, SKU or barcode").fill(`Hammer ${tag}`);
   await expect(page.getByRole("cell", { name: `Nails ${tag}` })).toBeHidden();
   await checkAccessibility(page, "products");
 

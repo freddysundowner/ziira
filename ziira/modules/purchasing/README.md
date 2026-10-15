@@ -86,3 +86,11 @@ events.py     approval.decided
 public.py     supplier_balance
 tests/        domain tests; flows are in the top-level tests/ (test_purchasing_*.py)
 ```
+
+## Opening balances
+
+`supplier_balances` (the unit's `imports.importer`) brings in what the business owed suppliers at go-live: an **opening bill** per open
+supplier invoice (`kind = opening_balance`, posted, no lines, goods, tax or matching; the supplier's invoice number and the old dates).
+It ages in payables, is paid like any bill, and publishes `supplier.opening_balance` for Finance. It is never reversed as a bill; the
+whole import is reversed (`services/opening_balances.py`). A `supplier ledger` integrity check (`ziira verify`) keeps what bills say is
+owed equal to the payable account, supplier by supplier. See `docs/data-import.md`.

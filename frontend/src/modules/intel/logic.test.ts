@@ -64,3 +64,35 @@ describe("groupChecks", () => {
     expect(groups[1].checks).toHaveLength(2);
   });
 });
+
+describe("the AI assistant", () => {
+  it("maps reasons to translation keys, with a generic one for unknown reasons", async () => {
+    const { reasonKey, fixableInSettings } = await import("./logic");
+    expect(reasonKey("budget")).toBe("budget");
+    expect(reasonKey("something_new")).toBe("default");
+    expect(reasonKey(null)).toBe("default");
+    expect(fixableInSettings("no_consent")).toBe(true);
+    expect(fixableInSettings("not_configured")).toBe(false);
+    expect(fixableInSettings(undefined)).toBe(false);
+  });
+
+  it("shows a source's columns in order, without ids, and no more than six", async () => {
+    const { sourceColumns, cellText } = await import("./logic");
+    expect(sourceColumns([{ branch: "HQ", branch_id: "x", id: "y", total: "1" }, { branch: "J", note: "n" }])).toEqual(["branch", "total", "note"]);
+    expect(sourceColumns([{ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7 }])).toEqual(["a", "b", "c", "d", "e", "f"]);
+    expect(sourceColumns([])).toEqual([]);
+    expect([cellText(null), cellText(5), cellText(false), cellText("x"), cellText({ a: 1 })]).toEqual(["", "5", "false", "x", '{"a":1}']);
+  });
+
+  it("lines numbers up to the right", async () => {
+    const { isNumeric } = await import("./logic");
+    expect([isNumeric(5), isNumeric("1250.00"), isNumeric("-3"), isNumeric("HQ"), isNumeric("12 units"), isNumeric(null)]).toEqual([true, true, true, false, false, false]);
+  });
+
+  it("names the period of a source", async () => {
+    const { sourcePeriod } = await import("./logic");
+    expect(sourcePeriod({ params: { date_from: "2026-10-01", date_to: "2026-10-07" } })).toBe("2026-10-01 – 2026-10-07");
+    expect(sourcePeriod({ params: { date_from: "2026-10-01", date_to: "2026-10-01" } })).toBe("2026-10-01");
+    expect(sourcePeriod({ params: { limit: 5 } })).toBeNull();
+  });
+});

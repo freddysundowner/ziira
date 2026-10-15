@@ -28,6 +28,7 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    check_branch_open,
     check_reason,
     company_date_of,
     company_today,
@@ -103,6 +104,7 @@ def open_till(session: Session, device_id: UUID, opening_float: Decimal, *, loca
             return earlier, True
     if device.status != "active":
         raise ValidationFailed("This device is blocked")
+    check_branch_open(session, device.branch_id)
     if opening_float < 0 or opening_float > MAX_FLOAT or opening_float != opening_float.quantize(rules.CENT):
         raise ValidationFailed("The opening float is an amount of zero or more with at most 2 decimal places")
     day = business_day(session, company_id, opened_at)
@@ -145,6 +147,7 @@ def report(session: Session, till: TillSession) -> dict[str, Any]:
         "voided_count": voided["count"], "voided_total": Decimal(voided["total"]),
         "takings_by_method": by_method, "cash_refunded": cash_sales - cash_net, "expected_cash": expected,
         "counted_cash": till.counted_cash, "variance": till.variance,
+        "held_expired": pos_repo.count_expired_held(session, till.id),
     }
 
 
@@ -170,6 +173,7 @@ def close_till(session: Session, till_id: UUID, counted_cash: Decimal, *, reason
             check_reason(session, TILL_VARIANCE, reason_code_id, note)
         else:
             missing_reason = True
+    pos_repo.expire_held(session, till.id)           # carts still parked here end with the shift
     till.status, till.closed_at = "closed", closed_at or datetime.now(UTC)
     till.expected_cash, till.counted_cash, till.variance = expected, counted_cash, variance
     till.variance_reason_code_id, till.closed_by = reason_code_id, ctx.user_id

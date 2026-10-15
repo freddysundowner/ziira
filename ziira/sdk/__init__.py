@@ -31,7 +31,7 @@ from ziira.kernel import (
 from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
 from ziira.kernel.checks import IntegrityCheck
 from ziira.kernel.clock import company_date_of, company_today
-from ziira.kernel.config import get_settings
+from ziira.kernel.config import Settings, get_settings
 from ziira.kernel.context import RequestContext, get_context, set_context, system_context
 from ziira.kernel.csvutil import safe, to_csv
 from ziira.kernel.db import tenant_session
@@ -49,14 +49,16 @@ from ziira.kernel.extensions import (
     define_extension_point,
     define_validation_hook,
     implementations,
+    provider_named,
     provides,
     run_validators,
     validate,
 )
-from ziira.kernel.jobs import enqueue, job, periodic
+from ziira.kernel.jobs import enqueue, job, periodic, unbound_periodic
 from ziira.kernel.manifest import SDK_VERSION
 from ziira.kernel.notifications import NotificationChannel, Outgoing, SendResult
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
+from ziira.kernel.organisation import BranchUsageProvider
 from ziira.kernel.personal_data import (
     PLACEHOLDER,
     Kept,
@@ -79,20 +81,22 @@ from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sig
 
 __all__ = [
     "safe", "to_csv",
-    "PLACEHOLDER", "Kept", "Outcome", "PersonalDataProvider", "PersonalRecord", "RetentionRule", "Subject",
+    "BranchUsageProvider", "PLACEHOLDER", "Kept", "Outcome", "PersonalDataProvider", "PersonalRecord", "RetentionRule",
+    "Subject",
     "json_one", "json_rows", "like_pattern", "mask_text", "sql_digits", "sql_identifier", "sql_phone_matches",
     "check_calling_code", "normalise_phone",
     "Amount", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel", "Outgoing",
     "Quantity", "Rate", "Recipient", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized",
     "UnitCost",
-    "ValidationFailed", "ZiiraError", "audit_record", "check_company", "check_reason", "company_date_of",
-    "company_setting", "company_today",
+    "ValidationFailed", "ZiiraError", "audit_record", "check_branch_open", "check_company", "check_reason",
+    "company_date_of", "company_setting", "company_today",
     "current_context", "DB_SESSION", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
     "encrypt_text", "enqueue", "flag_for_review", "hash_secret", "idempotency_key_header", "idempotent",
     "implementations", "is_production", "job", "money", "new_secret", "next_document_number", "opt_out_contact",
     "page_limit", "page_offset", "periodic", "provides", "publish", "publish_many", "read_credential",
     "recipients_with_permission", "request_context", "require_permission", "run_validators", "send_notification",
-    "settings_public_base_url", "sign_value",
+    "platform_settings", "provider_named", "settings_public_base_url", "sign_value", "tenant_transaction",
+    "unbound_periodic", "update_company_settings",
     "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session", "validate",
     "verify_value",
 ]
@@ -151,6 +155,26 @@ def encrypt_text(plain: str) -> str:
 def decrypt_text(token: str) -> str:
     """Decrypt something made by `encrypt_text`."""
     return decrypt(token)
+
+
+def platform_settings() -> Settings:
+    """The platform's own configuration (environment variables): for secrets and options that belong to the operator,
+    such as the AI provider's key. Never put a value from here in a reply or a log."""
+    return get_settings()
+
+
+def update_company_settings(session: Session, company_id: UUID, changes: dict[str, Any]) -> dict[str, Any]:
+    """Change company settings, audited (the same rules as the settings endpoint). The caller checks permission."""
+    return company_settings.update_settings(session, company_id, changes)
+
+
+@contextmanager
+def tenant_transaction(tenant_id: UUID) -> Iterator[Session]:
+    """A short transaction in a tenant's database that keeps the current request context (unlike `system_session`).
+    For work that must not hold a transaction while it waits on an outside service: read, close, call, then write in
+    another one. Commits on success."""
+    with tenant_session(tenant_id) as session:
+        yield session
 
 
 def is_production() -> bool:
@@ -222,6 +246,15 @@ def check_company(session: Session, company_id: UUID, branch_id: UUID | None = N
             {"b": str(branch_id), "c": str(company_id)}).first() is None:
         raise ValidationFailed("Branch not found in that company")
     checked.add((company_id, branch_id))
+
+
+def check_branch_open(session: Session, branch_id: UUID) -> None:
+    """Raise ValidationFailed if the branch has been closed (Settings > Organisation): a closed branch keeps its history
+    but takes no new tills, devices or locations."""
+    closed = session.execute(text("select 1 from kernel.branch where id = :b and not is_active"),
+                             {"b": str(branch_id)}).first()
+    if closed is not None:
+        raise ValidationFailed("This branch is closed. Reopen it in Settings > Organisation first")
 
 
 def next_document_number(session: Session, *, company_id: UUID, branch_id: UUID | None, doc_type: str,

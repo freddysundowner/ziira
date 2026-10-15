@@ -88,11 +88,13 @@ def statement(session: Session, customer_id: UUID, *, date_from: date | None = N
     customer = _customer(session, customer_id)
     entries: list[Entry] = []
     for invoice in pos_repo.invoices_of_customer(session, customer.id):
-        entries.append(Entry(invoice.issue_date, "invoice", invoice.number,
-                             f"Invoice due {invoice.due_date}", invoice.total, Decimal(0)))
+        what = (f"Opening balance, invoice {invoice.external_ref}, due {invoice.due_date}"
+                if invoice.kind == "opening_balance" else f"Invoice due {invoice.due_date}")
+        entries.append(Entry(invoice.issue_date, "invoice", invoice.number, what, invoice.total, Decimal(0)))
     for receipt in pos_repo.receipts_of_customer(session, customer.id):
+        what = ("Credit brought forward" if receipt.method == "opening" else f"Payment by {receipt.method}")
         entries.append(Entry(receipt.received_on, "receipt", receipt.number,
-                             f"Payment by {receipt.method}" + (f" ({receipt.reference})" if receipt.reference else ""),
+                             what + (f" ({receipt.reference})" if receipt.reference else ""),
                              Decimal(0), receipt.amount))
     for note in pos_repo.credit_notes_of_customer(session, customer.id):
         entries.append(Entry(note.business_date or tills.today(session, note.company_id), "credit_note", note.number,

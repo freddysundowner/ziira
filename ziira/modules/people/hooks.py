@@ -9,3 +9,5 @@ from ziira.sdk import provides
 provides(IMPORTS_IMPORTER)(EmployeeImporter)
 
 from ziira.modules.people import privacy as _privacy  # noqa: E402, F401, I001 - registers personal-data provider
+
+from ziira.modules.people import ask_tools as _ask_tools  # noqa: E402, F401, I001 - registers the Ask Ziira tools

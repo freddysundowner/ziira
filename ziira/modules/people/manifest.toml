@@ -13,7 +13,7 @@ publishes = ["employee.pay_changed", "employee.bank_changed", "payroll.approved"
 subscribes = ["till.opened", "till.closed"]
 
 [extends]
-implements = ["intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "kernel.personal_data"]
+implements = ["intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
 
 [permissions]
 "employees.view" = "View employees"

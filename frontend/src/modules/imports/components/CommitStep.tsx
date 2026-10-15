@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  Alert, api, Badge, Card, ErrorState, money, quantity, Skeleton, Stat, unwrap, useQuery, useTranslation,
+  Alert, api, Badge, Button, Card, ConfirmDialog, ErrorState, Field, formatDate, money, quantity, Skeleton, Stat, Textarea, toast, unwrap, useMutation, useQuery,
+  useQueryClient, useTranslation,
 } from "@/sdk";
 
 import { type Batch, problemRows, progressPercent } from "../lib/wizard";
@@ -10,10 +12,13 @@ import { DownloadButton } from "./DownloadButton";
 /** Step 4: the background import with its progress and, once it has finished, the reconciliation against the file. */
 export function CommitStep({ batch }: { batch: Batch }) {
   const { t } = useTranslation("imports");
-  const running = batch.status !== "done";
+  const running = batch.status === "committing";
   const c = batch.counts;
   return (
     <div className="space-y-4">
+      {batch.status === "reverted" && (
+        <Alert tone="warn">{t("reverse.done", { date: formatDate(batch.reverted_at ?? batch.created_at), reason: batch.revert_reason ?? "" })}</Alert>
+      )}
       {running ? <Progress batch={batch} /> : <Report batch={batch} />}
       <div className="grid gap-3 sm:grid-cols-4">
         <Stat label={t("done.imported")} value={quantity(c.imported, 0)} tone={c.imported > 0 ? "ok" : undefined} />
@@ -21,6 +26,7 @@ export function CommitStep({ batch }: { batch: Batch }) {
         <Stat label={t("done.rejected")} value={quantity(c.invalid, 0)} tone={c.invalid > 0 ? "bad" : undefined} hint={t("review.problemsHint")} />
         <Stat label={t("done.failed")} value={quantity(c.failed, 0)} tone={c.failed > 0 ? "bad" : undefined} hint={t("done.failedHint")} />
       </div>
+      {batch.status === "done" && batch.reversible && c.imported > 0 && <ReverseImport batch={batch} />}
       {!running && (
         <div className="flex flex-wrap justify-between gap-2">
           <div className="flex flex-wrap gap-2">
@@ -88,6 +94,35 @@ function Report({ batch }: { batch: Batch }) {
       <div className="space-y-2 p-4">
         {r.reconciled ? <Alert tone="ok">{t("report.reconciled")}</Alert> : r.problems.map((p) => <Alert key={p} tone="warn">{p}</Alert>)}
       </div>
+    </Card>
+  );
+}
+
+/** Undo the whole import (opening balances): everything it created is reversed, or nothing is, with the reason shown. */
+function ReverseImport({ batch }: { batch: Batch }) {
+  const { t } = useTranslation("imports");
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [problem, setProblem] = useState<string | null>(null);
+  const reverse = useMutation({
+    meta: { silent: true },
+    mutationFn: () => unwrap(api.POST("/api/v1/imports/batches/{batch_id}/reverse", { params: { path: { batch_id: batch.id } }, body: { reason: reason.trim() } })),
+    onSuccess: () => { setOpen(false); toast(t("reverse.success"), "ok"); void qc.invalidateQueries({ queryKey: ["import", batch.id] }); void qc.invalidateQueries({ queryKey: ["import-report", batch.id] }); },
+    onError: (e) => setProblem(e.message),
+  });
+  return (
+    <Card title={t("reverse.title")} description={t("reverse.hint")}>
+      <Button variant="secondary" onClick={() => { setProblem(null); setOpen(true); }}>{t("reverse.button")}</Button>
+      <ConfirmDialog open={open} onClose={() => setOpen(false)} busy={reverse.isPending} danger title={t("reverse.confirmTitle")} confirmLabel={reverse.isPending ? t("reverse.working") : t("reverse.button")}
+        message={
+          <div className="space-y-3">
+            <p>{t("reverse.confirm")}</p>
+            <Field label={t("reverse.reason")} required><Textarea rows={2} value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} /></Field>
+            {problem && <Alert tone="bad">{problem}</Alert>}
+          </div>
+        }
+        onConfirm={() => { if (reason.trim()) reverse.mutate(); else setProblem(t("reverse.needReason")); }} />
     </Card>
   );
 }

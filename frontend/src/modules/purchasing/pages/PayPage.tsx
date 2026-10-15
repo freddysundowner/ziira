@@ -6,9 +6,10 @@ import {
 } from "@/sdk";
 
 import { Money } from "../components/Money";
+import { PayFrom, usePayFromAccounts } from "../components/PayFrom";
 import { SupplierPicker } from "../components/pickers";
 import { Status } from "../components/Status";
-import { useSupplier, usePaymentAccounts } from "../hooks";
+import { useSupplier } from "../hooks";
 import { allocateOldestFirst, amountDue, isOpenBill, isOverdue, PAY_METHODS, sumAmounts } from "../lib";
 import type { BillSummary, PayMethod } from "../types";
 
@@ -27,7 +28,8 @@ export default function PayPage() {
   const [results, setResults] = useState<Record<string, string>>({});
   const supplier = useSupplier(supplierId || null);
   const currency = useCurrency(supplier.data?.company_id);
-  const accounts = usePaymentAccounts(supplier.data?.company_id);
+  const from = usePayFromAccounts(supplier.data?.company_id, method);
+  const missingAccount = from.required && from.ready && !account;
   const bills = useQuery({
     enabled: !!supplierId, queryKey: ["purchasing", "bills", "open", supplierId],
     queryFn: async () => (await unwrap(api.GET("/api/v1/purchasing/bills", { params: { query: { supplier_id: supplierId, limit: 200 } } }))).filter((b) => isOpenBill(b.status)),
@@ -67,15 +69,13 @@ export default function PayPage() {
 
   return (
     <form onSubmit={submit}>
-      <PageHeader title={t("paySuppliers")} description={t("paySuppliersHint")} actions={<Button type="submit" disabled={chosen.length === 0 || pay.isPending}>{t("payTotal", { total: money(total, currency) })}</Button>} />
+      <PageHeader title={t("paySuppliers")} description={t("paySuppliersHint")} actions={<Button type="submit" disabled={chosen.length === 0 || pay.isPending || missingAccount}>{t("payTotal", { total: money(total, currency) })}</Button>} />
       <div className="space-y-4">
         <Card>
           <FormGrid cols={3}>
             <Field label={t("supplier")} required><SupplierPicker value={supplierId} onChange={(v) => { setSupplierId(v); setAmounts({}); setResults({}); }} /></Field>
             <Field label={t("method")}><Select value={method} onChange={(e) => setMethod(e.target.value as PayMethod)}>{PAY_METHODS.map((m) => <option key={m} value={m}>{t(`methods.${m}`)}</option>)}</Select></Field>
-            {(accounts.data?.length ?? 0) > 0 && (
-              <Field label={t("fromAccount")}><Select value={account} onChange={(e) => setAccount(e.target.value)}><option value="">{t("noAccount")}</option>{accounts.data?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</Select></Field>
-            )}
+            <PayFrom companyId={supplier.data?.company_id} method={method} value={account} onChange={setAccount} />
             <Field label={t("paidOn")}><Input type="date" max={day} value={date} onChange={(e) => setDate(e.target.value)} /></Field>
             <Field label={t("reference")} hint={t("referenceHint")}><Input value={reference} maxLength={60} onChange={(e) => setReference(e.target.value)} /></Field>
             <Field label={t("spreadPayment")} hint={t("spreadHint")}>

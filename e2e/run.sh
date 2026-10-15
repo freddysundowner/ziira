@@ -48,6 +48,13 @@ echo "==> Scratch databases"
 .venv/bin/python e2e/scratch_db.py create || exit 2
 .venv/bin/ziira install --all >"$WORK/install.log" 2>&1 || { cat "$WORK/install.log"; exit 2; }
 
+# A member of platform staff for the support-access journey (J16): the command prints the second-factor secret once
+OPERATOR_PASSWORD="operator-pass-123"
+OPERATOR_OUT="$(ZIIRA_OPERATOR_PASSWORD="$OPERATOR_PASSWORD" .venv/bin/ziira operator create "E2E Operator" e2e-operator@ziira.test 2>&1)" || { echo "$OPERATOR_OUT"; exit 2; }
+export E2E_OPERATOR_EMAIL=e2e-operator@ziira.test E2E_OPERATOR_PASSWORD="$OPERATOR_PASSWORD"
+E2E_OPERATOR_SECRET="$(printf '%s\n' "$OPERATOR_OUT" | sed -n 's/^secret: //p')"
+export E2E_OPERATOR_SECRET
+
 echo "==> Building the web app"
 [ -d frontend/node_modules ] || npm --prefix frontend ci
 (cd frontend && npx vite build --outDir "$WORK/web" --emptyOutDir >"$WORK/build.log" 2>&1) || { cat "$WORK/build.log"; exit 2; }

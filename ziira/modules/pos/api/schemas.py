@@ -85,6 +85,45 @@ class TillReportOut(BaseModel):
     expected_cash: Decimal
     counted_cash: Decimal | None
     variance: Decimal | None
+    held_expired: int = Field(default=0, description="Sales still on hold when the till closed (they ended with it)")
+
+
+# --------------------------------------------------------------------------- held sales
+class HeldLine(BaseModel):
+    """One line of a parked cart, as the terminal shows it."""
+
+    product_id: UUID
+    sku: str = Field(max_length=60)
+    name: str = Field(max_length=200)
+    quantity: Annotated[Quantity, Field(gt=0)]
+    list_price: NonNegative | None = Field(default=None, description="The price list's price when it was parked")
+    price: NonNegative | None = Field(default=None, description="The price charged (differs when overridden)")
+    discount: NonNegative = Decimal(0)
+    reason_code_id: UUID | None = None
+
+
+class HeldSaleIn(BaseModel):
+    local_id: UUID | None = Field(default=None, description="Made by the terminal: holding twice keeps one")
+    label: str = Field(default="", max_length=120)
+    customer_id: UUID | None = None
+    customer_name: str = Field(default="", max_length=200)
+    customer_phone: str = Field(default="", max_length=40)
+    note: str | None = Field(default=None, max_length=500)
+    lines: Annotated[list[HeldLine], Field(min_length=1, max_length=200)]
+
+
+class HeldSaleOut(BaseModel):
+    id: UUID
+    local_id: UUID
+    till_session_id: UUID
+    label: str
+    customer_id: UUID | None
+    customer_name: str
+    customer_phone: str
+    note: str | None
+    lines: list[HeldLine]
+    status: Literal["held", "resumed", "discarded", "expired"]
+    created_at: datetime
 
 
 # --------------------------------------------------------------------------- sales
@@ -218,6 +257,12 @@ class CatalogItemOut(BaseModel):
     uom_id: UUID
     price: Decimal | None
     stock: Decimal | None
+    barcodes: list[str] = []
+
+
+class ReceiptSettingsOut(BaseModel):
+    header: list[str] = Field(description="Company, branch, address, phone and tax number lines, top of a receipt")
+    footer: list[str] = Field(description="The company's receipt footer")
 
 
 # --------------------------------------------------------------------------- offline sync

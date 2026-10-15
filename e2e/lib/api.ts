@@ -50,6 +50,12 @@ export class Api {
     }
     throw new Error("unreachable");
   }
+  /** The HTTP status a GET gets (to check that something is refused), without throwing. */
+  async statusOf(path: string): Promise<number> {
+    const res = await fetch(`${API_URL}/api/v1${path}`, { headers: { authorization: `Bearer ${this.token}` } });
+    await res.text();
+    return res.status;
+  }
   get = <T = any>(path: string) => this.call<T>("GET", path);
   post = <T = any>(path: string, body?: unknown, headers?: Record<string, string>) => this.call<T>("POST", path, body ?? {}, headers);
   put = <T = any>(path: string, body: unknown) => this.call<T>("PUT", path, body);

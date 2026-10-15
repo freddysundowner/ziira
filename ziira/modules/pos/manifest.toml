@@ -5,17 +5,17 @@ kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = ["products", "inventory", "payments"]
-optional = ["crm", "finance", "intel", "command"]
+optional = ["crm", "finance", "intel", "command", "imports"]
 
 [provides]
 api_prefix = "/api/v1/pos"
-publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued", "invoice.cancelled", "pos.synced", "customer.paid", "customer.payment_reversed", "customer.over_limit_attempt", "customer.advance_refunded", "customer.refund_reversed", "customer.credit_applied"]
+publishes = ["sale.posted", "sale.voided", "sale.returned", "discount.override", "till.opened", "till.closed", "invoice.issued", "invoice.cancelled", "pos.synced", "customer.paid", "customer.payment_reversed", "customer.over_limit_attempt", "customer.advance_refunded", "customer.refund_reversed", "customer.credit_applied", "customer.opening_balance", "customer.opening_balance_reversed"]
 subscribes = ["approval.decided", "payment.reversed"]
 extension_points = ["pos.receipt_extras"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "kernel.personal_data"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "kernel.personal_data", "imports.importer", "intel.ask_tool"]
 
 [permissions]
 "sales.sell" = "Make sales"

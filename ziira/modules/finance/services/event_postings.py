@@ -256,3 +256,36 @@ def post_payroll_payment(session: Session, event: Event) -> JournalEntry | None:
         entry_date=_date(session, p, "paid_on"),
         recipe=recipes.payroll_payment(payments, description=label), context={},
         branch_id=None, source_type="payroll_payment", source_id=event.aggregate_id, description=label)
+
+
+def post_customer_opening_balance(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
+    """`customer.opening_balance`: what a customer owed (or was owed) when the business started on Ziira, against
+    opening balance equity, dated the go-live date. With `reverse` (`customer.opening_balance_reversed`) the entry is
+    mirrored."""
+    p = event.payload
+    label = f"Opening balance of customer {p.get('number') or ''}".strip()
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="opening_receivable",
+        journal_code="GEN", entry_date=_date(session, p),
+        recipe=recipes.opening_receivable(_amount(p.get("balance"), "balance"),
+                                          party=_optional_uuid(p.get("customer_id"), "customer_id"),
+                                          description=f"Reversal of {label}" if reverse else label, reverse=reverse),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
+        source_type="opening_receivable_reversal" if reverse else "opening_receivable", source_id=event.aggregate_id,
+        description=f"Reversal of {label}" if reverse else label, exact_date=not reverse)
+
+
+def post_supplier_opening_balance(session: Session, event: Event, *, reverse: bool = False) -> JournalEntry | None:
+    """`supplier.opening_balance`: what the business owed a supplier when it started on Ziira, against opening balance
+    equity, dated the go-live date. With `reverse` (`supplier.opening_balance_reversed`) the entry is mirrored."""
+    p = event.payload
+    label = f"Opening balance of supplier {p.get('number') or ''}".strip()
+    return post_from_recipe(
+        session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="opening_payable",
+        journal_code="GEN", entry_date=_date(session, p),
+        recipe=recipes.opening_payable(_amount(p.get("balance"), "balance"),
+                                       party=_optional_uuid(p.get("supplier_id"), "supplier_id"),
+                                       description=f"Reversal of {label}" if reverse else label, reverse=reverse),
+        context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"),
+        source_type="opening_payable_reversal" if reverse else "opening_payable", source_id=event.aggregate_id,
+        description=f"Reversal of {label}" if reverse else label, exact_date=not reverse)

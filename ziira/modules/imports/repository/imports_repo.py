@@ -11,9 +11,10 @@ from sqlalchemy.engine import Row
 from ziira.sdk import Session
 
 BATCH_COLUMNS = ("id, company_id, kind, filename, status, delimiter, headers, mapping, options, warnings, created_at, "
-                 "created_by, committed_by, committed_at, finished_at")
+                 "created_by, committed_by, committed_at, finished_at, file_check, reverted_at, reverted_by, "
+                 "revert_reason")
 ROW_COLUMNS = "id, batch_id, row_no, raw, parsed, status, errors, record_id"
-STATUSES = ("pending", "valid", "invalid", "imported", "skipped", "failed")
+STATUSES = ("pending", "valid", "invalid", "imported", "skipped", "failed", "reverted")
 
 
 def add_batch(session: Session, *, company_id: UUID, kind: str, filename: str, delimiter: str, headers: list[str],
@@ -55,7 +56,7 @@ def list_batches(session: Session, company_ids: set[UUID] | None, limit: int, of
 
 def update_batch(session: Session, batch_id: UUID, **fields: Any) -> None:
     """Set columns of a batch. Values for jsonb columns (mapping, options) are given as Python objects."""
-    json_columns = {"mapping", "options", "warnings"}
+    json_columns = {"mapping", "options", "warnings", "file_check"}
     sets = [f"{name} = cast(:{name} as jsonb)" if name in json_columns else f"{name} = :{name}" for name in fields]
     params = {n: (json.dumps(v) if n in json_columns else v) for n, v in fields.items()}
     session.execute(text(f"update imports.batch set {', '.join(sets)}, updated_at = now() where id = :id"),
@@ -131,6 +132,12 @@ def set_row_outcome(session: Session, row_id: UUID, status: str, errors: list[st
         "update imports.batch_row set status = :s, errors = cast(:e as jsonb), record_id = :r, updated_at = now() "
         "where id = :i"), {"s": status, "e": json.dumps(errors), "r": str(record_id) if record_id else None,
                            "i": str(row_id)})
+
+
+def mark_reverted(session: Session, batch_id: UUID) -> None:
+    session.execute(text(
+        "update imports.batch_row set status = 'reverted', updated_at = now() "
+        "where batch_id = :b and status = 'imported'"), {"b": str(batch_id)})
 
 
 def reset_rows(session: Session, batch_id: UUID) -> None:

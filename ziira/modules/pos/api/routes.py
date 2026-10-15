@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import UTC, date, datetime
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Response, status
@@ -19,6 +20,7 @@ from ziira.modules.pos.permissions import (
     TILL_MANAGE,
     TILL_REVIEW,
 )
+from ziira.modules.pos.repository.models import HeldSale
 from ziira.modules.pos.services import (
     catalog,
     customer_receipts,
@@ -31,6 +33,9 @@ from ziira.modules.pos.services import (
     sales,
     sync,
     tills,
+)
+from ziira.modules.pos.services import (
+    held as held_sales,
 )
 from ziira.sdk import (
     DB_SESSION,
@@ -135,14 +140,68 @@ def post_close_till(till_id: UUID, body: sc.TillCloseIn, session: Session = DB_S
     return tills.report(session, till)
 
 
+# --------------------------------------------------------------------------- held sales
+def _held_out(held: HeldSale) -> sc.HeldSaleOut:
+    data = held.payload
+    return sc.HeldSaleOut(
+        id=held.id, local_id=held.local_id, till_session_id=held.till_session_id, label=held.label,
+        customer_id=held.customer_id, customer_name=data.get("customer_name", ""),
+        customer_phone=data.get("customer_phone", ""), note=held.note,
+        lines=[sc.HeldLine.model_validate(x) for x in data.get("lines", [])],
+        status=held.status, created_at=held.created_at)  # type: ignore[arg-type]
+
+
+@router.post("/tills/{till_id}/held", response_model=sc.HeldSaleOut, status_code=status.HTTP_201_CREATED,
+             dependencies=SELL)
+def post_held(till_id: UUID, body: sc.HeldSaleIn, response: Response, session: Session = DB_SESSION) -> object:
+    """Park the cart on your open till. A draft: no stock moves and nothing is booked. Sending the same `local_id`
+    again returns the held sale already kept."""
+    payload = {"lines": [x.model_dump() for x in body.lines], "customer_name": body.customer_name,
+               "customer_phone": body.customer_phone}
+    held, existed = held_sales.hold(session, till_id, local_id=body.local_id, label=body.label,
+                                    customer_id=body.customer_id, note=body.note, payload=payload)
+    if existed:
+        response.status_code = status.HTTP_200_OK
+    return _held_out(held)
+
+
+@router.get("/tills/{till_id}/held", response_model=list[sc.HeldSaleOut], dependencies=SELL)
+def get_held_sales(till_id: UUID, status_: Literal["held", "resumed", "discarded", "expired", "all"] = Query(
+        default="held", alias="status"), session: Session = DB_SESSION) -> object:
+    """The sales on hold at a till (or `status=all`)."""
+    return [_held_out(h) for h in held_sales.list_held(session, till_id, status_)]
+
+
+@router.post("/held/{held_id}/resume", response_model=sc.HeldSaleOut, dependencies=SELL)
+def post_resume_held(held_id: UUID, session: Session = DB_SESSION) -> object:
+    """Take a held sale back to the screen; it is no longer on hold. Safe to repeat. `held_id` may also be the
+    `local_id` the terminal made when it held the sale."""
+    return _held_out(held_sales.resume(session, held_id))
+
+
+@router.post("/held/{held_id}/discard", response_model=sc.HeldSaleOut, dependencies=SELL)
+def post_discard_held(held_id: UUID, session: Session = DB_SESSION) -> object:
+    """Throw a held sale away. Safe to repeat. `held_id` may also be the terminal's `local_id`."""
+    return _held_out(held_sales.discard(session, held_id))
+
+
 # --------------------------------------------------------------------------- catalog
 @router.get("/catalog", response_model=list[sc.CatalogItemOut], dependencies=SELL)
 def get_catalog(branch_id: UUID, location_id: UUID | None = None,
                 search: str | None = Query(default=None, max_length=100), limit: int = page_limit(50),
-                offset: int = page_offset(),
+                offset: int = page_offset(), barcode: str | None = Query(default=None, max_length=64),
                 session: Session = DB_SESSION) -> object:
-    """Products a till can sell, with today's price and (given a location) the stock."""
-    return catalog.catalog(session, branch_id, location_id=location_id, search=search, limit=limit, offset=offset)
+    """Products a till can sell, with today's price and (given a location) the stock. `barcode` keeps only the
+    product with that scanned code. Page size up to 500 (the whole list, for a device that keeps a copy)."""
+    return catalog.catalog(session, branch_id, location_id=location_id, search=search, limit=limit, offset=offset,
+                           barcode=barcode)
+
+
+@router.get("/receipt-settings", response_model=sc.ReceiptSettingsOut, dependencies=SELL)
+def get_receipt_settings(branch_id: UUID, session: Session = DB_SESSION) -> object:
+    """The lines a till receipt has at the top and the foot, for a terminal that prints receipts while offline."""
+    header, footer = printing.receipt_template(session, branch_id)
+    return sc.ReceiptSettingsOut(header=header, footer=footer)
 
 
 # --------------------------------------------------------------------------- sales
@@ -245,9 +304,16 @@ def get_snapshot(x_device_key: str | None = DeviceKey, limit: int = Query(500, g
 @router.post("/sync/upload", response_model=sc.UploadOut, dependencies=SELL)
 def post_upload(body: sc.UploadIn, x_device_key: str | None = DeviceKey,
                 session: Session = DB_SESSION) -> object:
-    """Send what happened offline, in order. Safe to repeat: operations already accepted are answered, not redone."""
-    device = devices.authenticate(session, x_device_key)
+    """Send what happened offline, in order. Safe to repeat: operations already accepted are answered, not redone.
+    With the device key anything goes; without it (a browser terminal) only sales for the cashier's own till, named by
+    `till_session_id`, are accepted."""
     ops = [_op(x) for x in body.ops]
+    if x_device_key:
+        device = devices.authenticate(session, x_device_key)
+    else:       # a browser terminal has no device key: it may send sales for its own till (named by id)
+        only_sales = all(isinstance(x, sc.SaleOp) and x.till_session_id is not None for x in body.ops)
+        device = devices.of_own_till(session, {x.till_session_id for x in body.ops if x.till_session_id}
+                                     if only_sales and body.ops else set())
     results = sync.upload(session, device, ops)
     return sc.UploadOut(results=[sc.OpResultOut(**r.__dict__) for r in results], server_time=datetime.now(UTC))
 

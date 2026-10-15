@@ -344,11 +344,10 @@ class Registry:
         return done
 
     def _grant_new_permissions_to_owner(self, tenant_id: UUID, m: Manifest) -> None:
-        """After an upgrade: the Owner gets any permission the new version added (only where the unit is enabled)."""
-        if m.core:
-            return
+        """After an upgrade: the Owner gets any permission the new version added (the kernel's always; a unit's only
+        where the unit is enabled)."""
         with tenant_session(tenant_id, admin=True) as s:
-            if m.name in self.enabled_for(s):
+            if m.core or m.name in self.enabled_for(s):
                 grant_owner_unit_permissions(s, m)
 
     def install_all(self) -> list[str]:

@@ -119,6 +119,18 @@ class Settings(BaseSettings):
     pg_tool_host: str = ""                  # host/port the tool above uses to reach the server (inside the container)
     pg_tool_port: int = 0
 
+    # AI layer (docs/ai.md). The provider's name (a plugin implementing the `intel.llm` extension point; "fake" is for
+    # development and tests and is refused in production), the platform's secret key for it, the model, the address of
+    # its API, how long one call may take and how often a failed one is retried. A business turns AI on for itself with
+    # an explicit consent; in production no call is made until the operator confirms the provider's data terms.
+    ai_provider: str = "anthropic"
+    ai_api_key: str = ""
+    ai_model: str = "claude-sonnet-5-5"
+    ai_base_url: str = "https://api.anthropic.com"
+    ai_timeout_seconds: float = 30.0
+    ai_max_retries: int = 2
+    ai_terms_confirmed: bool = False
+
     def cors_origin_list(self) -> list[str]:
         """The allowed CORS origins as a list."""
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

@@ -30,10 +30,11 @@ export function Home() {
           })}
         </div>
       )}
-      <div className={cx("grid gap-4 md:grid-cols-2 xl:grid-cols-3")}>
+      {/* grid-cols-1 (not an automatic column) lets a wide widget shrink instead of widening the page on a phone */}
+      <div className={cx("grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3")}>
         <Slot
           name="dashboard.widgets"
-          render={(c, content) => <Card title={c.label ? t(c.label) : undefined}>{content}</Card>}
+          render={(c, content) => <Card className="min-w-0" title={c.label ? t(c.label) : undefined}>{content}</Card>}
         />
       </div>
     </div>

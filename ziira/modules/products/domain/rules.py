@@ -8,6 +8,8 @@ from ziira.sdk import ValidationFailed
 SKU_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9\-_.]{0,39}$")
 UOM_PATTERN = re.compile(r"^[A-Z]{1,10}$")
 PRODUCT_TYPES = ("stock", "non_stock", "service")
+BARCODE_PATTERN = re.compile(r"^[\x21-\x7e]{1,64}$")
+MAX_BARCODES = 20
 
 
 def normalise_sku(sku: str) -> str:
@@ -81,3 +83,18 @@ def check_tax_code(code: str) -> str:
     if not re.match(r"^[A-Z0-9][A-Z0-9_-]{0,19}$", value):
         raise ValidationFailed("Tax code must be 1-20 characters: letters, digits, '-' or '_'")
     return value
+
+
+def clean_barcodes(codes: list[str]) -> list[str]:
+    """Trim the codes a scanner reads, keep the first of any repeats, and check each is 1-64 visible characters (no
+    spaces). Case is kept: some code types are case-sensitive."""
+    cleaned: list[str] = []
+    for raw in codes:
+        code = raw.strip()
+        if not BARCODE_PATTERN.match(code):
+            raise ValidationFailed(f"Barcode '{code[:20]}' must be 1-64 characters with no spaces")
+        if code not in cleaned:
+            cleaned.append(code)
+    if len(cleaned) > MAX_BARCODES:
+        raise ValidationFailed(f"A product can have at most {MAX_BARCODES} barcodes")
+    return cleaned

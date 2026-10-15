@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { filterQuery, mappingProblems, problemRows, progressPercent, stepOf, type Column } from "./wizard";
+import { type Batch, canImport, filterQuery, mappingProblems, problemRows, progressPercent, stepOf, type Column } from "./wizard";
 
 const col = (name: string, required: boolean): Column => ({ name, required, description: "", example: "", total: null });
-const counts = { pending: 0, valid: 0, invalid: 0, imported: 0, skipped: 0, failed: 0 };
+const counts = { pending: 0, valid: 0, invalid: 0, imported: 0, skipped: 0, failed: 0, reverted: 0 };
 
 describe("stepOf", () => {
   it("follows the status the server reports", () => {
@@ -48,5 +48,28 @@ describe("filterQuery", () => {
     expect(filterQuery("problems")).toEqual({ only_errors: true });
     expect(filterQuery("valid")).toEqual({ status: "valid" });
     expect(filterQuery("skipped")).toEqual({ status: "skipped" });
+  });
+});
+
+describe("canImport", () => {
+  const batch = (over: Partial<Batch>): Batch => ({
+    counts: { ...counts, valid: 3 }, whole_file: false, file_check: { problems: [], confirm: null, notes: [] }, ...over,
+  } as Batch);
+  it("needs something valid to import", () => {
+    expect(canImport(batch({ counts: counts }), false)).toBe(false);
+    expect(canImport(batch({}), false)).toBe(true);
+  });
+  it("lets row-by-row imports go on with some rows rejected", () => {
+    expect(canImport(batch({ counts: { ...counts, valid: 3, invalid: 1 } }), false)).toBe(true);
+  });
+  it("stops a whole-file import for any rejected row or problem with the file", () => {
+    expect(canImport(batch({ whole_file: true, counts: { ...counts, valid: 3, invalid: 1 } }), false)).toBe(false);
+    expect(canImport(batch({ whole_file: true, file_check: { problems: ["Not in balance with customers"], confirm: null, notes: [] } }), true)).toBe(false);
+    expect(canImport(batch({ whole_file: true }), false)).toBe(true);
+  });
+  it("waits for the user to accept a difference", () => {
+    const warned = batch({ whole_file: true, file_check: { problems: [], confirm: "Out by 100.00", notes: [] } });
+    expect(canImport(warned, false)).toBe(false);
+    expect(canImport(warned, true)).toBe(true);
   });
 });

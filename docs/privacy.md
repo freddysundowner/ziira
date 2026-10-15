@@ -46,6 +46,9 @@ personal data sits in these places. "Free text" means staff typed it, so it can 
 | People | `people.employee_bank_account` | Bank, account number (encrypted) and mask | See section 3 |
 | People | `people.attendance`, `leave_request`, `employment_terms`, `payslip`, `payroll_run` | Time worked, leave (with free-text reasons), pay | Amounts and dates stay; leave reasons and notes removed |
 | Finance / Inventory | `finance.journal_*`, `inventory.stock_movement` | Ids of parties only; no names | Never touched (immutable) |
+| Intelligence | `intel.ai_call_log`, `intel.ai_usage`, `intel.ai_consent`, `intel.ai_ranking` | **Hashes and labels only**: who asked (user id), purpose, a SHA-256 of what was sent, tool names and argument names, token counts, outcome; consent rows hold who agreed, when and the consent text. No prompt text, no reply text, no names of customers or employees, no key | Nothing to erase; the call log is forgotten after 400 days |
+| Intelligence | `intel.ask_session`, `intel.ask_message` | A person's questions to Ask Ziira and the answers with **the rows the tools returned** (customer, supplier and employee names, balances) | Text, rows and session title replaced (`kernel.personal_data` provider `intel`); forgotten anyway 90 days after the last message |
+| Intelligence | `intel.finding.explanation_ai` | Text written by AI from a finding; may carry the names the finding names | With the finding (findings follow the retention of the business) |
 
 Secrets (passwords, authenticator secrets, bank account numbers) are stored hashed or encrypted and are **never**
 included in an export.
@@ -234,7 +237,8 @@ counsel and adapted to the law that applies to you.
 - [ ] Confidentiality of the people who handle the data
 - [ ] Security measures (access control by permission, row-level isolation per business, encryption of secrets,
       immutable audit trail, backups; see the technical specification section 18)
-- [ ] Sub-processors (hosting, email and SMS gateways, payment providers) listed, with how changes are notified
+- [ ] Sub-processors (hosting, email and SMS gateways, payment providers, the AI provider if the assistant is switched on:
+      `docs/ai.md` section 9) listed, with how changes are notified
 - [ ] Help with data subject requests (this document), assessments and breach notification
 - [ ] Return or deletion of all data at the end of the contract (`ziira drop-tenant` deletes a business's database;
       take an export first)
@@ -247,6 +251,11 @@ counsel and adapted to the law that applies to you.
   consistent with what you tell people, and re-apply erasures when restoring (the privacy requests table lists them).
 - **Free text** that staff typed elsewhere (product descriptions, exception notes, document notes in units not listed
   above, uploaded files) is not searched. The search finds what is recorded in the fields in the data map.
+- **AI provider**: when the AI assistant is on, the provider receives finding summaries, figures and tool results with people's names
+  replaced by labels and personal details scrubbed (`docs/ai.md`, section 3), under the provider's no-training terms. An erasure in Ziira
+  cannot reach what the provider holds under its own retention; list the provider as a sub-processor (section 8). Ask Ziira
+  conversations are found by a data subject search (the subject's name, email, phone or id inside a question, answer or the rows
+  it used) and erased, but the AI-written `explanation_ai` text of a finding is not searched (findings are not, in general).
 - **Names are not unique**: a name search only ever produces *possible* matches that a person must confirm.
 - **Audit log**: not erasable; see section 3.
 - **Other systems** (an email provider's logs, the SMS gateway, a payment provider) hold their own copies; erasing in

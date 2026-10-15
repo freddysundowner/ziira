@@ -1,6 +1,6 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-import { Input, PageHeader, Select, Tabs, today, monthStart, useTranslation } from "@/sdk";
+import { EmptyState, Input, PageHeader, Select, Tabs, today, monthStart, useTranslation } from "@/sdk";
 import { useState } from "react";
 
 import { ScopeSelects, useScope } from "../scope";
@@ -33,10 +33,20 @@ export default function ReportsPage() {
   const scope = useScope();
   const [from, setFrom] = useState(monthStart());
   const [to, setTo] = useState(today());
-  const active: ReportId = IDS.find((id) => id === param) ?? "pnl";
+  const known = IDS.find((id) => id === param);
+  const active: ReportId = known ?? "pnl";
   const { view: View, asOf } = REPORTS[active];
   const props: ReportProps = { scope, from, to };
   const bad = !asOf && from > to;
+
+  if (param && !known) {
+    return (
+      <>
+        <PageHeader title={t("reports.title")} description={t("reports.hint")} />
+        <EmptyState title={t("reports.notFound")} hint={t("reports.notFoundHint")} action={<Link className="font-medium text-brand-strong underline" to="/finance/reports">{t("reports.allReports")}</Link>} />
+      </>
+    );
+  }
 
   return (
     <>

@@ -7,3 +7,5 @@ from ziira.modules.imports.public import IMPORTS_IMPORTER
 from ziira.sdk import provides
 
 provides(IMPORTS_IMPORTER)(CustomerImporter)
+
+from ziira.modules.crm import ask_tools as _ask_tools  # noqa: E402, F401, I001 - registers the Ask Ziira tools

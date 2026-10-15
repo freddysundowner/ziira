@@ -34,6 +34,8 @@ src/api/schema.d.ts   generated from the backend; never edit
 A page offers `<Slot name="products.product.tabs" props={{ productId }} />`; other modules contribute
 under `slots` in their `module.ts`. The slot name is exported from the owner's `public.ts`.
 Contributions appear only when their module is active and the user has the permission.
+Slots offered today: `dashboard.widgets` (shell), `products.product.tabs` (Products), `command.panels` (Command Center; Intelligence puts
+the Ask Ziira panel there).
 
 ## Rules (ESLint enforces them)
 

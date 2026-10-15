@@ -18,6 +18,7 @@ from ziira.modules.finance.repository.models import (
     JournalLine,
     ManualJournal,
     ManualJournalLine,
+    OpeningBalance,
     Period,
     PostingRule,
     ReconciliationLine,
@@ -556,3 +557,58 @@ def posted_sources(session: Session, source_type: str, ids: set[UUID]) -> set[UU
     return set(session.scalars(select(JournalEntry.source_id).where(
         JournalEntry.source_type == source_type, JournalEntry.source_id.in_(ids),
         JournalEntry.reversal_of_id.is_(None))))
+
+
+# --------------------------------------------------------------------------- opening balances
+def live_opening_balance(session: Session, company_id: UUID, *, lock: bool = False) -> OpeningBalance | None:
+    """The company's opening balance entry that has not been reversed (there is at most one)."""
+    query = select(OpeningBalance).where(OpeningBalance.company_id == company_id, OpeningBalance.status == "posted")
+    if lock:
+        query = query.with_for_update().execution_options(populate_existing=True)
+    return session.scalars(query).first()
+
+
+def get_opening_balance(session: Session, opening_id: UUID, *, lock: bool = False) -> OpeningBalance | None:
+    if lock:
+        return session.scalars(select(OpeningBalance).where(OpeningBalance.id == opening_id).with_for_update()
+                               .execution_options(populate_existing=True)).first()
+    return session.get(OpeningBalance, opening_id)
+
+
+def list_opening_balances(session: Session, company_ids: set[UUID] | None) -> list[OpeningBalance]:
+    query = select(OpeningBalance).order_by(OpeningBalance.created_at.desc())
+    if company_ids is not None:
+        query = query.where(OpeningBalance.company_id.in_(company_ids))
+    return list(session.scalars(query))
+
+
+def account_net_until(session: Session, company_id: UUID, account_id: UUID, day: date) -> Decimal:
+    """Debits less credits on an account over entries dated up to a day."""
+    value = session.scalar(select(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0)).where(
+        JournalLine.company_id == company_id, JournalLine.account_id == account_id, JournalLine.entry_date <= day))
+    return Decimal(value or 0)
+
+
+def party_net_until(session: Session, company_id: UUID, account_id: UUID, day: date) -> dict[UUID | None, Decimal]:
+    """Debits less credits on an account per party (None: lines with no party), over entries dated up to a day.
+    Parties whose lines cancel out are left out."""
+    rows = session.execute(
+        select(JournalLine.party_id, func.sum(JournalLine.debit - JournalLine.credit))
+        .where(JournalLine.company_id == company_id, JournalLine.account_id == account_id,
+               JournalLine.entry_date <= day)
+        .group_by(JournalLine.party_id)).all()
+    return {party: Decimal(net) for party, net in rows if Decimal(net) != 0}
+
+
+def party_net_by_source(session: Session, company_id: UUID, source_type: str, source_ids: set[UUID],
+                        party_type: str) -> Decimal:
+    """Debits less credits on the party lines (customers or suppliers) of the entries the given documents made."""
+    if not source_ids:
+        return Decimal(0)
+    value = session.scalar(
+        select(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0))
+        .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+        .where(JournalEntry.company_id == company_id, JournalEntry.source_type == source_type,
+               JournalEntry.source_id.in_(source_ids), JournalEntry.reversal_of_id.is_(None),
+               JournalLine.party_type == party_type))
+    return Decimal(value or 0)

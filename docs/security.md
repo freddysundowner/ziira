@@ -44,6 +44,18 @@ criterion: see "Penetration test").**
   using `ZIIRA_CREDENTIALS_KEY` (losing it locks out every business: back it up separately from the database).
 - Secrets and personal numbers are redacted from logs (`kernel/http_middleware.py`, `docs/operations.md`).
 
+## The AI assistant
+
+Optional and off until an Owner consents (`docs/ai.md`). What it adds to the attack surface and how it is bounded: the provider's API
+key is a platform secret (`ZIIRA_AI_API_KEY`), never stored per business and removed from every log and error; personal details are
+scrubbed from what is sent and people's names become labels; the model can only call defined tools (no SQL, no writes), each tool
+filters by the asking person's permissions and branches and the model's arguments are checked against a schema; a tool the person may
+not use is not offered and is refused if named; loops, tokens and time are capped, and a monthly token limit per business is a hard
+stop; every call and refusal is logged (hash of what was sent, tools, tokens, outcome) without text; conversations are visible to
+their owner and to `ai.manage` holders only. Prompt injection: text in records (a customer name, a note) can reach the model through
+a tool result, so the model's output is never trusted: it cannot act, and its numbers are checked against the data. Production refuses
+every call until the operator confirms the provider's no-training and retention terms (`ZIIRA_AI_TERMS_CONFIRMED`).
+
 ## Application security
 
 Input validation on every request (Pydantic types, `Quantity`/`Amount` for numbers; the fuzzer in `tests/test_robustness.py` checks every endpoint
@@ -102,6 +114,8 @@ CI runs dependency scanning (`pip-audit`, `npm audit`) and a secret scan (see `.
 - [ ] CORS origins, `ZIIRA_PUBLIC_WEB_URL`, platform email provider verified (reset and registration links work end to end).
 - [ ] Database not reachable from the internet; one login per business; least-privilege roles; backups encrypted and the monthly restore test running.
 - [ ] `scripts/check_env.py` passes for the production `.env`.
+- [ ] If the AI assistant will be offered: the provider's data terms (no training on API data, retention) are in place and the provider is
+      listed as a sub-processor; `ZIIRA_AI_API_KEY` set and `ZIIRA_AI_TERMS_CONFIRMED=true`; `scripts/live_check.py ai` passed (`docs/ai.md`).
 - [ ] Penetration test done and its findings fixed (below).
 
 ## Penetration test (scope to hand to the testers)

@@ -26,6 +26,7 @@
   "openCount_other": "Mambo {{count}} wazi",
   "amountInvolved": "{{amount}} zinahusika",
   "nextStep": "Hatua: {{action}}",
+  "aiReason": "Kwa nini lipo hapa (imeandikwa na AI): {{reason}}",
   "severity": {
     "critical": "Dharura",
     "high": "Juu",

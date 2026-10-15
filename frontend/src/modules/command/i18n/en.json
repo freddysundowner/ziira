@@ -26,6 +26,7 @@
   "openCount_other": "{{count}} open items",
   "amountInvolved": "{{amount}} involved",
   "nextStep": "Next: {{action}}",
+  "aiReason": "Why it is here (AI-written): {{reason}}",
   "severity": {
     "critical": "Critical",
     "high": "High",

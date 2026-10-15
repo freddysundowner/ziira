@@ -43,3 +43,9 @@ def find_customer(session: Session, customer_id: UUID) -> CustomerView | None:
 def find_customers(session: Session, customer_ids: set[UUID]) -> dict[UUID, CustomerView]:
     """Several customers at once, by id."""
     return {c.id: _view(c) for c in crm_repo.customers_by_ids(session, customer_ids)}
+
+
+def find_customer_by_code(session: Session, company_id: UUID, code: str) -> CustomerView | None:
+    """A company's customer by code (codes are upper case), or None."""
+    customer = crm_repo.customer_by_code(session, company_id, code.strip().upper())
+    return _view(customer) if customer is not None else None

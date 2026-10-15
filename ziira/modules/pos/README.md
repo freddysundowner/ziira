@@ -57,6 +57,12 @@ reason, an M-Pesa payment without its code, a day closed in the meantime (booked
 An operation that cannot be accepted at all is kept whole in `pos.sync_rejection` (`GET /sync/rejections`) and flagged;
 fix the cause and the device sends it again.
 
+The browser terminal has no device key: it sends its offline sales to `POST /sync/upload` without `X-Device-Key`, which is
+accepted for sales on the signed-in cashier's own till only. See `docs/offline-pos.md`. `GET /receipt-settings` gives the
+receipt header and footer for printing offline. **Held sales** (`POST /tills/{id}/held`, `GET`, `POST /held/{id}/resume|discard`,
+table `pos.held_sale`, migration `0007`) are drafts that touch neither stock nor books; they expire when the till closes.
+`GET /catalog` takes `barcode` and returns each product's `barcodes` (Products: `PUT /products/{id}/barcodes`).
+
 ## Customers on account (phase 6)
 
 - **Credit sales.** A till sale can leave all or part of its total on the customer's account (`payments: [{method:
@@ -110,3 +116,11 @@ public.py     open_till_sessions (used by the daily close), customer_balance
 hooks.py      the customer ledger check
 tests/        domain tests; flows are in the top-level tests/ (test_pos_*.py)
 ```
+
+## Opening balances
+
+`customer_balances` (the unit's `imports.importer`) brings in what customers owed at go-live: an **opening invoice** per open invoice
+(`kind = opening_balance`, no lines, tax or stock, the old invoice's date, due date and number in `external_ref`) and an **opening
+receipt** (`method = opening`, unallocated) per customer in credit. They age, show on statements, are paid by ordinary receipts, and
+publish `customer.opening_balance` for Finance. They are never cancelled one by one; the whole import is reversed
+(`services/opening_balances.py`). See `docs/data-import.md`.

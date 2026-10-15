@@ -44,9 +44,9 @@
  "event": {
   "detected": "Noticed", "alert_sent": "Alert sent", "asked": "Asked to explain", "assigned": "Assigned", "unassigned": "Unassigned",
   "auto_resolved": "Cleared by itself", "reopened": "Seen again", "severity_changed": "Severity changed", "acknowledged": "Seen",
-  "explained": "Explained", "resolved": "Resolved", "dismissed": "Marked as not a problem"
+  "explained": "Explained", "resolved": "Resolved", "dismissed": "Marked as not a problem", "ai_explained": "AI wrote an explanation"
  },
- "channel": { "sms": "SMS", "email": "Email", "in_app": "In the app" },
+ "channel": { "sms": "SMS", "email": "Email", "in_app": "In the app", "ai": "AI" },
  "action": {
   "acknowledge": "I have seen this", "explain": "Explain", "resolve": "Resolve", "dismiss": "Not a problem",
   "assign": "Assign", "ask": "Ask someone to explain"
@@ -113,5 +113,73 @@
  "widgetNone": "Nothing to look at right now.",
  "widgetOpen_one": "{{count}} open finding",
  "widgetOpen_other": "{{count}} open findings",
- "findingsWidget": "Findings"
+ "findingsWidget": "Findings",
+ "ai": {
+  "label": "AI-written",
+  "short": "AI",
+  "none": "No AI explanation yet.",
+  "labelHint": "Written by an AI assistant from this business's own figures. The numbers come from your records; the wording can be imperfect.",
+  "explanationTitle": "Plain-language explanation",
+  "explanationHint": "Written by AI from this finding's own figures. The checks' own text above stays the reference.",
+  "write": "Write an explanation",
+  "regenerate": "Write again",
+  "regenerateAsk": "Replace the AI explanation with a new one?",
+  "written": "Explanation written.",
+  "rankReason": "Why it is here: {{reason}}",
+  "askTitle": "Ask Ziira",
+  "askHint": "Ask about sales, stock, customers, suppliers or the books in plain words. Answers are written by AI from your own records, limited to what you may see.",
+  "placeholder": "Ask a question, for example “How were sales this week?”",
+  "questionLabel": "Your question",
+  "send": "Ask",
+  "thinking": "Looking at your records…",
+  "newConversation": "New conversation",
+  "examples": "Try asking",
+  "example": {
+   "sales": "How were sales yesterday?",
+   "lowStock": "Which products are running low?",
+   "overdue": "Which customers are overdue?",
+   "profit": "What was our profit this month so far?",
+   "bills": "Which supplier bills are due this week?"
+  },
+  "tool": {
+   "intel_list_findings": "Findings",
+   "intel_finding_detail": "Finding in detail",
+   "command_figures": "Key figures",
+   "pos_sales_summary": "Sales summary",
+   "pos_top_products": "Best-selling products",
+   "pos_voids": "Voided sales",
+   "crm_customer_balance": "Customer balance",
+   "crm_overdue_customers": "Overdue customers",
+   "inventory_stock_on_hand": "Stock on hand",
+   "inventory_low_stock": "Low stock",
+   "purchasing_supplier_balance": "Supplier balance",
+   "purchasing_bills_due": "Supplier bills due",
+   "finance_profit_and_loss": "Profit and loss",
+   "finance_cash_position": "Cash position",
+   "people_headcount": "Headcount",
+   "people_leave_pending": "Leave waiting for approval"
+  },
+  "you": "You",
+  "answerLabel": "Ziira",
+  "basedOn": "Based on",
+  "noSources": "No records were looked up for this answer.",
+  "rows_one": "{{count}} row",
+  "rows_other": "{{count}} rows",
+  "noRows": "No rows",
+  "checkFigures": "Some figures could not be checked against the records. Look at the sources before relying on them.",
+  "capped": "This took more steps than allowed, so the answer may be incomplete.",
+  "error": "No answer: {{message}}",
+  "retry": "Try again",
+  "unavailable": {
+   "not_enabled": "Ask Ziira is switched off for this business.",
+   "no_consent": "Ask Ziira needs an Owner's consent before it can be used.",
+   "purpose_off": "Ask Ziira is switched off in the AI assistant settings.",
+   "budget": "This month's AI limit has been reached.",
+   "not_configured": "The platform's AI provider is not set up yet.",
+   "terms_unconfirmed": "The platform has not confirmed its AI provider's data terms yet.",
+   "default": "Ask Ziira is not available right now."
+  },
+  "ownerCanFix": "An Owner can change this in Settings > AI assistant.",
+  "openSettings": "Open the AI assistant settings"
+ }
 }

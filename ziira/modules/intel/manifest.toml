@@ -10,20 +10,22 @@ optional = []
 [provides]
 api_prefix = "/api/v1/intel"
 publishes = ["finding.created", "finding.asked"]
-extension_points = ["intel.check", "intel.baseline_metric"]
+extension_points = ["intel.check", "intel.baseline_metric", "intel.llm", "intel.ask_tool"]
 subscribes = []
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["intel.check"]
+implements = ["intel.check", "intel.llm", "intel.ask_tool", "kernel.personal_data"]
 
 [permissions]
 "findings.view" = "View findings"
 "findings.manage" = "Acknowledge, resolve, dismiss and assign findings; tune the checks; ask people to explain"
 "findings.respond" = "Explain the findings assigned to you"
+"ai.manage" = "Switch the AI assistant on or off for the business, set its budget, and read its usage, call log and conversations"
+"ai.ask" = "Ask Ziira questions about the business, within your own access"
 
 # Default roles that receive these permissions when the module is enabled (Owner gets all).
 [roles]
-"Finance Manager" = ["findings.view", "findings.manage"]
-"Accountant" = ["findings.view"]
-"Branch Manager" = ["findings.view", "findings.respond"]
+"Finance Manager" = ["findings.view", "findings.manage", "ai.ask"]
+"Accountant" = ["findings.view", "ai.ask"]
+"Branch Manager" = ["findings.view", "findings.respond", "ai.ask"]

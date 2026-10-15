@@ -10,6 +10,7 @@ entries, number series and events apply exactly as if the record had been typed 
 
 import logging
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
@@ -19,7 +20,7 @@ from sqlalchemy.engine import Row
 
 from ziira.modules.imports.domain import files, mapping, values
 from ziira.modules.imports.permissions import IMPORTS_MANAGE
-from ziira.modules.imports.public import IMPORTS_IMPORTER, Importer, ImportOptions, ImportRow
+from ziira.modules.imports.public import IMPORTS_IMPORTER, FileCheck, Importer, ImportOptions, ImportRow
 from ziira.modules.imports.repository import imports_repo as repo
 from ziira.sdk import (
     Conflict,
@@ -98,7 +99,10 @@ def list_batches(session: Session, *, limit: int, offset: int) -> list[Row[Any]]
 
 
 def options_of(batch: Row[Any]) -> ImportOptions:
-    return ImportOptions(batch.options.get("decimal_separator", "."), batch.options.get("date_format", "iso"))
+    as_of = batch.options.get("as_of")
+    return ImportOptions(batch.options.get("decimal_separator", "."), batch.options.get("date_format", "iso"),
+                         date.fromisoformat(as_of) if as_of else None,
+                         Decimal(batch.options.get("tolerance", "0")))
 
 
 def import_row(importer: Importer, batch: Row[Any], cells: list[str]) -> ImportRow:
@@ -135,12 +139,18 @@ def list_rows(session: Session, batch_id: UUID, *, status: str | None, only_erro
 
 # --------------------------------------------------------------------------- upload and mapping
 def create_batch(session: Session, *, kind: str, company_id: UUID, filename: str, data: bytes,
-                 decimal_separator: str = ".", date_format: str = "iso", delimiter: str | None = None) -> BatchDetail:
-    """Read an uploaded file into a batch, with the column mapping we suggest. Nothing is imported yet."""
+                 decimal_separator: str = ".", date_format: str = "iso", delimiter: str | None = None,
+                 as_of: date | None = None, tolerance: Decimal = Decimal(0)) -> BatchDetail:
+    """Read an uploaded file into a batch, with the column mapping we suggest. Nothing is imported yet. Kinds that bring
+    in balances (`needs_go_live`) need the go-live date `as_of`."""
     importer = get_importer(session, kind)
     check_company(session, company_id)
     _authorise(importer, company_id)
     _check_options(decimal_separator, date_format)
+    if importer.needs_go_live and as_of is None:
+        raise ValidationFailed("Say the go-live date: the day the balances in this file are as at")
+    if tolerance < 0 or not tolerance.is_finite():
+        raise ValidationFailed("The tolerance is zero or more")
     try:
         parsed = files.parse_file(data, delimiter=delimiter)
     except files.ImportFileError as error:
@@ -149,7 +159,9 @@ def create_batch(session: Session, *, kind: str, company_id: UUID, filename: str
     batch_id = repo.add_batch(
         session, company_id=company_id, kind=kind, filename=(filename or "import.csv").strip()[:200] or "import.csv",
         delimiter=parsed.delimiter, headers=parsed.headers, mapping=suggestion,
-        options={"decimal_separator": decimal_separator, "date_format": date_format}, warnings=parsed.warnings,
+        options={"decimal_separator": decimal_separator, "date_format": date_format,
+                 **({"as_of": as_of.isoformat()} if as_of else {}), "tolerance": str(tolerance)},
+        warnings=parsed.warnings,
         created_by=current_context().user_id)
     repo.add_rows(session, batch_id, parsed.rows)
     audit_record(session, "upload", "imports.batch", batch_id,
@@ -196,7 +208,7 @@ def set_mapping(session: Session, batch_id: UUID, *, columns: dict[str, str | No
     options["date_format"] = date_format or options.get("date_format", "iso")
     _check_options(options["decimal_separator"], options["date_format"])
     ordered = {c.name: chosen[c.name] for c in importer.columns}
-    repo.update_batch(session, batch_id, mapping=ordered, options=options, status="uploaded")
+    repo.update_batch(session, batch_id, mapping=ordered, options=options, status="uploaded", file_check={})
     repo.reset_rows(session, batch_id)
     return get_batch(session, batch_id)
 
@@ -243,6 +255,7 @@ def validate_batch(session: Session, batch_id: UUID) -> BatchDetail:
     if missing:
         raise ValidationFailed(f"Choose a column for: {', '.join(missing)}")
     first_seen: dict[str, int] = {}
+    valid_rows: list[ImportRow] = []
     for chunk in repo.iter_rows(session, batch_id):
         results: list[dict[str, Any]] = []
         for staged in chunk:
@@ -264,18 +277,41 @@ def validate_batch(session: Session, batch_id: UUID) -> BatchDetail:
                 else:
                     if found:
                         errors, status = [found[:MESSAGE_LIMIT]], "skipped"
+            if status == "valid":
+                valid_rows.append(row)
             results.append({"id": staged.id, "status": status, "parsed": dict(row.values), "errors": errors})
         repo.set_row_results(session, results)
-    repo.update_batch(session, batch_id, status="validated")
     counts = repo.counts(session, batch_id)
+    file_check: dict[str, Any] = {}
+    if importer.whole_file:
+        file_check = _file_check(session, importer, batch.company_id, valid_rows, rows_invalid=counts["invalid"])
+    repo.update_batch(session, batch_id, status="validated", file_check=file_check)
     audit_record(session, "validate", "imports.batch", batch_id,
                  {"valid": counts["valid"], "invalid": counts["invalid"], "skipped": counts["skipped"]})
     return get_batch(session, batch_id)
 
 
+def _file_check(session: Session, importer: Importer, company_id: UUID, rows: list[ImportRow], *,
+                rows_invalid: int) -> dict[str, Any]:
+    """The problems with a whole-file import taken as a whole (stored on the batch for the screen and the commit)."""
+    if rows_invalid:
+        return {"problems": [f"{rows_invalid} row(s) have problems. These rows belong together, so every row must be "
+                             "valid: fix the file and upload it again"], "confirm": None, "notes": []}
+    try:
+        with session.begin_nested():
+            found = importer.check_file(session, company_id, rows)
+    except Exception as error:   # noqa: BLE001 - reported as a problem with the file
+        if not isinstance(error, ZiiraError):
+            log.exception("Importer %s could not check the file", importer.kind)
+        found = FileCheck(problems=[_message(error)])
+    return {"problems": [m[:MESSAGE_LIMIT] for m in found.problems], "confirm": found.confirm,
+            "notes": [m[:MESSAGE_LIMIT] for m in found.notes]}
+
+
 # --------------------------------------------------------------------------- the import
-def commit_batch(session: Session, batch_id: UUID) -> BatchDetail:
-    """Start importing the valid rows in the background. Asking again while it runs (or after) changes nothing."""
+def commit_batch(session: Session, batch_id: UUID, *, confirm: bool = False) -> BatchDetail:
+    """Start importing the valid rows in the background. Asking again while it runs (or after) changes nothing. A
+    whole-file import whose check carries a warning (a file that does not balance) needs `confirm`."""
     batch = _load(session, batch_id, lock=True)
     importer = get_importer(session, batch.kind)
     _authorise(importer, batch.company_id)
@@ -288,8 +324,16 @@ def commit_batch(session: Session, batch_id: UUID) -> BatchDetail:
         raise Conflict("Some rows have not been checked since the columns changed; run the check again")
     if not counts["valid"]:
         raise ValidationFailed("There is no valid row to import")
+    options = dict(batch.options)
+    if importer.whole_file:
+        found = batch.file_check or {}
+        if counts["invalid"] or found.get("problems"):
+            raise ValidationFailed("; ".join(found.get("problems") or ["Every row must be valid"]))
+        if found.get("confirm") and not confirm:
+            raise Conflict(f"{found['confirm']}: confirm to go on")
+        options["confirmed"] = "1" if confirm else ""
     repo.update_batch(session, batch_id, status="committing", committed_by=current_context().user_id,
-                      committed_at=_now(session))
+                      committed_at=_now(session), options=options)
     enqueue(session, COMMIT_JOB, {"batch_id": str(batch_id)}, dedupe_key=f"{COMMIT_JOB}:{batch_id}:start")
     audit_record(session, "commit", "imports.batch", batch_id, {"valid_rows": counts["valid"]})
     return get_batch(session, batch_id)
@@ -306,6 +350,9 @@ def import_chunk(session: Session, batch_id: UUID, size: int | None = None) -> i
     if batch is None or batch.status != "committing":
         return 0
     importer = get_importer(session, batch.kind)
+    if importer.whole_file:
+        _import_whole_file(session, batch, importer)
+        return 0
     for staged in repo.next_valid_rows(session, batch_id, size or CHUNK):
         row = import_row(importer, batch, list(staged.raw))
         try:
@@ -326,6 +373,28 @@ def import_chunk(session: Session, batch_id: UUID, size: int | None = None) -> i
     else:
         enqueue(session, COMMIT_JOB, {"batch_id": str(batch_id)}, dedupe_key=f"{COMMIT_JOB}:{batch_id}:{left}")
     return left
+
+
+def _import_whole_file(session: Session, batch: Row[Any], importer: Importer) -> None:
+    """Import every valid row as one record (a trial balance is one entry), or none of them: the file is checked again
+    here, because balances may have changed since the check."""
+    staged = repo.next_valid_rows(session, batch.id, 100_000)
+    rows = [import_row(importer, batch, list(r.raw)) for r in staged]
+    try:
+        with session.begin_nested():
+            found = importer.check_file(session, batch.company_id, rows)
+            if found.problems:
+                raise ValidationFailed("; ".join(found.problems))
+            record_id = importer.import_file(session, batch.company_id, rows,
+                                             confirmed=bool(batch.options.get("confirmed")))
+        for r in staged:
+            repo.set_row_outcome(session, r.id, "imported", [], record_id)
+    except Exception as error:   # noqa: BLE001 - recorded on every row; nothing was imported
+        if not isinstance(error, ZiiraError):
+            log.exception("Importer %s failed on the whole file", importer.kind)
+        for r in staged:
+            repo.set_row_outcome(session, r.id, "failed", [_message(error)])
+    _finish(session, batch)
 
 
 def _finish(session: Session, batch: Row[Any]) -> None:
@@ -374,17 +443,19 @@ def report(session: Session, batch_id: UUID) -> Report:
         for staged in chunk:
             row = import_row(importer, batch, list(staged.raw))
             every.append(row)
-            if staged.status == "imported":
+            if staged.status in ("imported", "reverted"):
                 imported.append(row)
                 if staged.record_id is not None:
                     record_ids.append(staged.record_id)
     in_file, expected = importer.totals(every), importer.totals(imported)
-    actual = importer.imported_totals(session, batch.company_id, record_ids) if record_ids else {}
+    record_ids = list(dict.fromkeys(record_ids))
+    actual = importer.read_back(session, batch.company_id, imported, record_ids) if record_ids else {}
     lines = [TotalLine(label, in_file[label], expected.get(label, Decimal(0)), actual.get(label, Decimal(0)),
                        in_file[label] - expected.get(label, Decimal(0)),
                        expected.get(label, Decimal(0)) - actual.get(label, Decimal(0))) for label in in_file]
+    touched = detail.counts["imported"] or detail.counts["reverted"]
     problems = [f"{x.label}: the imported rows add up to {x.expected} in the file but {x.in_ziira} in Ziira "
-                f"(difference {x.difference})" for x in lines if not x.matches and detail.counts["imported"]]
+                f"(difference {x.difference})" for x in lines if not x.matches and touched]
     if detail.counts["failed"]:
         problems.append(f"{detail.counts['failed']} row(s) failed while importing; download them, fix the cause "
                         "and upload them again")
@@ -398,3 +469,34 @@ def rejected_csv(session: Session, batch_id: UUID) -> str:
     for chunk in repo.iter_rows(session, batch_id, ["invalid", "failed"]):
         rows += [[*list(r.raw), "; ".join(r.errors)] for r in chunk]
     return to_csv([*detail.batch.headers, "error"], rows)
+
+
+# --------------------------------------------------------------------------- undoing a whole import
+def reverse_batch(session: Session, batch_id: UUID, *, reason: str) -> BatchDetail:
+    """Undo a finished import of a kind that can be undone (opening balances): the records it created are reversed
+    through their own unit, all or none. Refused, with the reason, when later activity (a payment taken against an
+    opening invoice) makes that unsafe. A reason is required."""
+    batch = _load(session, batch_id, lock=True)
+    importer = get_importer(session, batch.kind)
+    _authorise(importer, batch.company_id)
+    if not importer.reversible:
+        raise ValidationFailed(importer.reversal_note or f"An import of {importer.title.lower()} cannot be reversed")
+    if batch.status == "reverted":
+        raise Conflict("This import has already been reversed")
+    if batch.status != "done":
+        raise Conflict("Only a finished import can be reversed")
+    if not reason.strip():
+        raise ValidationFailed("A reason is required")
+    record_ids = [r.record_id for chunk in repo.iter_rows(session, batch_id, ["imported"]) for r in chunk
+                  if r.record_id is not None]
+    if not record_ids:
+        raise ValidationFailed("This import created nothing, so there is nothing to reverse")
+    reversed_count = importer.reverse(session, batch.company_id, list(dict.fromkeys(record_ids)), reason.strip())
+    repo.mark_reverted(session, batch_id)
+    repo.update_batch(session, batch_id, status="reverted", reverted_at=_now(session),
+                      reverted_by=current_context().user_id, revert_reason=reason.strip()[:500])
+    audit_record(session, "reverse", "imports.batch", batch_id,
+                 {"kind": batch.kind, "records": reversed_count, "reason": reason.strip()[:500]})
+    publish(session, Event("import.reverted", "imports.batch", batch_id, {
+        "company_id": batch.company_id, "kind": batch.kind, "records": reversed_count}))
+    return get_batch(session, batch_id)

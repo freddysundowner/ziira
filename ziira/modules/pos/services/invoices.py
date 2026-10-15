@@ -253,6 +253,9 @@ def cancel_invoice(session: Session, invoice_id: UUID, reason: str) -> InvoiceVi
         raise ValidationFailed("A reason is required")
     if invoice.kind == "credit_sale":
         raise ValidationFailed("This invoice is for a sale on credit: void the sale instead")
+    if invoice.kind == "opening_balance":
+        raise ValidationFailed("This is an opening balance brought in when the business started on Ziira: it is "
+                               "taken out by reversing the whole import (Admin > Import data)")
     if invoice.status not in CANCEL_ALLOWED:
         raise Conflict(f"An invoice that is {invoice.status.replace('_', ' ')} cannot be cancelled"
                        + (": reverse its payments first" if invoice.amount_paid > 0 else ""))

@@ -144,7 +144,7 @@ def receive_payment(session: Session, *, customer_id: UUID, amount: Decimal, met
     if account_id is None and method != "cash":
         account_id = account_for_method(session, company_id, branch_id, "bank" if method == "cheque" else method)
         if account_id is None:
-            raise ValidationFailed(f"No {method} account is set up for this branch")
+            raise ValidationFailed(f"No {method.replace('_', ' ')} account is set up for this branch")
     receipt = CustomerReceipt(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=company_id, branch_id=branch_id,
         number=next_document_number(session, company_id=company_id, branch_id=branch_id, doc_type="customer_receipt",
@@ -349,7 +349,7 @@ def refund_advance(session: Session, receipt_id: UUID, *, amount: Decimal, metho
     if account_id is None and method != "cash":
         account_id = account_for_method(session, receipt.company_id, receipt.branch_id, method)
         if account_id is None:
-            raise ValidationFailed(f"No {method} account is set up for this branch")
+            raise ValidationFailed(f"No {method.replace('_', ' ')} account is set up for this branch")
     day = till.business_date if till is not None else tills.today(session, receipt.company_id)
     refund = CustomerRefund(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, company_id=receipt.company_id, branch_id=receipt.branch_id,

@@ -13,6 +13,10 @@ publishes = []
 extension_points = ["command.pulse_source"]
 subscribes = []
 
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["intel.ask_tool"]
+
 [permissions]
 "command.view" = "View the Command Center"
 "briefs.manage" = "Manage brief schedules and collect figures now"

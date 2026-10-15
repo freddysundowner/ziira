@@ -9,7 +9,7 @@ optional = ["products", "inventory", "crm", "purchasing", "finance", "pos", "peo
 
 [provides]
 api_prefix = "/api/v1/imports"
-publishes = ["import.committed"]
+publishes = ["import.committed", "import.reverted"]
 subscribes = []
 # Sockets other units can plug into (contract in public.py, declared in hooks.py): each unit that owns data
 # supplies the importer for it.

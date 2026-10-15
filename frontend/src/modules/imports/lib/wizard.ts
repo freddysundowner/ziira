@@ -8,7 +8,7 @@ export type Counts = Schemas["CountsOut"];
 export function stepOf(status: Batch["status"] | undefined): 0 | 1 | 2 | 3 {
   if (status === "uploaded") return 1;
   if (status === "validated") return 2;
-  if (status === "committing" || status === "done") return 3;
+  if (status === "committing" || status === "done" || status === "reverted") return 3;
   return 0;
 }
 
@@ -29,6 +29,13 @@ export function progressPercent(counts: Counts): number {
 
 /** Rows the user has to fix: rejected by the check, or failed while importing. */
 export const problemRows = (counts: Counts): number => counts.invalid + counts.failed;
+
+/** Whether the import can be started: something valid to import, and for a whole-file import no problem with the file as a whole. */
+export function canImport(batch: Batch, confirmed: boolean): boolean {
+  if (batch.counts.valid === 0) return false;
+  if (batch.whole_file && (batch.counts.invalid > 0 || batch.file_check.problems.length > 0)) return false;
+  return !batch.file_check.confirm || confirmed;
+}
 
 export type RowFilter = "all" | "problems" | "valid" | "skipped" | "imported";
 

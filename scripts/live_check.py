@@ -5,6 +5,7 @@
                                                  --intent-id UUID --checkout-id ws_CO_... [--dry-run]
     python scripts/live_check.py sms      --to 2547XXXXXXXX [--message TEXT] [--dry-run]
     python scripts/live_check.py email    --provider smtp|brevo|resend|sendgrid --to a@b.c [--dry-run]
+    python scripts/live_check.py ai       [--dry-run] [--no-tool]
 
 Credentials come from the environment (see docs/live-checks.md) and are never written anywhere. Every check uses the
 app's own provider classes (`ziira.modules.payments.providers`, `ziira.plugins.messaging.providers`), so a PASS means
@@ -28,9 +29,11 @@ from typing import Any
 
 import httpx
 
+from ziira.modules.intel.public import LlmMessage, ToolResult, ToolSpec
 from ziira.modules.payments.domain import mpesa
 from ziira.modules.payments.providers import DarajaProvider
 from ziira.modules.payments.public import StkQuery, StkRequest
+from ziira.plugins.ai_anthropic.provider import AnthropicMessages
 from ziira.plugins.messaging.providers import (
     BlessedTextsSms,
     BrevoEmail,
@@ -129,6 +132,19 @@ def made_up_reply(request: httpx.Request) -> httpx.Response:
     if "stkpushquery" in path:
         return httpx.Response(200, json={"MerchantRequestID": "dry-1", "CheckoutRequestID": "ws_CO_DRYRUN",
                                          "ResponseCode": "0", "ResultCode": "0", "ResultDesc": "dry run"})
+    if path.endswith("/v1/messages"):
+        sent = json.loads(request.content or b"{}")
+        answered = any(isinstance(m.get("content"), list) and any(b.get("type") == "tool_result" for b in m["content"])
+                       for m in sent.get("messages", []))
+        if sent.get("tools") and not answered:
+            return httpx.Response(200, json={
+                "id": "msg_dry", "type": "message", "role": "assistant", "model": sent.get("model", "dry-run"),
+                "stop_reason": "tool_use", "usage": {"input_tokens": 30, "output_tokens": 20},
+                "content": [{"type": "tool_use", "id": "toolu_dry", "name": "echo", "input": {"text": "ping"}}]})
+        return httpx.Response(200, json={
+            "id": "msg_dry", "type": "message", "role": "assistant", "model": sent.get("model", "dry-run"),
+            "stop_reason": "end_turn", "usage": {"input_tokens": 12, "output_tokens": 3},
+            "content": [{"type": "text", "text": "OK"}]})
     if "blessedtexts" in request.url.host:
         return httpx.Response(200, json=[{"status_code": "1000", "status_desc": "Message Sent", "message_id": "dry"}])
     if "brevo" in request.url.host:
@@ -383,6 +399,66 @@ def email_check(*, provider: str, to: str, dry_run: bool, echo: bool = True,
     return result
 
 
+# --------------------------------------------------------------------------- AI provider (Anthropic Messages API)
+def ai_check(*, dry_run: bool, tool_step: bool = True, echo: bool = True, env: dict[str, str] | None = None) -> Report:
+    """A harmless prompt through the app's own AnthropicMessages provider, then (unless `tool_step` is off) a tool-use
+    round trip with a made-up `echo` tool: the part of the request/response mapping most worth confirming."""
+    report = Report("ai (Anthropic Messages API)")
+    if env is None:
+        env = {"ZIIRA_LIVE_AI_API_KEY": "dry-run-key-not-used"} if dry_run else need_env(["ZIIRA_LIVE_AI_API_KEY"])
+    key = env["ZIIRA_LIVE_AI_API_KEY"]
+    kwargs: dict[str, Any] = {"api_key": key, "max_retries": 0}
+    if env.get("ZIIRA_LIVE_AI_MODEL"):
+        kwargs["model"] = env["ZIIRA_LIVE_AI_MODEL"]
+    if env.get("ZIIRA_LIVE_AI_BASE_URL"):
+        kwargs["base_url"] = env["ZIIRA_LIVE_AI_BASE_URL"]
+    provider = AnthropicMessages(**kwargs)
+    factory = tapped([key], report.exchanges, dry_run, echo)
+    provider.client_factory = lambda _timeout: factory()          # type: ignore[assignment,misc]
+    print(f"Step 1: one harmless prompt to model {provider.model_id()}.")
+    try:
+        first = provider.complete([LlmMessage("user", "Reply with the single word OK.")], [], "", 20)
+    except Exception as exc:  # noqa: BLE001 - the verdict names it
+        return report.finish(False, explain_ai_failure(str(exc)))
+    report.lines.append(f"reply={first.text!r} stop_reason={first.stop_reason} model={first.model} "
+                        f"tokens={first.usage.input_tokens}+{first.usage.output_tokens}")
+    if not first.text.strip():
+        return report.finish(False, "The reply was empty. Read the exchange above: is the model id right?")
+    if tool_step:
+        print("Step 2: a tool-use round trip with a made-up echo tool.")
+        echo_tool = ToolSpec("echo", "Returns the text it is given.", {
+            "type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"]})
+        ask = LlmMessage("user", "Call the echo tool with the text 'ping', then tell me what it returned.")
+        try:
+            asked = provider.complete([ask], [echo_tool], "", 200)
+            if not asked.tool_calls:
+                return report.finish(False, "The model did not call the tool. Read the exchange above; the tool "
+                                            "definition format may need a change in the provider.")
+            call = asked.tool_calls[0]
+            report.lines.append(f"tool call: {call.name}({call.arguments}) stop_reason={asked.stop_reason}")
+            done = provider.complete([ask, LlmMessage("assistant", asked.text, tool_calls=asked.tool_calls),
+                                      LlmMessage("user", tool_results=(ToolResult(call.id, "ping"),))],
+                                     [echo_tool], "", 200)
+        except Exception as exc:  # noqa: BLE001
+            return report.finish(False, explain_ai_failure(str(exc)))
+        report.lines.append(f"final reply={done.text!r} stop_reason={done.stop_reason}")
+        if not done.text.strip():
+            return report.finish(False, "No final text after the tool result. Read the exchange above.")
+    return report.finish(True, "Compare the exchange above with Anthropic's Messages API reference; then set "
+                               "ZIIRA_AI_API_KEY for the platform. Nothing was stored.")
+
+
+def explain_ai_failure(message: str) -> str:
+    low = message.lower()
+    if "401" in low or "authentication" in low:
+        return "The provider refused the API key. Copy it again from the provider's console."
+    if "404" in low or "model" in low:
+        return "The model id may be wrong (set ZIIRA_LIVE_AI_MODEL to a model your account can use)."
+    if "429" in low or "529" in low or "overloaded" in low:
+        return "The provider is rate limiting or busy. Wait and run again."
+    return "Read the provider's own words above, fix what they name, and run again."
+
+
 # --------------------------------------------------------------------------- command line
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -413,6 +489,9 @@ def parser() -> argparse.ArgumentParser:
     common(e)
     e.add_argument("--provider", required=True, choices=sorted(EMAIL_CHANNELS))
     e.add_argument("--to", required=True)
+    a = sub.add_parser("ai", help="one harmless prompt, and a tool-use round trip, through the AI provider code")
+    common(a)
+    a.add_argument("--no-tool", action="store_true", help="only the plain prompt, no tool-use round trip")
     return p
 
 
@@ -427,6 +506,8 @@ def main(argv: list[str] | None = None) -> int:
         report = callback_check(api_url=args.api_url, tenant_id=args.tenant_id, intent_id=args.intent_id,
                                 checkout_id=args.checkout_id, amount=args.amount, phone=args.phone,
                                 dry_run=args.dry_run)
+    elif args.check == "ai":
+        report = ai_check(dry_run=args.dry_run, tool_step=not args.no_tool)
     elif args.check == "sms":
         report = sms_check(to=args.to, text=args.message, dry_run=args.dry_run)
     else:

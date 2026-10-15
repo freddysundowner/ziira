@@ -5,8 +5,9 @@ import { Alert, api, Button, Field, FormGrid, Modal, NumberInput, Select, unwrap
 import { type CartLine, isPriceOverride, lineGross, lineProblem, num, needsReason, text } from "../cart";
 
 /** Change a line: quantity, and (for people who may) the price and a discount, which then need a reason from the list. */
-export function LineEditor({ line, currency, canOverride, onSave, onClose }: {
-  line: CartLine; currency: string; canOverride: boolean; onSave: (patch: Partial<CartLine>) => void; onClose: () => void;
+export function LineEditor({ line, currency, canOverride, online, savedReasons, onSave, onClose }: {
+  line: CartLine; currency: string; canOverride: boolean; online: boolean; savedReasons: { id: string; label: string }[] | undefined;
+  onSave: (patch: Partial<CartLine>) => void; onClose: () => void;
 }) {
   const { t } = useTranslation("pos");
   const [quantity, setQuantity] = useState(line.quantity);
@@ -16,12 +17,14 @@ export function LineEditor({ line, currency, canOverride, onSave, onClose }: {
   const [reasonId, setReasonId] = useState(line.reasonId);
 
   const reasons = useQuery({
-    enabled: canOverride,
+    enabled: canOverride && online,
     queryKey: ["pos-terminal", "reasons", "price_override"],
     queryFn: () => unwrap(api.GET("/api/v1/settings/reason-codes", { params: { query: { category: "price_override" } } })),
     staleTime: 5 * 60_000,
   });
 
+  // Without a connection the list kept on this device is used.
+  const reasonList = reasons.data?.filter((r) => r.is_active).map((r) => ({ id: r.id, label: r.label })) ?? savedReasons ?? [];
   const draft: CartLine = { ...line, quantity, price, reasonId };
   const gross = lineGross(draft);
   const discountAmount = discountMode === "percent" ? text((gross * num(discount)) / 100) : discount || "0";
@@ -54,13 +57,13 @@ export function LineEditor({ line, currency, canOverride, onSave, onClose }: {
             </FormGrid>
             {reasonNeeded && (
               <Field label={t("terminal.line.reason")} required>
-                <Select value={reasonId} onChange={(e) => setReasonId(e.target.value)} disabled={reasons.isLoading}>
+                <Select value={reasonId} onChange={(e) => setReasonId(e.target.value)} disabled={reasons.isLoading && reasonList.length === 0}>
                   <option value="">{t("terminal.line.chooseReason")}</option>
-                  {reasons.data?.filter((r) => r.is_active).map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+                  {reasonList.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
                 </Select>
               </Field>
             )}
-            {reasons.error && <Alert tone="bad">{reasons.error.message}</Alert>}
+            {reasons.error && reasonList.length === 0 && <Alert tone="bad">{reasons.error.message}</Alert>}
           </>
         )}
         <div className="flex items-center justify-between rounded-lg bg-sunken px-3 py-2 text-sm">

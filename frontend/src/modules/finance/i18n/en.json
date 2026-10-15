@@ -136,7 +136,10 @@
     "vat": "VAT summary",
     "trial": "Trial balance",
     "ledger": "Account statement",
-    "export": "Export for accountant"
+    "export": "Export for accountant",
+    "notFound": "This report does not exist",
+    "notFoundHint": "The address names a report that is not here. Pick one from the list.",
+    "allReports": "Go to the reports"
   },
   "accounts": {
     "title": "Chart of accounts",

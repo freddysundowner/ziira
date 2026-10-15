@@ -166,6 +166,12 @@ def _action_level(value: Any) -> int:
     return value
 
 
+def _token_budget(value: Any) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 2_000_000_000:
+        raise ValidationFailed("Expected a whole number of tokens from 0 to 2,000,000,000")
+    return value
+
+
 SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("negative_stock_allowed", False, _boolean,
             "Sell stock the system thinks is not there: the sale posts and an exception is raised for review"),
@@ -205,6 +211,17 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "Findings at or above this severity are sent as alerts; the rest wait for the daily brief"),
     Setting("intel_action_level", 1, _action_level,
             "What Intelligence may do: 1 reports only, 2 also asks people to explain a finding on your instruction"),
+    Setting("ai_enabled", False, _boolean,
+            "The AI assistant (explanations, ranking, Ask Ziira) may be used. It works only after an Owner has "
+            "consented in Settings > AI assistant; this switch alone does nothing"),
+    Setting("ai_explanations", True, _boolean,
+            "With the AI assistant on: write plain-language explanations of findings and help rank them"),
+    Setting("ai_auto_explain", False, _boolean,
+            "With the AI assistant on: explain new findings by itself in the background (otherwise on request)"),
+    Setting("ai_ask", True, _boolean, "With the AI assistant on: people with the right may use Ask Ziira"),
+    Setting("ai_monthly_token_limit", 2_000_000, _token_budget,
+            "The most tokens (the unit AI providers count in) the AI assistant may use in a calendar month; calls stop "
+            "when it is reached"),
     Setting("privacy_response_days", 30, _count(1, 365, "days"),
             "A data subject request (access, correction, erasure) is due this many days after it is received"),
     Setting("privacy_erasure_needs_approval", True, _boolean,

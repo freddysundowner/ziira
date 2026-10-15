@@ -17,11 +17,13 @@ def get_product(session: Session, product_id: UUID) -> Product:
     return product
 
 
-def list_products(session: Session, search: str | None = None, limit: int = 50,
-                  offset: int = 0) -> list[Product]:
-    """List products by name, optionally filtered by name or SKU, in the companies the user may see."""
+def list_products(session: Session, search: str | None = None, limit: int = 50, offset: int = 0,
+                  barcode: str | None = None) -> list[Product]:
+    """List products by name, optionally filtered by name, SKU or a scanned code (`search`), or only the product that
+    has `barcode`, in the companies the user may see."""
     companies = current_context().companies_with(PRODUCTS_VIEW)
-    return products_repo.list_products(session, search, min(limit, 200), offset, companies)
+    return products_repo.list_products(session, search, min(limit, 200), offset, companies,
+                                       barcode=barcode.strip() if barcode else None)
 
 
 def list_uoms(session: Session) -> list[Uom]:

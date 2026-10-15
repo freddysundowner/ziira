@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import ColumnElement, func, or_, select
 from sqlalchemy.orm import Session
 
-from ziira.modules.products.repository.models import PriceList, PriceListItem, Product, TaxCode, Uom
+from ziira.modules.products.repository.models import PriceList, PriceListItem, Product, ProductBarcode, TaxCode, Uom
 
 
 def add(session: Session, record: Uom | TaxCode | Product) -> None:
@@ -63,9 +63,12 @@ def get_product(session: Session, product_id: UUID) -> Product | None:
 
 
 def list_products(session: Session, search: str | None, limit: int, offset: int,
-                  company_ids: set[UUID] | None = None, only_active: bool = False) -> list[Product]:
-    """Products by name; `company_ids` limits the companies (None = all)."""
+                  company_ids: set[UUID] | None = None, only_active: bool = False,
+                  barcode: str | None = None) -> list[Product]:
+    """Products by name; `company_ids` limits the companies (None = all); `barcode` keeps the product with that code."""
     query = select(Product).order_by(Product.name, Product.id).limit(limit).offset(offset)
+    if barcode:
+        query = query.where(Product.id.in_(select(ProductBarcode.product_id).where(ProductBarcode.barcode == barcode)))
     if only_active:
         query = query.where(Product.is_active)
     if company_ids is not None:
@@ -74,8 +77,29 @@ def list_products(session: Session, search: str | None, limit: int, offset: int,
         # % and _ in what the user typed are ordinary characters, not wildcards
         escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         pattern = f"%{escaped}%"
-        query = query.where(Product.name.ilike(pattern, escape="\\") | Product.sku.ilike(pattern, escape="\\"))
+        # a scanned code finds its product too, whatever the product is called
+        by_code = Product.id.in_(select(ProductBarcode.product_id).where(ProductBarcode.barcode == search))
+        by_text = Product.name.ilike(pattern, escape="\\") | Product.sku.ilike(pattern, escape="\\")
+        query = query.where(by_text | by_code)
     return list(session.scalars(query))
+
+
+# --------------------------------------------------------------------------- barcodes
+def barcodes_of(session: Session, product_ids: set[UUID]) -> dict[UUID, list[str]]:
+    """The barcodes of each product (products without any are absent)."""
+    found: dict[UUID, list[str]] = {}
+    if not product_ids:
+        return found
+    for row in session.scalars(select(ProductBarcode).where(ProductBarcode.product_id.in_(product_ids))
+                               .order_by(ProductBarcode.created_at, ProductBarcode.barcode)):
+        found.setdefault(row.product_id, []).append(row.barcode)
+    return found
+
+
+def barcode_owner(session: Session, company_id: UUID, barcode: str) -> UUID | None:
+    """The product of this company that has the code, if any."""
+    return session.scalar(select(ProductBarcode.product_id).where(
+        ProductBarcode.company_id == company_id, ProductBarcode.barcode == barcode))
 
 
 # --------------------------------------------------------------------------- price lists
@@ -147,3 +171,17 @@ def open_price_item(session: Session, price_list_id: UUID, product_id: UUID) -> 
     return session.scalars(select(PriceListItem).where(
         PriceListItem.price_list_id == price_list_id, PriceListItem.product_id == product_id,
         PriceListItem.valid_to.is_(None)).order_by(PriceListItem.valid_from.desc())).first()
+
+
+def replace_barcodes(session: Session, product: Product, add: list[str], remove: list[str], tenant_id: UUID,
+                     user_id: UUID | None) -> None:
+    """Delete the `remove` codes of the product and insert the `add` codes (removals first, so a code can move)."""
+    if remove:
+        for row in session.scalars(select(ProductBarcode).where(
+                ProductBarcode.product_id == product.id, ProductBarcode.barcode.in_(remove))):
+            session.delete(row)
+        session.flush()
+    for code in add:
+        session.add(ProductBarcode(tenant_id=tenant_id, created_by=user_id, company_id=product.company_id,
+                                   product_id=product.id, barcode=code))
+    session.flush()

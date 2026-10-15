@@ -5,7 +5,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 
+from ziira.modules.intel.api.ai_routes import router as ai_router
 from ziira.modules.intel.api.schemas import (
+    AiExplainIn,
     AskIn,
     AssignIn,
     CheckOut,
@@ -22,10 +24,20 @@ from ziira.modules.intel.api.schemas import (
     RunOut,
 )
 from ziira.modules.intel.permissions import FINDINGS_MANAGE, FINDINGS_VIEW
-from ziira.modules.intel.services import alerts, checks_admin, engine, findings
-from ziira.sdk import DB_SESSION, Session, check_company, current_context, page_limit, page_offset, require_permission
+from ziira.modules.intel.services import alerts, checks_admin, engine, explain, findings
+from ziira.sdk import (
+    DB_SESSION,
+    Session,
+    check_company,
+    current_context,
+    page_limit,
+    page_offset,
+    require_permission,
+    tenant_transaction,
+)
 
 router = APIRouter()
+router.include_router(ai_router)
 VIEW = [Depends(require_permission(FINDINGS_VIEW))]
 MANAGE = [Depends(require_permission(FINDINGS_MANAGE))]
 
@@ -103,6 +115,20 @@ def post_assign(finding_id: UUID, body: AssignIn, session: Session = DB_SESSION)
 def post_ask(finding_id: UUID, body: AskIn, session: Session = DB_SESSION) -> object:
     """Ask someone to explain a finding (level 2 of what Intelligence may do; the business must allow it)."""
     return _after(session, findings.ask(session, finding_id, body.user_id, body.message))
+
+
+@router.post("/findings/{finding_id}/ai-explanation", response_model=FindingDetailOut, dependencies=MANAGE)
+def post_ai_explanation(finding_id: UUID, body: AiExplainIn) -> object:
+    """Have the AI assistant write (or rewrite) the plain-language explanation of a finding from its own figures. The
+    text is stored as AI-written; if its figures do not match the finding it is discarded (422) and nothing changes."""
+    ctx = current_context()
+    with tenant_transaction(ctx.tenant_id) as session:
+        row, _ = findings.get_for_user(session, finding_id)
+        ctx.require(FINDINGS_MANAGE, company_id=row.company_id, branch_id=row.branch_id)
+    explain.explain_finding(ctx.tenant_id, finding_id, user_id=ctx.user_id, language=body.language)
+    with tenant_transaction(ctx.tenant_id) as session:
+        fresh, events = findings.get_for_user(session, finding_id)
+        return _detail(fresh, list(events))
 
 
 @router.get("/checks", response_model=list[CheckOut], dependencies=VIEW)

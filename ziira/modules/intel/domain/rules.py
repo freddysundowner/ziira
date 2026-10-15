@@ -75,3 +75,17 @@ def is_unusual(value: Decimal, baseline: Baseline | None, *, min_samples: int = 
 
 def days_between(earlier: date, later: date) -> int:
     return max((later - earlier).days, 0)
+
+
+def reorder_by_preference[K, G](current: Sequence[tuple[K, G]], preferred: dict[G, list[K]]) -> list[K]:
+    """The keys of `current` (key, group) in order, except that within each group the items the group has a preferred
+    order for are taken in that order, filling the places those items already hold. Items the preference does not know
+    (a finding newer than the ranking) keep their place; a group without a preference is untouched."""
+    out = [key for key, _ in current]
+    for group, order in preferred.items():
+        known = set(order)
+        slots = [i for i, (key, g) in enumerate(current) if g == group and key in known]
+        present = {current[i][0] for i in slots}
+        for slot, key in zip(slots, [k for k in order if k in present], strict=True):
+            out[slot] = key
+    return out

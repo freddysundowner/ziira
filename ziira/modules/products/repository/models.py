@@ -59,6 +59,15 @@ class Product(TenantColumns, Base):
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
 
 
+class ProductBarcode(TenantColumns, Base):
+    __tablename__ = "product_barcode"
+    __table_args__ = {"schema": "products"}
+
+    company_id: Mapped[UUID]
+    product_id: Mapped[UUID]
+    barcode: Mapped[str]
+
+
 class PriceList(TenantColumns, Base):
     __tablename__ = "price_list"
     __table_args__ = {"schema": "products"}

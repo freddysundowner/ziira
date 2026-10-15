@@ -21,6 +21,8 @@ export interface CartLine {
   discount: string;
   reasonId: string;
   stock: string;
+  /** The tax rate (percent) inside the price: a receipt printed without a connection needs it. */
+  vatRate: string;
 }
 
 export interface PayLeg {
@@ -57,6 +59,8 @@ export interface HeldSale {
   customerId: string;
   customerName: string;
   customerPhone: string;
+  /** The server has a copy (so resuming or discarding it must tell the server). */
+  remote?: boolean;
 }
 
 export const EMPTY_CART: CartState = { lines: [], customerId: "", customerName: "", customerPhone: "", legs: [], attempt: null };
@@ -100,7 +104,7 @@ export function lineFromItem(item: CatalogItem): CartLine {
   const price = item.price === null || item.price === undefined ? "" : String(item.price);
   return {
     key: crypto.randomUUID(), productId: item.product_id, sku: item.sku, name: item.name, listPrice: price, price, quantity: "1",
-    discount: "0", reasonId: "", stock: item.stock === null || item.stock === undefined ? "" : String(item.stock),
+    discount: "0", reasonId: "", stock: item.stock === null || item.stock === undefined ? "" : String(item.stock), vatRate: String(item.vat_rate),
   };
 }
 
@@ -200,6 +204,7 @@ function parseLine(v: unknown): CartLine | null {
   return {
     key: str(v.key) || crypto.randomUUID(), productId: str(v.productId), sku: str(v.sku), name: str(v.name), listPrice: str(v.listPrice),
     price: str(v.price), quantity: str(v.quantity) || "1", discount: str(v.discount) || "0", reasonId: str(v.reasonId), stock: str(v.stock),
+    vatRate: str(v.vatRate) || "0",
   };
 }
 function parseLeg(v: unknown): PayLeg | null {
@@ -228,7 +233,7 @@ export function parseHeld(raw: unknown): HeldSale[] {
     if (!isObject(v) || !str(v.id)) return null;
     return {
       id: str(v.id), label: str(v.label), savedAt: str(v.savedAt), lines: list(v.lines, parseLine), customerId: str(v.customerId),
-      customerName: str(v.customerName), customerPhone: str(v.customerPhone),
+      customerName: str(v.customerName), customerPhone: str(v.customerPhone), remote: v.remote === true,
     };
   });
 }

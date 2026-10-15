@@ -6,6 +6,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import { api, deviceId, errorMessage, hasRefreshToken, refreshTokens, type Schemas, setTokens, whenSetupRequired, whenSignedOut } from "./api";
 
 import { classifyVerifyFailure, isSetupRequired, retryAfterSeconds } from "./mfa/helpers";
+import { readStored, writeStored } from "./storage";
 
 type Me = Schemas["MeOut"];
 
@@ -67,10 +68,36 @@ export interface SignInResult {
 
 const SessionContext = createContext<Session | null>(null);
 
+/**
+ * Who is signed in and what they may do, kept on this device. When the server cannot be reached (a page loaded without a
+ * connection) the session starts from this copy, so the till terminal can open and sell offline; the first request after
+ * the connection returns refreshes the tokens as usual. Removed when the session ends.
+ */
+const SNAPSHOT_KEY = "ziira.session";
+function readSnapshot(): { me: Me; units: string[] } | null {
+  try {
+    const raw = readStored(SNAPSHOT_KEY);
+    const parsed = raw ? (JSON.parse(raw) as { me?: Me; units?: string[] }) : null;
+    return parsed?.me && Array.isArray(parsed.units) ? { me: parsed.me, units: parsed.units } : null;
+  } catch {
+    return null;
+  }
+}
+
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Session["status"]>("loading");
   const [me, setMe] = useState<Me | null>(null);
   const [units, setUnits] = useState<ReadonlySet<string>>(new Set());
+
+  /** Start from the copy kept on this device (no connection). False when there is none. */
+  const startFromSnapshot = useCallback((): boolean => {
+    const saved = readSnapshot();
+    if (!saved) return false;
+    setMe(saved.me);
+    setUnits(new Set(saved.units));
+    setStatus("signed-in");
+    return true;
+  }, []);
 
   const load = useCallback(async () => {
     const [meResult, unitsResult] = await Promise.all([api.GET("/api/v1/auth/me"), api.GET("/api/v1/units")]);
@@ -81,13 +108,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (!meResult.data || !unitsResult.data) {
       // 401/403: the session is over. Anything else (server down, no network): keep the session and let the person retry.
       const failed = !meResult.data ? meResult.response : unitsResult.response;
-      setStatus(failed.status === 401 || failed.status === 403 ? "signed-out" : "unreachable");
+      if (failed.status === 401 || failed.status === 403) {
+        writeStored(SNAPSHOT_KEY, null);
+        setStatus("signed-out");
+      } else if (!startFromSnapshot()) setStatus("unreachable");
       return;
     }
+    const enabled = unitsResult.data.filter((u) => u.enabled).map((u) => String(u.name));
+    writeStored(SNAPSHOT_KEY, JSON.stringify({ me: meResult.data, units: enabled }));
     setMe(meResult.data);
-    setUnits(new Set(unitsResult.data.filter((u) => u.enabled).map((u) => String(u.name))));
+    setUnits(new Set(enabled));
     setStatus("signed-in");
-  }, []);
+  }, [startFromSnapshot]);
 
   const start = useCallback(async () => {
     if (!hasRefreshToken()) {
@@ -97,11 +129,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setStatus("loading");
     const result = await refreshTokens();
     if (result === "ok") await load();
-    else setStatus(result === "denied" ? "signed-out" : "unreachable");
-  }, [load]);
+    else if (result === "denied") {
+      writeStored(SNAPSHOT_KEY, null);
+      setStatus("signed-out");
+    } else if (!startFromSnapshot()) setStatus("unreachable");
+  }, [load, startFromSnapshot]);
 
   useEffect(() => {
-    whenSignedOut(() => setStatus("signed-out"));
+    whenSignedOut(() => { writeStored(SNAPSHOT_KEY, null); setStatus("signed-out"); });
     whenSetupRequired(() => setStatus("mfa-setup"));
     void start();
   }, [start]);
@@ -161,6 +196,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     await api.POST("/api/v1/auth/sign-out").catch(() => undefined);
     setTokens(null, null);
+    writeStored(SNAPSHOT_KEY, null);
     setMe(null);
     setStatus("signed-out");
   }, []);

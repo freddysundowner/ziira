@@ -404,4 +404,5 @@ def apply_retention(session: Session) -> dict[str, int]:
 def apply_retention_daily(session: Session) -> None:
     """Once a day for each business: mask old messages, flag records and requests that need a person."""
     counts = apply_retention(session)
-    log.info("Retention applied: %s", counts)
+    if any(counts.values()):
+        log.info("Retention applied: %s", counts)

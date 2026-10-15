@@ -13,7 +13,7 @@ publishes = ["customer.created", "lead.created", "lead.converted", "customer.cre
 subscribes = ["approval.decided"]
 
 [extends]
-implements = ["intel.check", "command.pulse_source", "imports.importer", "kernel.personal_data"]
+implements = ["intel.check", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
 
 [permissions]
 "customers.view" = "View customers"

@@ -22,6 +22,10 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
+// Screen readers and spell checkers follow the page's language, so it changes with the app's.
+i18n.on("languageChanged", (language: string) => { document.documentElement.lang = language; });
+document.documentElement.lang = i18n.language;
+
 export function addModuleTranslations(modules: readonly ModuleDefinition[]): void {
   for (const m of modules) {
     if (!m.translations) continue;

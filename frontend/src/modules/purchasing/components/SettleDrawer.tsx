@@ -2,7 +2,7 @@ import { type FormEvent } from "react";
 
 import { api, Button, Drawer, Field, FormGrid, Input, NumberInput, Select, toast, today, unwrap, useFormState, useMutation, useQueryClient, useTranslation } from "@/sdk";
 
-import { usePaymentAccounts } from "../hooks";
+import { PayFrom, usePayFromAccounts } from "./PayFrom";
 import { PAY_METHODS } from "../lib";
 import type { PayMethod } from "../types";
 
@@ -13,7 +13,7 @@ export function SettleDrawer({ open, onClose, kind, bill, defaultAmount }: {
   const { t } = useTranslation("purchasing");
   const qc = useQueryClient();
   const f = useFormState({ amount: defaultAmount, method: kind === "pay" ? "cash" : "bank", account: "", reference: "", date: today() });
-  const accounts = usePaymentAccounts(open ? bill.company_id : undefined);
+  const from = usePayFromAccounts(open ? bill.company_id : undefined, f.values.method as PayMethod);
   const methods = kind === "pay" ? PAY_METHODS : PAY_METHODS.filter((m) => m !== "card");
 
   const save = useMutation({
@@ -36,7 +36,7 @@ export function SettleDrawer({ open, onClose, kind, bill, defaultAmount }: {
 
   return (
     <Drawer open={open} onClose={onClose} title={t(kind === "pay" ? "payBill" : "recordRefund", { number: bill.number })}
-      footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="settle-form" loading={save.isPending} disabled={!(Number(f.values.amount) > 0)}>{t(kind === "pay" ? "pay" : "recordRefundShort")}</Button></>}>
+      footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="settle-form" loading={save.isPending} disabled={!(Number(f.values.amount) > 0) || (from.required && from.ready && !f.values.account)}>{t(kind === "pay" ? "pay" : "recordRefundShort")}</Button></>}>
       <form id="settle-form" onSubmit={submit} className="space-y-4">
         <FormGrid>
           <Field label={t("amount")} required error={f.error("amount")}><NumberInput value={f.values.amount} onChange={(v) => f.set("amount", v)} autoFocus /></Field>
@@ -44,11 +44,7 @@ export function SettleDrawer({ open, onClose, kind, bill, defaultAmount }: {
           <Field label={t("method")} error={f.error("method")}>
             <Select {...f.bind("method")}>{methods.map((m) => <option key={m} value={m}>{t(`methods.${m}`)}</option>)}</Select>
           </Field>
-          {(accounts.data?.length ?? 0) > 0 && (
-            <Field label={t("fromAccount")} error={f.error("payment_account_id")}>
-              <Select {...f.bind("account")}><option value="">{t("noAccount")}</option>{accounts.data?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</Select>
-            </Field>
-          )}
+          <PayFrom companyId={bill.company_id} method={f.values.method as PayMethod} value={f.values.account} onChange={(id) => f.set("account", id)} error={f.error("payment_account_id")} />
         </FormGrid>
         <Field label={t("reference")} hint={t("referenceHint")} error={f.error("external_ref")}><Input {...f.bind("reference")} maxLength={60} /></Field>
       </form>

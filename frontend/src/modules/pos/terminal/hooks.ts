@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { api, ApiError, unwrap } from "@/sdk";
+
 import { type CartState, EMPTY_CART, type HeldSale, keepCollected, parseCart, parseHeld } from "./cart";
+import { applyReconciled, reconcileHeld, toServerBody } from "./offline/held";
 import { readJson, writeJson } from "./storage";
 
 const cartKey = (tillId: string) => `ziira.pos.cart.${tillId}`;
@@ -28,30 +31,88 @@ export function useCart(tillId: string) {
   return { state, edit, setLegs, setAttempt, clear, replace };
 }
 
-/** Sales put on hold at this till (kept in this browser). */
-export function useHeld(tillId: string) {
+const goneKey = (tillId: string) => `ziira.pos.held-gone.${tillId}`;
+
+/**
+ * Sales put on hold at this till. They are kept in this browser (so they survive a refresh and work without a connection)
+ * and at the server (so they survive a cleared browser): held while offline, a sale is sent to the server when the
+ * connection returns; resumed or discarded, the server is told, now or later.
+ */
+export function useHeld(tillId: string, online: boolean) {
   const [held, setHeld] = useState<HeldSale[]>(() => parseHeld(readJson<unknown>(heldKey(tillId), [])));
+  const latest = useRef(held);
+  latest.current = held;
   const update = useCallback((change: (h: HeldSale[]) => HeldSale[]) => setHeld((h) => {
     const next = change(h);
     writeJson(heldKey(tillId), next.length ? next : null);
     return next;
   }), [tillId]);
-  return { held, update };
+
+  const gone = useCallback(() => new Set(readJson<string[]>(goneKey(tillId), [])), [tillId]);
+  const remember = useCallback((ids: Set<string>) => writeJson(goneKey(tillId), ids.size ? [...ids] : null), [tillId]);
+
+  /** Tell the server, best effort; whatever it could not be told stays in the list to try again. */
+  const tell = useCallback(async (id: string, action: "resume" | "discard"): Promise<boolean> => {
+    try {
+      const path = action === "resume" ? "/api/v1/pos/held/{held_id}/resume" : "/api/v1/pos/held/{held_id}/discard";
+      await unwrap(api.POST(path, { params: { path: { held_id: id } } }));
+      return true;
+    } catch (error) {
+      return error instanceof ApiError && (error.status === 404 || error.status === 409);       // already gone at the server
+    }
+  }, []);
+
+  // Sales resumed or discarded here: never sent to the server afterwards, and thrown away there if a send was already on its way.
+  const released = useRef(new Set<string>());
+  const upload = useCallback(async (h: HeldSale) => {
+    if (released.current.has(h.id)) return;
+    try {
+      await unwrap(api.POST("/api/v1/pos/tills/{till_id}/held", { params: { path: { till_id: tillId } }, body: toServerBody(h) }));
+      if (released.current.has(h.id)) await tell(h.id, "discard");
+      else update((list) => list.map((x) => (x.id === h.id ? { ...x, remote: true } : x)));
+    } catch {
+      // stays here; sent on the next round
+    }
+  }, [tillId, update, tell]);
+
+  /** Bring this device and the server together (whenever there is a connection). */
+  const sync = useCallback(async () => {
+    try {
+      const pending = gone();
+      for (const id of [...pending]) if (await tell(id, "discard")) pending.delete(id);
+      remember(pending);
+      const server = await unwrap(api.GET("/api/v1/pos/tills/{till_id}/held", { params: { path: { till_id: tillId } } }));
+      const changes = reconcileHeld(latest.current, server, pending);
+      update((list) => applyReconciled(list, changes));
+      for (const h of changes.upload) await upload(h);
+    } catch {
+      // no answer: try again next time
+    }
+  }, [tillId, gone, remember, tell, update, upload]);
+
+  useEffect(() => { if (online) void sync(); }, [online, sync]);
+
+  const hold = useCallback((h: HeldSale) => {
+    update((list) => [h, ...list]);
+    if (online) void upload(h);
+  }, [update, online, upload]);
+
+  /** The sale leaves the list (resumed to the screen or thrown away). */
+  const release = useCallback((id: string, action: "resume" | "discard") => {
+    released.current.add(id);
+    update((list) => list.filter((h) => h.id !== id));
+    // The server may already have a copy (an upload could be on its way), so it is always told; "not found" is fine.
+    const pending = gone();
+    pending.add(id);
+    remember(pending);
+    if (online) void tell(id, action).then((ok) => { if (ok) { const left = gone(); left.delete(id); remember(left); } });
+  }, [update, gone, remember, online, tell]);
+
+  return { held, update, hold, release };
 }
 
 export function forgetTill(tillId: string): void {
   writeJson(cartKey(tillId), null);
   writeJson(heldKey(tillId), null);
-}
-
-/** True while the browser reports no connection. */
-export function useOnline(): boolean {
-  const [online, setOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
-  useEffect(() => {
-    const on = () => setOnline(true), off = () => setOnline(false);
-    window.addEventListener("online", on);
-    window.addEventListener("offline", off);
-    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
-  }, []);
-  return online;
+  writeJson(goneKey(tillId), null);
 }

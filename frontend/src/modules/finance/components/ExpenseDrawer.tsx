@@ -4,7 +4,7 @@ import {
   api, Button, Combobox, Drawer, Field, FormGrid, Input, NumberInput, orNull, Select, today, toast, unwrap, useFormState, useMutation, useQueryClient, useTranslation,
 } from "@/sdk";
 
-import { accountOptions, useAccounts } from "../api";
+import { accountOptions, SYSTEM_EXPENSE_SUBTYPES, useAccounts } from "../api";
 import type { Scope } from "../scope";
 
 const PAID_FROM = ["cash", "bank", "mobile_money", "card", "other"] as const;
@@ -60,7 +60,7 @@ function ExpenseForm({ onClose, scope }: { onClose: () => void; scope: Scope }) 
       <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (valid && !save.isPending) save.mutate(true); }}>
         <Field label={t("description")} required error={f.error("description")}><Input {...f.bind("description")} maxLength={500} required autoFocus placeholder={t("expenses.descriptionExample")} /></Field>
         <Field label={t("expenses.category")} required error={f.error("account_id")} hint={t("expenses.categoryHint")}>
-          <Combobox value={f.values.account_id} onChange={(v) => f.set("account_id", v)} options={accountOptions(accounts.data, { types: ["expense"], postable: true })} placeholder={t("expenses.chooseCategory")} />
+          <Combobox value={f.values.account_id} onChange={(v) => f.set("account_id", v)} options={accountOptions(accounts.data, { types: ["expense"], postable: true, exceptSubtypes: SYSTEM_EXPENSE_SUBTYPES })} placeholder={t("expenses.chooseCategory")} />
         </Field>
         <FormGrid>
           <Field label={t("amount")} required error={f.error("amount")} hint={t("expenses.amountHint")}><NumberInput value={f.values.amount} onChange={(v) => f.set("amount", v)} required /></Field>

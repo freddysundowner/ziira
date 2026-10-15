@@ -3,13 +3,14 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  api, Button, Card, EmptyState, ErrorState, formatDate, humanise, PageHeader, Select, SkeletonRows, toast, unwrap, useCan, useCompany, useMutation, useQuery,
+  api, Button, Card, EmptyState, ErrorState, formatDate, humanise, PageHeader, Select, SkeletonRows, Slot, toast, unwrap, useCan, useCompany, useMutation, useQuery,
   useQueryClient, useTranslation,
 } from "@/sdk";
 
 import AttentionPanel from "../components/AttentionPanel";
 import FigureCard from "../components/FigureCard";
 import { byArea, type Figure, groupFigures } from "../logic";
+import { COMMAND_PANELS } from "../public";
 
 export default function CommandPage() {
   const { t } = useTranslation("command");
@@ -53,6 +54,7 @@ export default function CommandPage() {
               {canRefresh && <Button size="sm" variant="secondary" loading={refresh.isPending} onClick={() => refresh.mutate()}><RefreshCw className="h-3.5 w-3.5" />{t("refresh")}</Button>}
             </div>
             <AttentionPanel overview={data} />
+            <Slot name={COMMAND_PANELS} props={{ companyId }} />
             {data.figures.length === 0 ? (
               <Card><EmptyState title={t("emptyTitle")} hint={t("emptyHint")}
                 action={canRefresh ? <Button variant="secondary" loading={refresh.isPending} onClick={() => refresh.mutate()}>{t("refresh")}</Button> : undefined} /></Card>

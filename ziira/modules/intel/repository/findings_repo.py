@@ -14,7 +14,8 @@ from ziira.sdk import RequestContext, Session
 COLUMNS = (
     "f.id, f.check_code, f.area, f.company_id, f.branch_id, f.entity_type, f.entity_id, f.period_start, f.period_end, "
     "f.value, f.expected_value, f.amount, f.severity, f.summary, f.recommended_action, f.evidence, f.explanation, "
-    "f.status, f.owner_user_id, f.first_seen_at, f.last_seen_at, f.resolved_at, f.alerted_at, f.created_at"
+    "f.explanation_ai, f.explanation_ai_at, f.status, f.owner_user_id, f.first_seen_at, f.last_seen_at, "
+    "f.resolved_at, f.alerted_at, f.created_at"
 )
 
 

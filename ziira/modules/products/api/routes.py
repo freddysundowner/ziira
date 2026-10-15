@@ -6,9 +6,10 @@ the scope (which company) themselves.
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from ziira.modules.products.api.schemas import (
+    BarcodesIn,
     PriceIn,
     PriceListIn,
     PriceListOut,
@@ -21,7 +22,9 @@ from ziira.modules.products.api.schemas import (
     UomOut,
 )
 from ziira.modules.products.permissions import PRICES_MANAGE, PRODUCTS_MANAGE, PRODUCTS_VIEW
-from ziira.modules.products.services import pricing
+from ziira.modules.products.repository import products_repo
+from ziira.modules.products.repository.models import Product
+from ziira.modules.products.services import barcodes, pricing
 from ziira.modules.products.services.create_product import create_product
 from ziira.modules.products.services.create_tax_code import create_tax_code
 from ziira.modules.products.services.create_uom import create_uom
@@ -55,15 +58,22 @@ def post_tax_code(body: TaxCodeIn, session: Session = DB_SESSION) -> object:
     return create_tax_code(session, body.code, body.name, body.vat_rate, body.authority_code)
 
 
+def _out(session: Session, products: list[Product]) -> list[ProductOut]:
+    codes = products_repo.barcodes_of(session, {p.id for p in products})
+    return [ProductOut.model_validate(p).model_copy(update={"barcodes": codes.get(p.id, [])}) for p in products]
+
+
 @router.post("/products", response_model=ProductOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE)
 def post_product(body: ProductIn, session: Session = DB_SESSION) -> object:
-    return create_product(session, **body.model_dump())
+    return _out(session, [create_product(session, **body.model_dump())])[0]
 
 
 @router.get("/products", response_model=list[ProductOut], dependencies=VIEW)
-def get_products(search: str | None = None, limit: int = page_limit(50), offset: int = page_offset(),
-                 session: Session = DB_SESSION) -> object:
-    return list_products(session, search, limit, offset)
+def get_products(search: str | None = None, barcode: str | None = Query(default=None, max_length=64),
+                 limit: int = page_limit(50), offset: int = page_offset(), session: Session = DB_SESSION) -> object:
+    """Products by name. `search` also finds a product by a scanned code; `barcode` returns only the product that
+    has exactly that code."""
+    return _out(session, list_products(session, search, limit, offset, barcode))
 
 
 @router.get("/sku-suggestions", response_model=list[str], dependencies=MANAGE)
@@ -74,7 +84,18 @@ def get_sku_suggestions(company_id: UUID, name: str, session: Session = DB_SESSI
 
 @router.get("/products/{product_id}", response_model=ProductOut, dependencies=VIEW)
 def get_one_product(product_id: UUID, session: Session = DB_SESSION) -> object:
-    return get_product(session, product_id)
+    return _out(session, [get_product(session, product_id)])[0]
+
+
+@router.get("/products/{product_id}/barcodes", response_model=list[str], dependencies=VIEW)
+def get_barcodes(product_id: UUID, session: Session = DB_SESSION) -> object:
+    return barcodes.list_barcodes(session, product_id)
+
+
+@router.put("/products/{product_id}/barcodes", response_model=ProductOut, dependencies=MANAGE)
+def put_barcodes(product_id: UUID, body: BarcodesIn, session: Session = DB_SESSION) -> object:
+    """Set the product's barcodes (a code can belong to one product of a company)."""
+    return _out(session, [barcodes.set_barcodes(session, product_id, body.barcodes)])[0]
 
 
 # --------------------------------------------------------------------------- price lists

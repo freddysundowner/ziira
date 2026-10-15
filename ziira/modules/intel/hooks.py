@@ -1,8 +1,29 @@
-"""Sockets the Ziira Intelligence module offers (declared in manifest.toml): checks and baseline metrics."""
+"""Sockets the Ziira Intelligence module offers (declared in manifest.toml): checks, baseline metrics, AI providers and
+the tools Ask Ziira may call. It also plugs its own ask tools and the fake AI provider (development and tests) in."""
 
 from ziira.modules.intel import kernel_checks  # noqa: F401 - registers Intelligence's own checks
-from ziira.modules.intel.public import INTEL_BASELINE_METRIC, INTEL_CHECK, BaselineMetric, IntelCheck
-from ziira.sdk import define_extension_point
+from ziira.modules.intel.ask_tools import FindingDetail, ListFindings
+from ziira.modules.intel.fake_llm import FakeLlm
+from ziira.modules.intel.public import (
+    INTEL_ASK_TOOL,
+    INTEL_BASELINE_METRIC,
+    INTEL_CHECK,
+    INTEL_LLM,
+    AskTool,
+    BaselineMetric,
+    IntelCheck,
+    LlmProvider,
+)
+from ziira.sdk import define_extension_point, provides
 
 define_extension_point(INTEL_CHECK, IntelCheck, "A check over a unit's data that raises findings")
 define_extension_point(INTEL_BASELINE_METRIC, BaselineMetric, "Observations of a metric, to learn what is normal")
+define_extension_point(INTEL_LLM, LlmProvider, "An AI provider that answers the assistant's requests")
+define_extension_point(INTEL_ASK_TOOL, AskTool,
+                       "A question Ask Ziira may put to a unit's data, within the asker's access")
+
+provides(INTEL_LLM)(FakeLlm)
+provides(INTEL_ASK_TOOL)(ListFindings)
+provides(INTEL_ASK_TOOL)(FindingDetail)
+
+from ziira.modules.intel import privacy as _privacy  # noqa: E402, F401, I001 - registers the personal-data provider

@@ -35,8 +35,10 @@ from ziira.kernel.events import unit_of
 log = logging.getLogger("ziira.jobs")
 Handler = Callable[[Session, dict[str, Any]], None]
 PeriodicHandler = Callable[[Session], None]
+UnboundHandler = Callable[[UUID], None]
 _handlers: dict[str, list[tuple[str, Handler]]] = defaultdict(list)
 _periodic: dict[str, tuple[str, int, PeriodicHandler]] = {}
+_unbound: dict[str, tuple[str, int, UnboundHandler]] = {}
 MAX_BACKOFF_SECONDS = 3600
 
 
@@ -62,9 +64,23 @@ def periodic(name: str, *, every_seconds: int) -> Callable[[PeriodicHandler], Pe
     return register
 
 
+def unbound_periodic(name: str, *, every_seconds: int) -> Callable[[UnboundHandler], UnboundHandler]:
+    """Decorator: like `periodic`, but the handler receives the tenant id and runs with NO database transaction open.
+    For work that waits on an outside service (an AI provider): it opens its own short transactions around the
+    reads and writes (`ziira.sdk.tenant_transaction`) and never holds one while it waits."""
+    if every_seconds < 60:
+        raise ValueError("A recurring task runs at most once a minute")
+
+    def register(handler: UnboundHandler) -> UnboundHandler:
+        _unbound[name] = (unit_of(handler.__module__), every_seconds, handler)
+        return handler
+
+    return register
+
+
 def periodic_names() -> list[str]:
     """The recurring tasks units have registered."""
-    return sorted(_periodic)
+    return sorted({*_periodic, *_unbound})
 
 
 def enqueue(session: Session, job_type: str, payload: dict[str, Any] | None = None, *, delay_seconds: int = 0,
@@ -168,11 +184,47 @@ def run_periodic(tenant_id: UUID, *, only: str | None = None, force: bool = Fals
     return ran
 
 
+def run_unbound(tenant_id: UUID, *, only: str | None = None, force: bool = False) -> int:
+    """Run the `unbound_periodic` tasks of one tenant that are due. A task is claimed in a short transaction that is
+    committed before the task starts; the task itself runs with no transaction open, and a failure is recorded and put
+    in the exceptions inbox in another short one."""
+    system_context(tenant_id)
+    due: list[tuple[str, str, UnboundHandler]] = []
+    with tenant_session(tenant_id) as s:
+        enabled = _enabled(s)
+        for name, (unit, every, handler) in sorted(_unbound.items()):
+            if unit not in enabled or (only is not None and name != only):
+                continue
+            claimed = True if force else s.execute(text(
+                "insert into kernel.periodic_run (tenant_id, name, last_run_at) "
+                "values (kernel.current_tenant(), :n, now()) "
+                "on conflict (tenant_id, name) do update set last_run_at = now() "
+                "where kernel.periodic_run.last_run_at < now() - make_interval(secs => :e) returning name"),
+                {"n": name, "e": every}).first()
+            if claimed is not None:
+                due.append((name, unit, handler))
+    for name, unit, handler in due:
+        error: str | None = None
+        try:
+            handler(tenant_id)
+        except Exception as exc:  # noqa: BLE001 - recorded, flagged and tried again next interval
+            log.warning("Recurring task %s failed: %s", name, exc)
+            error = f"{type(exc).__name__}: {exc}"[:2000]
+        system_context(tenant_id)
+        with tenant_session(tenant_id) as s:
+            s.execute(text("update kernel.periodic_run set last_error = :e where name = :n"), {"n": name, "e": error})
+            if error:
+                exceptions_inbox.flag(s, unit=unit, kind="periodic_failed", severity="medium",
+                                      message=f"A recurring task ({name}) failed: {error}"[:500],
+                                      dedupe_key=f"periodic:{name}:{error.split(':')[0]}")
+    return len(due)
+
+
 def run_all(batch_size: int = 50) -> int:
     """One pass over every active tenant: the jobs that are due, then the recurring tasks."""
     from ziira.kernel.outbox import _active_tenants
 
-    return sum(run_due(t, batch_size) + run_periodic(t) for t in _active_tenants())
+    return sum(run_due(t, batch_size) + run_periodic(t) + run_unbound(t) for t in _active_tenants())
 
 
 def current_tenant_id() -> UUID:

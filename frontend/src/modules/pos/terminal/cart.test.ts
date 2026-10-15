@@ -6,7 +6,7 @@ import {
 } from "./cart";
 
 const item = (over: Partial<CatalogItem> = {}): CatalogItem => ({
-  product_id: "p1", sku: "NAIL", name: "Nails 2in", product_type: "stock", vat_rate: "16", is_batch_tracked: false, uom_id: "u", price: "120.50", stock: "10", ...over,
+  product_id: "p1", sku: "NAIL", name: "Nails 2in", product_type: "stock", vat_rate: "16", is_batch_tracked: false, uom_id: "u", price: "120.50", stock: "10", barcodes: [], ...over,
 });
 
 describe("cart lines", () => {

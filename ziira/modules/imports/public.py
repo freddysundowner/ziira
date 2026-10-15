@@ -20,7 +20,7 @@ from ziira.sdk import Session, ZiiraError
 
 IMPORTS_IMPORTER = "imports.importer"
 
-__all__ = ["IMPORTS_IMPORTER", "ImportColumn", "ImportOptions", "ImportRow", "Importer", "attempt"]
+__all__ = ["IMPORTS_IMPORTER", "FileCheck", "ImportColumn", "ImportOptions", "ImportRow", "Importer", "attempt"]
 
 
 def attempt[T](errors: list[str], check: Callable[[], T]) -> T | None:
@@ -52,6 +52,18 @@ class ImportOptions:
 
     decimal_separator: str = "."
     date_format: str = "iso"
+    as_of: date | None = None             # the go-live date, for the kinds that bring in opening balances
+    tolerance: Decimal = Decimal(0)       # how far a file that should balance may be out before it must be confirmed
+
+
+@dataclass(frozen=True)
+class FileCheck:
+    """What a whole-file importer finds wrong with the file as a whole (as opposed to one row): `problems` stop the
+    import; `confirm` is a warning the user must accept before it goes on; `notes` are for information."""
+
+    problems: list[str] = field(default_factory=list)
+    confirm: str | None = None
+    notes: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -121,6 +133,8 @@ class Importer(ABC):
     money_totals: tuple[str, ...] = ()   # which of the `total` figures are money (shown with 2 decimals)
     reversible: bool = False       # True only if the owning unit can safely undo a whole import
     reversal_note: str = ""        # what to do instead when it cannot
+    needs_go_live: bool = False    # the file brings in balances as at a date: the upload must say which
+    whole_file: bool = False       # the rows only make sense together (one entry): all are imported, or none
 
     @abstractmethod
     def validate_row(self, session: Session, company_id: UUID, row: ImportRow) -> list[str]:
@@ -139,6 +153,23 @@ class Importer(ABC):
         """A message when this record is already in Ziira (the row is then skipped, not an error); else None."""
         return None
 
+    def check_file(self, session: Session, company_id: UUID, rows: Sequence[ImportRow]) -> FileCheck:
+        """Whole-file importers: problems with the rows taken together (they do not balance, an earlier import is in
+        the way). Reads only. Run at the check and again just before the import."""
+        return FileCheck()
+
+    def import_file(self, session: Session, company_id: UUID, rows: Sequence[ImportRow], *,
+                    confirmed: bool) -> UUID:
+        """Whole-file importers: create the one record all the rows make, and return its id. `confirmed` says the user
+        accepted the warning in `check_file`. Must raise on any problem (then no row is imported)."""
+        raise NotImplementedError(f"{self.kind} imports row by row")
+
+    def reverse(self, session: Session, company_id: UUID, record_ids: list[UUID], reason: str) -> int:
+        """Undo a whole import (importers with `reversible`): reverse the records the import created, through the owning
+        unit's own reversal. Raise a plain-language error, changing nothing, when later activity (a payment) makes that
+        unsafe. Returns how many records were reversed."""
+        raise NotImplementedError(f"{self.kind} cannot be reversed")
+
     def totals(self, rows: Sequence[ImportRow]) -> dict[str, Decimal]:
         """The sums the file claims, per figure (default: the columns that name a `total`). Rows that cannot be read
         as numbers add nothing."""
@@ -156,3 +187,9 @@ class Importer(ABC):
     def imported_totals(self, session: Session, company_id: UUID, record_ids: list[UUID]) -> dict[str, Decimal]:
         """The same figures read back from the records that were created (the ids `import_row` returned)."""
         return {}
+
+    def read_back(self, session: Session, company_id: UUID, rows: Sequence[ImportRow],
+                  record_ids: list[UUID]) -> dict[str, Decimal]:
+        """What the reconciliation report compares with the file's sums: by default `imported_totals`. An importer whose
+        figures depend on the rows themselves (a trial balance read back account by account) overrides this."""
+        return self.imported_totals(session, company_id, record_ids)

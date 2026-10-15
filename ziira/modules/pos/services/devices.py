@@ -18,6 +18,7 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    check_branch_open,
     current_context,
     hash_secret,
     new_secret,
@@ -44,6 +45,7 @@ def register_device(session: Session, *, branch_id: UUID, code: str, name: str,
         raise ValidationFailed("Branch not found")
     ctx = current_context()
     ctx.require(DEVICES_MANAGE, company_id=company_id, branch_id=branch_id)
+    check_branch_open(session, branch_id)
     code = code.strip().upper()
     if not CODE_PATTERN.match(code):
         raise ValidationFailed("A device code is 1-8 letters or digits, for example D1")
@@ -109,6 +111,23 @@ def rotate_key(session: Session, device_id: UUID) -> tuple[Device, str]:
     session.flush()
     audit_record(session, "rotate_key", "pos.device", device.id, None)
     return device, key
+
+
+def of_own_till(session: Session, till_ids: set[UUID]) -> Device:
+    """The device of the signed-in cashier's own till, for a browser terminal that sells offline and so holds no device
+    key: it may upload sales (and only sales) for its own open or closed till. Anything else needs the device key."""
+    ctx = current_context()
+    if len(till_ids) != 1:
+        raise Forbidden("A device key is required")
+    till = pos_repo.get_till(session, next(iter(till_ids)))
+    if till is None or till.cashier_id != ctx.user_id:
+        raise Forbidden("A device key is required")
+    device = pos_repo.get_device(session, till.device_id)
+    company_id = pos_repo.branch_company(session, till.branch_id)
+    if device is None or company_id is None:
+        raise Forbidden("A device key is required")
+    ctx.require(SALES_SELL, company_id=company_id, branch_id=till.branch_id)
+    return device
 
 
 def authenticate(session: Session, key: str | None) -> Device:

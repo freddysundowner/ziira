@@ -6,6 +6,7 @@ import {
 } from "@/sdk";
 
 import { FindingStatusBadge, SeverityBadge, useAreaLabel } from "../components/Badges";
+import AiExplanation from "../components/AiExplanation";
 import FindingDialog, { type DialogKind } from "../components/FindingDialogs";
 import Timeline from "../components/Timeline";
 import { actionsFor, ageInDays } from "../logic";
@@ -52,6 +53,7 @@ export default function FindingPage() {
         <div className="space-y-4 lg:col-span-2">
           {f.recommended_action && <Card title={t("recommended")}><p className="text-sm">{f.recommended_action}</p></Card>}
           {f.explanation && <Card title={t("explanation")} description={t("explanationHint")}><p className="whitespace-pre-wrap text-sm">{f.explanation}</p></Card>}
+          <AiExplanation finding={f} />
           {(hasFigures || f.records.length > 0) && (
             <Card title={t("evidence")} description={t("evidenceHint")}>
               <div className="space-y-4">

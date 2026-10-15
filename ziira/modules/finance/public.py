@@ -4,6 +4,7 @@ Other units do not call Finance: they publish documents (`sale.posted`, `sale.re
 Inventory already publishes) and Finance turns them into journal entries. Only reads are exposed here.
 """
 
+from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
@@ -42,3 +43,32 @@ def party_balances(session: Session, company_id: UUID, account_code: str) -> dic
         "finance.account a on a.id = l.account_id where a.company_id = :c and a.code = :code group by l.party_id"),
         {"c": str(company_id), "code": account_code}).all()
     return {r.party_id: Decimal(r.balance) for r in rows if Decimal(r.balance) != 0}
+
+
+def opening_balance_posted(session: Session, company_id: UUID) -> bool:
+    """True when the company has an opening balance entry that has not been reversed. Customers' and suppliers' opening
+    balances are brought in before it, never after."""
+    return finance_repo.live_opening_balance(session, company_id) is not None
+
+
+def books_are_on(session: Session, company_id: UUID) -> bool:
+    """True when the company's books exist (accounts have been set up), so documents can be posted to them."""
+    return finance_repo.has_accounts(session, company_id)
+
+
+def posted_for_sources(session: Session, company_id: UUID, source_type: str, source_ids: set[UUID]) -> set[UUID]:
+    """Which of these documents already have a journal entry of the given source type."""
+    return finance_repo.posted_sources(session, source_type, source_ids)
+
+
+def party_amount_by_source(session: Session, company_id: UUID, source_type: str, source_ids: set[UUID],
+                           party_type: str) -> Decimal:
+    """Debits less credits on the customer (or supplier) lines of the entries these documents made: what the books hold
+    for them, to compare with what the documents say."""
+    return finance_repo.party_net_by_source(session, company_id, source_type, source_ids, party_type)
+
+
+def period_is_open(session: Session, company_id: UUID, day: date) -> bool:
+    """True when the accounting period containing the day is open (or not created yet, which makes it open)."""
+    period = finance_repo.period_for(session, company_id, day)
+    return period is None or period.status == "open"

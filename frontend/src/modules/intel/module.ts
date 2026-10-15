@@ -1,3 +1,4 @@
+import { COMMAND_PANELS } from "@/modules/command/public";
 import { defineModule } from "@/sdk";
 
 import en from "./i18n/en.json";
@@ -17,6 +18,9 @@ export default defineModule({
   slots: {
     "dashboard.widgets": [
       { label: "intel:findingsWidget", component: () => import("./slots/FindingsWidget"), permission: "findings.view", order: 2 },
+    ],
+    [COMMAND_PANELS]: [
+      { label: "intel:ai.askTitle", component: () => import("./slots/AskPanel"), permission: "ai.ask", order: 20 },
     ],
   },
   translations: { en, sw },

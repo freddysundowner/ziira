@@ -90,7 +90,7 @@ def get_overview(company_id: UUID | None = None, day: date | None = None,
         refreshed_at=o.refreshed_at, open_findings=o.open_findings, findings_by_severity=o.findings_by_severity,
         top_findings=[TopFindingOut(id=t.id, severity=t.severity, area=t.area, summary=t.summary,
                                     recommended_action=t.recommended_action, status=t.status, branch_id=t.branch_id,
-                                    amount=t.amount) for t in o.top_findings])
+                                    amount=t.amount, reason=t.reason) for t in o.top_findings])
 
 
 @router.post("/pulse/refresh", status_code=NO_CONTENT, dependencies=MANAGE)

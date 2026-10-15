@@ -435,5 +435,18 @@
   "nothingDueSoon": "Hakuna ankara zinazodaiwa ndani ya siku 7 zijazo.",
   "overdueSince": "Imechelewa tangu {{date}}",
   "dueOn": "Inadaiwa {{date}}",
-  "seePayables": "Angalia unachodaiwa"
+  "seePayables": "Angalia unachodaiwa",
+  "noAccountFor": "Hakuna akaunti ya {{method}} iliyowekwa.",
+  "noAccountCanAdd": "Ongeza moja sasa na malipo haya yatapita humo.",
+  "noAccountSetUpIn": "Weka moja kwenye Malipo, kisha urudi.",
+  "noAccountAskOwner": "Mwombe mmiliki au anayesimamia akaunti za malipo aongeze moja, kisha urudi.",
+  "addPayAccount": "Ongeza akaunti ya {{method}}",
+  "openPaymentAccounts": "Fungua akaunti za Malipo",
+  "chooseAccount": "Chagua akaunti",
+  "branchTillCash": "Pesa taslimu za tilli ya tawi",
+  "payAccountAdded": "{{name}} imeongezwa.",
+  "payAcctName": "Jina la akaunti",
+  "payAcctNameHint": "Unavyoiita, kwa mfano Akaunti kuu ya benki.",
+  "payAcctNumber": "Namba ya akaunti (tarakimu za mwisho)",
+  "payAcctNumberHint": "Hiari. Tarakimu za mwisho tu ili itambulike. Namba kamili haihifadhiwi."
 }

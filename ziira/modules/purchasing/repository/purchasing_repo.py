@@ -225,6 +225,14 @@ def billed_on_receipt_line(session: Session, receipt_line_id: UUID, *, exclude_b
     return Decimal(session.scalar(query) or 0)
 
 
+def opening_bills(session: Session, ids: set[UUID]) -> list[SupplierBill]:
+    """The opening bills among these bill ids."""
+    if not ids:
+        return []
+    return list(session.scalars(select(SupplierBill).where(SupplierBill.id.in_(ids),
+                                                           SupplierBill.kind == "opening_balance")))
+
+
 def open_bills(session: Session, scopes: Scopes, as_of: date) -> list[SupplierBill]:
     """Posted bills that still have something to pay, for the payables report."""
     return list(session.scalars(select(SupplierBill).where(

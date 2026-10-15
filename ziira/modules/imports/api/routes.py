@@ -1,5 +1,7 @@
 """HTTP endpoints for Data Import: the kinds of file, uploading and mapping, the dry run, the commit, the report."""
 
+from datetime import date
+from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
@@ -9,10 +11,12 @@ from ziira.modules.imports.api.schemas import (
     BatchOut,
     ColumnOut,
     CountsOut,
+    FileCheckOut,
     KindOut,
     MappingIn,
     OptionsOut,
     ReportOut,
+    ReverseIn,
     RowOut,
     RowsOut,
     TotalOut,
@@ -25,7 +29,7 @@ from ziira.sdk import DB_SESSION, Session, ValidationFailed, page_limit, page_of
 
 router = APIRouter()
 MANAGE = [Depends(require_permission(IMPORTS_MANAGE))]
-Status = Literal["pending", "valid", "invalid", "imported", "skipped", "failed"]
+Status = Literal["pending", "valid", "invalid", "imported", "skipped", "failed", "reverted"]
 
 
 def _columns(importer: Importer) -> list[ColumnOut]:
@@ -36,7 +40,8 @@ def _columns(importer: Importer) -> list[ColumnOut]:
 def _kind(importer: Importer) -> KindOut:
     return KindOut(kind=importer.kind, title=importer.title, description=importer.description,
                    permission=importer.permission, reversible=importer.reversible,
-                   reversal_note=importer.reversal_note, columns=_columns(importer))
+                   reversal_note=importer.reversal_note, needs_go_live=importer.needs_go_live,
+                   whole_file=importer.whole_file, columns=_columns(importer))
 
 
 def _batch(detail: batches.BatchDetail) -> BatchOut:
@@ -44,10 +49,11 @@ def _batch(detail: batches.BatchDetail) -> BatchOut:
     return BatchOut(
         id=b.id, company_id=b.company_id, kind=b.kind, kind_title=detail.importer.title, filename=b.filename,
         status=b.status, delimiter=b.delimiter, headers=list(b.headers), mapping=dict(b.mapping),
-        options=OptionsOut(**b.options), warnings=list(b.warnings), columns=_columns(detail.importer),
-        counts=CountsOut(**detail.counts), total_rows=sum(detail.counts.values()),
-        reversible=detail.importer.reversible,
-        created_at=b.created_at, committed_at=b.committed_at, finished_at=b.finished_at)
+        options=OptionsOut(**b.options), file_check=FileCheckOut(**(b.file_check or {})), warnings=list(b.warnings),
+        columns=_columns(detail.importer), counts=CountsOut(**detail.counts), total_rows=sum(detail.counts.values()),
+        reversible=detail.importer.reversible, needs_go_live=detail.importer.needs_go_live,
+        whole_file=detail.importer.whole_file, created_at=b.created_at, committed_at=b.committed_at,
+        finished_at=b.finished_at, reverted_at=b.reverted_at, revert_reason=b.revert_reason)
 
 
 async def upload_body(request: Request) -> bytes:
@@ -88,11 +94,15 @@ def get_template(kind: str, session: Session = DB_SESSION) -> Response:
                  "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}})
 def post_batch(kind: str, company_id: UUID, filename: str = "import.csv",
                decimal_separator: Literal[".", ","] = ".", date_format: Literal["iso", "dmy", "mdy"] = "iso",
+               as_of: date | None = Query(default=None, description="The go-live date, for opening balances"),
+               tolerance: Decimal = Query(default=Decimal(0), ge=0, description="How far a trial balance may be out"),
                body: bytes = Depends(upload_body), session: Session = DB_SESSION) -> object:
     """Upload a CSV file (the request body) to import as `kind` into a company. UTF-8 (with or without a BOM), comma,
-    semicolon or tab separated. The reply has the column mapping we suggest; nothing is imported yet."""
+    semicolon or tab separated. The reply has the column mapping we suggest; nothing is imported yet. Kinds that bring
+    in opening balances need `as_of`, the go-live date."""
     return _batch(batches.create_batch(session, kind=kind, company_id=company_id, filename=filename, data=body,
-                                       decimal_separator=decimal_separator, date_format=date_format))
+                                       decimal_separator=decimal_separator, date_format=date_format, as_of=as_of,
+                                       tolerance=tolerance))
 
 
 @router.get("/batches", response_model=list[BatchOut], dependencies=MANAGE)
@@ -123,9 +133,17 @@ def post_validate(batch_id: UUID, session: Session = DB_SESSION) -> object:
 
 @router.post("/batches/{batch_id}/commit", response_model=BatchOut, status_code=status.HTTP_202_ACCEPTED,
              dependencies=MANAGE)
-def post_commit(batch_id: UUID, session: Session = DB_SESSION) -> object:
-    """Import the valid rows in the background (poll the batch for progress). Safe to ask twice."""
-    return _batch(batches.commit_batch(session, batch_id))
+def post_commit(batch_id: UUID, confirm: bool = Query(default=False, description="Accept the file's warning"),
+                session: Session = DB_SESSION) -> object:
+    """Import the valid rows in the background (poll the batch for progress). Safe to ask twice. A trial balance that
+    does not balance is imported only with `confirm=true`: the difference goes to opening balance equity."""
+    return _batch(batches.commit_batch(session, batch_id, confirm=confirm))
+
+
+@router.post("/batches/{batch_id}/reverse", response_model=BatchOut, dependencies=MANAGE)
+def post_reverse(batch_id: UUID, body: ReverseIn, session: Session = DB_SESSION) -> object:
+    """Undo a finished import of opening balances: everything it created is reversed, or nothing (with the reason)."""
+    return _batch(batches.reverse_batch(session, batch_id, reason=body.reason))
 
 
 @router.get("/batches/{batch_id}/rows", response_model=RowsOut, dependencies=MANAGE)

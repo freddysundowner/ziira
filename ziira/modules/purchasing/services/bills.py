@@ -417,6 +417,9 @@ def reverse_bill(session: Session, bill_id: UUID, *, reason: str) -> BillView:
     bill = _own(session, bill_id, lock=True)
     ctx = current_context()
     ctx.require(BILLS_APPROVE, company_id=bill.company_id)
+    if bill.kind == "opening_balance":
+        raise ValidationFailed("This is an opening balance brought in when the business started on Ziira: it is "
+                               "taken out by reversing the whole import (Admin > Import data)")
     if bill.status not in PAYABLE and bill.status != "paid":
         raise Conflict(f"A bill that is {bill.status.replace('_', ' ')} cannot be reversed")
     if not reason.strip():

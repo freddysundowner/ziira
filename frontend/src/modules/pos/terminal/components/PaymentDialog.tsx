@@ -10,23 +10,31 @@ import { MobileLeg, type PaymentAccount } from "./MobileLeg";
 const METHOD_ICON = { cash: Banknote, card: CreditCard, mobile_money: Smartphone, credit: UserRound, other: Banknote } as const;
 
 /** Take payment: any mix of cash (with change), card, mobile money and credit on the customer's account. */
-export function PaymentDialog({ total, currency, branchId, customer, legs, setLegs, onClose, onComplete, busy, error }: {
+export function PaymentDialog({ total, currency, branchId, customer, legs, setLegs, onClose, onComplete, busy, error, offline, savedAccounts, cannotSaveOffline }: {
   total: number; currency: string; branchId: string; customer: { id: string; name: string; phone: string };
   legs: PayLeg[]; setLegs: (change: (legs: PayLeg[]) => PayLeg[]) => void; onClose: () => void; onComplete: () => void; busy: boolean; error: Error | null;
+  /** No connection: the sale is kept on this device and sent later. */
+  offline: boolean; savedAccounts: { id: string; name: string }[];
+  /** No connection and this browser cannot keep the sale on the device: it must not pretend. */
+  cannotSaveOffline: boolean;
 }) {
   const { t } = useTranslation("pos");
   const canCollect = useCan("payments.collect");
   const { enabledUnits } = useSession();
   const accounts = useQuery({
+    enabled: !offline,
     queryKey: ["pos-terminal", "payment-accounts"],
     queryFn: () => unwrap(api.GET("/api/v1/payments/accounts")),
     staleTime: 5 * 60_000,
   });
-  const mobileAccounts: PaymentAccount[] = (accounts.data ?? []).filter((a) => a.kind === "mobile_money" && a.is_active && (!a.branch_id || a.branch_id === branchId));
+  const mobileAccounts: PaymentAccount[] = accounts.data
+    ? accounts.data.filter((a) => a.kind === "mobile_money" && a.is_active && (!a.branch_id || a.branch_id === branchId))
+    : savedAccounts;
 
   const summary = paySummary(total, legs.filter((l) => Number(l.amount) > 0));
   const problem = payProblem(total, legs, !!customer.id);
-  const methods: PayMethod[] = ["cash", "card", "mobile_money", ...(customer.id && enabledUnits.has("crm") ? ["credit" as const] : [])];
+  const creditAvailable = !!customer.id && enabledUnits.has("crm");
+  const methods: PayMethod[] = ["cash", "card", "mobile_money", ...(creditAvailable ? ["credit" as const] : [])];
 
   const patch = (key: string, change: Partial<PayLeg>) => setLegs((all) => all.map((l) => (l.key === key ? { ...l, ...change } : l)));
   const add = (method: PayMethod) => setLegs((all) => [
@@ -45,7 +53,9 @@ export function PaymentDialog({ total, currency, branchId, customer, legs, setLe
     <Modal open onClose={busy ? () => undefined : onClose} title={t("terminal.pay.title")} size="md"
       footer={<>
         <Button variant="secondary" onClick={onClose} disabled={busy}>{t("terminal.pay.back")}</Button>
-        <Button size="lg" loading={busy} disabled={problem !== null} onClick={onComplete}>{error ? t("terminal.retry") : t("terminal.pay.complete")}</Button>
+        <Button size="lg" loading={busy} disabled={problem !== null || cannotSaveOffline} onClick={onComplete}>
+          {error ? t("terminal.retry") : offline ? t("terminal.sync.saveSale") : t("terminal.pay.complete")}
+        </Button>
       </>}>
       <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (!problem && !busy) onComplete(); }}>
         <div className="grid grid-cols-3 gap-2 rounded-xl bg-sunken p-3 text-center">
@@ -59,9 +69,16 @@ export function PaymentDialog({ total, currency, branchId, customer, legs, setLe
         <div className="flex flex-wrap gap-2">
           {methods.map((m) => {
             const Icon = METHOD_ICON[m];
-            return <Button key={m} variant="secondary" size="lg" onClick={() => add(m)} className="flex-1"><Icon className="h-4 w-4" />{t(`terminal.pay.methods.${m}`)}</Button>;
+            const blocked = offline && m === "credit";
+            return <Button key={m} variant="secondary" size="lg" onClick={() => add(m)} disabled={blocked} className="flex-1"><Icon className="h-4 w-4" />{t(`terminal.pay.methods.${m}`)}</Button>;
           })}
         </div>
+        {offline && (
+          <div className="space-y-2">
+            <Alert tone="warn">{cannotSaveOffline ? t("terminal.sync.noStorageSale") : t("terminal.sync.offlineSale")}</Alert>
+            {creditAvailable && <p className="text-xs text-muted">{t("terminal.sync.creditOffline")}</p>}
+          </div>
+        )}
 
         <ul className="space-y-3">
           {legs.map((l) => {
@@ -81,7 +98,7 @@ export function PaymentDialog({ total, currency, branchId, customer, legs, setLe
                   <Field label={t("terminal.pay.slip")}><Input value={l.ref} onChange={(e) => patch(l.key, { ref: e.target.value })} maxLength={60} autoComplete="off" /></Field>
                 )}
                 {l.method === "mobile_money" && (
-                  <MobileLeg leg={l} accounts={mobileAccounts} canPrompt={canCollect} onChange={(change) => patch(l.key, change)} />
+                  <MobileLeg leg={l} accounts={mobileAccounts} canPrompt={canCollect && !offline} offline={offline} onChange={(change) => patch(l.key, change)} />
                 )}
                 {l.method === "credit" && <p className="text-xs text-muted">{t("terminal.pay.creditHint", { name: customer.name })}</p>}
               </li>

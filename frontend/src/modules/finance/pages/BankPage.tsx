@@ -7,7 +7,7 @@ import {
 } from "@/sdk";
 import { useNavigate } from "react-router-dom";
 
-import { accountNames, accountOptions, useAccounts } from "../api";
+import { accountNames, accountOptions, MONEY_SUBTYPES, useAccounts } from "../api";
 import { isSignedAmount } from "../lib";
 import { ScopeSelects, type Scope, useScope } from "../scope";
 
@@ -76,7 +76,7 @@ function StartForm({ onClose, scope }: { onClose: () => void; scope: Scope }) {
       <form id="recon-form" className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (valid) start.mutate(); }}>
         <p className="text-sm text-muted">{t("bank.startHint")}</p>
         <Field label={t("account")} required error={f.error("account_id")} hint={t("bank.accountHint")}>
-          <Combobox value={f.values.account_id} onChange={(v) => f.set("account_id", v)} options={accountOptions(accounts.data, { types: ["asset"] })} placeholder={t("chooseAccount")} />
+          <Combobox value={f.values.account_id} onChange={(v) => f.set("account_id", v)} options={accountOptions(accounts.data, { types: ["asset"], subtypes: MONEY_SUBTYPES })} placeholder={t("chooseAccount")} />
         </Field>
         <FormGrid>
           <Field label={t("bank.statementDate")} required error={f.error("statement_date")}><Input type="date" {...f.bind("statement_date")} required /></Field>

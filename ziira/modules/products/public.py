@@ -61,6 +61,7 @@ class ProductView:
     is_batch_tracked: bool
     is_active: bool
     reorder_level: Decimal | None
+    barcodes: tuple[str, ...] = ()
 
 
 def find_product(session: Session, product_id: UUID) -> ProductView | None:
@@ -102,15 +103,19 @@ def selling_prices(session: Session, company_id: UUID, branch_id: UUID | None, p
 
 
 def sellable_products(session: Session, company_id: UUID, search: str | None = None, limit: int = 100,
-                      offset: int = 0) -> list[ProductView]:
-    """The company's active products by name (a till's catalog), with their VAT rates."""
+                      offset: int = 0, barcode: str | None = None) -> list[ProductView]:
+    """The company's active products by name (a till's catalog), with their VAT rates and barcodes; `barcode` keeps
+    only the product with that code."""
     rates = {t.id: t.vat_rate for t in products_repo.list_tax_codes(session)}
+    found = products_repo.list_products(session, search, min(limit, 1000), offset, {company_id}, only_active=True,
+                                        barcode=barcode)
+    codes = products_repo.barcodes_of(session, {p.id for p in found})
     return [ProductView(
         id=p.id, company_id=p.company_id, sku=p.sku, name=p.name, product_type=p.product_type,
         base_uom_id=p.base_uom_id, tax_code_id=p.tax_code_id, vat_rate=rates.get(p.tax_code_id, Decimal(0)),
-        is_batch_tracked=p.is_batch_tracked, is_active=p.is_active, reorder_level=p.reorder_level)
-        for p in products_repo.list_products(session, search, min(limit, 1000), offset, {company_id},
-                                             only_active=True)]
+        is_batch_tracked=p.is_batch_tracked, is_active=p.is_active, reorder_level=p.reorder_level,
+        barcodes=tuple(codes.get(p.id, ())))
+        for p in found]
 
 
 def tax_code_rate(session: Session, tax_code_id: UUID) -> Decimal | None:

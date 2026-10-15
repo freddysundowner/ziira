@@ -44,9 +44,9 @@
  "event": {
   "detected": "Liligunduliwa", "alert_sent": "Tahadhari imetumwa", "asked": "Ameombwa kueleza", "assigned": "Amepewa", "unassigned": "Amenyang'anywa",
   "auto_resolved": "Limeisha lenyewe", "reopened": "Limeonekana tena", "severity_changed": "Uzito umebadilika", "acknowledged": "Limeonekana",
-  "explained": "Limeelezwa", "resolved": "Limetatuliwa", "dismissed": "Limewekwa kuwa si tatizo"
+  "explained": "Limeelezwa", "resolved": "Limetatuliwa", "dismissed": "Limewekwa kuwa si tatizo", "ai_explained": "AI iliandika maelezo"
  },
- "channel": { "sms": "SMS", "email": "Barua pepe", "in_app": "Ndani ya programu" },
+ "channel": { "sms": "SMS", "email": "Barua pepe", "in_app": "Ndani ya programu", "ai": "AI" },
  "action": {
   "acknowledge": "Nimeliona", "explain": "Eleza", "resolve": "Tatua", "dismiss": "Si tatizo",
   "assign": "Mpe mtu", "ask": "Muombe mtu aeleze"
@@ -113,5 +113,73 @@
  "widgetNone": "Hakuna cha kuangalia kwa sasa.",
  "widgetOpen_one": "Jambo {{count}} wazi",
  "widgetOpen_other": "Mambo {{count}} wazi",
- "findingsWidget": "Yaliyogunduliwa"
+ "findingsWidget": "Yaliyogunduliwa",
+ "ai": {
+  "label": "Imeandikwa na AI",
+  "short": "AI",
+  "none": "Bado hakuna maelezo ya AI.",
+  "labelHint": "Imeandikwa na msaidizi wa AI kutokana na namba za biashara hii. Namba zinatoka kwenye rekodi zako; maneno yanaweza kuwa na kasoro.",
+  "explanationTitle": "Maelezo kwa lugha rahisi",
+  "explanationHint": "Imeandikwa na AI kutokana na namba za jambo hili. Maelezo ya ukaguzi hapo juu ndiyo rejea.",
+  "write": "Andika maelezo",
+  "regenerate": "Andika tena",
+  "regenerateAsk": "Badilisha maelezo ya AI na mapya?",
+  "written": "Maelezo yameandikwa.",
+  "rankReason": "Kwa nini lipo hapa: {{reason}}",
+  "askTitle": "Uliza Ziira",
+  "askHint": "Uliza kuhusu mauzo, bidhaa, wateja, wasambazaji au vitabu vya hesabu kwa maneno rahisi. Majibu yameandikwa na AI kutokana na rekodi zako, kwa unachoruhusiwa kuona tu.",
+  "placeholder": "Uliza swali, kwa mfano “Mauzo yalikuwaje wiki hii?”",
+  "questionLabel": "Swali lako",
+  "send": "Uliza",
+  "thinking": "Naangalia rekodi zako…",
+  "newConversation": "Mazungumzo mapya",
+  "examples": "Jaribu kuuliza",
+  "example": {
+   "sales": "Mauzo yalikuwaje jana?",
+   "lowStock": "Ni bidhaa zipi zinaisha?",
+   "overdue": "Ni wateja gani wamechelewa kulipa?",
+   "profit": "Faida yetu ya mwezi huu mpaka sasa ni ngapi?",
+   "bills": "Ni bili zipi za wasambazaji zinazodaiwa wiki hii?"
+  },
+  "tool": {
+   "intel_list_findings": "Matokeo ya ukaguzi",
+   "intel_finding_detail": "Jambo moja kwa undani",
+   "command_figures": "Takwimu muhimu",
+   "pos_sales_summary": "Muhtasari wa mauzo",
+   "pos_top_products": "Bidhaa zinazouzwa zaidi",
+   "pos_voids": "Mauzo yaliyobatilishwa",
+   "crm_customer_balance": "Deni la mteja",
+   "crm_overdue_customers": "Wateja waliochelewa kulipa",
+   "inventory_stock_on_hand": "Bidhaa zilizopo",
+   "inventory_low_stock": "Bidhaa zinazoisha",
+   "purchasing_supplier_balance": "Deni la msambazaji",
+   "purchasing_bills_due": "Bili za wasambazaji zinazodaiwa",
+   "finance_profit_and_loss": "Faida na hasara",
+   "finance_cash_position": "Hali ya fedha taslimu",
+   "people_headcount": "Idadi ya wafanyakazi",
+   "people_leave_pending": "Likizo zinazosubiri idhini"
+  },
+  "you": "Wewe",
+  "answerLabel": "Ziira",
+  "basedOn": "Kwa msingi wa",
+  "noSources": "Hakuna rekodi zilizotafutwa kwa jibu hili.",
+  "rows_one": "safu {{count}}",
+  "rows_other": "safu {{count}}",
+  "noRows": "Hakuna safu",
+  "checkFigures": "Baadhi ya namba hazikuweza kuthibitishwa dhidi ya rekodi. Angalia vyanzo kabla ya kuzitegemea.",
+  "capped": "Hii ilichukua hatua nyingi kuliko zinazoruhusiwa, kwa hivyo jibu linaweza kuwa pungufu.",
+  "error": "Hakuna jibu: {{message}}",
+  "retry": "Jaribu tena",
+  "unavailable": {
+   "not_enabled": "Uliza Ziira imezimwa kwa biashara hii.",
+   "no_consent": "Uliza Ziira inahitaji idhini ya Mmiliki kabla ya kutumika.",
+   "purpose_off": "Uliza Ziira imezimwa kwenye mipangilio ya msaidizi wa AI.",
+   "budget": "Kikomo cha AI cha mwezi huu kimefikiwa.",
+   "not_configured": "Mtoa huduma wa AI wa jukwaa bado hajawekwa.",
+   "terms_unconfirmed": "Jukwaa bado halijathibitisha masharti ya data ya mtoa huduma wa AI.",
+   "default": "Uliza Ziira haipatikani kwa sasa."
+  },
+  "ownerCanFix": "Mmiliki anaweza kubadilisha hili katika Mipangilio > Msaidizi wa AI.",
+  "openSettings": "Fungua mipangilio ya msaidizi wa AI"
+ }
 }

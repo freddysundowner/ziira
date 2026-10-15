@@ -6,7 +6,15 @@ from ziira.modules.inventory.domain import locations as rules
 from ziira.modules.inventory.permissions import LOCATIONS_MANAGE, STOCK_VIEW
 from ziira.modules.inventory.repository import inventory_repo
 from ziira.modules.inventory.repository.models import Location
-from ziira.sdk import Conflict, Session, ValidationFailed, audit_record, check_company, current_context
+from ziira.sdk import (
+    Conflict,
+    Session,
+    ValidationFailed,
+    audit_record,
+    check_branch_open,
+    check_company,
+    current_context,
+)
 
 
 def create_location(session: Session, *, company_id: UUID, code: str, name: str, kind: str = "store",
@@ -15,6 +23,8 @@ def create_location(session: Session, *, company_id: UUID, code: str, name: str,
     in-transit or virtual location. Needs 'locations.manage' for the branch (or the company)."""
     current_context().require(LOCATIONS_MANAGE, company_id=company_id, branch_id=branch_id)
     check_company(session, company_id, branch_id)
+    if branch_id is not None:
+        check_branch_open(session, branch_id)
     rules.check_location(kind, branch_id is not None)
     code = rules.normalise_location_code(code)
     if not name.strip():

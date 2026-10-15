@@ -10,7 +10,7 @@ from ziira.modules.imports.public import ImportColumn, Importer, ImportRow, atte
 from ziira.modules.products.domain import rules
 from ziira.modules.products.permissions import PRICES_MANAGE, PRODUCTS_MANAGE
 from ziira.modules.products.repository import products_repo
-from ziira.modules.products.services import pricing
+from ziira.modules.products.services import barcodes, pricing
 from ziira.modules.products.services.create_product import create_product
 from ziira.sdk import Session, ValidationFailed, current_context
 
@@ -51,6 +51,8 @@ class ProductImporter(Importer):
                      aliases=("batch", "batches")),
         ImportColumn("reorder_level", False, "Stock level at which to reorder (stock products).", "20",
                      aliases=("reorder", "min stock", "minimum stock")),
+        ImportColumn("barcode", False, "Code(s) a scanner reads, several separated by ; (each belongs to one product).",
+                     "6001234567890", aliases=("barcodes", "ean", "upc", "gtin")),
         ImportColumn("price", False, "Selling price including tax, put in the default price list.", "850.00",
                      aliases=("selling price", "unit price", "retail price"), total="selling prices"),
     )
@@ -78,16 +80,21 @@ class ProductImporter(Importer):
         if price is not None and price != price.quantize(Decimal("0.01")):
             errors.append("price: at most 2 decimal places")
         attempt(errors, lambda: rules.check_product_type(kind, batch))
+        parts = [c for c in row.text("barcode").split(";") if c.strip()]
+        codes = attempt(errors, lambda: rules.clean_barcodes(parts)) or []
         if reorder is not None:
             attempt(errors, lambda: rules.check_reorder_level(reorder, kind))
         return {"sku": sku, "name": name, "unit_id": unit_id, "tax_id": tax_id, "type": kind, "batch": batch,
-                "reorder": reorder, "price": price}
+                "reorder": reorder, "price": price, "barcodes": codes}
 
     def validate_row(self, session: Session, company_id: UUID, row: ImportRow) -> list[str]:
         errors: list[str] = []
         read = self._read(session, row, errors)
         if read["price"] is not None and not current_context().can(PRICES_MANAGE, company_id=company_id):
             errors.append("price: you do not have permission to set prices")
+        for code in read["barcodes"]:  # type: ignore[attr-defined]
+            if products_repo.barcode_owner(session, company_id, code) is not None:
+                errors.append(f"barcode: {code} is already used by another product")
         return errors
 
     def existing(self, session: Session, company_id: UUID, row: ImportRow) -> str | None:
@@ -104,6 +111,8 @@ class ProductImporter(Importer):
             base_uom_id=read["unit_id"], tax_code_id=read["tax_id"],  # type: ignore[arg-type]
             product_type=str(read["type"]), is_batch_tracked=bool(read["batch"]),
             reorder_level=read["reorder"])  # type: ignore[arg-type]
+        if read["barcodes"]:
+            barcodes.add_barcodes(session, product, read["barcodes"])  # type: ignore[arg-type]
         if read["price"] is not None:
             pricing.set_price(session, _price_list(session, company_id), product_id=product.id,
                               price=read["price"])  # type: ignore[arg-type]

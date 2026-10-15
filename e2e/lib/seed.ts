@@ -63,3 +63,32 @@ export async function closeOpenTills(api: Api): Promise<void> {
     await api.post(`/pos/tills/${t.id}/close`, { counted_cash: String(report.expected_cash) });
   }
 }
+
+/** A user (created through the API) holding a built-in role over one branch only (or the whole company when `branchId` is left out). */
+export async function scopedUser(api: Api, who: { name: string; email: string; password: string; role: string; companyId: string; branchId?: string }): Promise<void> {
+  const roles = await api.get<{ id: string; name: string }[]>("/roles");
+  const role = roles.find((r) => r.name === who.role);
+  if (!role) throw new Error(`no role ${who.role}`);
+  const user = await api.post("/users", { full_name: who.name, email: who.email, password: who.password });
+  await api.post(`/users/${user.id}/roles`, { role_id: role.id, scope: who.branchId ? "branch" : "company", company_id: who.companyId, branch_id: who.branchId ?? null });
+}
+
+/** An employee with approved pay and an approved payroll run for last month, so a payslip exists. `second` approves what the owner prepares. */
+export async function seedPayslip(owner: Api, second: Api, companyId: string): Promise<{ payslipId: string; name: string }> {
+  const name = `Pat ${code(5)}`;
+  const employee = await owner.post("/people/employees", { company_id: companyId, full_name: name, hire_date: "2024-01-01" });
+  const terms = await owner.post(`/people/employees/${employee.id}/terms`, { basic_pay: "1500", valid_from: "2024-01-01" });
+  await second.post(`/people/terms/${terms.id}/approve`);
+  const now = new Date();
+  const iso = (d: Date) => d.toLocaleDateString("en-CA");
+  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const end = new Date(now.getFullYear(), now.getMonth(), 0);
+  const run = await owner.post("/people/payroll-runs", { company_id: companyId, period_start: iso(start), period_end: iso(end), pay_date: iso(end) });
+  await owner.post(`/people/payroll-runs/${run.id}/calculate`);
+  await owner.post(`/people/payroll-runs/${run.id}/submit`);
+  await second.post(`/people/payroll-runs/${run.id}/approve`);
+  const slips = await owner.get<{ id: string; full_name: string }[]>(`/people/payroll-runs/${run.id}/payslips`);
+  const slip = slips.find((s) => s.full_name === name);
+  if (!slip) throw new Error("no payslip for the new employee");
+  return { payslipId: slip.id, name };
+}

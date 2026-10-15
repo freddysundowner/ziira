@@ -7,7 +7,7 @@ version = "1.0.0"
 
 [provides]
 publishes = ["approval.decided", "exception.raised"]
-extension_points = ["kernel.integrity_check", "kernel.notification_channel", "kernel.personal_data"]
+extension_points = ["kernel.integrity_check", "kernel.notification_channel", "kernel.personal_data", "kernel.branch_usage"]
 
 [extends]
 implements = ["kernel.personal_data"]
@@ -24,6 +24,7 @@ implements = ["kernel.personal_data"]
 "exceptions.manage" = "Work the exceptions inbox: assign, explain and resolve items"
 "privacy.manage" = "Handle data subject requests: find, export and erase a person's data"
 "support.grant" = "Let Ziira staff access this business for a limited time, and take that back"
+"organisation.manage" = "Add and edit companies and branches, and close a branch"
 
 # Owner receives every permission automatically.
 [roles]

@@ -7,6 +7,10 @@ Units plug into Intelligence through two extension points:
 - `intel.baseline_metric`: a unit supplies observations of a metric per day (subclass `BaselineMetric`) so Intelligence
   can learn what is normal for the business.
 
+- `intel.ask_tool`: a unit supplies a question Ask Ziira may put to its data (subclass `AskTool`; see
+  `docs/ai.md`). The tool filters by the asking person's permissions (`branch_scope`) and returns a bounded result.
+- `intel.llm`: an AI provider (subclass `LlmProvider`), for plugins such as `ai_anthropic`.
+
 Other units also read findings through the functions here (the Command Center shows the top ones).
 """
 
@@ -18,17 +22,41 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
+from ziira.modules.intel.domain.ai_rules import hide_secrets
+from ziira.modules.intel.domain.llm import (
+    AskTool,
+    LlmError,
+    LlmMessage,
+    LlmProvider,
+    LlmReply,
+    LlmUsage,
+    ToolCall,
+    ToolResult,
+    ToolSpec,
+)
 from ziira.modules.intel.domain.model import AREAS, SEVERITIES, Baseline, Candidate, Record, Sample
 from ziira.modules.intel.domain.rules import fingerprint, is_unusual
+from ziira.modules.intel.domain.scope import (
+    BranchScope,
+    branch_scope,
+    company_visible,
+    date_range,
+    requested_branch,
+    scope_from_pairs,
+)
 from ziira.sdk import RequestContext, Session
 
 INTEL_CHECK = "intel.check"
 INTEL_BASELINE_METRIC = "intel.baseline_metric"
+INTEL_LLM = "intel.llm"
+INTEL_ASK_TOOL = "intel.ask_tool"
 
 __all__ = [
-    "AREAS", "INTEL_BASELINE_METRIC", "INTEL_CHECK", "SEVERITIES", "Baseline", "BaselineMetric", "Candidate",
-    "CheckContext", "FindingBrief", "IntelCheck", "Record", "Sample", "findings_summary", "fingerprint",
-    "is_unusual", "top_findings",
+    "AREAS", "INTEL_ASK_TOOL", "INTEL_BASELINE_METRIC", "INTEL_CHECK", "INTEL_LLM", "SEVERITIES", "AskTool",
+    "Baseline", "BaselineMetric", "BranchScope", "Candidate", "CheckContext", "FindingBrief", "IntelCheck", "LlmError",
+    "LlmMessage", "LlmProvider", "LlmReply", "LlmUsage", "Record", "Sample", "ToolCall", "ToolResult", "ToolSpec",
+    "branch_scope", "company_visible", "date_range", "findings_summary", "fingerprint", "hide_secrets", "is_unusual",
+    "requested_branch", "scope_from_pairs", "top_findings",
 ]
 
 
@@ -92,6 +120,7 @@ class FindingBrief:
     company_id: UUID | None
     branch_id: UUID | None
     amount: Decimal | None
+    reason: str | None = None            # the AI layer's one-line reason for its place, when it ranked this finding
 
 
 def top_findings(session: Session, context: RequestContext, limit: int = 5) -> list[FindingBrief]:

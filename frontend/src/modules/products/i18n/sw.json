@@ -1,7 +1,7 @@
 {
   "menu": "Bidhaa",
   "title": "Bidhaa",
-  "search": "Tafuta kwa jina au SKU",
+  "search": "Tafuta kwa jina au SKU au msimbo-pau",
   "empty": "Bado hakuna bidhaa.",
   "new": "Bidhaa mpya",
   "sku": "SKU",
@@ -71,5 +71,15 @@
   "lettersOnly": "Herufi tu.",
   "customerGroup": "Kundi la wateja",
   "groupHint": "Hiari.",
-  "makeDefault": "Tumia kama orodha ya bei chaguo-msingi"
+  "makeDefault": "Tumia kama orodha ya bei chaguo-msingi",
+  "barcodes": {
+    "title": "Misimbo-pau (barcode)",
+    "edit": "Hariri misimbo-pau",
+    "editTitle": "Misimbo-pau",
+    "none": "Bado hakuna msimbo-pau. Ongeza misimbo iliyo kwenye bidhaa ili rejista iweze kuiskani.",
+    "codes": "Misimbo",
+    "hint": "Mmoja kwa kila mstari. Msimbo mmoja ni wa bidhaa moja.",
+    "save": "Hifadhi misimbo-pau",
+    "saved": "Misimbo-pau imehifadhiwa"
+  }
 }

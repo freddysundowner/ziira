@@ -436,3 +436,20 @@ class SuggestResultOut(BaseModel):
     unmatched: list[SuggestionLineOut]
     applied: bool
     reconciliation: ReconciliationOut
+
+
+class OpeningBalanceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    company_id: UUID
+    number: str
+    go_live_date: date
+    entry_id: UUID
+    line_count: int
+    difference: Decimal
+    note: str | None
+    status: str
+    reversal_entry_id: UUID | None
+    reversed_at: datetime | None
+    reverse_reason: str | None
+    created_at: datetime

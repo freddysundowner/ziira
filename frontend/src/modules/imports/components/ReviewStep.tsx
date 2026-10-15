@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 import {
-  Alert, api, Badge, Button, Card, ConfirmDialog, DataTable, Pager, Select, Stat, StatusBadge, toast, unwrap, useMutation, usePagedList, useQueryClient,
+  Alert, api, Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Pager, Select, Stat, StatusBadge, toast, unwrap, useMutation, usePagedList, useQueryClient,
   useTranslation, quantity,
 } from "@/sdk";
 
-import { type Batch, filterQuery, problemRows, type RowFilter } from "../lib/wizard";
+import { type Batch, canImport, filterQuery, problemRows, type RowFilter } from "../lib/wizard";
 import { DownloadButton } from "./DownloadButton";
 
 const PAGE = 25;
@@ -16,13 +16,15 @@ export function ReviewStep({ batch, onBack }: { batch: Batch; onBack: () => void
   const qc = useQueryClient();
   const [filter, setFilter] = useState<RowFilter>(batch.counts.invalid > 0 ? "problems" : "all");
   const [confirming, setConfirming] = useState(false);
+  const [accepted, setAccepted] = useState(false);
   const c = batch.counts;
+  const check = batch.file_check;
   const list = usePagedList(["import-rows", batch.id, filter], (limit, offset) =>
     unwrap(api.GET("/api/v1/imports/batches/{batch_id}/rows", { params: { path: { batch_id: batch.id }, query: { ...filterQuery(filter), limit, offset } } })).then((r) => r.rows), PAGE);
 
   const commit = useMutation({
     meta: { silent: true },
-    mutationFn: () => unwrap(api.POST("/api/v1/imports/batches/{batch_id}/commit", { params: { path: { batch_id: batch.id } } })),
+    mutationFn: () => unwrap(api.POST("/api/v1/imports/batches/{batch_id}/commit", { params: { path: { batch_id: batch.id }, query: { confirm: accepted } } })),
     onSuccess: () => { setConfirming(false); void qc.invalidateQueries({ queryKey: ["import", batch.id] }); },
     onError: (e) => { setConfirming(false); toast(e.message, "bad"); },
   });
@@ -43,7 +45,17 @@ export function ReviewStep({ batch, onBack }: { batch: Batch; onBack: () => void
         <Stat label={t("review.skipped")} value={c.skipped} hint={t("review.skippedHint")} />
       </div>
       {c.valid === 0 && <Alert tone="warn">{c.skipped > 0 && c.invalid === 0 ? t("review.nothingNew") : t("review.nothingReady")}</Alert>}
-      {c.invalid > 0 && c.valid > 0 && <Alert tone="info">{t("review.leftOut", { count: c.invalid })}</Alert>}
+      {c.invalid > 0 && c.valid > 0 && !batch.whole_file && <Alert tone="info">{t("review.leftOut", { count: c.invalid })}</Alert>}
+      {check.problems.map((p) => <Alert key={p} tone="bad">{p}</Alert>)}
+      {check.notes.map((n) => <Alert key={n} tone="info">{n}</Alert>)}
+      {check.confirm && !check.problems.length && (
+        <Alert tone="warn">
+          <div className="space-y-2">
+            <p>{check.confirm}.</p>
+            <Checkbox checked={accepted} onChange={(e) => setAccepted(e.target.checked)} label={t("review.acceptDifference")} />
+          </div>
+        </Alert>
+      )}
 
       <Card flush>
         <DataTable
@@ -73,11 +85,11 @@ export function ReviewStep({ batch, onBack }: { batch: Batch; onBack: () => void
             <DownloadButton fileName="rejected-rows.csv" request={() => api.GET("/api/v1/imports/batches/{batch_id}/rejected.csv", { params: { path: { batch_id: batch.id } }, parseAs: "blob" })}>{t("review.downloadRejected")}</DownloadButton>
           )}
         </div>
-        <Button disabled={c.valid === 0} onClick={() => setConfirming(true)}>{t("review.import", { count: c.valid })}</Button>
+        <Button disabled={!canImport(batch, accepted)} onClick={() => setConfirming(true)}>{t("review.import", { count: c.valid })}</Button>
       </div>
 
       <ConfirmDialog open={confirming} onClose={() => setConfirming(false)} busy={commit.isPending} title={t("review.confirmTitle")} confirmLabel={t("review.import", { count: c.valid })}
-        message={`${t("review.confirm", { count: c.valid })} ${batch.reversible ? "" : t("review.noUndo")}`} onConfirm={() => commit.mutate()} />
+        message={`${t("review.confirm", { count: c.valid })} ${batch.reversible ? t("review.canUndo") : t("review.noUndo")}`} onConfirm={() => commit.mutate()} />
     </div>
   );
 }
