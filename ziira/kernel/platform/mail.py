@@ -385,7 +385,21 @@ def send_test(provider: str | None, to: str, *, by: str) -> dict[str, Any]:
     elif live is not None:
         cfg = live
     else:
-        raise ValidationFailed("There is no email provider to test")
+        # Nothing is live yet (the normal state before the first test): when exactly one provider has been filled in and
+        # saved, that is the one the person means. With several, they must test from the provider's own card.
+        filled = []
+        for spec in mail_providers.all_providers():
+            try:
+                filled.append(_platform_config(spec.name))
+            except ValidationFailed:
+                continue
+        if len(filled) == 1:
+            cfg = filled[0]
+        elif not filled:
+            raise ValidationFailed("There is no email provider to test: fill in a provider below, set the from address "
+                                   "and press Save first")
+        else:
+            raise ValidationFailed("Several providers are filled in: use the test button on the provider you want")
     ok, reason = deliver(cfg, address, "Ziira test email",
                          "This is a test email from the Ziira Super Admin. If you can read it, sending works.\n")
     _log("test", address, ok, cfg.provider, None if ok else reason)

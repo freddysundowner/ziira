@@ -98,6 +98,20 @@ def test_secret_is_write_only_and_a_test_then_activation_switch_the_mailer(clien
     assert {x["action"] for x in lines} >= {"email.provider_save", "email.test", "email.activate"}
 
 
+def test_the_top_test_button_tests_the_only_filled_provider_before_anything_is_live(client, boss, server, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """The owner's case: Brevo (here Resend) is saved but not live; 'Send a test email' at the top names no provider.
+    In production nothing is live yet (here: no environment fallback, no development fake)."""
+    h = boss["headers"]
+    monkeypatch.setattr(mail, "active", lambda: None)
+    nothing = client.post(f"{API}/operator/email/test", headers=h, json={"to": "jane@gmail.test"})
+    assert nothing.status_code == 422 and "fill in a provider" in nothing.text
+    setup_resend(client, boss)
+    r = client.post(f"{API}/operator/email/test", headers=h, json={"to": "jane@gmail.test"})
+    assert r.status_code == 200 and r.json()["ok"] and r.json()["provider"] == "resend"
+    # and the result lets the provider be made live
+    assert client.put(f"{API}/operator/email/active", headers=h, json={"provider": "resend"}).status_code == 200
+
+
 def test_provider_errors_are_mapped_and_an_echoed_secret_is_scrubbed(client, boss, server) -> None:  # type: ignore[no-untyped-def]
     setup_resend(client, boss)
     server.status, server.body = 401, {"message": "bad key"}
