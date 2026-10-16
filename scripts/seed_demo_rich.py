@@ -2531,8 +2531,15 @@ def main() -> int:
     p.add_argument("--i-know", action="store_true", help="allow a tenant whose code does not start with 'demo'")
     p.add_argument("--reset", action="store_true", help="drop and recreate the demo business first")
     p.add_argument("--confirm", help="the business code again, required with --reset")
+    p.add_argument("--days", type=int, help="how many trading days of history (default: the scale's own: tiny 14, small 45, full 90); "
+                   "sales are scaled to match")
     p.add_argument("--stop-after", help=argparse.SUPPRESS)
     a = p.parse_args()
+    if a.days:
+        if not 7 <= a.days <= 120:
+            raise SystemExit("--days must be between 7 and 120")
+        base = SCALES[a.scale]
+        SCALES[a.scale] = dict(base, days=a.days, sales=max(20, round(base["sales"] * a.days / base["days"])))
     for noisy in ("httpx", "ziira.access", "ziira"):
         logging.getLogger(noisy).setLevel(logging.ERROR)
     check_code(a.tenant, i_know=a.i_know)
