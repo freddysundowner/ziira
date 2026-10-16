@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import { ACTION_PERMISSION, FLAGS } from "./helpers/subscribers";
+import { EXTRA_PAGES, NAV_GROUPS } from "./nav";
 import { EXTRA_LIMITS } from "./helpers/plan";
 import { INTERVALS, SUBSCRIPTION_STATUSES } from "./helpers/format";
 import en from "./i18n/en.json";
 import enPlatform from "./i18n/en.platform.json";
+import enAi from "./i18n/en.ai.json";
+import swAi from "./i18n/sw.ai.json";
 import enWebsite from "./i18n/en.website.json";
 import sw from "./i18n/sw.json";
 import swPlatform from "./i18n/sw.platform.json";
 import swWebsite from "./i18n/sw.website.json";
+import enShell from "./i18n/en.shell.json";
+import swShell from "./i18n/sw.shell.json";
 
 type Tree = { [key: string]: Tree | string };
 
@@ -28,7 +33,7 @@ function merge(...trees: Tree[]): Tree {
   return out;
 }
 
-const merged = { en: merge(en, enPlatform, enWebsite), sw: merge(sw, swPlatform, swWebsite) };
+const merged = { en: merge(en, enPlatform, enAi, enWebsite, enShell), sw: merge(sw, swPlatform, swAi, swWebsite, swShell) };
 
 describe("operator console translations", () => {
   it("have the same keys in English and Swahili", () => {
@@ -36,6 +41,9 @@ describe("operator console translations", () => {
   });
   it("leave no empty text", () => {
     for (const k of keys(en)) expect(k).not.toBe("");
+  });
+  it("have the same keys in the shell's files", () => {
+    expect(keys(swShell).sort()).toEqual(keys(enShell).sort());
   });
   it("have the same keys in the platform screens' files", () => {
     expect(keys(swPlatform).sort()).toEqual(keys(enPlatform).sort());
@@ -111,5 +119,32 @@ describe("words chosen by a value from the API or a list exist for every value",
     const have = new Set(keys(merged.en));
     const missing = values.filter((v) => !have.has(`${prefix}.${v}`));
     expect(missing).toEqual([]);
+  });
+});
+
+describe("the shell's words exist for every alert, risk, checklist step and menu entry the server or the menu can name", () => {
+  const have = new Set(keys(merged.en));
+  const sw = new Set(keys(merged.sw));
+  const need = (keysNeeded: string[]) => keysNeeded.filter((k) => !have.has(k) || !sw.has(k));
+  it("alerts (the keys the server's alert list uses)", () => {
+    const alerts = ["payments_attention", "suspended", "past_due", "pending_requests", "trials_ending", "failed_jobs", "businesses_behind", "businesses_unreadable", "plugins_refused",
+      "licences_expiring", "backup_old", "not_ready", "mail_not_working", "ai_cap_reached"];
+    expect(need(alerts.flatMap((a) => [`shell.alerts.items.${a}.title`, `shell.alerts.items.${a}.hint`]))).toEqual([]);
+  });
+  it("risks and checklist steps", () => {
+    expect(need(["mfa_off", "registration_without_email", "mail_not_configured", "no_ai_provider"].flatMap((r) => ["title", "text", "fix"].map((p) => `shell.risks.${r}.${p}`)))).toEqual([]);
+    expect(need(["email", "registration", "ai", "payments", "plans", "website", "licence"].flatMap((s) => ["title", "text", "link"].map((p) => `setup.items.${s}.${p}`)))).toEqual([]);
+  });
+  it("every menu entry, group and search kind", () => {
+    const entries = NAV_GROUPS.flatMap((g) => g.items.map((i) => `nav.i.${i.id}`));
+    const groups = NAV_GROUPS.map((g) => g.key);
+    const extra = EXTRA_PAGES.map((p) => `nav.i.${p.id}`);
+    const kinds = ["page", "subscriber", "invoice", "plan", "licence", "operator"].map((k) => `shell.search.kinds.${k}`);
+    expect(need([...entries, ...groups, ...extra, ...kinds])).toEqual([]);
+  });
+  it("environments and chart words", () => {
+    expect(need(["production", "development", "test"].map((e) => `shell.env.${e}`))).toEqual([]);
+    expect(need(["revenue", "signups", "churn"].flatMap((m) => [`dash.trend.metrics.${m}`, `dash.trend.hint.${m}`]))).toEqual([]);
+    expect(need(["12m", "12w"].map((r) => `dash.trend.ranges.${r}`))).toEqual([]);
   });
 });

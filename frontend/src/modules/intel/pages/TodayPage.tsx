@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
-import { api, Card, EmptyState, ErrorState, formatDate, PageHeader, SkeletonRows, Slot, today as todayDate, unwrap, useCan, useQuery, useTranslation } from "@/sdk";
+import { api, Card, EmptyState, ErrorState, formatDate, PageHeader, SkeletonRows, Slot, today as todayDate, unwrap, useCan, useCompany, useQuery, useTranslation } from "@/sdk";
+
+import { COMMAND_PANELS } from "@/modules/command/public";
 
 import AskBox from "../components/AskBox";
 import ThingCard from "../components/ThingCard";
@@ -16,6 +18,8 @@ const SHOWN = 5;
 export default function TodayPage() {
   const { t } = useTranslation("intel");
   const canManage = useCan("findings.manage");
+  const canAsk = useCan("ai.ask");
+  const { company } = useCompany();
   const list = useGrouped("open", SHOWN);
   const topics = useQuery({ queryKey: ["intel", "topics"], queryFn: () => unwrap(api.GET("/api/v1/intel/topics")) });
   const data = list.data;
@@ -59,8 +63,9 @@ export default function TodayPage() {
             )}
         </section>
         <aside className="min-w-0 space-y-4">
-          <AskBox />
+          {canAsk && <AskBox />}
           <SeeStrip />
+          <Slot name={COMMAND_PANELS} props={{ companyId: company?.id }} />
           <SummaryStrip />
         </aside>
       </div>

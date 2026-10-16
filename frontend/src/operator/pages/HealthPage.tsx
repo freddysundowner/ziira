@@ -1,17 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 
-import { Alert, Badge, Button, Card, type Column, DataTable, ErrorState, formatDate, PageHeader, type Schemas, Skeleton, Stat, useTranslation } from "@/sdk";
+import { Link } from "react-router-dom";
+
+import { Alert, Badge, Button, Card, type Column, DataTable, ErrorState, PageHeader, type Schemas, Skeleton, Stat, useTranslation } from "@/sdk";
 
 import { opApi, opUnwrap } from "../client";
 import { ageLabel, backupTone } from "../lib";
-import { UpgradeAllDialog } from "./UpgradeAllDialog";
 
 type Task = Schemas["RecurringTask"];
 
 export default function HealthPage() {
   const { t } = useTranslation("operator");
-  const [upgrading, setUpgrading] = useState(false);
   const health = useQuery({ queryKey: ["operator", "health"], queryFn: () => opUnwrap(opApi.GET("/api/v1/operator/health")), refetchInterval: 60_000 });
 
   if (health.isPending) {
@@ -30,13 +29,13 @@ export default function HealthPage() {
   return (
     <>
       <PageHeader title={t("health.title")} description={t("health.description")}
-        actions={<Button variant="secondary" onClick={() => void health.refetch()} loading={health.isFetching}>{t("health.refresh")}</Button>} />
+        actions={<><Link to="/operator/backups" className="text-sm font-medium text-brand-strong hover:underline">{t("health.backupsLink")}</Link><Button variant="secondary" onClick={() => void health.refetch()} loading={health.isFetching}>{t("health.refresh")}</Button></>} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label={t("health.ready")} value={h.ready ? t("health.yes") : t("health.no")} tone={h.ready ? "ok" : "bad"} hint={h.ready ? undefined : t("health.problemCount", { count: h.problems.length })} />
-        <Stat label={t("health.businesses")} value={h.businesses_total} hint={t("health.behindCount", { count: behind.length })} tone={behind.length ? undefined : "ok"} />
+        <Stat label={t("health.businesses")} value={h.businesses_total} hint={t("health.behindCount", { count: behind.length })} tone={behind.length ? undefined : "ok"} to="/operator/backups" />
         <Stat label={t("health.backup")} value={h.backups.reported ? ageLabel((h.backups.master_age_hours ?? 0) * 3600) : t("health.notReported")}
-          tone={h.backups.reported && backupTone(h.backups.master_age_hours) === "ok" ? "ok" : h.backups.reported ? "bad" : undefined} hint={t("health.backupHint")} />
+          tone={h.backups.reported && backupTone(h.backups.master_age_hours) === "ok" ? "ok" : h.backups.reported ? "bad" : undefined} hint={t("health.backupHint")} to="/operator/backups" />
         <Stat label={t("health.jobsFailed")} value={h.queues?.jobs_failed ?? "-"} tone={h.queues ? (h.queues.jobs_failed ? "bad" : "ok") : undefined} hint={h.queues ? t("health.outboxHint", { pending: h.queues.outbox_pending, stuck: h.queues.outbox_stuck }) : undefined} />
       </div>
 
@@ -46,36 +45,6 @@ export default function HealthPage() {
             ? <Alert tone="ok">{t("health.readyText")}</Alert>
             : <Alert tone="bad"><ul className="list-disc space-y-1 pl-4">{h.problems.map((p) => <li key={p}>{p}</li>)}</ul></Alert>}
           {h.master_migrations_pending.length > 0 && <Alert tone="warn" className="mt-3">{t("health.masterPending", { list: h.master_migrations_pending.join(", ") })}</Alert>}
-        </Card>
-
-        <Card title={t("health.migrations")} description={t("health.migrationsHint")}
-          actions={behind.length > 0 ? <Button onClick={() => setUpgrading(true)}>{t("health.upgradeAll", { count: behind.length })}</Button> : undefined}>
-          {behind.length === 0 ? <Alert tone="ok">{t("health.allCurrent")}</Alert> : (
-            <ul className="divide-y divide-line rounded-lg border border-line">
-              {behind.map((b) => (
-                <li key={b.code} className="px-3 py-2 text-sm">
-                  <span className="font-medium">{b.name}</span> <span className="font-mono text-xs text-muted">{b.code}</span>
-                  <p className="text-xs text-muted">{Object.entries(b.behind).map(([unit, files]) => `${unit}: ${files.length}`).join(" · ")}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-          {h.businesses_unreadable.length > 0 && (
-            <Alert tone="bad" className="mt-3">{t("health.unreadable", { list: h.businesses_unreadable.map((b) => b.code).join(", ") })}</Alert>
-          )}
-        </Card>
-
-        <Card title={t("health.backups")}>
-          {!h.backups.reported ? <Alert tone="warn">{t("health.backupsNotReported")}</Alert> : (
-            <div className="space-y-2 text-sm">
-              <p>{t("health.masterBackup")}: {h.backups.master_taken_at
-                ? <><Badge tone={backupTone(h.backups.master_age_hours)}>{ageLabel((h.backups.master_age_hours ?? 0) * 3600)}</Badge> <span className="text-xs text-muted">{formatDate(h.backups.master_taken_at, true)}</span></>
-                : <Badge tone="bad">{t("health.none")}</Badge>}</p>
-              {h.backups.tenants_without_backup.length > 0
-                ? <Alert tone="warn">{t("health.withoutBackup", { list: h.backups.tenants_without_backup.join(", ") })}</Alert>
-                : <p className="text-muted">{t("health.everyBusinessBackedUp")}</p>}
-            </div>
-          )}
         </Card>
 
         <Card title={t("health.registrations")}>
@@ -107,8 +76,6 @@ export default function HealthPage() {
       <Card>
         <PluginList plugins={h.plugins} />
       </Card>
-
-      {upgrading && <UpgradeAllDialog targets={behind} onClose={() => { setUpgrading(false); void health.refetch(); }} />}
     </>
   );
 }

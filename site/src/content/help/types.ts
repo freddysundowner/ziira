@@ -36,7 +36,7 @@ export interface HelpGuide {
   minutes: number;
   need: string[];
   intro?: string;
-  /** An honest status remark, shown in a note box (for example "not yet tested with a live service") */
+  /** A short note shown in a box; used for a "Coming soon" line from availability.ts (soonStatus) */
   status?: string;
   steps: HelpStep[];
   problems: HelpProblem[];

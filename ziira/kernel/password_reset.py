@@ -20,6 +20,7 @@ from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext, set_context
 from ziira.kernel.db import master_session, tenant_session
 from ziira.kernel.errors import Unauthorized, Unavailable
+from ziira.kernel.platform import behaviour
 from ziira.kernel.security import hash_secret, new_secret
 
 log = logging.getLogger("ziira.password_reset")
@@ -55,13 +56,13 @@ def request(login: str, *, ip_address: str | None = None) -> Requested:
                 "values (:h, :t, :u, :e, :ip)"),
                 {"h": hash_secret(token), "t": str(tenant_id), "u": str(user.id),
                  "e": datetime.now(UTC) + timedelta(hours=settings.password_reset_hours), "ip": ip_address})
-        link = f"{settings.public_web_url.rstrip('/')}/reset-password?token={token}"
+        link = f"{behaviour.public_web_url()}/reset-password?token={token}"
         try:
             platform_mail.send(user.email, "Choose a new password",
                                f"Hello {user.full_name},\n\nSomeone asked to reset the password for your account. "
                                f"To choose a new one, open this link:\n\n{link}\n\nIt works once and for "
                                f"{settings.password_reset_hours} hours. If it was not you, ignore this message: "
-                               "your password has not changed.\n")
+                               "your password has not changed.\n", "password_reset")
         except Unavailable:
             log.error("A password reset email could not be sent")
             continue

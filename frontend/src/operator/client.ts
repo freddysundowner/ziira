@@ -77,7 +77,7 @@ export class OperatorApiError extends ApiError {
 
 /** The server's code (kept from the days of authenticator codes) for "confirm again before this change". */
 export const STEP_UP_CODE = "mfa_step_up_required";
-export const PASSWORD_CHANGE_CODE = "password_change_required";
+export const PASSWORD_CHANGE_CODE = "password_change_required"; // secret-scan: ignore (an error code, not a secret)
 
 export function isStepUp(error: unknown): boolean {
   return error instanceof OperatorApiError && error.status === 403 && error.code === STEP_UP_CODE;

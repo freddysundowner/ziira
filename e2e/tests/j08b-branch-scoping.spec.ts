@@ -72,13 +72,15 @@ test("J8b branch scoping: two branches, one scoped user", async ({ page, second 
   await expect(monaPage.getByRole("option", { name: new RegExp(`Lakeside store ${tag}`) })).toHaveCount(1);
   await expect(monaPage.getByRole("option", { name: new RegExp(`Store ${cat.products[0].sku.slice(3)}`) })).toHaveCount(0);   // the first branch's store
 
-  await monaPage.goto("/findings");
-  await monaPage.getByLabel("Assigned to me").uncheck();
+  await monaPage.goto("/intelligence/things");
+  await monaPage.getByRole("button", { name: "List" }).click();
+  await monaPage.getByLabel("Given to me").uncheck();
   const shorts = monaPage.getByRole("row").filter({ hasText: /closed .* short/ });
   await expect(shorts.first()).toBeVisible();
   await expect(shorts.filter({ hasText: `Lakeside ${tag} Market` })).toHaveCount(await shorts.count());   // every till finding she sees is her branch's
 
-  await monaPage.goto("/command");
+  await monaPage.goto("/intelligence");
+  await monaPage.getByRole("button", { name: "Show how the business is doing" }).click();
   await expect(monaPage.getByText(/Last refreshed/)).toBeVisible();
   await expect(monaPage.getByText("$30.00").first()).toBeVisible();
   await expect(monaPage.getByText("$60.00")).toHaveCount(0);

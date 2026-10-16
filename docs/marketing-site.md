@@ -134,3 +134,7 @@ OAuth, webhook, extension point, plugin (say "add-on"), tenant, provider, idempo
 leverage, robust, seamless, "end to end", "read-only key". `tests/style.test.ts` fails on the banned list and prints warnings for long sentences/paragraphs,
 link-heavy paragraphs and the worst reading grades. Help guides: title as the goal, one short intro sentence, numbered steps (one action each, real
 button names in bold), "You should see" in one line, 1 to 3 problems, at most 2 "Next" links, no tips, no "before you start" unless something is truly required.
+
+## Availability switch
+
+The site is written for customers, not as a status report: no internal-status language ("not tested", "stand-in", "pilot test", "not built yet", "no certifications"; enforced by `site/tests/availability.test.ts`). Every capability that depends on an outside service has one entry in `site/src/content/availability.ts` and is `available` by default. To hold an item back, set it to `soon` in that file and rebuild: a "Coming soon" chip, a one-line note and a "Get notified" link appear and pages stop promising it. `docs/go-live-checklist.md` stays the owner's internal manual-test list.

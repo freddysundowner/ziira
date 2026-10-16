@@ -155,18 +155,18 @@ def test_people_added_or_changed_just_before_a_run_are_flagged(client, shop) -> 
     assert len(items) == 3
     cur = shop["currency"]
     dan, ann, eve = named(items, "Dan"), named(items, "Ann"), named(items, "Eve")
-    assert "was added on 2026-09-20" in dan["summary"] and f"paid {cur} 16,000.00" in dan["summary"]
+    assert "was added on 20 Sep 2026" in dan["summary"] and f"paid {cur} 16,000.00" in dan["summary"]
     assert dan["severity"] == "high" and Dec(dan["amount"]) == 16000 and dan["branch_id"] == str(shop["branch_id"])
-    assert f"from {cur} 50,000.00 to {cur} 65,000.00 on 2026-09-20" in ann["summary"]
+    assert f"from {cur} 50,000.00 to {cur} 65,000.00 on 20 Sep 2026" in ann["summary"]
     assert Dec(ann["amount"]) == 65000 and ann["period_start"] == "2026-09-01" and ann["period_end"] == "2026-09-30"
-    assert "payment details changed on 2026-09-22" in eve["summary"] and eve["branch_id"] == str(shop["juja"])
+    assert "payment details changed on 22 Sep 2026" in eve["summary"] and eve["branch_id"] == str(shop["juja"])
     assert Dec(eve["amount"]) == 40000
     labels = {r["type"] for r in detail(client, shop, ann)["records"]}
     assert labels == {"people.payroll_run", "people.employee", "people.employment_terms"}
     assert detail(client, shop, ann)["figures"]["basic_pay_after"] == "65000.00"
     # Ben's first-ever payment details, and Cara, are not changes; nothing in August's window either
     assert not any(f["summary"].startswith(("Ben", "Cara")) for f in items)
-    assert all("2026-08-01" not in f["summary"] for f in items)
+    assert all("1 Aug 2026" not in f["summary"] for f in items)
 
 
 def test_changes_before_payroll_is_an_event_and_follows_its_window(client, shop) -> None:  # type: ignore[no-untyped-def]
@@ -204,7 +204,7 @@ def test_a_person_paid_with_no_attendance_is_flagged_where_attendance_is_used(cl
     items = findings(client, shop, "people.paid_without_attendance")
     dan, eve = named(items, "Dan"), named(items, "Eve")
     cur = shop["currency"]
-    assert f"paid {cur} 16,000.00 gross for 2026-09-01 to 2026-09-30" in dan["summary"]
+    assert f"paid {cur} 16,000.00 gross for 1 Sep 2026 to 30 Sep 2026" in dan["summary"]
     assert "3 of 5 people paid in the same run do" in dan["summary"]
     assert dan["severity"] == "medium" and Dec(dan["amount"]) == 16000 and dan["branch_id"] == str(shop["branch_id"])
     assert Dec(eve["amount"]) == 40000 and eve["branch_id"] == str(shop["juja"])
@@ -232,11 +232,11 @@ def test_overtime_far_above_a_persons_own_normal_is_flagged(client, shop) -> Non
     items = findings(client, shop, "people.unusual_overtime")
     ann_f = named(items, "Ann")
     assert ann_f["severity"] == "medium" and ann_f["branch_id"] == str(shop["branch_id"])
-    assert "worked 8.00 hours of overtime on 2026-10-13" in ann_f["summary"] and "about 1.2 hours a day" in ann_f["summary"]
+    assert "worked 8.00 hours of overtime on 13 Oct 2026" in ann_f["summary"] and "about 1.2 hours a day" in ann_f["summary"]
     assert Dec(ann_f["value"]) == 8 and ann_f["period_start"] == "2026-10-13"
     assert round(Dec(ann_f["expected_value"]), 1) == Dec("1.2")
     hq = next(f for f in items if f["entity_type"] == "kernel.branch")
-    assert "recorded 16.00 hours of overtime on 2026-10-13" in hq["summary"] and Dec(hq["value"]) == 16
+    assert "recorded 16.00 hours of overtime on 13 Oct 2026" in hq["summary"] and Dec(hq["value"]) == 16
     assert hq["branch_id"] == str(shop["branch_id"])
     assert not any(f["summary"].startswith("Ben") for f in items)        # six observations: too little to know
     # tuned: a higher floor leaves the 8 hour day alone; a one-day window (today only) no longer reaches 13 Oct
@@ -260,7 +260,7 @@ def test_pay_proposed_and_approved_by_one_person_is_flagged(client, shop) -> Non
     assert f"Basic pay of {shop['currency']} 100,000.00 for Cara Wanjiru was proposed and approved by the same person, hr" \
         in terms["summary"]
     assert terms["severity"] == "high" and Dec(terms["amount"]) == 100000 and terms["branch_id"] == str(shop["juja"])
-    assert "Ben Kamau were proposed and approved by the same person, hr, on 2026-09-21" in bank["summary"]
+    assert "Ben Kamau were proposed and approved by the same person, hr, on 21 Sep 2026" in bank["summary"]
     assert bank["branch_id"] == str(shop["branch_id"])
     assert direct(shop, PayApprovedBySameUser(), lookback_days=10) == []          # both older than ten days
 
@@ -277,7 +277,7 @@ def test_a_pay_jump_with_no_recorded_reason_is_flagged(client, shop) -> None:  #
     assert result.created == 1
     [f] = findings(client, shop, "people.pay_jump_unexplained")
     cur = shop["currency"]
-    assert f["summary"] == (f"Gross pay for Ben Kamau was {cur} 30,000.00 for 2026-09-01 to 2026-09-30, 50.0% up on "
+    assert f["summary"] == (f"Gross pay for Ben Kamau was {cur} 30,000.00 for 1 Sep 2026 to 30 Sep 2026, 50.0% up on "
                             f"{cur} 20,000.00 last time, and no pay change is recorded.")
     assert f["severity"] == "medium" and Dec(f["amount"]) == 10000 and Dec(f["value"]) == 30000
     assert Dec(f["expected_value"]) == 20000 and f["branch_id"] == str(shop["branch_id"])
@@ -307,7 +307,7 @@ def test_leave_waiting_too_long_is_flagged_and_closes_when_decided(client, shop)
     add_leave(shop, shop["cara"], "2026-10-01 10:00+00", "approved")            # decided
     assert run_check(shop, "people.leave_waiting").created == 1
     [f] = findings(client, shop, "people.leave_waiting")
-    assert f["summary"] == ("Ann Otieno asked for 3.00 days of Annual leave (2026-10-20 to 2026-10-22) 13 days ago "
+    assert f["summary"] == ("Ann Otieno asked for 3.00 days of Annual leave (20 Oct 2026 to 22 Oct 2026) 13 days ago "
                             "and nobody has decided.")
     assert f["severity"] == "low" and f["branch_id"] == str(shop["branch_id"]) and Dec(f["value"]) == 13
     assert [r["id"] for r in detail(client, shop, f)["records"]] == [ann_leave]

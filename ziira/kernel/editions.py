@@ -85,9 +85,20 @@ def load_editions(path: Path | None = None) -> dict[str, Edition]:
     return out
 
 
+def _default() -> str:
+    """The edition used when none is asked for: the owner's choice in the Super Admin, else the built-in default."""
+    from ziira.kernel.platform import behaviour
+
+    try:
+        chosen = behaviour.default_edition()
+    except Exception:  # noqa: BLE001 - no master database (a tool run without one) means the built-in default
+        chosen = ""
+    return chosen if chosen in load_editions() else DEFAULT
+
+
 def resolve(name: str | None = None, mode: str | None = None) -> str:
     """The edition a request means: `edition` if given, else the older `mode` mapped, else the default."""
-    chosen = (name or "").strip().lower() or MODE_ALIASES.get((mode or "").strip().lower(), "") or DEFAULT
+    chosen = (name or "").strip().lower() or MODE_ALIASES.get((mode or "").strip().lower(), "") or _default()
     if chosen not in load_editions():
         raise ValidationFailed(f"Edition is one of: {', '.join(load_editions())}")
     return chosen

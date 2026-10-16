@@ -5,6 +5,9 @@ import { allGuides } from "../../src/content/help/index";
 import { sections, faq as completeFaq, intro as completeIntro, faqSection } from "../../src/content/completeGuide";
 import { intelEn } from "../../src/content/pages/intel.en";
 
+/** Internal-status language that must never appear on customer-facing pages (the site is for customers, not a status report). */
+export const BANNED_PHRASES: RegExp[] = [/\bnot tested\b/i, /\buntested\b/i, /\bstand-ins?\b/i, /\bpilot test/i, /\bnot yet run\b/i, /\bnot live\b/i, /\bwork in progress\b/i, /\bwe have not\b/i, /\bno certifications?\b/i, /\bnot built\b/i, /\bunverified\b/i, /\bnot yet (been )?tested\b/i, /\bbuilt, pilot\b/i];
+
 export interface Piece { source: string; where: string; text: string }
 
 /** Words guide and help writers must not use. Each entry: [label, pattern]. */

@@ -15,6 +15,7 @@ from datetime import UTC, date, datetime
 from typing import Any
 from uuid import UUID
 
+from sqlalchemy import text
 from sqlalchemy.engine import Row
 
 from ziira.modules.intel.domain import ai_rules
@@ -23,15 +24,15 @@ from ziira.modules.intel.repository import ai_repo as repo
 from ziira.sdk import (
     Session,
     ZiiraError,
+    ai_active_secrets,
+    ai_record_usage,
+    ai_runtime,
     company_setting,
-    is_production,
-    platform_settings,
-    provider_named,
     tenant_transaction,
 )
 
 log = logging.getLogger("ziira.intel.ai")
-INTEL_LLM = "intel.llm"
+FEATURES = ("explain", "rank", "ask")
 
 REASONS = {
     "not_enabled": "The AI assistant is switched off for this business.",
@@ -39,6 +40,7 @@ REASONS = {
     "purpose_off": "This use of the AI assistant is switched off in Settings.",
     "not_configured": "The platform has no AI provider set up.",
     "terms_unconfirmed": "The platform has not confirmed its AI provider's data terms.",
+    "spend_cap": "The platform's AI spending limit for this month has been reached.",
     "budget": "This month's AI token limit has been reached.",
 }
 
@@ -87,6 +89,8 @@ class AiState:
     configured: bool
     terms_ok: bool
     consent: Row[Any] | None
+    provider_label: str = ""
+    spend_ok: bool = True
 
     def blocked(self, purpose: str) -> str | None:
         """The reason the assistant cannot be used for `purpose` now, or None when it can."""
@@ -100,6 +104,8 @@ class AiState:
             return "not_configured"
         if not self.terms_ok:
             return "terms_unconfirmed"
+        if not self.spend_ok:
+            return "spend_cap"
         if self.tokens_used >= self.token_limit:
             return "budget"
         return None
@@ -114,23 +120,29 @@ def this_month() -> date:
     return datetime.now(UTC).date().replace(day=1)
 
 
-def provider() -> LlmProvider | None:
-    """The platform's chosen provider (`ZIIRA_AI_PROVIDER`), or None if no plugin offers that name."""
-    name = platform_settings().ai_provider
-    if name == "fake" and is_production():
-        return None
-    found = provider_named(INTEL_LLM, name)
-    return found() if found else None
+def _tenant_of(session: Session) -> UUID | None:
+    value = session.execute(text("select kernel.current_tenant()")).scalar()
+    return UUID(str(value)) if value else None
+
+
+def provider(feature: str = "ask", tenant_id: UUID | None = None) -> LlmProvider | None:
+    """The provider the platform has set up for this feature (and business): from the Super Admin's settings, else the
+    environment's. None when nothing is set up or no plugin offers it."""
+    runtime = ai_runtime(feature if feature in FEATURES else "ask", tenant_id)
+    return runtime.build() if runtime else None
 
 
 def get_state(session: Session, company_id: UUID) -> AiState:
     """What the assistant may do for the company right now."""
-    chosen = provider()
-    name = chosen.name if chosen else platform_settings().ai_provider
+    tenant_id = _tenant_of(session)
+    runtime = ai_runtime("ask", tenant_id)
+    chosen = runtime.build() if runtime else None
+    name = runtime.provider if runtime else ""
     consent = repo.latest_consent(session, company_id)
     valid = bool(consent and consent.action == "granted" and consent.text_version == ai_rules.CONSENT_VERSION
                  and consent.provider == name)
     used_in, used_out, calls = repo.month_used(session, company_id, this_month())
+    catalog = chosen.catalog() if chosen else None
     return AiState(
         company_id=company_id, enabled=bool(company_setting(session, company_id, "ai_enabled")), consent_valid=valid,
         explanations=bool(company_setting(session, company_id, "ai_explanations")),
@@ -139,7 +151,9 @@ def get_state(session: Session, company_id: UUID) -> AiState:
         token_limit=int(company_setting(session, company_id, "ai_monthly_token_limit")),
         tokens_used=used_in + used_out, calls=calls, provider=name, model=chosen.model_id() if chosen else "",
         configured=bool(chosen and chosen.configured()),
-        terms_ok=(not is_production()) or platform_settings().ai_terms_confirmed, consent=consent)
+        terms_ok=runtime.terms_ok if runtime else True, consent=consent,
+        provider_label=(catalog.title if catalog else (chosen.label if chosen else "")) or name,
+        spend_ok=runtime.spend_ok if runtime else True)
 
 
 def gate(session: Session, company_id: UUID, purpose: str, user_id: UUID | None, ref_type: str | None = None,
@@ -174,12 +188,12 @@ def call(tenant_id: UUID, *, company_id: UUID, user_id: UUID | None, purpose: st
     """Ask the model, if the business allows it. Raises AiUnavailable (not allowed now), AiFailed (the provider did
     not answer) or AiRejected (`check` found a problem with the reply). Tokens are counted and the call logged
     whatever happens."""
-    secrets = [platform_settings().ai_api_key]
+    secrets = ai_active_secrets()
     with tenant_transaction(tenant_id) as s:
         state, reason = gate(s, company_id, purpose, user_id, ref_type, ref_id)
     if reason:
         raise AiUnavailable(reason)
-    chosen = provider()
+    chosen = provider(purpose, tenant_id)
     assert chosen is not None                      # get_state found it configured
     safe_system = ai_rules.scrub_personal(system)
     safe_messages = [_scrub_message(m) for m in messages]
@@ -213,6 +227,11 @@ def call(tenant_id: UUID, *, company_id: UUID, user_id: UUID | None, purpose: st
                       input_tokens=usage.input_tokens if usage else 0,
                       output_tokens=usage.output_tokens if usage else 0,
                       latency_ms=latency, status=status, detail=detail)
+    if usage and usage.total:
+        try:
+            ai_record_usage(tenant_id, chosen.name, chosen.model_id(), usage.input_tokens, usage.output_tokens)
+        except Exception:  # noqa: BLE001 - the estimate must never fail a call that already happened
+            log.exception("Could not record AI usage in the platform estimate")
     log.info("AI call purpose=%s provider=%s status=%s tokens=%s ms=%s", purpose, chosen.name, status,
              usage.total if usage else 0, latency)
     if status == "rejected":

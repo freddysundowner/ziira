@@ -5,7 +5,7 @@
                                                  --intent-id UUID --checkout-id ws_CO_... [--dry-run]
     python scripts/live_check.py sms      --to 2547XXXXXXXX [--message TEXT] [--dry-run]
     python scripts/live_check.py email    --provider smtp|brevo|resend|sendgrid --to a@b.c [--dry-run]
-    python scripts/live_check.py ai       [--dry-run] [--no-tool]
+    python scripts/live_check.py ai       [--dry-run] [--no-tool] [--provider NAME --model ID --quality quick|full]
 
 Credentials come from the environment (see docs/live-checks.md) and are never written anywhere. Every check uses the
 app's own provider classes (`ziira.plugins.mpesa.daraja`, `ziira.plugins.messaging.providers`), so a PASS means
@@ -30,10 +30,11 @@ from typing import Any
 import httpx
 
 from ziira.modules.intel.public import LlmMessage, ToolResult, ToolSpec
-from ziira.plugins.mpesa import formats as mpesa
-from ziira.plugins.mpesa.daraja import DarajaProvider
+from ziira.modules.intel.services import quality_check
 from ziira.modules.payments.public import StkQuery, StkRequest
 from ziira.plugins.ai_anthropic.provider import AnthropicMessages
+from ziira.plugins.ai_gemini.provider import GeminiGenerateContent
+from ziira.plugins.ai_openai.provider import OpenAIResponses
 from ziira.plugins.messaging.providers import (
     BlessedTextsSms,
     BrevoEmail,
@@ -41,9 +42,11 @@ from ziira.plugins.messaging.providers import (
     SendGridEmail,
     SmtpEmail,
 )
+from ziira.plugins.mpesa import formats as mpesa
+from ziira.plugins.mpesa.daraja import DarajaProvider
 from ziira.sdk import NotificationChannel, Outgoing, sign_value
 
-SECRET_HEADERS = {"authorization", "api-key", "apikey", "x-api-key"}
+SECRET_HEADERS = {"authorization", "api-key", "apikey", "x-api-key", "x-goog-api-key"}
 SECRET_FIELDS = {"password", "api_key", "apikey", "passkey", "access_token", "consumer_secret", "consumer_key"}
 HIDDEN = "***hidden***"
 EMAIL_CHANNELS: dict[str, type[NotificationChannel]] = {
@@ -145,6 +148,22 @@ def made_up_reply(request: httpx.Request) -> httpx.Response:
             "id": "msg_dry", "type": "message", "role": "assistant", "model": sent.get("model", "dry-run"),
             "stop_reason": "end_turn", "usage": {"input_tokens": 12, "output_tokens": 3},
             "content": [{"type": "text", "text": "OK"}]})
+    if path.endswith(":generateContent"):
+        sent = json.loads(request.content or b"{}")
+        answered = any(p.get("functionResponse") for c in sent.get("contents", []) for p in c.get("parts", []))
+        part = ({"functionCall": {"name": "echo", "args": {"text": "ping"}}} if sent.get("tools") and not answered
+                else {"text": "OK"})
+        return httpx.Response(200, json={"candidates": [{"content": {"role": "model", "parts": [part]},
+                                                         "finishReason": "STOP"}],
+                                         "usageMetadata": {"promptTokenCount": 12, "candidatesTokenCount": 3}})
+    if path.endswith("/v1/responses"):
+        sent = json.loads(request.content or b"{}")
+        answered = any(i.get("type") == "function_call_output" for i in sent.get("input", []))
+        item = ({"type": "function_call", "call_id": "call_dry", "name": "echo", "arguments": '{"text": "ping"}'}
+                if sent.get("tools") and not answered
+                else {"type": "message", "content": [{"type": "output_text", "text": "OK"}]})
+        return httpx.Response(200, json={"status": "completed", "model": sent.get("model", "dry-run"), "output": [item],
+                                         "usage": {"input_tokens": 12, "output_tokens": 3}})
     if "blessedtexts" in request.url.host:
         return httpx.Response(200, json=[{"status_code": "1000", "status_desc": "Message Sent", "message_id": "dry"}])
     if "brevo" in request.url.host:
@@ -401,21 +420,28 @@ def email_check(*, provider: str, to: str, dry_run: bool, echo: bool = True,
 
 
 # --------------------------------------------------------------------------- AI provider (Anthropic Messages API)
-def ai_check(*, dry_run: bool, tool_step: bool = True, echo: bool = True, env: dict[str, str] | None = None) -> Report:
-    """A harmless prompt through the app's own AnthropicMessages provider, then (unless `tool_step` is off) a tool-use
-    round trip with a made-up `echo` tool: the part of the request/response mapping most worth confirming."""
-    report = Report("ai (Anthropic Messages API)")
+AI_PROVIDERS: dict[str, Any] = {"anthropic": AnthropicMessages, "gemini": GeminiGenerateContent,
+                                "openai": OpenAIResponses}
+
+
+def ai_check(*, dry_run: bool, tool_step: bool = True, echo: bool = True, env: dict[str, str] | None = None,
+             provider_name: str = "anthropic", model: str | None = None, quality: str | None = None) -> Report:
+    """A harmless prompt through the app's own provider class (`provider_name`), then (unless `tool_step` is off) a
+    tool-use round trip with a made-up `echo` tool: the part of the request/response mapping most worth confirming.
+    With `quality` ("quick" or "full") it then asks the fixed business questions (English and Swahili, a tool-using
+    one, a refusal to invent, an injection attempt) and prints a scored report with the estimated cost: real spend."""
+    report = Report(f"ai ({provider_name})")
     if env is None:
         env = {"ZIIRA_LIVE_AI_API_KEY": "dry-run-key-not-used"} if dry_run else need_env(["ZIIRA_LIVE_AI_API_KEY"])
     key = env["ZIIRA_LIVE_AI_API_KEY"]
     kwargs: dict[str, Any] = {"api_key": key, "max_retries": 0}
-    if env.get("ZIIRA_LIVE_AI_MODEL"):
-        kwargs["model"] = env["ZIIRA_LIVE_AI_MODEL"]
+    if model or env.get("ZIIRA_LIVE_AI_MODEL"):
+        kwargs["model"] = model or env["ZIIRA_LIVE_AI_MODEL"]
     if env.get("ZIIRA_LIVE_AI_BASE_URL"):
         kwargs["base_url"] = env["ZIIRA_LIVE_AI_BASE_URL"]
-    provider = AnthropicMessages(**kwargs)
+    provider = AI_PROVIDERS[provider_name](**kwargs)
     factory = tapped([key], report.exchanges, dry_run, echo)
-    provider.client_factory = lambda _timeout: factory()          # type: ignore[assignment,misc]
+    provider.client_factory = lambda _timeout: factory()
     print(f"Step 1: one harmless prompt to model {provider.model_id()}.")
     try:
         first = provider.complete([LlmMessage("user", "Reply with the single word OK.")], [], "", 20)
@@ -445,8 +471,23 @@ def ai_check(*, dry_run: bool, tool_step: bool = True, echo: bool = True, env: d
         report.lines.append(f"final reply={done.text!r} stop_reason={done.stop_reason}")
         if not done.text.strip():
             return report.finish(False, "No final text after the tool result. Read the exchange above.")
-    return report.finish(True, "Compare the exchange above with Anthropic's Messages API reference; then set "
-                               "ZIIRA_AI_API_KEY for the platform. Nothing was stored.")
+    if quality:
+        print(f"Step 3: the {quality} quality check (real requests; this costs money).")
+        scored = quality_check.run(provider, quality)
+        catalog = provider.catalog()
+        info = catalog.model(provider.model_id()) if catalog else None
+        cost = (info.input_per_mtok * scored["tokens_in"] + info.output_per_mtok * scored["tokens_out"]) / 1_000_000 \
+            if info else None
+        for q in scored["questions"]:
+            marks = " ".join(f"{'ok' if c['passed'] else 'FAIL'}:{c['name']}" for c in q["checks"])
+            report.lines.append(f"[{q['id']}] {marks} ({q['latency_ms']} ms)")
+        report.lines.append(f"score={scored['score']} verdict={scored['verdict']} rates={scored['rates']} "
+                            f"avg_latency_ms={scored['latency_ms_average']} tokens={scored['tokens_in']}+"
+                            f"{scored['tokens_out']} estimated_cost_usd={'unknown' if cost is None else f'{cost:.4f}'}")
+        return report.finish(scored["score"] >= 75, "Compare the models by their scores and cost before switching "
+                                                    "(Super Admin > AI).")
+    return report.finish(True, "Compare the exchange above with the provider's API reference; then save the key in "
+                               "Super Admin > AI. Nothing was stored.")
 
 
 def explain_ai_failure(message: str) -> str:
@@ -493,6 +534,9 @@ def parser() -> argparse.ArgumentParser:
     a = sub.add_parser("ai", help="one harmless prompt, and a tool-use round trip, through the AI provider code")
     common(a)
     a.add_argument("--no-tool", action="store_true", help="only the plain prompt, no tool-use round trip")
+    a.add_argument("--provider", default="anthropic", choices=sorted(AI_PROVIDERS))
+    a.add_argument("--model", help="a model id (default: the plugin's recommended Ask model)")
+    a.add_argument("--quality", choices=["quick", "full"], help="then run the scored quality check (real spend)")
     return p
 
 
@@ -508,7 +552,8 @@ def main(argv: list[str] | None = None) -> int:
                                 checkout_id=args.checkout_id, amount=args.amount, phone=args.phone,
                                 dry_run=args.dry_run)
     elif args.check == "ai":
-        report = ai_check(dry_run=args.dry_run, tool_step=not args.no_tool)
+        report = ai_check(dry_run=args.dry_run, tool_step=not args.no_tool, provider_name=args.provider,
+                          model=args.model, quality=args.quality)
     elif args.check == "sms":
         report = sms_check(to=args.to, text=args.message, dry_run=args.dry_run)
     else:

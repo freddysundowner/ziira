@@ -1,153 +1,153 @@
 {
   "app": {
-    "commit": "8368876",
+    "commit": "5b7c476",
     "uncommittedFrontend": true,
     "appUrl": "(local demo business)"
   },
   "screens": {
     "command": {
-      "route": "/command",
-      "captured": "2026-10-16T06:56:02.849Z",
+      "route": "/intelligence",
+      "captured": "2026-10-16T08:24:48.460Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "home": {
       "route": "/",
-      "captured": "2026-10-16T06:55:54.118Z",
+      "captured": "2026-10-16T08:24:41.543Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "findings": {
-      "route": "/findings",
-      "captured": "2026-10-16T06:56:10.243Z",
+      "route": "/intelligence/things",
+      "captured": "2026-10-16T08:24:54.298Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "sales": {
       "route": "/pos/sales",
-      "captured": "2026-10-16T06:56:24.234Z",
+      "captured": "2026-10-16T08:25:06.549Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "stock": {
       "route": "/stock",
-      "captured": "2026-10-16T06:57:08.897Z",
+      "captured": "2026-10-16T08:25:50.156Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "orders": {
       "route": "/orders",
-      "captured": "2026-10-16T06:57:15.703Z",
+      "captured": "2026-10-16T08:25:56.454Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "owing": {
       "route": "/receivables",
-      "captured": "2026-10-16T06:57:22.004Z",
+      "captured": "2026-10-16T08:26:02.162Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "books": {
       "route": "/finance/reports",
-      "captured": "2026-10-16T06:57:28.144Z",
+      "captured": "2026-10-16T08:26:07.902Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "payroll": {
       "route": "/payroll",
-      "captured": "2026-10-16T06:57:34.426Z",
+      "captured": "2026-10-16T08:26:13.257Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "connect": {
       "route": "/connect",
-      "captured": "2026-10-16T06:57:40.491Z",
+      "captured": "2026-10-16T08:27:28.916Z",
       "viewport": "1440x1000@2x",
-      "size": "2304x1356",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "size": "2304x1380",
+      "appCommit": "5b7c476+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "connect-add": {
       "route": "/connect/new",
-      "captured": "2026-10-16T06:57:46.805Z",
+      "captured": "2026-10-16T08:26:23.994Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "addons": {
       "route": "/addons",
-      "captured": "2026-10-16T06:57:53.752Z",
+      "captured": "2026-10-16T08:26:29.609Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "command-phone": {
-      "route": "/command",
-      "captured": "2026-10-16T06:58:25.381Z",
+      "route": "/intelligence",
+      "captured": "2026-10-16T08:26:55.324Z",
       "viewport": "390x844@3x",
       "size": "1170x2532",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "till-phone": {
       "route": "/pos/terminal",
-      "captured": "2026-10-16T06:58:18.990Z",
+      "captured": "2026-10-16T08:26:49.535Z",
       "viewport": "390x844@3x",
       "size": "1170x2532",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "finding": {
-      "route": "/findings/:id",
-      "captured": "2026-10-16T06:56:17.440Z",
+      "route": "/intelligence/things/:id",
+      "captured": "2026-10-16T08:25:00.818Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "till": {
       "route": "/pos/terminal",
-      "captured": "2026-10-16T06:57:02.368Z",
+      "captured": "2026-10-16T08:25:43.557Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "intel-actions": {
-      "route": "/admin/settings",
-      "captured": "2026-10-16T06:58:02.278Z",
+      "route": "/intelligence/how-much",
+      "captured": "2026-10-16T08:26:35.071Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     },
     "brief": {
-      "route": "/command/briefs",
-      "captured": "2026-10-16T06:58:11.241Z",
+      "route": "/intelligence/summary",
+      "captured": "2026-10-16T08:26:42.695Z",
       "viewport": "1440x1000@2x",
       "size": "2880x2000",
-      "appCommit": "8368876+uncommitted",
-      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+      "appCommit": "236fb20+uncommitted",
+      "frontendSrcNewest": "2026-10-16T08:22:26.992Z"
     }
   }
 }

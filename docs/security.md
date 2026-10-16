@@ -49,14 +49,14 @@ criterion: see "Penetration test").**
 ## The AI assistant
 
 Optional and off until an Owner consents (`docs/ai.md`). What it adds to the attack surface and how it is bounded: the provider's API
-key is a platform secret (`ZIIRA_AI_API_KEY`), never stored per business and removed from every log and error; personal details are
+key is a platform secret entered in the Super Admin (stored encrypted in the master database, write-only, only its last four characters shown; `ZIIRA_AI_API_KEY` is the development fallback), never stored per business and removed from every log and error; personal details are
 scrubbed from what is sent and people's names become labels; the model can only call defined tools (no SQL, no writes), each tool
 filters by the asking person's permissions and branches and the model's arguments are checked against a schema; a tool the person may
 not use is not offered and is refused if named; loops, tokens and time are capped, and a monthly token limit per business is a hard
 stop; every call and refusal is logged (hash of what was sent, tools, tokens, outcome) without text; conversations are visible to
 their owner and to `ai.manage` holders only. Prompt injection: text in records (a customer name, a note) can reach the model through
 a tool result, so the model's output is never trusted: it cannot act, and its numbers are checked against the data. Production refuses
-every call until the operator confirms the provider's no-training and retention terms (`ZIIRA_AI_TERMS_CONFIRMED`).
+every call to a provider until the operator acknowledges its no-training and retention terms in the Super Admin (who/when recorded; `ZIIRA_AI_TERMS_CONFIRMED` for the environment fallback). A monthly spend cap and a per-provider acknowledgement are platform controls (`docs/ai.md` section 12).
 
 ## Application security
 

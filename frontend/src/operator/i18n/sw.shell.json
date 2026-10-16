@@ -1,0 +1,358 @@
+{
+ "nav": {
+  "groups": {
+   "overview": "Muhtasari",
+   "customers": "Wateja",
+   "revenue": "Mapato",
+   "website": "Tovuti",
+   "platform": "Jukwaa",
+   "system": "Mfumo"
+  },
+  "i": {
+   "dashboard": "Dashibodi",
+   "subscribers": "Wanaojisajili",
+   "licences": "Leseni",
+   "requests": "Maombi ya mpango",
+   "plans": "Mipango na bei",
+   "coupons": "Kuponi",
+   "invoices": "Ankara na malipo",
+   "methods": "Njia za malipo",
+   "billingSettings": "Mipangilio ya malipo",
+   "siteCompany": "Kampuni na mawasiliano",
+   "sitePages": "Kurasa na sheria",
+   "siteMedia": "Picha na faili",
+   "sitePublish": "Chapisha",
+   "units": "Viongezi na vitengo",
+   "ai": "Watoa huduma wa AI",
+   "email": "Barua pepe",
+   "settings": "Mipangilio ya jukwaa",
+   "operators": "Wasimamizi na majukumu",
+   "health": "Hali ya mfumo",
+   "backups": "Nakala rudufu na masasisho",
+   "audit": "Kumbukumbu za vitendo",
+   "mailLog": "Kumbukumbu za barua",
+   "attempts": "Majaribio ya malipo",
+   "setup": "Orodha ya kuanzisha"
+  }
+ },
+ "shell": {
+  "skip": "Ruka hadi ukurasa",
+  "retry": "Jaribu tena",
+  "waiting": "{{count}} zinasubiri",
+  "expand": "Panua menyu",
+  "collapse": "Kunja menyu",
+  "closeMenu": "Funga menyu",
+  "env": {
+   "production": "Uzalishaji",
+   "development": "Uendelezaji",
+   "test": "Majaribio"
+  },
+  "theme": {
+   "dark": "Tumia hali ya giza",
+   "light": "Tumia hali ya mwanga"
+  },
+  "account": {
+   "menu": "Menyu ya akaunti",
+   "profile": "Akaunti yangu",
+   "changePassword": "Badilisha nenosiri"
+  },
+  "search": {
+   "title": "Tafuta kwenye kiweko",
+   "placeholder": "Tafuta wateja, ankara, mipango, mipangilio...",
+   "open": "Fungua utafutaji",
+   "hint": "Andika herufi mbili au zaidi. Jaribu jina la biashara, namba ya ankara au mpangilio.",
+   "searching": "Inatafuta...",
+   "none": "Hakuna kilichopatikana kwa \"{{text}}\".",
+   "failed": "Utafutaji haukufika kwenye seva.",
+   "kinds": {
+    "page": "Nenda kwa",
+    "subscriber": "Wanaojisajili",
+    "invoice": "Ankara",
+    "plan": "Mipango",
+    "licence": "Leseni",
+    "operator": "Wasimamizi"
+   }
+  },
+  "alerts": {
+   "title": "Inahitaji uangalizi",
+   "withCount": "Mambo {{count}} yanahitaji uangalizi",
+   "none": "Hakuna kinachokuhitaji sasa.",
+   "failed": "Arifa hazikuweza kusomwa.",
+   "severity": {
+    "bad": "Haraka",
+    "warn": "Hivi karibuni",
+    "info": "Kwa taarifa"
+   },
+   "items": {
+    "payments_attention": {
+     "title": "Malipo ya kuangalia: {{count}}",
+     "hint": "Majaribio ya malipo yaliyoshindwa au yasiyolingana."
+    },
+    "suspended": {
+     "title": "Wateja waliosimamishwa: {{count}}",
+     "hint": "Biashara yao imefungwa hadi walipe."
+    },
+    "past_due": {
+     "title": "Wateja waliochelewa kulipa: {{count}}",
+     "hint": "Ankara zimechelewa; vikumbusho vinatumwa."
+    },
+    "pending_requests": {
+     "title": "Maombi ya mpango yanasubiri: {{count}}",
+     "hint": "Yaidhinishe au uyakatae."
+    },
+    "trials_ending": {
+     "title": "Majaribio yanayoisha hivi karibuni: {{count}}",
+     "hint": "Ndani ya siku saba."
+    },
+    "failed_jobs": {
+     "title": "Kazi za nyuma zilizoshindwa: {{count}}",
+     "hint": "Angalia ukurasa wa hali ya mfumo."
+    },
+    "businesses_behind": {
+     "title": "Biashara zilizo nyuma kwenye masasisho: {{count}}",
+     "hint": "Zisasishe."
+    },
+    "businesses_unreadable": {
+     "title": "Biashara zisizoweza kusomwa: {{count}}",
+     "hint": "Hifadhidata yao haijibu."
+    },
+    "plugins_refused": {
+     "title": "Programu-jalizi zilizokataliwa: {{count}}",
+     "hint": "Hazikupita ukaguzi wa uaminifu."
+    },
+    "licences_expiring": {
+     "title": "Leseni zinazoisha ndani ya siku 30: {{count}}",
+     "hint": "Wasiliana na wateja ili wasasishe."
+    },
+    "backup_old": {
+     "title": "Nakala rudufu ya mwisho ni ya zamani sana",
+     "hint": "Nakala za usiku zinapaswa kuwa chini ya siku moja."
+    },
+    "not_ready": {
+     "title": "Jukwaa linaripoti matatizo: {{count}}",
+     "hint": "Tazama orodha kwenye ukurasa wa hali ya mfumo."
+    },
+    "mail_not_working": {
+     "title": "Barua pepe haifanyi kazi",
+     "hint": "Ujumbe wa usajili na malipo hauwezi kutumwa."
+    },
+    "ai_cap_reached": {
+     "title": "Kikomo cha matumizi ya AI kimefikiwa",
+     "hint": "Huduma za AI zimesimama hadi mwezi ujao au kikomo kiongezwe."
+    }
+   }
+  },
+  "risks": {
+   "label": "Maonyo",
+   "dismiss": "Ficha kwa sasa",
+   "mfa_off": {
+    "title": "Wafanyakazi wanaingia kwa nenosiri peke yake",
+    "text": "Nenosiri moja lililoibwa lingetoa udhibiti wa kila biashara.",
+    "fix": "Fungua akaunti yangu"
+   },
+   "registration_without_email": {
+    "title": "Usajili uko wazi lakini barua pepe haifanyi kazi",
+    "text": "Biashara mpya haziwezi kuthibitisha anwani, kwa hiyo usajili umezuiwa.",
+    "fix": "Rekebisha barua pepe"
+   },
+   "mail_not_configured": {
+    "title": "Barua pepe haijawekwa",
+    "text": "Kuweka upya nenosiri na ujumbe wa malipo hauwezi kutumwa.",
+    "fix": "Weka barua pepe"
+   },
+   "no_ai_provider": {
+    "title": "Hakuna mtoa huduma wa AI aliyechaguliwa",
+    "text": "Ask Ziira na muhtasari ulioandikwa hubaki umezimwa kwa kila biashara.",
+    "fix": "Ongeza mtoa huduma"
+   }
+  }
+ },
+ "setup": {
+  "title": "Nitapata wapi ...? Orodha ya kuanzisha",
+  "intro": "Fanya hivi kwa mpangilio mara ya kwanza. Kila kimoja kinaonyesha kama kimekamilika, kwa hali halisi ya jukwaa.",
+  "allDone": "Kila kinachohitajika kimewekwa.",
+  "progress": "{{done}} kati ya {{total}} vimekamilika",
+  "start": "Anzia hapa",
+  "done": "Imekamilika",
+  "todo": "Bado haijakamilika",
+  "optional": "(ikihitajika)",
+  "noAccess": "Jukumu lako haliwezi kubadilisha hili. Muulize msimamizi mkuu.",
+  "currentMode": "Sasa: {{mode}}.",
+  "loadFailed": "Orodha haikuweza kusomwa",
+  "pageTitle": "Orodha ya kuanzisha",
+  "pageDescription": "Mipangilio ambayo mmiliki mpya wa jukwaa anahitaji, kwa mpangilio, na mahali pa kuipata.",
+  "items": {
+   "email": {
+    "title": "Weka barua pepe",
+    "text": "Inahitajika kwa viungo vya usajili, kuweka upya nenosiri na ankara.",
+    "link": "Jukwaa > Barua pepe"
+   },
+   "registration": {
+    "title": "Weka hali ya usajili",
+    "text": "Wazi, kwa mwaliko tu, au imefungwa.",
+    "link": "Jukwaa > Mipangilio ya jukwaa"
+   },
+   "ai": {
+    "title": "Ongeza funguo za watoa huduma wa AI",
+    "text": "Chagua mtoa huduma mkuu ili biashara ziweze kutumia Ask Ziira.",
+    "link": "Jukwaa > Watoa huduma wa AI"
+   },
+   "payments": {
+    "title": "Ongeza njia za malipo",
+    "text": "Washa angalau mtoa huduma mmoja ili biashara zilipe.",
+    "link": "Mapato > Njia za malipo"
+   },
+   "plans": {
+    "title": "Unda mipango na bei",
+    "text": "Angalau mpango mmoja wa umma wenye bei.",
+    "link": "Mapato > Mipango na bei"
+   },
+   "website": {
+    "title": "Jaza Tovuti",
+    "text": "Maelezo ya kampuni, kurasa za sheria, kisha chapisha.",
+    "link": "Tovuti > Kampuni na mawasiliano"
+   },
+   "licence": {
+    "title": "Unda leseni yako ya kwanza",
+    "text": "Ikiwa tu unauza nakala za kujiendesha mwenyewe.",
+    "link": "Wateja > Leseni"
+   }
+  }
+ },
+ "dash": {
+  "welcome": "Karibu tena. Hivi ndivyo jukwaa lilivyo.",
+  "kpis": "Takwimu kuu",
+  "activeSubscribers": "Wanaojisajili hai",
+  "activeHint": "Kati ya biashara {{total}}",
+  "pastDueAmount": "Zilizochelewa",
+  "pastDueInvoices": "Ankara {{count}} zimechelewa",
+  "trialEnds": "Jaribio linaisha",
+  "trialsEnding": "Majaribio yanayoisha ndani ya siku 7",
+  "noTrialsEnding": "Hakuna majaribio yanayoisha wiki hii",
+  "noTrialsEndingHint": "Likikaribia kuisha litaorodheshwa hapa.",
+  "noRenewalsHint": "Marejesho ya siku 14 zijazo yataonekana hapa.",
+  "trend": {
+   "title": "Mwenendo",
+   "metric": "Kipimo",
+   "range": "Kipindi",
+   "currency": "Sarafu",
+   "failed": "Mwenendo haukuweza kusomwa",
+   "aria": "{{metric}} {{currency}}",
+   "note": "Fedha huonyeshwa kwa kila sarafu na hazijumlishwi kati ya sarafu.",
+   "emptyRevenue": "Hakuna malipo yaliyorekodiwa katika kipindi hiki bado.",
+   "emptyCount": "Hakuna cha kuonyesha katika kipindi hiki bado.",
+   "hint": {
+    "revenue": "Fedha zilizokusanywa, kwa tarehe ya malipo.",
+    "signups": "Biashara zilizoundwa.",
+    "churn": "Biashara zilizojiondoa au kuisha muda."
+   },
+   "metrics": {
+    "revenue": "Mapato",
+    "signups": "Mpya",
+    "churn": "Zilizopotea"
+   },
+   "ranges": {
+    "12m": "Miezi 12",
+    "12w": "Wiki 12"
+   }
+  },
+  "system": {
+   "title": "Hali ya jukwaa",
+   "hint": "Husasishwa kila dakika.",
+   "failed": "Hali haikuweza kusomwa",
+   "open": "Fungua hali ya mfumo",
+   "api": "API tayari",
+   "apiOk": "Hifadhidata na masasisho ni sawa",
+   "worker": "Ucheleweshaji wa mfanyakazi",
+   "backlog": "Kazi {{due}} zinadaiwa, matukio {{outbox}} yanasubiri",
+   "failedJobs": "Kazi zilizoshindwa",
+   "backup": "Nakala ya mwisho",
+   "backupHint": "Inapaswa kuwa chini ya siku moja",
+   "upgrades": "Walio nyuma kwenye masasisho",
+   "unreadable": "{{count}} haziwezi kusomwa",
+   "upgradesHint": "Biashara za kusasisha",
+   "mail": "Barua pepe",
+   "working": "Inafanya kazi",
+   "untested": "Haijajaribiwa",
+   "notSet": "Haijawekwa",
+   "ai": "Matumizi ya AI mwezi huu",
+   "aiNone": "Hakuna mtoa huduma aliyechaguliwa",
+   "capReached": "Kikomo kimefikiwa: AI imesimama",
+   "capHint": "Dhidi ya kikomo cha kila mwezi",
+   "noCap": "Hakuna kikomo kilichowekwa"
+  },
+  "feeds": {
+   "payments": "Malipo ya karibuni",
+   "signups": "Usajili wa karibuni",
+   "activity": "Shughuli za karibuni za wasimamizi",
+   "failed": "Orodha hii haikuweza kusomwa",
+   "noPayments": "Hakuna malipo bado",
+   "noPaymentsHint": "Malipo yataonekana hapa ankara ikilipwa.",
+   "noSignups": "Hakuna biashara bado",
+   "noSignupsHint": "Wanaojisajili wapya wataonekana hapa.",
+   "reversed": "Imebatilishwa",
+   "allSubscribers": "Wanaojisajili wote",
+   "fullTrail": "Kumbukumbu kamili"
+  },
+  "quick": {
+   "title": "Vitendo vya haraka",
+   "plan": "Unda mpango",
+   "invoice": "Toa ankara",
+   "licence": "Toa leseni",
+   "operator": "Alika msimamizi",
+   "email": "Tuma barua ya majaribio"
+  }
+ },
+ "audit": {
+  "title": "Kumbukumbu za vitendo",
+  "description": "Kila kitu ambacho wasimamizi walifanya kwenye jukwaa: nani, nini, kwa mteja yupi, na matokeo.",
+  "export": "Pakua CSV",
+  "exported": "Kumbukumbu zimepakuliwa.",
+  "exportFailed": "Upakuaji umeshindwa.",
+  "when": "Lini",
+  "operator": "Msimamizi",
+  "action": "Kitendo",
+  "target": "Lengo",
+  "targetHint": "Msimbo wa mteja au rekodi",
+  "outcome": "Matokeo",
+  "anyOutcome": "Matokeo yoyote",
+  "outcomes": {
+   "ok": "Imefanyika",
+   "refused": "Imekataliwa",
+   "failed": "Imeshindwa"
+  },
+  "reason": "Sababu",
+  "from": "Kuanzia",
+  "to": "Hadi",
+  "rangeProblem": "Mwisho uko kabla ya mwanzo",
+  "clear": "Futa vichujio",
+  "empty": "Hakuna kilichorekodiwa bado",
+  "emptyHint": "Kila mabadiliko ya msimamizi huandikwa hapa.",
+  "noMatch": "Hakuna mistari inayolingana na vichujio hivi",
+  "noMatchHint": "Panua tarehe au futa kichujio.",
+  "actions": {}
+ },
+ "backups": {
+  "title": "Nakala rudufu na masasisho",
+  "description": "Nakala rudufu ni mpya kiasi gani, na biashara zipi ziko nyuma kwenye masasisho.",
+  "behind": "Walio nyuma kwenye masasisho",
+  "behindHint": "Kati ya biashara {{total}}",
+  "unreadable": "Haziwezi kusomwa",
+  "backupsHint": "Huchukuliwa na kazi ya usiku ya nakala rudufu."
+ },
+ "methods": {
+  "title": "Njia za malipo",
+  "description": "Watoa huduma ambao biashara zinaweza kulipa jukwaa kupitia kwao."
+ },
+ "attemptsLog": {
+  "title": "Majaribio ya malipo",
+  "description": "Kila jaribio la biashara kulipa mtandaoni. Angalia tena lililokwama au liweke kuwa limelipwa kwa sababu."
+ },
+ "mailLog": {
+  "title": "Kumbukumbu za barua",
+  "description": "Barua ambazo jukwaa lilituma hivi karibuni: aina, mpokeaji aliyefichwa na matokeo. Si ujumbe wenyewe."
+ },
+ "health": {
+  "backupsLink": "Nakala rudufu na masasisho"
+ }
+}

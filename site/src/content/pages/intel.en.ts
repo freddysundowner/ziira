@@ -1,6 +1,15 @@
 import type { PageDef } from "../types";
 import { faq as guideFaq } from "../completeGuide";
 import { totals } from "../../lib/catalog";
+import { availability, ifAvailable, isAvailable, soonKeys, type AvailKey } from "../availability";
+
+const ERPS: AvailKey[] = ["erpnext", "odoo", "zoho-books", "quickbooks"];
+const erpList = ERPS.filter(isAvailable).map((k) => availability[k].name).join(", ");
+const channelNames: [AvailKey, string][] = [["email", "email"], ["sms", "SMS"], ["whatsapp", "WhatsApp"]];
+const channels = channelNames.filter(([k]) => isAvailable(k)).map(([, n]) => n);
+const channelLine = channels.length ? `You see it in the app and by ${channels.join(", ").replace(/, ([^,]*)$/, " or $1")}.` : "You see it in the app, ready when you open it.";
+const comingNext = soonKeys().filter((k) => k !== "subscription-payments").map((k) => `**${availability[k].name}:** ${availability[k].note}`);
+const aiFaq = isAvailable("ai-helper") ? "No. Totals and gaps are worked out from your records. The AI helper only writes sentences, it is off until an Owner agrees, and an answer with a number it cannot trace to your records is thrown away." : "No. Totals and gaps are always worked out from your records, never guessed. An optional helper that explains them in plain words is coming soon.";
 
 export const intelEn: PageDef[] = [
   {
@@ -14,12 +23,32 @@ export const intelEn: PageDef[] = [
     glanceTitle: "On this page",
     how: {
       minutes: 3,
+      story: {
+        title: "Imagine an accountant who never sleeps",
+        paragraphs: [
+          "Picture a careful accountant who, every night after you close, goes through every sale, every cancelled receipt, every stock count, every payment and every bill, in every branch.",
+          "Not once a month. Every night. And when you walk in the next morning, there is a short note on your desk.",
+        ],
+        noteTitle: "This morning's note",
+        note: [
+          "Ruiru: a cashier cancelled 14 sales after 9pm. Usually 2.",
+          "The cement supplier's price went up 17% on your last order.",
+          "Mary Wanjiku's invoice is now 45 days late.",
+          "Thika banked KES 12,000 less than it sold.",
+        ],
+        noteCaption: "An example note, made up for this page",
+        after: [
+          "You did not ask for any of it. You did not dig through a report. You read four lines, and you knew exactly where to look.",
+          "That accountant is Ziira Intelligence.",
+        ],
+        teaser: "But how does it know what is unusual for a business it has only just met? And what does it do with what it finds? Here it is, in six steps.",
+      },
       steps: [
         { title: "Ziira reads your records", text: [
           "It reads your sales, stock, money and staff records.",
-          "They come from Ziira itself, or from a system you already use: Odoo, ERPNext, Zoho Books, QuickBooks Online, or your bank and mobile-money statements.",
-          "On a system you already use, Ziira only looks. It never changes anything in it.",
-        ], result: "The records the checks need are in one place.", img: { key: "connect-add", alt: "The Add a connection page: drop a bank or mobile-money statement or a sales, stock or expense file, or choose ERPNext, Odoo, QuickBooks Online or Zoho Books", caption: "Adding a system or a statement (demo data)" } },
+          `They come from Ziira itself, or from the bank and mobile-money statements and sales files you upload.${erpList ? ` Ziira can also read ${erpList.replace(/, ([^,]*)$/, " and $1")}.` : ""}`,
+          "On anything you connect or upload, Ziira only looks. It never changes anything in it.",
+        ], result: "The records the checks need are in one place.", img: { key: "connect-add", alt: "The Add a connection page: drop a bank or mobile-money statement or a sales, stock or expense file", caption: "Adding a system or a statement (demo data)" } },
         { title: "It checks them against your normal", text: [
           "Ziira runs its checks by itself every six hours, including overnight.",
           "It compares each record with what is normal for you, not with one rule for everyone. A busy branch and a quiet branch get different limits.",
@@ -28,42 +57,42 @@ export const intelEn: PageDef[] = [
         { title: "Anything wrong becomes a thing to look at", text: [
           "A check that finds a problem creates a thing to look at. It says how urgent it is, how much money is involved, and what to do next.",
           "It also shows the proof: the exact sales, stock moves or entries behind it.",
-          "The app used to call these findings, so you may still see that word on some screens.",
-        ], result: "One clear card with the proof, not a long report.", img: { key: "finding", alt: "One thing to look at: a cash close that ended KES 530 over, with its suggested next step, the figures it is based on, and its history", caption: "A thing to look at, with its proof (demo data)" } },
+          "You find them under Things to look at in the app.",
+        ], result: "One clear card with the proof, not a long report.", img: { key: "finding", alt: "One thing to look at: supplier invoices that are overdue, with what we noticed, why it matters, what you can do next and the facts", caption: "A thing to look at, with its proof (demo data)" } },
         { title: "Every morning you get a short summary", text: [
           "It lists yesterday's main figures and the few things that need you, most important first.",
-          "You see it in the app and by email. You can add SMS, or WhatsApp with the WhatsApp add-on.",
+          channelLine,
           "Urgent things can reach you the same day.",
-        ], result: "Two minutes with your morning coffee tells you where to look.", img: { key: "brief", alt: "A daily summary for the demo business listing yesterday's figures such as cash balance, stock value and overdue balances", caption: "The daily summary (demo data)" } },
+        ], result: "Two minutes with your morning coffee tells you where to look.", img: { key: "brief", alt: "A preview of the daily summary listing yesterday's figures such as cash balance, stock value and overdue balances", caption: "The daily summary (demo data)" } },
         { title: "You look, hand it on, or say it is fine", text: [
           "Open a thing to look at and read the proof.",
-          "Then give it to someone, ask a manager to explain, or mark it not a problem.",
+          "Then give it to someone, ask a manager to explain, or choose Not a problem.",
           "A closed one does not come back unless something new happens.",
-        ], result: "Every answer is recorded with who gave it and when.", img: { key: "findings", alt: "The list of things to look at, most important first, with the total amount involved and a filter", caption: "Everything to look at, most important first (demo data)" } },
+        ], result: "Every answer is recorded with who gave it and when.", img: { key: "findings", alt: "The Things to look at page: cards for each thing, most urgent first, with Look into it, Give to someone, Not a problem and Remind me later", caption: "Everything to look at, most important first (demo data)" } },
         { title: "Optional: let Ziira do routine jobs", text: [
           "You can let Ziira prepare drafts, send reminders to late customers, or do routine jobs for you.",
           "You choose how far it goes, and you set the limits. Every business starts at report only.",
           "Ziira never moves money.",
-        ], result: "The routine jobs you allow get done, and each one is recorded.", img: { key: "intel-actions", alt: "Settings, Intelligence actions: four levels from report only to routine actions, with the first selected, and a note that Ziira never moves money", caption: "Choose how much Ziira does for you (demo data)" } },
+        ], result: "The routine jobs you allow get done, and each one is recorded.", img: { key: "intel-actions", alt: "How much Ziira does for you: Watch, Ask, Prepare and Act for me, with Watch selected, and a note that Ziira never moves money", caption: "Choose how much Ziira does for you (demo data)" } },
       ],
     },
     blocks: [
-      { h2: "Not tested live yet", p: ["Email, SMS, WhatsApp, the AI helper and the connections to Odoo, ERPNext, Zoho Books and QuickBooks Online were built from public instructions and tested against stand-ins. They have not yet run against the real services. Test them on a demo account first."] },
+      ...(comingNext.length ? [{ h2: "Coming next", ul: comingNext, after: ["Want one of these first? [Tell us](@get-started) and we will let you know the day it opens."] }] : []),
     ],
     faq: [
-      { q: "Does Intelligence change anything in my system?", a: "No. On a system you already use, it can only look. Every business starts at report only, which changes nothing." },
-      { q: "Is the AI making up the numbers?", a: "No. Totals and gaps are worked out from your records. The optional AI helper only writes sentences, it is off until an Owner agrees, and an answer with a number it cannot trace to your records is thrown away." },
+      { q: "Does Intelligence change anything in my system?", a: "No. On anything you connect or upload, it can only look. Every business starts at report only, which changes nothing." },
+      { q: "Is the AI making up the numbers?", a: aiFaq },
       { q: "How long before the alerts are useful?", a: "Expect some wrong alerts in the first weeks. Ziira reads past months to learn your normal, and you can change the limits." },
     ],
-    related: ["intelligence-complete", "intelligence-existing", "integrations-whatsapp"],
+    related: ["intelligence-complete", "intelligence-existing", "integrations"],
   },
   {
-    id: "intelligence-existing", slug: "intelligence/on-your-existing-system", parent: "intelligence-how", kind: "sources", children: true, schema: "intelligence", cta: "intelligence", hero: "connect-add",
+    id: "intelligence-existing", slug: "intelligence/on-your-existing-system", parent: "intelligence-how", kind: "sources", avail: ["erpnext", "odoo", "zoho-books", "quickbooks"], children: true, schema: "intelligence", cta: "intelligence", hero: "connect-add",
     title: "Fraud Detection for the ERP You Already Use (Read-Only)",
-    description: "Keep Odoo, ERPNext, Zoho Books, QuickBooks or your statements. Intelligence reads them read-only and checks the business daily.",
+    description: "Keep your bank and mobile-money statements and sales files. Ziira reads them view only and checks the business daily. ERP connections are coming soon.",
     h1: "Use Intelligence with the system you already have",
     eyebrow: "Intelligence · Your existing system", short: "On your existing system",
-    lead: "Not ready to move your books and tills? You do not have to. Ziira can look at the system you keep (an ERP, a till report, a bank or mobile-money statement), keep a copy for checking, and run the same daily checks, with alerts and a daily summary. It never changes anything in your system.",
+    lead: "Not ready to move your books and tills? You do not have to. Ziira can look at what you keep (a till report, a bank or mobile-money statement, a sales or stock export), keep a copy for checking, and run the same daily checks, with alerts and a daily summary. It never changes anything in your system.",
     blocks: [
       { h2: "Looking only, never changing", ul: [
         "Ziira only ever looks. It never writes to, edits or deletes anything in your system, and a file you upload never connects to anything.",
@@ -73,8 +102,8 @@ export const intelEn: PageDef[] = [
       ], after: ["More in the guide to [connecting your ERP safely with read-only access](@guide-read-only-access)."] },
       { h2: "Pick your source", cards: true, p: ["Each page says what is read, how to create the access, what is checked and what is not."] },
       { h2: "How it starts", ol: [
-        "Choose \"keep my system\" when you register. You get Home, Command Center, Alerts, Connected systems and Settings.",
-        "Add a connection. For an ERP you create a limited, view-only key or approve a view-only app; for statements you drop in a file.",
+        "Choose \"keep my system\" when you register. You get Home, Intelligence, Connected systems and Settings.",
+        "Add a connection: drop in a statement or an export file.",
         "Map the system's branches to your branches, or leave them at company level.",
         "Ziira reads, checks and starts sending alerts and briefs. Only complete days are judged, so a statement that ends early never makes a quiet day look bad.",
       ] },
@@ -86,12 +115,11 @@ export const intelEn: PageDef[] = [
         ["Stock", "Large, odd-hour or back-dated adjustments; shrinkage by product; negative stock"],
         ["Books", "Manual journals that are large, round, odd-hour, back-dated or self-approved; unusually high expenses; money received matching no sale"],
         ["People", "New users appearing in the source system"],
-      ] }, after: ["A check whose data was never connected stays silent, and a Coverage panel shows what can and cannot be checked today and which connection would switch more on."] },
-      { h2: "Honest limits", ul: [
+      ] }, after: ["A check whose data was never connected stays silent, and the What Ziira can check panel shows what can and cannot be checked today and which connection would switch more on."] },
+      { h2: "What to expect", ul: [
         "What can be checked depends on what the source records. A till export without voids or discounts cannot show cashier habits.",
         "Files give daily data at best; connected systems are read on a schedule (daily unless you change it).",
         "Matching a statement line to a sale uses the payment code, or else the amount and time. It is not always one-to-one, and works as well as your system records payment codes.",
-        "The four ERP connections have been tested against sample data and have not yet been run against a real ERPNext, Odoo, Zoho Books or QuickBooks account. A first live run is planned on a demo or test company.",
         "On a connected system expect reporting and follow-ups (levels 1 and 2). Prepared and automatic actions (levels 3 and 4) work only on data in Ziira itself.",
       ] },
       { h2: "Moving to Ziira later", p: ["If you later move to [Ziira](@product), a guided step proposes products, customers, suppliers, opening stock and balances from what Ziira has already read, checks them, and lets you undo the opening balances. Nothing is ever deleted automatically."] },

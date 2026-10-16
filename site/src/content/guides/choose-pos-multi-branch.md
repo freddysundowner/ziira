@@ -109,7 +109,7 @@ Be wary of vague answers. Ask what has been tested by an independent party, and 
 6. What does the second, third and tenth branch cost? What is not included?
 7. What can I import, and can an import be undone?
 8. Who can see my data on your side, and is that logged?
-9. What is not built yet? A good vendor answers honestly.
+9. What does it not do today? A good vendor answers plainly.
 
 ## Run a pilot, not a demo
 
@@ -134,8 +134,6 @@ Cheap software that needs a second accounting package and daily hand matching is
 ## Where Ziira fits
 
 [Ziira](/product/pos-and-till/) is built for retail and distribution. It has a web till that sells offline, [stock for each branch with transfers](/product/inventory-and-branches/), roles limited by branch, reasons and approvals on risky actions, and books that post themselves.
-
-It is being prepared for its first pilot businesses. Some links to outside services, such as mobile money, are not yet tested live.
 
 If you would rather keep your current till, [Ziira Intelligence on your existing system](/intelligence/on-your-existing-system/) reads its exports and checks the business each day.
 

@@ -1,5 +1,3 @@
-/** What other modules may use from Intelligence. */
-export { default as ActionsSettings } from "./settings/ActionsSettings";
 
 /** A band above the findings list. Contributions receive { companyId: string }. Used by Connected systems to explain that its checks stay quiet where Ziira Core covers the same ground. */
 export const FINDINGS_BANNER = "intel.findings.banner";

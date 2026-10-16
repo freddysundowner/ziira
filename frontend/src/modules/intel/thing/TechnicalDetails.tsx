@@ -22,7 +22,7 @@ export default function TechnicalDetails({ finding: f }: { finding: Finding }) {
           { label: t("tech.findingId"), value: <span className="font-mono text-xs">{f.id}</span> },
           { label: t("tech.limits"), value: check ? <span className="font-mono text-xs">{Object.entries(check.params).map(([k, v]) => `${k} = ${String(v)}`).join(", ") || "—"}</span> : "—" },
           { label: t("tech.numbers"), value: <span className="font-mono text-xs">value {raw(f.value)} · expected {raw(f.expected_value)} · amount {raw(f.amount)} · {f.severity} · {f.status}</span> },
-          ...Object.entries(f.figures).map(([k, v]) => ({ label: k, value: <span className="font-mono text-xs">{v}</span> })),
+          ...Object.entries(f.figures ?? {}).map(([k, v]) => ({ label: k, value: <span className="font-mono text-xs">{v}</span> })),
         ]} />
         {f.records.length > 0 && (
           <ul className="divide-y divide-line">

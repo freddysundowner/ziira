@@ -668,17 +668,35 @@ h1, h2, h3, .lead, p, li, td, th { overflow-wrap: break-word; }
 .hero { background: radial-gradient(1000px 520px at 50% -10%, rgb(var(--brand) / .2), transparent 62%), radial-gradient(700px 400px at 100% 30%, rgb(var(--accent) / .09), transparent 60%), linear-gradient(rgb(var(--bg)) 50%, rgb(var(--brand-soft))); }
 
 /* Step-by-step page (kind "steps"): one numbered step per row, text beside a real screenshot */
-.how { max-width: 1040px; }
+.how { max-width: none; }
 .how-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(28px, 4vw, 48px); }
 .how-steps > li { display: grid; gap: 16px 28px; grid-template-columns: 1fr; position: relative; scroll-margin-top: 90px; }
-@media (min-width: 900px) { .how-steps > li { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 460px); align-items: start; } .how-steps > li:not(:has(.how-shot)) { grid-template-columns: 44px minmax(0, 1fr); } }
+@media (min-width: 900px) { .how-steps > li { grid-template-columns: 44px minmax(0, 1fr) minmax(0, 560px); align-items: start; gap: 16px clamp(28px, 4vw, 64px); } .how-steps > li:not(:has(.how-shot)) { grid-template-columns: 44px minmax(0, 1fr); } }
 .how-steps .n { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: rgb(var(--brand-strong)); color: rgb(var(--brand-ink)); font: 750 1.1rem var(--display); box-shadow: 0 0 0 6px rgb(var(--brand) / .15); }
 .how-text h2 { font-size: clamp(1.3rem, 2.2vw, 1.6rem); margin: 0 0 .4em; }
 .how-text p { margin: 0 0 .7em; max-width: 60ch; }
 .how-result { color: rgb(var(--text)); background: rgb(var(--brand) / .1); border-radius: var(--radius); padding: 10px 14px; }
 .how-shot { min-width: 0; }
-.how-areas { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 10px; grid-template-columns: 1fr; }
+.how-areas { list-style: none; padding: 0; margin: 20px 0; display: grid; gap: 12px; grid-template-columns: 1fr; }
 @media (min-width: 700px) { .how-areas { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1100px) { .how-areas { grid-template-columns: repeat(4, 1fr); } }
 .how-areas li { background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 2px; }
 .how-areas .count { justify-self: start; font-size: .85rem; color: rgb(var(--muted)); }
 .how-areas .lead { color: rgb(var(--muted)); font-size: .95rem; }
+
+/* The opening story on a steps page: the accountant picture, the example note, then the question that leads into the steps. */
+.how-story-grid { display: grid; gap: 28px clamp(28px, 5vw, 80px); align-items: center; }
+@media (min-width: 900px) { .how-story-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 520px); } .how-story-after { grid-column: 1 / -1; } }
+.how-story-text h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); line-height: 1.1; margin: 0 0 .5em; }
+.how-story-text p, .how-story-after p { font-size: clamp(1.05rem, 1rem + .3vw, 1.25rem); max-width: 58ch; margin: 0 0 .8em; }
+.how-note { margin: 0; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); border-left: 6px solid rgb(var(--brand-strong)); border-radius: var(--radius); padding: 22px 24px; box-shadow: 0 18px 40px -22px rgb(0 0 0 / .35); }
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) { .how-note { transform: rotate(1deg); } }
+.how-note-title { font: 750 1.05rem var(--display); letter-spacing: .01em; margin: 0 0 12px; color: rgb(var(--brand-strong)); }
+.how-note ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.how-note li { font-size: 1.05rem; padding-left: 26px; position: relative; }
+.how-note li::before { content: ""; position: absolute; left: 0; top: .45em; width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--brand-strong)); }
+.how-note-cap { margin: 14px 0 0; font-size: .85rem; color: rgb(var(--muted)); }
+.how-teaser { font-weight: 650; color: rgb(var(--ink)); }
+
+.coming-soon { margin-bottom: 1.6em; }
+.coming-soon .t { display: block; margin-bottom: 4px; }

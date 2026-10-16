@@ -168,7 +168,7 @@ def test_due_briefs_are_sent_once_a_day_at_the_right_time(client, shop) -> None:
         queued = s.execute(text("select subject, body, recipient from kernel.notification where ref_id = :r"),
                            {"r": mine[0]["id"]}).all()
     assert len(queued) == 1 and queued[0].recipient == f"manager@{shop['code']}.test"
-    assert "daily brief" in queued[0].subject
+    assert "daily summary" in queued[0].subject
     detail = client.get(f"{CMD}/briefs/{mine[0]['id']}", headers=shop["manager"]).json()
     assert detail["read_at"] is None or detail["body"]                                  # opening marks it read
     assert "Head office" not in detail["body"] or "Juja" not in detail["body"]          # a branch manager's brief: their branch
@@ -193,7 +193,7 @@ def test_a_weekly_brief_comes_on_its_weekday_in_the_companys_time_zone(client, s
 
 def test_preview_and_send_now(client, shop) -> None:  # type: ignore[no-untyped-def]
     p = client.post(f"{CMD}/briefs/preview", headers=shop["owner"], params={"kind": "daily"})
-    assert p.status_code == 200 and "daily brief" in p.json()["subject"] and p.json()["short"]
+    assert p.status_code == 200 and "daily summary" in p.json()["subject"] and p.json()["short"]
     first = client.post(f"{CMD}/briefs/send-now", headers=shop["owner"], params={"kind": "daily", "channel": "in_app"})
     assert first.status_code == 200 and first.json()["delivered_via"] == "in_app"
     second = client.post(f"{CMD}/briefs/send-now", headers=shop["owner"], params={"kind": "daily"})

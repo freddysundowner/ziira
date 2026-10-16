@@ -26,9 +26,9 @@ export default function AccountPage() {
     <>
       <PageHeader title={t("account.title")} description={me.data ? `${me.data.name} · ${me.data.email}` : undefined} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title={t("account.passwordTitle")} description={t("account.passwordHint")}>
+        <div id="password" className="scroll-mt-20"><Card title={t("account.passwordTitle")} description={t("account.passwordHint")}>
           <PasswordForm onDone={() => { toast(t("account.changed"), "ok"); void queryClient.invalidateQueries({ queryKey: ["operator", "me"] }); }} />
-        </Card>
+        </Card></div>
         <Card title={t("account.signOutAllTitle")} description={t("account.signOutAllHint")}>
           <Button variant="secondary" onClick={() => void signOutEverywhere()}>{t("account.signOutAll")}</Button>
         </Card>

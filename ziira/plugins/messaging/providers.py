@@ -30,7 +30,9 @@ TIMEOUT = httpx.Timeout(15.0, connect=5.0)
 
 
 class SmtpEmail(NotificationChannel):
-    """Email through any SMTP server. Secret: {host, port, username, password}. Config: {from_address, from_name?}."""
+    """Email through any SMTP server. Secret: {host, port, username, password}. Config: {from_address, from_name?,
+    reply_to?, security?}. `security` is "starttls", "ssl" or "none"; without it port 465 means SSL, anything else
+    STARTTLS (unless `starttls` is false)."""
 
     channel = "email"
     name = "smtp"
@@ -45,15 +47,19 @@ class SmtpEmail(NotificationChannel):
         email["From"] = f"{config['from_name']} <{sender}>" if config.get("from_name") else sender
         email["To"] = message.recipient
         email["Subject"] = message.subject or "Message"
+        if config.get("reply_to"):
+            email["Reply-To"] = str(config["reply_to"])
         email.set_content(message.body)
         host, port = str(secret["host"]), int(secret.get("port", 587))
         try:
-            if port == 465:
+            security = str(config.get("security") or ("ssl" if port == 465 else
+                                                      "starttls" if config.get("starttls", True) else "none"))
+            if security == "ssl":
                 client = self.smtp_ssl_factory(host, port, timeout=20, context=ssl.create_default_context())
             else:
                 client = self.smtp_factory(host, port, timeout=20)
             with client:
-                if port != 465 and config.get("starttls", True):
+                if security == "starttls":
                     client.starttls(context=ssl.create_default_context())
                 if secret.get("username"):
                     client.login(str(secret["username"]), str(secret.get("password", "")))
@@ -94,6 +100,10 @@ class _ApiEmail(_HttpChannel):
         """The JSON body and headers: {"json": ..., "headers": ...}."""
         raise NotImplementedError
 
+    def add_reply_to(self, body: dict[str, Any], address: str) -> None:
+        """Put the reply-to address into the request body (the providers each spell it differently)."""
+        body["reply_to"] = address
+
     def accepted(self, response: httpx.Response) -> SendResult | None:
         """A SendResult when the reply says the mail was taken, else None."""
         raise NotImplementedError
@@ -102,9 +112,11 @@ class _ApiEmail(_HttpChannel):
         sender = str(config.get("from_address") or "")
         if not sender:
             return SendResult(False, message="The email channel has no sender address", permanent_failure=True)
+        call = self.request(message, sender, config.get("from_name"), str(secret["api_key"]))
+        if config.get("reply_to"):
+            self.add_reply_to(call["json"], str(config["reply_to"]))
         with self.client_factory() as client:
-            response = client.post(self.url, **self.request(message, sender, config.get("from_name"),
-                                                            str(secret["api_key"])))
+            response = client.post(self.url, **call)
         if self.server_failed(response):
             response.raise_for_status()
         taken = self.accepted(response)
@@ -127,6 +139,9 @@ class BrevoEmail(_ApiEmail):
     name = "brevo"
     label = "Brevo"
     url = "https://api.brevo.com/v3/smtp/email"
+
+    def add_reply_to(self, body: dict[str, Any], address: str) -> None:
+        body["replyTo"] = {"email": address}
 
     def request(self, message: Outgoing, sender: str, name: str | None, key: str) -> dict[str, Any]:
         who: dict[str, str] = {"email": sender, **({"name": name} if name else {})}
@@ -170,6 +185,9 @@ class SendGridEmail(_ApiEmail):
     name = "sendgrid"
     label = "SendGrid"
     url = "https://api.sendgrid.com/v3/mail/send"
+
+    def add_reply_to(self, body: dict[str, Any], address: str) -> None:
+        body["reply_to"] = {"email": address}
 
     def request(self, message: Outgoing, sender: str, name: str | None, key: str) -> dict[str, Any]:
         who: dict[str, str] = {"email": sender, **({"name": name} if name else {})}

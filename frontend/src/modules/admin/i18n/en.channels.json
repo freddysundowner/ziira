@@ -6,11 +6,11 @@
   "hint": "How and when Ziira messages you. The business's own settings apply to anything you leave on the default.",
   "kind": {
    "alerts": "Urgent alerts",
-   "brief": "Daily brief",
-   "approvals": "Suggestions to approve"
+   "brief": "Daily summary",
+   "approvals": "Things to approve"
   },
   "kindHint": {
-   "alerts": "Serious findings and reminders for you.",
+   "alerts": "Serious things and reminders for you.",
    "brief": "Your daily and weekly summary.",
    "approvals": "Things waiting for your decision. A chat channel lets you reply to approve."
   },

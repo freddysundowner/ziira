@@ -18,6 +18,7 @@ from tests.pos_helpers import POS, credit_customer, line, make_pos_shop, make_sa
 from tests.stock_helpers import system
 from ziira.modules.command.services import pulse
 from ziira.modules.intel.services import baselines, engine
+from ziira.sdk import format_day
 
 INTEL = "/api/v1/intel"
 TODAY = date(2026, 10, 14)
@@ -296,7 +297,7 @@ def test_cashier_void_refund_and_discount_rates_against_their_own_normal(client,
     assert void["entity_id"] == str(vera) and void["severity"] == "medium" and void["branch_id"] == str(shop["branch_id"])
     assert round(Dec(void["value"]), 4) == round(Dec(3) / Dec(7), 4)                          # 3 voided of 7 sales
     assert Dec(void["amount"]) == Dec("348.00")                                                # 3 voided x 116
-    assert f"On {YESTERDAY} vera's void rate was 43% over 7 sales (KES 348.00)" in void["summary"]
+    assert f"On {format_day(YESTERDAY)} vera's void rate was 43% over 7 sales (KES 348.00)" in void["summary"]
     assert detail(client, shop, void)["records"][0]["label"] == "vera"
     # vera's posted value: 3 sales + the one sold to return = 4 x 116 = 464, and she returned 300
     [refund] = found(client, shop, codes[1])
@@ -402,9 +403,9 @@ def test_sales_recorded_long_after_their_business_date(client, shop) -> None:  #
     assert set(by_entity) == {str(late_week), str(late_days)}
     week = by_entity[str(late_week)]
     assert (week["severity"], Dec(week["amount"]), Dec(week["value"])) == ("medium", Dec("300.00"), Dec(8))
-    assert "Sale LR-1 by lena for KES 300.00 is dated 2026-10-05 but was synced from an offline till on 2026-10-13, 8 days later" \
-        in week["summary"]
-    assert by_entity[str(late_days)]["severity"] == "low" and "was entered on 2026-10-13, 3 days later" in \
+    assert (f"Sale LR-1 by lena for KES 300.00 is dated {format_day(date(2026, 10, 5))} but was synced from an offline "
+            f"till on {format_day(date(2026, 10, 13))}, 8 days later") in week["summary"]
+    assert by_entity[str(late_days)]["severity"] == "low" and f"was entered on {format_day(date(2026, 10, 13))}, 3 days later" in \
         by_entity[str(late_days)]["summary"]
     with tuned(client, shop, code, min_days_late=1):
         assert run(shop, code).created == 1                                                  # LR-3, one day late

@@ -203,7 +203,7 @@ def test_overdue_follow_ups_one_finding_per_owner(client, shop) -> None:  # type
     items = findings(client, shop, "crm.followups_overdue")
     rep, fm = named(items, "rep"), named(items, "fm")
     assert rep["summary"] == ("rep has 3 follow-ups on open leads more than 3 days overdue; the oldest was due on "
-                              "2026-10-05.")
+                              "5 Oct 2026.")
     assert rep["severity"] == "low" and Dec(rep["value"]) == 3 and rep["period_start"] == "2026-10-05"
     assert fm["summary"].startswith("fm has 1 follow-up on open leads") and Dec(fm["value"]) == 1
     records = detail(client, shop, rep)["records"]

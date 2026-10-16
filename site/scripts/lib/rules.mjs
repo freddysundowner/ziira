@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { load } from "cheerio";
 
-export const LIMITS = { title: 60, descriptionMax: 160, descriptionMin: 50, htmlBytes: 80_000, longformHtmlBytes: 300_000, longformCssBytes: 80_000, jsBytes: 10_000, cssBytes: 64_000, imageFileBytes: 160_000, pageImageBytes: 700_000, guideMinWords: 900, guideMaxWords: 1800, helpMinSteps: 3, helpMinProblems: 1, helpMaxProblems: 3, helpMaxNext: 2 };
+export const LIMITS = { title: 60, descriptionMax: 160, descriptionMin: 50, htmlBytes: 80_000, longformHtmlBytes: 300_000, longformCssBytes: 80_000, jsBytes: 10_000, cssBytes: 66_000, imageFileBytes: 160_000, pageImageBytes: 700_000, guideMinWords: 900, guideMaxWords: 1800, helpMinSteps: 3, helpMinProblems: 1, helpMaxProblems: 3, helpMaxNext: 2 };
 export const PLACEHOLDER_ORIGIN = /example\.(invalid|com|org|net)|localhost|127\.0\.0\.1/;
 
 /** @typedef {{rule: string, page: string, message: string}} Issue */

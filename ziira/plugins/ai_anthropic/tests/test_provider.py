@@ -159,3 +159,18 @@ def test_it_is_configured_only_with_a_key_and_names_its_model() -> None:
     assert not AnthropicMessages(api_key="").configured()
     provider = AnthropicMessages(api_key=KEY, model="m-1")
     assert provider.configured() and provider.model_id() == "m-1" and provider.name == "anthropic"
+
+
+def test_the_model_list_is_read_from_the_models_endpoint() -> None:
+    net = Pretend(reply(200, {"data": [{"id": "claude-a", "display_name": "A"}, {"type": "x"}], "has_more": False}))
+    found = net.provider().list_models()
+    assert [(m.id, m.title) for m in found] == [("claude-a", "A")]
+    assert str(net.requests[0].url) == "https://api.example.test/v1/models?limit=1000"
+    assert net.requests[0].headers["x-api-key"] == KEY
+
+
+def test_it_declares_its_models_as_data_and_defaults_to_the_cheaper_tier() -> None:
+    catalog = AnthropicMessages.catalog()
+    assert catalog is not None and catalog.title == "Anthropic"
+    chosen = catalog.model(catalog.default_model("ask"))
+    assert chosen is not None and "best_value" in chosen.tiers

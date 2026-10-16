@@ -1,0 +1,358 @@
+{
+ "nav": {
+  "groups": {
+   "overview": "Overview",
+   "customers": "Customers",
+   "revenue": "Revenue",
+   "website": "Website",
+   "platform": "Platform",
+   "system": "System"
+  },
+  "i": {
+   "dashboard": "Dashboard",
+   "subscribers": "Subscribers",
+   "licences": "Licences",
+   "requests": "Plan requests",
+   "plans": "Plans & pricing",
+   "coupons": "Coupons",
+   "invoices": "Invoices & payments",
+   "methods": "Payment methods",
+   "billingSettings": "Billing settings",
+   "siteCompany": "Company & contact",
+   "sitePages": "Pages & legal",
+   "siteMedia": "Media",
+   "sitePublish": "Publish",
+   "units": "Add-ons & units",
+   "ai": "AI providers",
+   "email": "Email",
+   "settings": "Platform settings",
+   "operators": "Operators & roles",
+   "health": "Health",
+   "backups": "Backups & upgrades",
+   "audit": "Audit trail",
+   "mailLog": "Mail log",
+   "attempts": "Payment attempts",
+   "setup": "Setup checklist"
+  }
+ },
+ "shell": {
+  "skip": "Skip to the page",
+  "retry": "Try again",
+  "waiting": "{{count}} waiting",
+  "expand": "Expand the menu",
+  "collapse": "Collapse the menu",
+  "closeMenu": "Close the menu",
+  "env": {
+   "production": "Production",
+   "development": "Development",
+   "test": "Test"
+  },
+  "theme": {
+   "dark": "Switch to dark mode",
+   "light": "Switch to light mode"
+  },
+  "account": {
+   "menu": "Account menu",
+   "profile": "My account",
+   "changePassword": "Change password"
+  },
+  "search": {
+   "title": "Search the console",
+   "placeholder": "Search subscribers, invoices, plans, settings...",
+   "open": "Open search",
+   "hint": "Type at least two letters. Try a business name, an invoice number or a setting.",
+   "searching": "Searching...",
+   "none": "Nothing found for \"{{text}}\".",
+   "failed": "The search could not reach the server.",
+   "kinds": {
+    "page": "Go to",
+    "subscriber": "Subscribers",
+    "invoice": "Invoices",
+    "plan": "Plans",
+    "licence": "Licences",
+    "operator": "Operators"
+   }
+  },
+  "alerts": {
+   "title": "Needs attention",
+   "withCount": "{{count}} things need attention",
+   "none": "Nothing needs you right now.",
+   "failed": "The alerts could not be read.",
+   "severity": {
+    "bad": "Urgent",
+    "warn": "Soon",
+    "info": "For your information"
+   },
+   "items": {
+    "payments_attention": {
+     "title": "Payments to look at: {{count}}",
+     "hint": "Failed or mismatched payment attempts."
+    },
+    "suspended": {
+     "title": "Suspended subscribers: {{count}}",
+     "hint": "Their business is locked until they pay."
+    },
+    "past_due": {
+     "title": "Past-due subscribers: {{count}}",
+     "hint": "Invoices overdue; reminders are going out."
+    },
+    "pending_requests": {
+     "title": "Plan requests waiting: {{count}}",
+     "hint": "Approve or decline them."
+    },
+    "trials_ending": {
+     "title": "Trials ending soon: {{count}}",
+     "hint": "Within seven days."
+    },
+    "failed_jobs": {
+     "title": "Failed background jobs: {{count}}",
+     "hint": "Look at the health page."
+    },
+    "businesses_behind": {
+     "title": "Businesses behind on upgrades: {{count}}",
+     "hint": "Bring them up to date."
+    },
+    "businesses_unreadable": {
+     "title": "Businesses that cannot be read: {{count}}",
+     "hint": "Their database does not answer."
+    },
+    "plugins_refused": {
+     "title": "Plugins refused at start: {{count}}",
+     "hint": "They failed the trust check."
+    },
+    "licences_expiring": {
+     "title": "Licences expiring within 30 days: {{count}}",
+     "hint": "Contact the customers to renew."
+    },
+    "backup_old": {
+     "title": "The latest backup is too old",
+     "hint": "Nightly backups should be under a day old."
+    },
+    "not_ready": {
+     "title": "The platform reports problems: {{count}}",
+     "hint": "See the health page for the list."
+    },
+    "mail_not_working": {
+     "title": "Email is not working",
+     "hint": "Sign-up and billing messages cannot be sent."
+    },
+    "ai_cap_reached": {
+     "title": "The AI spend cap is reached",
+     "hint": "AI features are paused until next month or the cap is raised."
+    }
+   }
+  },
+  "risks": {
+   "label": "Warnings",
+   "dismiss": "Hide for now",
+   "mfa_off": {
+    "title": "Staff sign in with a password alone",
+    "text": "One stolen password would give control of every business.",
+    "fix": "Open my account"
+   },
+   "registration_without_email": {
+    "title": "Registration is open but email does not work",
+    "text": "New businesses cannot confirm their address, so sign-up is stopped.",
+    "fix": "Fix email"
+   },
+   "mail_not_configured": {
+    "title": "Email is not set up",
+    "text": "Password resets and billing messages cannot be sent.",
+    "fix": "Set up email"
+   },
+   "no_ai_provider": {
+    "title": "No AI provider is chosen",
+    "text": "Ask Ziira and written briefs stay off for every business.",
+    "fix": "Add a provider"
+   }
+  }
+ },
+ "setup": {
+  "title": "Where do I find ...? Setup checklist",
+  "intro": "Do these in order the first time. Each shows whether it is done, from the platform's real state.",
+  "allDone": "Everything required is set up.",
+  "progress": "{{done}} of {{total}} done",
+  "start": "Start here",
+  "done": "Done",
+  "todo": "Not done yet",
+  "optional": "(if needed)",
+  "noAccess": "Your role cannot change this. Ask a superadmin.",
+  "currentMode": "Now: {{mode}}.",
+  "loadFailed": "The checklist could not be read",
+  "pageTitle": "Setup checklist",
+  "pageDescription": "The settings a new platform owner needs, in order, and where to find each one.",
+  "items": {
+   "email": {
+    "title": "Set up Email",
+    "text": "Needed for sign-up links, password resets and invoices.",
+    "link": "Platform > Email"
+   },
+   "registration": {
+    "title": "Set the registration mode",
+    "text": "Open, invitation only, or closed.",
+    "link": "Platform > Platform settings"
+   },
+   "ai": {
+    "title": "Add AI provider keys",
+    "text": "Choose a default provider so businesses can use Ask Ziira.",
+    "link": "Platform > AI providers"
+   },
+   "payments": {
+    "title": "Add payment methods",
+    "text": "Switch on at least one provider so businesses can pay.",
+    "link": "Revenue > Payment methods"
+   },
+   "plans": {
+    "title": "Create plans & prices",
+    "text": "At least one public plan with a price.",
+    "link": "Revenue > Plans & pricing"
+   },
+   "website": {
+    "title": "Fill in the Website",
+    "text": "Company details, legal pages, then publish.",
+    "link": "Website > Company & contact"
+   },
+   "licence": {
+    "title": "Create your first licence",
+    "text": "Only if you sell self-hosted copies.",
+    "link": "Customers > Licences"
+   }
+  }
+ },
+ "dash": {
+  "welcome": "Welcome back. Here is how the platform stands.",
+  "kpis": "Headline figures",
+  "activeSubscribers": "Active subscribers",
+  "activeHint": "Of {{total}} businesses",
+  "pastDueAmount": "Past due",
+  "pastDueInvoices": "{{count}} overdue invoices",
+  "trialEnds": "Trial ends",
+  "trialsEnding": "Trials ending within 7 days",
+  "noTrialsEnding": "No trials end this week",
+  "noTrialsEndingHint": "When one is about to end it is listed here.",
+  "noRenewalsHint": "Renewals in the next 14 days appear here.",
+  "trend": {
+   "title": "Trend",
+   "metric": "Measure",
+   "range": "Period",
+   "currency": "Currency",
+   "failed": "The trend could not be read",
+   "aria": "{{metric}} {{currency}}",
+   "note": "Money is shown per currency and never added across currencies.",
+   "emptyRevenue": "No payments recorded in this period yet.",
+   "emptyCount": "Nothing to show in this period yet.",
+   "hint": {
+    "revenue": "Money collected, by payment date.",
+    "signups": "Businesses created.",
+    "churn": "Businesses that cancelled or expired."
+   },
+   "metrics": {
+    "revenue": "Revenue",
+    "signups": "New",
+    "churn": "Lost"
+   },
+   "ranges": {
+    "12m": "12 months",
+    "12w": "12 weeks"
+   }
+  },
+  "system": {
+   "title": "Platform health",
+   "hint": "Updated every minute.",
+   "failed": "Health could not be read",
+   "open": "Open health",
+   "api": "API ready",
+   "apiOk": "Database and migrations are fine",
+   "worker": "Worker delay",
+   "backlog": "{{due}} jobs due, {{outbox}} events waiting",
+   "failedJobs": "Failed jobs",
+   "backup": "Last backup",
+   "backupHint": "Should be under a day old",
+   "upgrades": "Behind on upgrades",
+   "unreadable": "{{count}} cannot be read",
+   "upgradesHint": "Businesses to bring up to date",
+   "mail": "Email",
+   "working": "Working",
+   "untested": "Not tested",
+   "notSet": "Not set up",
+   "ai": "AI spend this month",
+   "aiNone": "No provider chosen",
+   "capReached": "Cap reached: AI is paused",
+   "capHint": "Against the monthly cap",
+   "noCap": "No cap set"
+  },
+  "feeds": {
+   "payments": "Recent payments",
+   "signups": "Recent sign-ups",
+   "activity": "Recent operator activity",
+   "failed": "This list could not be read",
+   "noPayments": "No payments yet",
+   "noPaymentsHint": "Payments appear here once an invoice is paid.",
+   "noSignups": "No businesses yet",
+   "noSignupsHint": "New sign-ups appear here.",
+   "reversed": "Reversed",
+   "allSubscribers": "All subscribers",
+   "fullTrail": "Full audit trail"
+  },
+  "quick": {
+   "title": "Quick actions",
+   "plan": "Create plan",
+   "invoice": "Issue invoice",
+   "licence": "Issue licence",
+   "operator": "Invite operator",
+   "email": "Send test email"
+  }
+ },
+ "audit": {
+  "title": "Audit trail",
+  "description": "Everything operators did on the platform: who, what, on which subscriber, and the result.",
+  "export": "Download CSV",
+  "exported": "The trail was downloaded.",
+  "exportFailed": "The download failed.",
+  "when": "When",
+  "operator": "Operator",
+  "action": "Action",
+  "target": "Target",
+  "targetHint": "A subscriber code or record",
+  "outcome": "Result",
+  "anyOutcome": "Any result",
+  "outcomes": {
+   "ok": "Done",
+   "refused": "Refused",
+   "failed": "Failed"
+  },
+  "reason": "Reason",
+  "from": "From",
+  "to": "To",
+  "rangeProblem": "The end is before the start",
+  "clear": "Clear filters",
+  "empty": "Nothing has been recorded yet",
+  "emptyHint": "Every change an operator makes is written here.",
+  "noMatch": "No lines match these filters",
+  "noMatchHint": "Widen the dates or clear a filter.",
+  "actions": {}
+ },
+ "backups": {
+  "title": "Backups & upgrades",
+  "description": "How fresh the backups are, and which businesses are behind on upgrades.",
+  "behind": "Behind on upgrades",
+  "behindHint": "Of {{total}} businesses",
+  "unreadable": "Cannot be read",
+  "backupsHint": "Taken by the nightly backup job."
+ },
+ "methods": {
+  "title": "Payment methods",
+  "description": "The providers businesses can pay the platform through."
+ },
+ "attemptsLog": {
+  "title": "Payment attempts",
+  "description": "Every try a business made to pay online. Re-check a stuck one or mark it paid with a reason."
+ },
+ "mailLog": {
+  "title": "Mail log",
+  "description": "What the platform emailed lately: kind, masked recipient and result. Never the message itself."
+ },
+ "health": {
+  "backupsLink": "Backups & upgrades"
+ }
+}

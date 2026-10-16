@@ -31,7 +31,7 @@ export default function ThingCard({ group, actions = true }: { group: Group; act
   const currency = currencyOf(group.company_id);
   const where = branchName(group.branch_id);
   const many = group.count > 1;
-  const facts = factsOf(top.figures, plain.data?.figures ?? {}, many ? 1 : 2);
+  const facts = factsOf(top.figures ?? {}, plain.data?.figures ?? {}, many ? 1 : 2);
   const headline = text?.title ?? top.summary ?? t("noSummary");
   const lead = [
     ...(many ? [{ label: t("card.howMany"), value: String(group.count) }] : []),

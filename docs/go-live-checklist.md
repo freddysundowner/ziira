@@ -13,6 +13,9 @@ service**. Tick each off (with the date and who did it) before a customer relies
 - [ ] **BlessedTexts SMS** (provider `blessedtexts`): send a real message with the live key and approved sender id; check
       the error codes it returns for a bad key, bad sender and no credit (only "1000" is known to mean success).
       Africa's Talking (`africastalking`) is also built but unused. Code: `ziira/plugins/messaging/`.
+- [ ] **AI providers** (Super Admin > AI; `docs/ai.md` section 12): for each provider you will use, `python scripts/live_check.py ai --provider anthropic|gemini|openai --quality quick`
+      with a real key, then Refresh models, Test connection and Run quality check in the Super Admin; confirm the model ids and prices
+      against the provider's page, tick the data-terms acknowledgement only once the terms and a DPA are in place, set a monthly cap.
 - [ ] **Email** (providers `smtp`, `brevo`, `resend`, `sendgrid`): send one real message through the provider the customer
       uses; sending domain/sender verified with SPF/DKIM; check the error replies for a bad key and unverified sender.
 - [ ] A real **receipt printer**: print `GET /sales/{id}/receipt?format=text&width=...` on the thermal printers the first
@@ -72,3 +75,9 @@ service**. Tick each off (with the date and who did it) before a customer relies
 - [ ] Approval rules (who approves credit raises, bank-detail changes, refunds) reviewed with the owner.
 
 Not on this list on purpose: eTIMS, which comes later as a plugin (see `docs/parked/etims.md`).
+
+## Website availability (owner decision, 2026-10-16)
+
+The marketing site presents WhatsApp, SMS, email, M-Pesa, the four ERP connections, the AI helper, photo-statement reading and online plan payments as available.
+Test each by hand before customers rely on it (what to test is listed above and in `docs/live-checks.md`; photo statements on real scans; plan payments with
+SunPay, Stripe and Paystack test keys). If one fails, set it to `soon` in `site/src/content/availability.ts` and rebuild the site.

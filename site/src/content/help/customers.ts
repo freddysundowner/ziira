@@ -1,4 +1,5 @@
 import type { HelpGuide } from "./types";
+import { soonStatus } from "../availability";
 
 export const customers: HelpGuide[] = [
   {
@@ -39,7 +40,7 @@ export const customers: HelpGuide[] = [
       { do: "To see how much room is left, open the **Account** tab.", result: "**Owes**, **Overdue**, **Credit limit** and **Credit available**, with the customer's statement." },
     ],
     problems: [
-      { p: "My increase is waiting", fix: "Raising a limit needs a finance manager's approval, under **Command Center > Approvals**. Lowering a limit applies at once." },
+      { p: "My increase is waiting", fix: "Raising a limit needs a finance manager's approval, under **Waiting for you** in the left menu. Lowering a limit applies at once." },
       { p: "A credit sale was refused", fix: "The sale would put the customer over their limit. Take a part payment first, or change the limit." },
       { p: "I lowered the limit below what they owe", fix: "That is allowed. It does not change what they owe. They just cannot buy more on credit." },
     ],
@@ -54,7 +55,7 @@ export const customers: HelpGuide[] = [
     who: "Managers, finance staff and the owner", time: "About 8 minutes",
     keywords: ["receivables", "debtors", "overdue", "ageing", "aging", "chase", "statement", "reminder"],
     need: ["For reminders: an email or SMS channel set up under **Settings > Notifications**."],
-    status: "The email and SMS channels have not been tested with live accounts yet, so send a reminder to yourself first.",
+    status: soonStatus("email"),
     steps: [
       { do: "Click **Customers > Who owes us**.", result: "**Total owed**, **Overdue** and **Customers owing** at the top, then a table of balances by how late they are.", shot: { key: "owes-1-ageing", alt: "The Who owes us page with total owed, overdue, and a table of customers by age of balance", legend: ["Totals", "Age bands: not yet due to over 90 days", "Customer rows"] } },
       { do: "Read the columns: **Not yet due**, **1-30 days**, **31-60 days**, **61-90 days** and **Over 90 days**. Use **As of** to look at an earlier date." },

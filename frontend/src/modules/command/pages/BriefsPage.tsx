@@ -15,7 +15,7 @@ export default function BriefsPage() {
 
   return (
     <>
-      <PageHeader title={t("briefsTitle")} description={t("briefsHint")} back={{ to: "/command", label: t("title") }} />
+      <PageHeader title={t("briefsTitle")} description={t("briefsHint")} back={{ to: "/intelligence", label: t("backToToday") }} />
       {canManage && <Tabs value={tab} onChange={setTab} tabs={[{ id: "mine", label: t("tabMine") }, { id: "everyone", label: t("tabEveryone") }]} />}
       {tab === "everyone" ? <AllSchedules /> : (
         <div className="space-y-6">

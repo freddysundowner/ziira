@@ -60,7 +60,8 @@ def _settings_out(state: ai.AiState, consents: list[Any], usage: list[Any]) -> A
         explanations=state.explanations, auto_explain=state.auto_explain, ask=state.ask,
         monthly_token_limit=state.token_limit, tokens_used=state.tokens_used, calls=state.calls,
         provider=state.provider, model=state.model, configured=state.configured, terms_confirmed=state.terms_ok,
-        consent_version=ai_rules.CONSENT_VERSION, consent_text=ai_admin.consent_texts(),
+        consent_version=ai_rules.CONSENT_VERSION, consent_text=ai_admin.consent_texts(state),
+        provider_label=state.provider_label,
         consents=[AiConsentOut.model_validate(c, from_attributes=True) for c in consents],
         usage=[AiUsageOut.model_validate(u, from_attributes=True) for u in usage],
         unavailable_reason=state.blocked("ask") if state.enabled else "not_enabled")

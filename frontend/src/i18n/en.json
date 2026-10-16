@@ -72,8 +72,8 @@
       "opening_balances": { "title": "Enter your opening balances", "hint": "Where the books stand today." },
       "expense": { "title": "Record an expense", "hint": "Enter your first expense." },
       "connect": { "title": "Connect your system", "hint": "Link the system you use now, or upload its reports." },
-      "alerts": { "title": "Choose who gets alerts", "hint": "Pick the owner's phone or email." },
-      "findings": { "title": "Read your first findings", "hint": "What Ziira noticed in your data." },
+      "alerts": { "title": "Choose how you hear from Ziira", "hint": "Pick the owner's phone or email." },
+      "findings": { "title": "See the first things to look at", "hint": "What Ziira noticed in your data." },
       "move": {
         "title": "Ready to run on Ziira? Move your data",
         "hint": "Bring products, customers, stock and balances over from the system you connected."
@@ -100,7 +100,8 @@
   "language": "Language",
   "nav": {
     "areas": {
-      "command": "Command Center",
+      "command": "Intelligence",
+      "waiting": "Waiting for you",
       "inbox": "Inbox",
       "sell": "Sell",
       "customers": "Customers",
@@ -120,7 +121,8 @@
       "data": "Data and privacy",
       "platform": "Platform"
     },
-    "tabs": { "overview": "Overview", "general": "General" }
+    "tabs": { "general": "General" },
+    "waitingKeywords": "inbox approvals exceptions to do waiting decide"
   },
   "auth": {
     "tagline": "Run every branch of your business from one place.",
@@ -247,6 +249,11 @@
     "until": "ends {{until}}"
   },
   "signup": {
+    "closedTitle": "Sign-up is closed",
+    "closedBody": "New businesses cannot register on their own right now. If you need an account, ask the person who runs this service to create one for you.",
+    "inviteTitle": "Sign-up is by invitation only",
+    "inviteBody": "You need an invitation link to create a business here. Ask the person who invited you for the link, or contact us to request one.",
+    "contact": "Contact {{email}}",
     "title": "Create your business",
     "stepOf": "Step {{n}} of {{total}}: {{title}}",
     "done": "Done",

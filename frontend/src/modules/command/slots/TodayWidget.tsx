@@ -14,10 +14,10 @@ export default function TodayWidget() {
   if (q.error) return <p className="text-sm text-bad">{q.error.message} <button className="underline" onClick={() => void q.refetch()}>{t("retry")}</button></p>;
   if (!q.data) return <p className="text-sm text-muted">{t("loading")}</p>;
   const fig = keyFigure(q.data.figures);
-  if (!fig) return <Link to="/command" className="block text-sm text-muted">{t("widgetEmpty")}</Link>;
+  if (!fig) return <Link to="/intelligence" className="block text-sm text-muted">{t("widgetEmpty")}</Link>;
   const c = changeOf(fig.value, fig.previous, fig.higher_is_better);
   return (
-    <Link to="/command" className="block space-y-1">
+    <Link to="/intelligence" className="block space-y-1">
       <p className="text-xs font-medium uppercase tracking-wide text-muted">{fig.label}</p>
       <p className="tnum text-2xl font-semibold">{formatFigure(fig, fig.value, q.data.currency)}</p>
       <p className={`text-sm ${TONE[c.tone]}`}>

@@ -14,7 +14,7 @@
   "people": "People and payroll",
   "printing": "Printing and phone numbers",
   "regional": "Time zone",
-  "alerts": "Alerts and briefs",
+  "alerts": "Urgent alerts",
   "privacy": "Privacy and record keeping"
  },
  "groupHint": {
@@ -23,7 +23,7 @@
   "people": "Working days, leave and overtime.",
   "printing": "Lines on receipts and invoices, and how phone numbers are read.",
   "regional": "Where your business is: the date on every sale, stock movement, receipt and journal entry is the date here.",
-  "alerts": "When Intelligence alerts you and how daily briefs are timed.",
+  "alerts": "When Ziira messages you about something serious. More choices are under Intelligence settings, Where you hear from Ziira.",
   "privacy": "How fast you answer people about their data, who must approve erasures, and how long records are kept."
  },
  "set": {
@@ -43,7 +43,7 @@
   "invoice_footer": "Invoice footer",
   "timezone": "Time zone",
   "intel_alert_channel": "Send urgent alerts",
-  "intel_alert_min_severity": "Alert from severity",
+  "intel_alert_min_severity": "What counts as urgent",
   "privacy_response_days": "Days to answer a privacy request",
   "privacy_erasure_needs_approval": "Erasures need a second person",
   "retention_notifications_days": "Keep sent messages for (days)",
@@ -67,8 +67,8 @@
   "receipt_footer": "Printed at the bottom of till and payment receipts.",
   "invoice_footer": "Printed at the bottom of invoices, for example bank details or payment terms.",
   "timezone": "A name such as Europe/London or Africa/Nairobi. Business dates (what day a sale, receipt or entry belongs to) and daily briefs follow this zone.",
-  "intel_alert_channel": "Message the right people when Intelligence finds something serious, or keep findings in the app only.",
-  "intel_alert_min_severity": "Findings at or above this severity are sent as alerts; the rest wait for the daily brief.",
+  "intel_alert_channel": "Message the right people when something serious comes up, or keep everything in the app.",
+  "intel_alert_min_severity": "Anything at least this urgent is sent as an alert; the rest waits for the daily summary.",
   "privacy_response_days": "A request is due this many days after it arrives. Use the time your law or policy asks for.",
   "privacy_erasure_needs_approval": "When on, someone other than the person who asked must approve before data is erased.",
   "retention_notifications_days": "After this, the address and text of finished messages are hidden. 0 keeps them.",
@@ -92,10 +92,10 @@
    "email": "By email"
   },
   "intel_alert_min_severity": {
-   "low": "Low",
-   "medium": "Medium",
-   "high": "High",
-   "critical": "Critical"
+   "low": "Everything",
+   "medium": "Urgent things and things for soon",
+   "high": "Urgent things",
+   "critical": "Only the most urgent things"
   }
  },
  "day": {

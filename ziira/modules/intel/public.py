@@ -9,7 +9,7 @@ Units plug into Intelligence through two extension points:
 
 - `intel.ask_tool`: a unit supplies a question Ask Ziira may put to its data (subclass `AskTool`; see
   `docs/ai.md`). The tool filters by the asking person's permissions (`branch_scope`) and returns a bounded result.
-- `intel.llm`: an AI provider (subclass `LlmProvider`), for plugins such as `ai_anthropic`.
+- `intel.llm`: an AI provider (subclass `LlmProvider`), for the AI provider plugins (`ai_*`).
 - `intel.action`: something Intelligence may propose for a finding and, once a person approves (or the owner has set a
   rule for it), do through the owning unit's own services (subclass `ActionProvider`; see `docs/intelligence.md`,
   "Levels of action").
@@ -28,15 +28,20 @@ from uuid import UUID
 from ziira.modules.intel.domain.action_rules import MONEY_PERMISSIONS, Proposal
 from ziira.modules.intel.domain.ai_rules import hide_secrets
 from ziira.modules.intel.domain.llm import (
+    FEATURES,
     AskTool,
+    LiveModel,
     LlmError,
     LlmMessage,
     LlmProvider,
     LlmReply,
     LlmUsage,
+    ModelInfo,
+    ProviderCatalog,
     ToolCall,
     ToolResult,
     ToolSpec,
+    estimate_cost,
 )
 from ziira.modules.intel.domain.model import AREAS, SEVERITIES, Baseline, Candidate, Record, Sample
 from ziira.modules.intel.domain.rules import fingerprint, is_unusual
@@ -48,6 +53,7 @@ from ziira.modules.intel.domain.scope import (
     requested_branch,
     scope_from_pairs,
 )
+from ziira.modules.intel.llm_http import HttpLlmProvider
 from ziira.modules.intel.services.nudges import Nudged
 from ziira.sdk import RequestContext, Session
 
@@ -64,6 +70,7 @@ __all__ = [
     "Baseline", "BaselineMetric", "BranchScope", "Candidate", "CheckContext", "FindingBrief", "IntelCheck", "LlmError",
     "LlmMessage", "LlmProvider", "LlmReply", "LlmUsage", "Record", "Sample", "ToolCall", "ToolResult", "ToolSpec",
     "branch_scope", "company_visible", "date_range", "findings_summary", "fingerprint", "hide_secrets", "is_unusual",
+    "FEATURES", "HttpLlmProvider", "LiveModel", "ModelInfo", "ProviderCatalog", "estimate_cost",
     "nudge_people", "requested_branch", "scope_from_pairs", "top_findings",
 ]
 

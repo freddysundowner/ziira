@@ -16,6 +16,8 @@ PERMISSIONS: dict[str, str] = {
     "platform.licences": "Issue, revoke and install licences",
     "platform.units": "Install, upgrade and uninstall units; switch a business's units",
     "platform.content": "Edit the website content",
+    "platform.ai": "Manage the AI providers: keys, models, the default provider, the spend cap and quality checks",
+    "platform.settings": "Platform email, registration mode and public addresses (superadmin only)",
     "platform.operators": "Add and disable operators, change roles, reset a second factor, read the action trail",
 }
 

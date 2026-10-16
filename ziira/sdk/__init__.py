@@ -89,7 +89,9 @@ from ziira.kernel.personal_data import (
     sql_phone_matches,
 )
 from ziira.kernel.phone import check_calling_code, normalise_phone
+from ziira.kernel.platform import ai as platform_ai
 from ziira.kernel.platform import entitlements
+from ziira.kernel.platform.ai import AI_PLATFORM, AiPlatformHooks
 from ziira.kernel.platform.gateways import (
     PAYMENT_GATEWAY,
     AttemptInfo,
@@ -136,6 +138,7 @@ __all__ = [
     "set_context", "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session",
     "validate",
     "verify_value",
+    "AI_PLATFORM", "AiPlatformHooks", "ai_active_secrets", "ai_cap_reached", "ai_record_usage", "ai_runtime",
 ]
 
 
@@ -192,6 +195,27 @@ def encrypt_text(plain: str) -> str:
 def decrypt_text(token: str) -> str:
     """Decrypt something made by `encrypt_text`."""
     return decrypt(token)
+
+
+def ai_runtime(feature: str = "ask", tenant_id: UUID | None = None) -> platform_ai.Runtime | None:
+    """Which AI provider, key and model the platform has set up for a feature (and for this business), or None."""
+    return platform_ai.runtime(feature, tenant_id)
+
+
+def ai_record_usage(tenant_id: UUID, provider: str, model: str, tokens_in: int, tokens_out: int) -> None:
+    """Add a call's tokens to the platform's estimate of AI spend (counts and money only)."""
+    platform_ai.record_usage(tenant_id, provider, model, tokens_in, tokens_out)
+
+
+def ai_active_secrets() -> list[str]:
+    """Every AI key the platform holds, to remove from any text before it is stored."""
+    return platform_ai.active_secrets()
+
+
+def ai_cap_reached() -> bool:
+    """True when the platform's monthly AI spend cap has been reached."""
+    snap = platform_ai.snapshot()
+    return snap.cap_usd is not None and snap.spend_usd >= snap.cap_usd
 
 
 def platform_settings() -> Settings:

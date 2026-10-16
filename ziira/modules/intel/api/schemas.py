@@ -186,6 +186,7 @@ class AiSettingsOut(BaseModel):
     tokens_used: int
     calls: int
     provider: str
+    provider_label: str = Field(default="", description="The provider's name for people (empty: none set up)")
     model: str
     configured: bool = Field(description="The platform has what the provider needs (its key)")
     terms_confirmed: bool

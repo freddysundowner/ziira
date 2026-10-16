@@ -72,8 +72,8 @@
       "opening_balances": { "title": "Weka salio za kuanzia", "hint": "Hali ya vitabu leo." },
       "expense": { "title": "Rekodi matumizi", "hint": "Weka matumizi yako ya kwanza." },
       "connect": { "title": "Unganisha mfumo wako", "hint": "Unganisha mfumo unaotumia sasa, au pakia ripoti zake." },
-      "alerts": { "title": "Chagua nani apate arifa", "hint": "Chagua simu au barua pepe ya mmiliki." },
-      "findings": { "title": "Soma matokeo yako ya kwanza", "hint": "Kile Ziira kimeona kwenye data yako." },
+      "alerts": { "title": "Chagua jinsi unavyopata habari kutoka Ziira", "hint": "Chagua simu au barua pepe ya mmiliki." },
+      "findings": { "title": "Ona mambo ya kwanza ya kuangalia", "hint": "Kile Ziira kimeona kwenye data yako." },
       "move": { "title": "Tayari kutumia Ziira? Hamisha data yako", "hint": "Leta bidhaa, wateja, hisa na madeni kutoka mfumo uliounganisha." },
       "organisation": { "title": "Kagua kampuni na matawi yako", "hint": "Majina, nambari ya kodi, matawi." },
       "users": { "title": "Alika timu yako", "hint": "Wape watu ufikiaji wanaohitaji." }
@@ -97,7 +97,8 @@
   "language": "Lugha",
   "nav": {
     "areas": {
-      "command": "Kituo cha Uongozi",
+      "command": "Intelligence",
+      "waiting": "Zinazokusubiri",
       "inbox": "Kikasha",
       "sell": "Mauzo",
       "customers": "Wateja",
@@ -117,7 +118,8 @@
       "data": "Data na faragha",
       "platform": "Jukwaa"
     },
-    "tabs": { "overview": "Muhtasari", "general": "Jumla" }
+    "tabs": { "general": "Jumla" },
+    "waitingKeywords": "kikasha idhini ubaguzi kazi zinazosubiri uamuzi"
   },
   "auth": { "tagline": "Simamia matawi yote ya biashara yako mahali pamoja.", "subtitle": "Mauzo, bidhaa, manunuzi, vitabu na mishahara, vyote pamoja." },
   "theme": {
@@ -241,6 +243,11 @@
     "until": "inaisha {{until}}"
   },
   "signup": {
+    "closedTitle": "Usajili umefungwa",
+    "closedBody": "Biashara mpya haziwezi kujisajili zenyewe kwa sasa. Ukihitaji akaunti, muulize anayeendesha huduma hii akufungulie.",
+    "inviteTitle": "Usajili ni kwa mwaliko tu",
+    "inviteBody": "Unahitaji kiungo cha mwaliko ili kufungua biashara hapa. Muulize aliyekualika akupe kiungo, au wasiliana nasi ukiomba.",
+    "contact": "Wasiliana na {{email}}",
     "title": "Fungua biashara yako",
     "stepOf": "Hatua {{n}} kati ya {{total}}: {{title}}",
     "done": "Imekamilika",

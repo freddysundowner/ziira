@@ -55,7 +55,6 @@ export default function WatchRow({ check, text, labels, technical, companyId }: 
       <span className="inline-flex items-center gap-1 align-middle">
         {unit[name] === "money" && currency && <span className="text-xs text-muted">{currency}</span>}
         {input}
-        {unit[name] === "percent" && <span className="text-xs text-muted">%</span>}
       </span>
     );
   };
@@ -65,7 +64,7 @@ export default function WatchRow({ check, text, labels, technical, companyId }: 
     <div className="space-y-2 py-4 first:pt-0 last:pb-0">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
-          <p className="text-sm font-medium">{title}</p>
+          <p className="text-sm font-medium">{title}{check.source === "connected" && <span className="ml-2 rounded-full bg-sunken px-2 py-0.5 text-xs font-normal text-muted">{t("watch.otherSystem")}</span>}</p>
           {technical && <p className="font-mono text-xs text-muted">{check.code} · {check.title}</p>}
           {text?.sentence ? (
             <p className="text-sm leading-8">

@@ -1,0 +1,44 @@
+# OpenAI: what the Super Admin offers. Ids and prices change often: this is a recommendation, not the truth.
+# The live list (Refresh models) and the operator's price overrides come first. USD per million tokens (standard tier).
+[provider]
+title = "OpenAI"
+capabilities = ["tool_calling", "system_prompt", "json_output"]
+base_url = "https://api.openai.com"
+auth = "Authorization: Bearer"
+terms_url = "https://openai.com/policies/business-terms/"
+docs_url = "https://developers.openai.com/api/docs/models"
+verified_on = "2026-10-16"
+prices_updated = "2026-10-16"
+price_source = "https://developers.openai.com/api/docs/pricing"
+live_prefixes = ["gpt-", "o1", "o3", "o4", "chatgpt-"]
+
+[defaults]
+explain = "gpt-6-luna"
+rank = "gpt-6-luna"
+ask = "gpt-6-luna"
+
+[[models]]
+id = "gpt-6-luna"
+title = "GPT-6 Luna"
+tiers = ["best_value", "cheapest"]
+input_per_mtok = "0.10"
+output_per_mtok = "0.50"
+notes = "OpenAI's most efficient current model, for focused high-volume work. Supports function calls."
+options = { reasoning_effort = "low" }
+
+[[models]]
+id = "gpt-6.1-sol"
+title = "GPT-6.1 Sol"
+tiers = ["higher_quality"]
+input_per_mtok = "2.00"
+output_per_mtok = "10.00"
+notes = "Near the flagship's quality for complex work at a lower cost."
+options = { reasoning_effort = "low" }
+
+[[models]]
+id = "gpt-5-mini"
+title = "GPT-5 mini"
+input_per_mtok = "0.25"
+output_per_mtok = "2.00"
+notes = "Older mini model, kept as a fallback if a newer one is not on the key's plan."
+options = { reasoning_effort = "low" }

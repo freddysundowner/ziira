@@ -16,6 +16,7 @@ export interface GroupedFilters {
   branchId?: string;
   search?: string;
   mine?: boolean;
+  source?: string;
 }
 
 /** Things to look at as cards (similar ones together), most pressing first. */
@@ -25,7 +26,7 @@ export function useGrouped(view: View, limit: number, f: GroupedFilters = {}) {
     queryFn: () => unwrap(api.GET("/api/v1/intel/findings/grouped", {
       params: { query: {
         view, limit, severity: f.band ? BAND_SEVERITIES[f.band] : undefined, area: f.area || undefined, company_id: f.companyId || undefined,
-        branch_id: f.branchId || undefined, search: f.search || undefined, assigned_to_me: f.mine || undefined } },
+        branch_id: f.branchId || undefined, search: f.search || undefined, assigned_to_me: f.mine || undefined, source: (f.source || undefined) as "connected" | "ziira" | undefined } },
     })),
     refetchInterval: 120_000,
   });

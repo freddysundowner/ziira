@@ -50,8 +50,8 @@ export const home: Record<Lang, HomeContent> = {
       { t: "Customers who owe you", page: "core-customers", icon: "people" }, { t: "Books", page: "core-accounting", icon: "ledger" }, { t: "Staff pay", page: "core-people", icon: "person" }, { t: "The daily check", page: "intelligence-how", icon: "bell" },
     ],
     mock: {
-      badge: "Example, demo data", title: "A cashier cancelled 14 sales after 9pm", text: "Far more cancellations than this cashier usually makes. The sales and the times are one tap away.", next: "Next step: ask the branch manager to explain.", acts: ["Ask for an explanation", "Why am I seeing this?"],
-      frameLabel: "Command Center, shown with demo data",
+      badge: "Example, demo data", title: "A cashier cancelled 14 sales after 9pm", text: "Far more cancellations than this cashier usually makes. The sales and the times are one tap away.", next: "Next step: ask the branch manager to explain.", acts: ["Look into it", "Give to someone"],
+      frameLabel: "The Today page, shown with demo data",
       cards: [
         { area: "Finance, example", title: "Month-end close: 3 steps left", text: "Bank matched. Stock counted. Payroll waiting for approval." },
         { area: "Purchasing, example", title: "Supplier price up 17% on cement", text: "Your selling price has not changed." },
@@ -102,14 +102,14 @@ export const home: Record<Lang, HomeContent> = {
       { key: "addons" },
       { key: "brief" },
     ],
-    findingsH2: "What an alert looks like", findingsLead: "Every alert comes with proof and a suggested next step. These examples are illustrative.",
+    findingsH2: "What a thing to look at looks like", findingsLead: "Each one comes with proof and a suggested next step. These examples are illustrative.",
     findingsHead: ["What Ziira noticed", "The proof", "Suggested next step"],
     findings: [
       ["A branch sold 4,400 more than it received", "Two cash sales with no matching cash or mobile-money payment", "Ask the cashier to explain"],
       ["Profit on a product fell from 9% to 4%", "The supplier raised the price 6% and your selling price did not change", "Update the selling price"],
       ["A credit order from a customer who is late paying", "A balance of 680,000, 45 days overdue", "Pause credit or ask for part payment"],
     ],
-    findingsNote: "An alert is a question, not an accusation. Most have a good explanation, and Ziira records the answer.",
+    findingsNote: "A thing to look at is a question, not an accusation. Most have a good explanation, and Ziira records the answer.",
     compareH2: "Run everything in Ziira, or only watch your current system", compareHead: ["", "Everything in Ziira", "Daily checking only"],
     compare: [
       ["What it is", "The whole business system, with daily checking built in", "A watcher added on top of what you already use"],
@@ -133,7 +133,7 @@ export const home: Record<Lang, HomeContent> = {
       { t: "Numbers from your records", d: "Totals and gaps are calculated from your data. The optional AI helper only writes the sentences." },
       { t: "Records that stay put", d: "Ledger entries, stock movements and the history of who did what cannot be edited or deleted." },
       { t: "You stay in charge", d: "Every business starts at reporting only. Ziira never moves money." },
-      { t: "Honest limits", d: "No certifications claimed, no independent security test yet, and connections to outside services are marked where not yet proven live." },
+      { t: "Your data stays yours", d: "Every business has its own database, and each person sees only what their role allows." },
     ],
     trustNote: "Read the full [security and privacy summary](@security).",
     faqH2: "Frequently asked questions",

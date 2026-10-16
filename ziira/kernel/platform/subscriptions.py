@@ -26,7 +26,7 @@ from ziira.kernel.config import get_settings
 from ziira.kernel.context import system_context
 from ziira.kernel.db import master_session, tenant_session
 from ziira.kernel.errors import Conflict, DependencyError, NotFound, ValidationFailed
-from ziira.kernel.platform import entitlements, plans, settings
+from ziira.kernel.platform import behaviour, entitlements, plans, settings
 from ziira.kernel.registry import Registry, discover, install_order
 
 log = logging.getLogger("ziira.subscriptions")
@@ -202,7 +202,7 @@ def start(
     if not chosen_currency:
         raise ValidationFailed("This plan has no price yet: give the currency the business is billed in")
     amount = Decimal("0.00") if price is None or mode == "comp" else price.amount
-    trial_end = moment + timedelta(days=plan["trial_days"]) if mode == "trial" else None
+    trial_end = moment + timedelta(days=behaviour.trial_days(plan["trial_days"])) if mode == "trial" else None
     status = "trialing" if mode == "trial" else "active"
     period_start = moment
     if mode == "trial":

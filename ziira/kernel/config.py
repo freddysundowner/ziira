@@ -163,10 +163,10 @@ class Settings(BaseSettings):
     # development and tests and is refused in production), the platform's secret key for it, the model, the address of
     # its API, how long one call may take and how often a failed one is retried. A business turns AI on for itself with
     # an explicit consent; in production no call is made until the operator confirms the provider's data terms.
-    ai_provider: str = "anthropic"
+    ai_provider: str = ""
     ai_api_key: str = ""
-    ai_model: str = "claude-sonnet-5-5"
-    ai_base_url: str = "https://api.anthropic.com"
+    ai_model: str = ""
+    ai_base_url: str = ""
     ai_timeout_seconds: float = 30.0
     ai_max_retries: int = 2
     ai_terms_confirmed: bool = False
@@ -266,9 +266,8 @@ class Settings(BaseSettings):
                                "roles must use a second factor before real customer data")
         if self.registration_mode not in ("open", "invite", "closed"):
             raise RuntimeError("ZIIRA_REGISTRATION_MODE must be open, invite or closed")
-        if self.registration_mode != "closed" and not self.platform_email_provider:
-            raise RuntimeError("Registration needs ZIIRA_PLATFORM_EMAIL_PROVIDER (and its secret) to send the "
-                               "verification email; or set ZIIRA_REGISTRATION_MODE=closed")
+        # Open registration without email is not refused here: email is set up in the Super Admin (Platform > Email)
+        # and sign-up stays closed until it works (platform/behaviour.registration_mode).
         if self.deployment_mode not in ("saas", "selfhosted"):
             raise RuntimeError("ZIIRA_DEPLOYMENT_MODE must be saas or selfhosted")
         if self.deployment_mode == "selfhosted" and self.licence_required and not self.licence_public_key:

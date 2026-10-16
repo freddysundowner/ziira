@@ -13,7 +13,7 @@ from hypothesis import strategies as st
 from installer import appenv, config, envfile
 
 REPO = Path(__file__).resolve().parents[2]
-SECRET = "Kq3vZ8wLmN2xT7yUe9RbHc4JdFa6GsPo1QiXtVn0"
+SECRET = "Kq3vZ8wLmN2xT7yUe9RbHc4JdFa6GsPo1QiXtVn0"  # secret-scan: ignore (test fixture)
 CREDENTIALS = "W5eRtY7uIoP9aSdF2gHjK4lZxC6vBnM1qAwSzXe8"
 DBPW = "Ab3dEf6hIj9kLm2nOp5qRs8tUv1wXy4z"
 
@@ -34,7 +34,7 @@ def generated(*extra: str) -> dict[str, str]:
         cfg, secret_key=SECRET, credentials_key=CREDENTIALS, metrics_token="Tk3Jd9Lq2Xw8Rn5Vb7Cm4Zs6",
         master_url=f"postgresql+psycopg://ziira:{DBPW}@127.0.0.1:5432/ziira_master",
         server_url=f"postgresql+psycopg://ziira:{DBPW}@127.0.0.1:5432/postgres",
-        hook_secret="Zq8Xw3Er5Ty7Ui9Op1As2Df4Gh6JkLm", hook_token="Tok3nAbCdEf1234567", pg_major=16, rebuild=True)
+        hook_secret="Zq8Xw3Er5Ty7Ui9Op1As2Df4Gh6JkLm", hook_token="Tok3nAbCdEf1234567", pg_major=16, rebuild=True)  # secret-scan: ignore (test fixture)
 
 
 def test_generated_environment_passes_the_projects_own_checker() -> None:

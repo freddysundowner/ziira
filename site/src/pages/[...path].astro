@@ -30,6 +30,7 @@ import ContactDetails from "../components/ContactDetails.astro";
 import Icon from "../components/Icon.astro";
 import Home from "../components/Home.astro";
 import { catalog, totals } from "../lib/catalog";
+import { presentation, availability, soonKeys, type AvailKey } from "../content/availability";
 import { integrationsPage } from "../content/integrations";
 
 export const getStaticPaths = (() =>
@@ -73,6 +74,7 @@ if (def.how) {
 const helpGuideData = guideForId(id);
 if (helpGuideData) (graph["@graph"] as Record<string, unknown>[]).push(howToNode(helpGuideData, entry.path));
 const kids = childrenOf(id, lang);
+const soonItems = (def.avail ?? []).filter((k: AvailKey) => availability[k].status === "soon");
 const hasCardsBlock = def.blocks.some((b) => b.cards);
 const heroAlt = def.hero ? screenAlt[lang][def.hero] : undefined;
 const related = (def.related ?? []).filter((r) => { try { urlFor(r, lang); return true; } catch { return false; } });
@@ -104,16 +106,16 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
             <section class="int-group" aria-labelledby={`g-${g.id}`}>
               <div class="int-head"><h2 id={`g-${g.id}`}>{g.h2}</h2><p>{g.lead}</p></div>
               <ul class="int-grid">
-                {g.cards.map((c) => (
+                {g.cards.map((c) => { const pr = c.avail ? presentation(c.avail) : null; return (
                   <li>
                     <a class="int-card" href={urlFor(c.page, lang) + (c.hash ? `#${c.hash}` : "")}>
                       <span class="int-top"><span class="int-icon"><Icon name={c.icon} /></span><span class="int-name">{c.name}{c.extra && <span class="int-extra"> · {c.extra}</span>}</span></span>
                       <h3>{c.title}</h3>
-                      <p>{c.text}</p>
-                      <span class="int-foot"><span class={`chip ${c.tone}`}>{c.chip}</span><span class="more">{t.readMore} &rarr;</span></span>
+                      <p>{pr?.soon ? pr.note : c.text}</p>
+                      <span class="int-foot"><span class={`chip ${pr?.soon ? "info" : c.tone}`} data-avail={c.avail}>{pr?.soon ? pr.chip : c.chip}</span><span class="more">{pr?.soon ? "Get notified" : t.readMore} &rarr;</span></span>
                     </a>
                   </li>
-                ))}
+                ); })}
               </ul>
             </section>
           ))}
@@ -139,6 +141,25 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
   {kind === "steps" && def.how && (
     <>
       <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} leadHtml={i(def.lead)} glance={handGlance} glanceTitle={def.glanceTitle} />
+      {def.how.story && (
+        <section class="section white how-story" aria-labelledby="how-story-h">
+          <div class="container how-story-grid">
+            <div class="how-story-text">
+              <h2 id="how-story-h">{def.how.story.title}</h2>
+              {def.how.story.paragraphs.map((x) => <p set:html={i(x)} />)}
+            </div>
+            <figure class="how-note" aria-label={def.how.story.noteTitle}>
+              <figcaption class="how-note-title">{def.how.story.noteTitle}</figcaption>
+              <ul>{def.how.story.note.map((x) => <li set:html={i(x)} />)}</ul>
+              <p class="how-note-cap">{def.how.story.noteCaption}</p>
+            </figure>
+            <div class="how-story-after">
+              {def.how.story.after.map((x) => <p set:html={i(x)} />)}
+              <p class="how-teaser">{def.how.story.teaser}</p>
+            </div>
+          </div>
+        </section>
+      )}
       <section class="section">
         <div class="container how">
           <ol class="how-steps">
@@ -166,12 +187,12 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
           <p><a class="btn btn-ghost" href={urlFor("intelligence-complete", lang)}>Want the full detail? Read the full reference</a></p>
         </div>
       </section>
-      <section class="section">
+      <section class="section white">
         <div class="container how">
           <Blocks lang={lang} blocks={def.blocks} />
-          <Faq lang={lang} items={faq} />
         </div>
       </section>
+      {faq.length > 0 && <section class="section tint"><div class="container"><div class="faq-split"><div class="faq-intro"><h2 id="faq-h">{t.faq}</h2></div><Faq lang={lang} items={faq} bare /></div></div></section>}
       <Cta lang={lang} variant={def.cta ?? "general"} />
     </>
   )}
@@ -224,6 +245,7 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
       <section class="section">
         <div class="container layout with-aside">
           <article class="prose">
+            {soonItems.length > 0 && <div class="callout info coming-soon" role="note" data-coming-soon={soonItems.join(" ")}><strong class="t"><span class="chip info">Coming soon</span></strong><p>{soonItems.map((k) => availability[k].note).join(" ")} <a href={urlFor("get-started", lang)}>Get notified</a></p></div>}
             <Blocks lang={lang} blocks={def.blocks} kids={kids} />
             {def.children && !hasCardsBlock && kids.length > 0 && <Cards lang={lang} items={kids} />}
             <Faq lang={lang} items={faq} />
@@ -232,7 +254,6 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
             {related.length > 0 && (
               <div class="card"><h2>{t.keepReading}</h2><ul>{related.map((r) => <li><a href={urlFor(r, lang)}>{t.labels[r] ?? titleFor(r, lang)}</a></li>)}</ul></div>
             )}
-            <div class="card status"><h2>{t.statusTitle}</h2><p class="note" style="margin:0">{t.statusText}</p></div>
           </aside>
         </div>
       </section>

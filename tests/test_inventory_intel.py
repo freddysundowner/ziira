@@ -19,6 +19,7 @@ from ziira.modules.intel.services import baselines, engine
 from ziira.modules.inventory.intel_checks.controls import AdjustmentValueByUser
 from ziira.modules.inventory.pulse import InventoryPulse
 from ziira.modules.inventory.services.ledger import MovementRequest, post_movement, post_stock_out
+from ziira.sdk import format_day
 
 INTEL = "/api/v1/intel"
 BASE = datetime.now(ZoneInfo("Africa/Nairobi")).date()          # the test tenants' zone (a fixture value)
@@ -219,7 +220,7 @@ def test_batches_expiring_and_expired_with_stock_on_hand(client, shop) -> None: 
     urgent, near = by_batch["B-URGENT"][0], by_batch["B-SOON"][0]
     assert (urgent["severity"], Dec(urgent["amount"]), urgent["branch_id"]) == ("high", Dec("50.00"), shop["branch_id"])
     assert (near["severity"], Dec(near["amount"])) == ("medium", Dec("100.00"))
-    assert "expires on " + (BASE + timedelta(days=10)).isoformat() in near["summary"] and "4 is still at" in near["summary"]
+    assert "expires on " + format_day(BASE + timedelta(days=10)) in near["summary"] and "4 is still at" in near["summary"]
     assert ("inventory.batch" in {t for t, _ in records(near)}) and ("products.product", paint) in records(near)
     [old] = open_ones(shop, gone, "B-OLD")
     assert (old["severity"], Dec(old["amount"])) == ("high", Dec("75.00"))

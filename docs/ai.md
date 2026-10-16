@@ -4,8 +4,8 @@ The AI layer of Ziira Intelligence (`ziira/modules/intel`, spec section 16). A l
 supplies **figures**. Every number a person sees comes from a check or a query over the business's own records, and a reply
 whose numbers cannot be traced back to those records is discarded or marked.
 
-> **Not run against the real service.** The Anthropic request and response shapes (`ziira/plugins/ai_anthropic/provider.py`)
-> were written from Anthropic's public documentation. Everything is tested against a scripted fake provider and a pretend
+> **Not run against the real service.** The Anthropic, Gemini and OpenAI request and response shapes (`ziira/plugins/ai_*/provider.py`)
+> were written from the providers' public documentation (section 12 lists what is unverified). Everything is tested against a scripted fake provider and a pretend
 > HTTP server; nothing has been sent to the live API. Run `scripts/live_check.py ai` (section 10) with a real key before
 > turning this on for a customer.
 
@@ -209,3 +209,67 @@ provider that cannot answer is `502 ai_failed`; a discarded reply is `422 ai_rej
 - A question blocks one API worker thread for up to about a minute and a half in the worst case (caps plus retries).
 - Data subject requests find and erase Ask Ziira conversations (provider `intel` in `ziira/modules/intel/privacy.py`), but not the AI-written
   `explanation_ai` text of findings, which may repeat names a finding names; conversations are also forgotten after 90 days.
+
+## 12. Providers managed in the Super Admin (Platform > AI)
+
+The platform owner manages the AI providers in the Super Admin (`/operator/ai`, permission `platform.ai`, superadmin only,
+fresh confirmation for every change, every change in the operator trail without secrets). Environment variables
+(`ZIIRA_AI_*`) remain only as a **fallback** when no default provider is chosen there (development, older installs).
+
+**Providers are plugins** behind `intel.llm`: `ai_anthropic` (Messages API), `ai_gemini` (`generateContent`),
+`ai_openai` (Responses API, `store: false`). Each declares its title, capabilities, base URL, auth style, recommended models
+and their prices per million tokens as data in its `models.toml` (with `verified_on` and `prices_updated`); the shared HTTP,
+retry and error code is `HttpLlmProvider` (`intel/llm_http.py`). Provider names exist only in plugin code and `models.toml`
+(`tests/test_ai_providers_catalog.py` scans kernel and modules for them).
+
+**Storage (master database, migration 0016):** `master.ai_provider` (enabled, encrypted key + last four characters, base URL,
+model per feature, price overrides, live model list, last test, data-terms acknowledgement who/when), `master.ai_usage`
+(estimated spend per day, provider, model and business: counts and money only), `master.ai_tenant_provider` (an
+operator-made per-business exception with a reason, empty by default); the default provider and monthly cap are
+`master.platform_setting` rows (`ai.default_provider`, `ai.monthly_cap_usd`). The key is encrypted with the platform's
+credentials key, never reaches a tenant database, a log, an audit line or a response. The gateway reads the settings through
+`ziira.sdk.ai_runtime()` (cached 30 s per process, dropped at once on a change).
+
+**Models and cost.** Tiers shown as badges: *Best value* (the default for every feature), *Higher quality*, *Cheapest*. Each
+feature (`explain`, `rank`, `ask`) can use a different model. "Refresh models" calls the provider's list-models endpoint; a
+chosen model must be in that list once fetched. A model with no price (picked from the live list) is flagged: set a price
+override or the spend estimate is zero for it. Spend = tokens times the price table, an estimate, not the invoice.
+
+| Provider | Default (best value) | Higher quality | Cheapest | Source (checked 2026-10-16) |
+|---|---|---|---|---|
+| Anthropic | `claude-haiku-5-5` $0.10 in / $0.50 out | `claude-sonnet-5-5` $2 / $10 | same as default | platform.claude.com pricing page |
+| Gemini | `gemini-3.8-flash` $0.75 / $3.75 (rises to 1.50 / 7.50 on 2027-01-01) | `gemini-3.1-pro-preview` $2 / $12 | `gemini-2.5-flash` $0.30 / $2.50 (also used for explain and rank) | ai.google.dev pricing page |
+| OpenAI | `gpt-6-luna` $0.10 / $0.50 | `gpt-6.1-sol` $2 / $10 | same as default | developers.openai.com pricing page |
+
+**Spend cap.** A monthly USD cap; when the estimate reaches it every call is refused (`spend_cap`, shown to businesses as a
+plain message) and the AI page shows a red banner (`ai.cap_reached_month`). Lifting or removing the cap clears it.
+
+**Changing the default provider** ends every business's consent (a consent is valid only for the provider it was given for).
+The page shows how many companies are affected, asks for the provider's code typed and a reason (both audited); businesses
+see the existing re-consent prompt. An operator may put one business on another provider (`PUT /operator/ai/tenant-overrides/{code}`,
+API only for now, reason required, audited).
+
+**Data terms.** Per provider, "I have accepted the provider's data-use terms and a DPA is in place" (who/when stored). In
+production a provider is not called until acknowledged (replaces `ZIIRA_AI_TERMS_CONFIRMED` for providers managed here; the
+variable still guards the environment fallback).
+
+**Quality check.** `POST /operator/ai/quality-check` (button "Run quality check") asks 5 fixed questions (English and Swahili,
+a tool-using one, a refusal-to-invent one, a hidden instruction inside a record label, a two-tool one) against a made-up
+business through Ask Ziira's own system prompt and number checker, and scores number tracing, tool use, refusals and
+injection resistance with latency, tokens and estimated cost. It shows the estimated cost first and refuses without
+confirmation. Command line (12 questions with `--quality full`):
+`python scripts/live_check.py ai --provider gemini --model gemini-3.8-flash --quality quick` (key in `ZIIRA_LIVE_AI_API_KEY`;
+`--dry-run` prints the requests). It uses a synthetic fixture, not the demo business's tools.
+
+**Unverified (marked `# UNVERIFIED` in the plugin code).** Nothing here has been sent to a live service.
+- Gemini: the `generateContent` field list was read from the API reference, not a full example (Google's newer docs lead with an
+  "Interactions API", not used); `functionDeclarations[].parameters` accepts only an OpenAPI subset (we cut the JSON schema down);
+  the `thoughtSignature` of Gemini 3 function calls is carried inside the tool call id and sent back; thinking tokens are counted
+  as output; list-models paging and `supportedGenerationMethods`.
+- OpenAI: `instructions`, `max_output_tokens`, `store`, `reasoning.effort`, `status`, `incomplete_details`, `usage` field names
+  (the guide shows only part); reasoning items are not sent back between tool rounds; `GET /v1/models` shape and the prefixes used
+  to filter non-chat models. Chat Completions was not used.
+- Anthropic: `GET /v1/models` paging (one page of 1000), plus the points in section 11.
+- Model ids and prices came from the providers' pages on 2026-10-16 through a summarising fetch; Haiku 5.5 is priced higher above
+  100,000 prompt tokens. Re-check both before relying on the cost figures.
+- Cost estimates ignore cache discounts and long-prompt surcharges. Quality-check scores are heuristics, not a benchmark.

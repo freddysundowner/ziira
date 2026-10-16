@@ -144,6 +144,8 @@ def test_this_is_normal_for_a_person_forever(client, shop) -> None:  # type: ign
                      ("p3", "medium", shop["juja"], "20", uuid4())]
     run(shop)
     f = one(client, shop, "p1")
+    related = client.get(f"{INTEL}/findings/{f['id']}/related", headers=shop["owner"]).json()
+    assert "Noise p2" in {x["summary"] for x in related} and "Noise p3" not in {x["summary"] for x in related}   # same person yes; another person elsewhere no
     opts = client.get(f"{INTEL}/findings/{f['id']}/ignore-options", headers=shop["owner"]).json()
     assert opts["subject"]["label"] == "Mary W" and opts["subject"]["kind"] == "person"
     r = client.post(f"{INTEL}/findings/{f['id']}/ignore", headers=shop["owner"], json={"scope": "person", "days": None})

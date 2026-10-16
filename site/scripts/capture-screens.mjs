@@ -65,7 +65,7 @@ const clickTab = (name) => async (p) => {
   await tab.waitFor({ timeout: 60000 }); await tab.click(); await p.waitForTimeout(1500);
 };
 const openFirstFinding = async (p) => {
-  await p.locator('a[href^="/findings/"]:not([href="/findings/actions"]):not([href="/findings/checks"])').first().click();
+  await p.getByRole("link", { name: "Look into it" }).or(p.getByRole("button", { name: "Look into it" })).first().click();
   await settle(p); await p.waitForTimeout(1500);
 };
 
@@ -73,9 +73,9 @@ const openFirstFinding = async (p) => {
 // key = file name and ScreenKey in src/content/types.ts; route = the page; pre = get the page ready; clip = crop (CSS px); phone = 390x844
 export const shots = [
   { key: "home", route: "/", wait: 2500 },
-  { key: "command", route: "/command", wait: 3000 },
-  { key: "findings", route: "/findings", wait: 2500 },
-  { key: "finding", route: "/findings", pre: openFirstFinding },
+  { key: "command", route: "/intelligence", wait: 3000 },
+  { key: "findings", route: "/intelligence/things", wait: 2500 },
+  { key: "finding", route: "/intelligence/things", pre: openFirstFinding },
   { key: "sales", route: "/pos/sales", wait: 2500 },
   { key: "till", route: "/pos/terminal", pre: sellScreen, wait: 1500 },
   { key: "stock", route: "/stock", wait: 2500 },
@@ -83,17 +83,17 @@ export const shots = [
   { key: "owing", route: "/receivables", wait: 2500 },
   { key: "books", route: "/finance/reports", wait: 2500 },
   { key: "payroll", route: "/payroll", wait: 2500 },
-  { key: "connect", route: "/connect", wait: 2500, clip: { x: 272, y: 322, width: 1152, height: 678 } }, // the coverage panel only: the demo business has two stray test connections above it
+  { key: "connect", route: "/connect", wait: 2500, pre: async (p) => { await p.getByText("What Ziira can check", { exact: true }).first().evaluate((el) => el.scrollIntoView({ block: "start" })); await p.evaluate(() => { for (let e = document.querySelector("main"); e; e = e.parentElement) if (e.scrollTop > 40) { e.scrollTop -= 130; break; } }); await p.waitForTimeout(400); }, clip: { x: 272, y: 60, width: 1152, height: 690 } }, // the coverage panel only, scrolled to the top of the page
   { key: "connect-add", route: "/connect/new", wait: 2500 },
   { key: "addons", route: "/addons", wait: 2500 },
-  { key: "intel-actions", route: "/admin/settings", pre: clickTab("Intelligence actions") },
-  { key: "brief", route: "/command/briefs", pre: async (p) => {
+  { key: "intel-actions", route: "/intelligence/how-much", wait: 2500 },
+  { key: "brief", route: "/intelligence/summary", pre: async (p) => {
       await p.getByRole("button", { name: "Show preview" }).click(); await p.waitForTimeout(2500);
-      await p.getByText("Preview and send", { exact: true }).evaluate((el) => el.closest("div[class*=card], section, div")?.scrollIntoView({ block: "start" })); await p.waitForTimeout(300);
+      await p.getByText("See it first, or send it now", { exact: true }).evaluate((el) => el.closest("div[class*=card], section, div")?.scrollIntoView({ block: "start" })); await p.waitForTimeout(300);
       await p.evaluate(() => { for (let e = document.querySelector("main"); e; e = e.parentElement) if (e.scrollTop > 80) { e.scrollTop -= 80; break; } }); await p.waitForTimeout(300);
     } },
   { key: "till-phone", route: "/pos/terminal", phone: true, wait: 1500, pre: async (p) => { await sellScreen(p); await p.getByRole("button", { name: /^Sale \(/ }).first().click(); await p.waitForTimeout(800); } },
-  { key: "command-phone", route: "/command", phone: true, wait: 3000 },
+  { key: "command-phone", route: "/intelligence", phone: true, wait: 3000 },
 ];
 
 // ---------------------------------------------------------------- page cleaning

@@ -24,4 +24,4 @@ def test_things_that_only_look_like_dates_are_left_alone() -> None:
 
 def test_a_brief_is_titled_with_the_readable_day() -> None:
     brief = compose(business="Demo", day=date(2026, 10, 16), kind="daily", currency="KES", pulse=[], findings=[])
-    assert brief.subject == "Demo: daily brief, 16 Oct 2026"
+    assert brief.subject == "Demo: daily summary, 16 Oct 2026"

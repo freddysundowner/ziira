@@ -100,6 +100,10 @@ scripts/capture-help-screens.mjs + help-screens.shots.mjs   Playwright: sign in,
 * **In the app:** set `VITE_HELP_URL` (for example `https://example.com/help`) when building the web app to show a **Help** item in the account menu and a
   "How-to guide" link on the Home checklist steps. Unset, nothing is shown.
 
+## Availability switch
+
+`src/content/availability.ts` lists each capability that depends on an outside service (WhatsApp, SMS, email, M-Pesa, ERPNext, Odoo, Zoho Books, QuickBooks Online, the AI helper, photo statements, online plan payments). All are `available`. To hold an item back, set it to `soon` and rebuild: its integration card and page then show a "Coming soon" chip with a one-line note and a "Get notified" link, help guides show the same note, and the pages that list it stop promising it. `tests/availability.test.ts` covers both states and bans internal-status wording ("not tested", "stand-in", "pilot test", ...) in customer-facing content. The owner's manual test list is `docs/go-live-checklist.md` (internal, never on the site).
+
 ## Serving
 
 Serve the built `site/dist` folder as static files with the headers in `public/_headers` (copy them into your web server's

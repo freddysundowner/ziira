@@ -39,7 +39,7 @@ test("J14 the web app at phone width", async ({ page }) => {
   await expect(nav).toBeHidden();                       // choosing a page closes the drawer
 
   // --- the main lists: the page itself never scrolls sideways, and their first column is on screen
-  for (const path of ["/products", "/stock", "/pos/sales", "/customers", "/suppliers", "/bills", "/finance/journal", "/employees", "/admin/users", "/findings", "/command", "/admin/organisation", "/"]) {
+  for (const path of ["/products", "/stock", "/pos/sales", "/customers", "/suppliers", "/bills", "/finance/journal", "/employees", "/admin/users", "/intelligence/things", "/intelligence", "/admin/organisation", "/"]) {
     await page.goto(path);
     await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => undefined);
     await expect(page.getByRole("main")).toBeVisible();

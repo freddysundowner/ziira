@@ -37,7 +37,7 @@ export const navGroups: NavGroup[] = [
         { id: "intelligence-how", label: "Daily check: catch mistakes and losses", desc: "What looks wrong, with the proof", icon: "check", color: 8 },
         { id: "intelligence-complete", label: "Full reference for daily checks", desc: "Every check and option, in plain words", icon: "book", color: 6 },
         { id: "intelligence-existing", label: "Use it with the system you already have", desc: "Odoo, ERPNext, Zoho, QuickBooks, statements", icon: "plug", color: 2 },
-        { id: "integrations", label: "Connect your tools", desc: "WhatsApp alerts, mobile money, your apps", icon: "bell", color: 3 },
+        { id: "integrations", label: "Connect your tools", desc: "WhatsApp, mobile money, your own apps", icon: "bell", color: 3 },
       ] },
     ],
     foot: { id: "product", label: "See everything Ziira does →" },

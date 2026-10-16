@@ -1,25 +1,24 @@
 {
- "tabActions": "Intelligence actions",
- "tabAi": "AI assistant",
+  "tabAi": "AI assistant",
  "ai": {
   "title": "AI assistant",
-  "hintOn": "Explains findings in plain words, helps put the most important first, and answers questions in Ask Ziira. You can switch it off at any time.",
-  "hint": "Explains findings in plain words, helps put the most important first, and answers questions in Ask Ziira. Off until an Owner agrees below.",
+  "hintOn": "Explains things in plain words, helps put the most important first, and answers questions in Ask Ziira. You can switch it off at any time.",
+  "hint": "Explains things in plain words, helps put the most important first, and answers questions in Ask Ziira. Off until the owner agrees below.",
   "statusOn": "On",
   "statusOff": "Off",
-  "provider": "Provider: {{provider}}, model {{model}}",
-  "notConfigured": "The platform has no AI provider set up yet, so the assistant cannot be switched on. Ask your Ziira administrator.",
+  "provider": "The AI assistant uses {{provider}} (model {{model}}).",
+  "notConfigured": "No AI provider is set up on this platform yet, so the assistant cannot be switched on. Ask the platform owner to add one.",
   "termsUnconfirmed": "The platform has not yet confirmed its AI provider's data terms; no request will be sent until it does.",
   "consentOutdated": "The consent text or the provider changed since this business agreed. Agree again to keep using the assistant.",
   "whatItDoes": "What it does",
   "does": {
-   "explain": "Writes a short plain-language explanation of a finding, from the finding's own figures.",
-   "rank": "Suggests which findings to look at first, with a one-line reason.",
+   "explain": "Writes a short explanation of something Ziira noticed, from its own figures.",
+   "rank": "Suggests which things to look at first, with a one-line reason.",
    "ask": "Answers questions in Ask Ziira, using defined queries over what the person asking is allowed to see."
   },
   "sentTitle": "What is sent to the AI provider",
   "sent": {
-   "facts": "The summary of a finding and the numbers the system calculated.",
+   "facts": "What Ziira noticed and the numbers it worked out.",
    "names": "Names of products and branches.",
    "answers": "The results of the questions people ask (totals, counts, balances).",
    "people": "Names of customers, suppliers and employees are replaced by labels such as “Customer A”."
@@ -45,10 +44,10 @@
   "history": "Agreement history",
   "switchOff": "Switch off",
   "switchOffTitle": "Switch the AI assistant off?",
-  "switchOffAsk": "All AI features stop at once. Findings keep the explanations already written. You can switch it on again later by agreeing again.",
+  "switchOffAsk": "All AI features stop at once. Explanations already written are kept. You can switch it on again later by agreeing again.",
   "useTitle": "What it may do",
-  "useExplanations": "Write explanations of findings and help rank them",
-  "useAuto": "Explain new findings by itself in the background",
+  "useExplanations": "Write explanations and help put the most important first",
+  "useAuto": "Explain new things by itself in the background",
   "useAsk": "Let people with the right use Ask Ziira",
   "budgetTitle": "Monthly limit and use",
   "budgetLabel": "Most tokens in a month",
@@ -79,7 +78,8 @@
    "purpose_off": "use switched off",
    "budget": "monthly limit reached",
    "not_configured": "no provider",
-   "terms_unconfirmed": "terms unconfirmed"
+   "terms_unconfirmed": "terms unconfirmed",
+   "spend_cap": "platform spending limit reached"
   },
   "system": "System",
   "ownersOnly": "Only an Owner can change the AI assistant.",

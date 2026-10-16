@@ -2,13 +2,17 @@
 
 Provider-neutral on purpose: a conversation is a list of messages in which an assistant turn may ask for tools to be
 run and the next user turn carries their results. A provider plugin maps this to its own wire format
-(`ziira/plugins/ai_anthropic`). Plain data and abstract classes only: no database, no HTTP.
+(the `ai_*` plugins). Plain data and abstract classes only: no database, no HTTP.
 """
 
+import inspect
+import tomllib
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from decimal import Decimal
+from pathlib import Path
+from typing import Any, ClassVar, Literal
 
 from ziira.sdk import RequestContext, Session
 
@@ -82,11 +86,108 @@ class LlmError(Exception):
         self.status = status
 
 
+TIERS = ("best_value", "higher_quality", "cheapest")
+FEATURES = ("explain", "rank", "ask")
+MILLION = Decimal(1_000_000)
+
+
+@dataclass(frozen=True)
+class ModelInfo:
+    """A model a provider offers, from the plugin's `models.toml`: price per million tokens (editable data, never the
+    only truth: the provider's live list and the operator's overrides come first), the badges it carries, and any
+    provider-specific request options (`options`)."""
+
+    id: str
+    title: str
+    input_per_mtok: Decimal
+    output_per_mtok: Decimal
+    tiers: tuple[str, ...] = ()
+    notes: str = ""
+    options: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class ProviderCatalog:
+    """What a provider plugin declares about itself, as data."""
+
+    name: str
+    title: str
+    capabilities: tuple[str, ...]
+    base_url: str
+    auth: str                                  # how the key is sent, for the operator's information
+    terms_url: str
+    docs_url: str
+    verified_on: str
+    prices_updated: str
+    price_source: str
+    models: tuple[ModelInfo, ...]
+    defaults: dict[str, str]                   # feature -> model id
+    live_prefixes: tuple[str, ...] = ()        # of the live list, show only ids starting with one of these (if any)
+
+    def model(self, model_id: str) -> ModelInfo | None:
+        return next((m for m in self.models if m.id == model_id), None)
+
+    def default_model(self, feature: str = "ask") -> str:
+        return self.defaults.get(feature) or self.defaults.get("ask") or (self.models[0].id if self.models else "")
+
+
+def estimate_cost(input_per_mtok: Decimal, output_per_mtok: Decimal, tokens_in: int, tokens_out: int) -> Decimal:
+    """Estimated spend in USD for a call, from token counts and the price per million tokens."""
+    return (input_per_mtok * tokens_in + output_per_mtok * tokens_out) / MILLION
+
+
+def load_catalog(name: str, models_file: Path) -> ProviderCatalog:
+    """Read a plugin's `models.toml`."""
+    data = tomllib.loads(models_file.read_text(encoding="utf-8"))
+    head = data["provider"]
+    models = tuple(
+        ModelInfo(id=m["id"], title=m.get("title", m["id"]), input_per_mtok=Decimal(str(m["input_per_mtok"])),
+                  output_per_mtok=Decimal(str(m["output_per_mtok"])), tiers=tuple(m.get("tiers", ())),
+                  notes=m.get("notes", ""), options=dict(m.get("options", {})))
+        for m in data.get("models", []))
+    return ProviderCatalog(
+        name=name, title=head["title"], capabilities=tuple(head.get("capabilities", ())), base_url=head["base_url"],
+        auth=head.get("auth", ""), terms_url=head.get("terms_url", ""), docs_url=head.get("docs_url", ""),
+        verified_on=head.get("verified_on", ""), prices_updated=head.get("prices_updated", ""),
+        price_source=head.get("price_source", ""), models=models, defaults=dict(data.get("defaults", {})),
+        live_prefixes=tuple(head.get("live_prefixes", ())))
+
+
+@dataclass(frozen=True)
+class LiveModel:
+    """A model as the provider's own list-models endpoint reports it."""
+
+    id: str
+    title: str = ""
+
+
 class LlmProvider(ABC):
-    """An AI provider (extension point `intel.llm`). `name` is what `ZIIRA_AI_PROVIDER` selects."""
+    """An AI provider (extension point `intel.llm`). `name` is the provider's code in the platform's settings."""
 
     name: str
     label: str = ""
+    models_file: ClassVar[str] = "models.toml"          # next to the plugin's module; plugins without one declare none
+
+    @classmethod
+    def from_settings(cls, *, api_key: str, model: str, base_url: str | None, timeout: float, max_retries: int,
+                      options: dict[str, Any]) -> "LlmProvider":
+        """The provider as the platform's settings describe it (a provider that needs none ignores them)."""
+        return cls()
+
+    @classmethod
+    def catalog(cls) -> ProviderCatalog | None:
+        """The provider's data (title, capabilities, base URL, models and prices), or None for one that declares none
+        (the fake provider)."""
+        path = Path(inspect.getfile(cls)).parent / cls.models_file
+        return load_catalog(cls.name, path) if path.is_file() else None
+
+    def list_models(self) -> list[LiveModel]:
+        """The models the provider says exist for this key (its list-models endpoint). Raises LlmError."""
+        raise LlmError("This provider cannot list its models")
+
+    def ping(self) -> LlmReply:
+        """The cheapest possible real call, to prove the key and the model work."""
+        return self.complete([LlmMessage("user", "Reply with the single word: ok")], [], "", 16)
 
     def configured(self) -> bool:
         """True when the platform has what this provider needs (its key); one that has not is never called."""

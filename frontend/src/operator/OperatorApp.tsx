@@ -33,13 +33,20 @@ const BillingPage = lazy(() => import("./pages/billing/BillingPage"));
 const InvoicesTab = lazy(() => import("./pages/billing/InvoicesTab"));
 const RequestsTab = lazy(() => import("./pages/billing/RequestsTab"));
 const SettingsTab = lazy(() => import("./pages/billing/SettingsTab"));
-const AttemptsTab = lazy(() => import("./pages/billing/AttemptsTab"));
-const GatewaysTab = lazy(() => import("./pages/billing/GatewaysTab"));
 const LicencesPage = lazy(() => import("./pages/licences/LicencesPage"));
+const AiPage = lazy(() => import("./pages/ai/AiPage"));
 const HealthPage = lazy(() => import("./pages/HealthPage"));
 const OperatorsPage = lazy(() => import("./pages/OperatorsPage"));
 const WebsitePage = lazy(() => import("./pages/WebsitePage"));
+const EmailPage = lazy(() => import("./pages/EmailPage"));
+const PlatformSettingsPage = lazy(() => import("./pages/PlatformSettingsPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
+const SetupPage = lazy(() => import("./pages/SetupPage"));
+const AuditPage = lazy(() => import("./pages/AuditPage"));
+const BackupsPage = lazy(() => import("./pages/BackupsPage"));
+const MailLogPage = lazy(() => import("./pages/MailLogPage"));
+const PaymentMethodsPage = lazy(() => import("./pages/PaymentMethodsPage"));
+const PaymentAttemptsPage = lazy(() => import("./pages/PaymentAttemptsPage"));
 
 function Loading() {
   const { t } = useTranslation("operator");
@@ -81,18 +88,28 @@ function Console() {
             <Route index element={<Navigate to="invoices" replace />} />
             <Route path="invoices" element={<InvoicesTab />} />
             <Route path="requests" element={<RequestsTab />} />
-            <Route path="payment-attempts" element={<AttemptsTab />} />
-            <Route path="payment-methods" element={<GatewaysTab />} />
+            {/* These two tabs became screens of their own (Revenue > Payment methods, System > Payment attempts). */}
+            <Route path="payment-attempts" element={<Navigate to="/operator/payment-attempts" replace />} />
+            <Route path="payment-methods" element={<Navigate to="/operator/payment-methods" replace />} />
             <Route path="settings" element={<SettingsTab />} />
           </Route>
+          <Route path="payment-methods" element={<PaymentMethodsPage />} />
+          <Route path="payment-attempts" element={<PaymentAttemptsPage />} />
           <Route path="licences" element={<LicencesPage />} />
           <Route path="units" element={<UnitsPage />} />
           {/* The old Businesses pages: bookmarks and links still land on the subscribers pages. */}
           <Route path="businesses" element={<BusinessesPage />} />
           <Route path="businesses/:code" element={<BusinessPage />} />
+          <Route path="ai" element={<AiPage />} />
           <Route path="health" element={<HealthPage />} />
+          <Route path="backups" element={<BackupsPage />} />
+          <Route path="audit" element={<AuditPage />} />
+          <Route path="mail-log" element={<MailLogPage />} />
+          <Route path="setup" element={<SetupPage />} />
           <Route path="operators" element={<OperatorsPage />} />
           <Route path="website" element={<WebsitePage />} />
+          <Route path="email" element={<EmailPage />} />
+          <Route path="settings" element={<PlatformSettingsPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="*" element={<ErrorState title="404" message="This page is not in the console." />} />
         </Route>

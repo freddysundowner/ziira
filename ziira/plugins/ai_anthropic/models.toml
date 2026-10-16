@@ -1,0 +1,33 @@
+# Anthropic: what the Super Admin offers. Model ids and prices change often: this file is a recommendation, not the
+# truth. The live list (Refresh models) and the operator's price overrides come first. Prices are USD per million tokens.
+[provider]
+title = "Anthropic"
+capabilities = ["tool_calling", "system_prompt", "json_output"]
+base_url = "https://api.anthropic.com"
+auth = "x-api-key header (+ anthropic-version)"
+terms_url = "https://www.anthropic.com/legal/commercial-terms"
+docs_url = "https://platform.claude.com/docs/en/models/overview"
+verified_on = "2026-10-16"
+prices_updated = "2026-10-16"
+price_source = "https://platform.claude.com/docs/en/about-claude/pricing"
+
+[defaults]
+explain = "claude-haiku-5-5"
+rank = "claude-haiku-5-5"
+ask = "claude-haiku-5-5"
+
+[[models]]
+id = "claude-haiku-5-5"
+title = "Claude Haiku 5.5"
+tiers = ["best_value", "cheapest"]
+input_per_mtok = "0.10"
+output_per_mtok = "0.50"
+notes = "Fastest. Prompts over 100,000 tokens cost 0.50 / 2.50 (Ziira's prompts are far shorter). Handles tool use and Swahili."
+
+[[models]]
+id = "claude-sonnet-5-5"
+title = "Claude Sonnet 5.5"
+tiers = ["higher_quality"]
+input_per_mtok = "2.00"
+output_per_mtok = "10.00"
+notes = "Best speed and intelligence together; about 20 times the price of Haiku 5.5."

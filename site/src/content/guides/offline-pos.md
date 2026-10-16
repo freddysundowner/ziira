@@ -124,7 +124,7 @@ The [Ziira till](/product/pos-and-till/) is a web till that keeps working with n
 
 Each offline sale is saved on the device with its own number. It is sent when the connection returns, with retries and a "needs attention" list.
 
-These need a connection: opening or closing a till, mobile-money prompts, credit on account, and returns or voids of sales already sent. Offline selling has not yet been tested on Safari or iOS.
+These need a connection: opening or closing a till, mobile-money prompts, credit on account, and returns or voids of sales already sent.
 
 For more on choosing a system, see [choosing POS software for several branches](/guides/choose-pos-multi-branch/).
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  api, Card, ConfirmDialog, ErrorState, PageHeader, SkeletonRows, Switch, toast, unwrap, useCompany, useMutation, useQuery, useQueryClient, useTranslation,
+  api, Card, ConfirmDialog, ErrorState, PageHeader, SkeletonRows, Switch, toast, unwrap, useCompany, useMutation, useQuery, useQueryClient, useSession, useTranslation,
 } from "@/sdk";
 
 import Glossary from "../components/Glossary";
@@ -20,6 +20,7 @@ export default function WatchingPage() {
   const qc = useQueryClient();
   const plain = usePlain();
   const { company } = useCompany();
+  const { enabledUnits } = useSession();
   const [technical, setTechnical] = useTechnical();
   const [resetting, setResetting] = useState(false);
   const checks = useQuery({ queryKey: ["intel", "checks"], queryFn: () => unwrap(api.GET("/api/v1/intel/checks")) });
@@ -38,7 +39,7 @@ export default function WatchingPage() {
   });
 
   const error = checks.error ?? topics.error ?? plain.error;
-  const byTopic = (key: string): Check[] => (checks.data ?? []).filter((c) => c.topic === key)
+  const byTopic = (key: string): Check[] => (checks.data ?? []).filter((c) => c.topic === key && (c.source !== "connected" || enabledUnits.has("connect")))
     .sort((a, b) => (plain.check(a.code)?.title ?? a.title).localeCompare(plain.check(b.code)?.title ?? b.title));
 
   return (

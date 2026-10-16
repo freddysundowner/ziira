@@ -114,7 +114,7 @@ It asks for a separate, limited key, or an approval you can withdraw. It stores 
 
 QuickBooks Online has no view-only permission. So Ziira says so plainly and advises you to approve as a reports-only user.
 
-The connections have been tested with sample replies, not yet with live accounts. Plan a first run on a demo company, not on your real books.
+Want to see it first? Connect a demo company before your real books.
 
 Details for each system: [ERPNext](/intelligence/on-your-existing-system/erpnext/), [Odoo](/intelligence/on-your-existing-system/odoo/), [Zoho Books](/intelligence/on-your-existing-system/zoho-books/) and [QuickBooks Online](/intelligence/on-your-existing-system/quickbooks-online/). See also the [security summary](/security-and-privacy/).
 

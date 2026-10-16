@@ -334,9 +334,9 @@ def related_findings(
         s.execute(
             text(
                 f"select {COLUMNS} from intel.finding f where {scope_sql} and f.id <> :me and f.status in "
-                "('new', 'sent', 'acknowledged', 'explained') and ((:et::text is not null and f.entity_type = "
+                "('new', 'sent', 'acknowledged', 'explained') and ((cast(:et as text) is not null and f.entity_type = "
                 ":et and f.entity_id = :ei) "
-                "or (:br::uuid is not null and f.branch_id = :br and f.check_code = :cc)) "
+                "or (cast(:br as uuid) is not null and f.branch_id = :br and f.check_code = :cc)) "
                 "order by f.last_seen_at desc limit :limit"
             ),
             dict(

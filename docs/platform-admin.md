@@ -26,7 +26,7 @@ expiry. `ZIIRA_LICENCE_REQUIRED=true` makes an instance with no valid licence re
 | readonly | view |
 
 Permissions: `platform.view` (every role), `platform.subscribers`, `platform.plans`, `platform.billing`,
-`platform.licences`, `platform.units`, `platform.content`, `platform.operators`. Every operator route declares one
+`platform.licences`, `platform.units`, `platform.content`, `platform.ai` (AI providers, superadmin only: keys, models, default provider, spend cap, quality check; `docs/ai.md` section 12), `platform.operators`. Every operator route declares one
 with `require("platform....")` (`api/operator_routes.py`); `tests/test_platform_roles.py` walks the routes and
 calls each with every role. The command line makes the first superadmin
 (`ziira operator create NAME EMAIL`, `--role` for others; `ziira operator role EMAIL ROLE`). Superadmins add and
@@ -156,3 +156,44 @@ built / honest limits: no real payment gateway; add-on quantities are not applie
 the enforcement cache lets a status change take up to ~10 s on another process; non-owner users get the same 402 as owners
 when suspended (they cannot reach billing without `billing.manage`); a suspended account's data export is the CSV
 download endpoints and privacy requests, not a one-click full export.
+
+## Email and platform settings (Super Admin > Platform > Email / Settings)
+
+Permission `platform.settings` (superadmin only). Every change needs a fresh confirmation and leaves a line in the operator
+trail that names the fields changed, never a secret.
+
+**Email** (`kernel/platform/mail.py`, providers described in `kernel/mail_providers.py`, API `/api/v1/operator/email*`).
+Pick a provider (SMTP, Brevo, Resend, SendGrid: the channels the messaging plugin registers), type its credentials (stored
+encrypted in `master.platform_email_provider`; write-only, shown only as set / not set), set the sender (from address, name,
+reply-to), send a test email and then **Make live**. Making a provider live is refused until a test through it was delivered;
+any later edit of it or of the sender starts the test again. "Check configuration" gives advice (SPF/DKIM hints, free-mail
+senders, port/security mismatch) and looks nothing up. The page shows the source in use (platform settings / environment /
+development fake), the last test, the last successful send and the failures of the last 24 hours, and a log of the last 50
+messages (kind, recipient masked as `j***@gmail.com`, result; never the message or a secret; kept 90 days, purged by the worker).
+The mailer reads the live configuration from the master tables (cached 30 s, cleared on change) and falls back to the
+`ZIIRA_PLATFORM_EMAIL_*` environment settings, then to the development fake. When the page says "currently using environment
+settings", **Move to platform settings** copies the plain fields and the sender; type the secret, test, make live.
+To add a provider: write its channel, then `register(MailProvider(...))` in `kernel/mail_providers.py`.
+
+**Settings** (`kernel/platform/behaviour.py`, `/api/v1/operator/platform/behaviour/{key}`, same table as the billing settings but
+a separate key set that the billing route cannot write): registration mode (open / invite / closed; open and invite are refused
+unless email works, and in production a mode other than closed reads as closed to the public while no email works), default
+edition, trial length override, public web and API addresses (used in emailed links), and the terms, privacy, help, website and
+support-email links. `GET /api/v1/public/config` exposes only the sign-up state and those links; the web app's Register page uses
+it (closed / invite-only states) with the `VITE_*` values as fallback. An empty value means "use the environment".
+The start-up refusal "open registration needs ZIIRA_PLATFORM_EMAIL_PROVIDER" is gone (check_env.py warns instead).
+
+**Installer alignment (deploy/ not edited):** these installer questions/flags become optional: the SMTP/mailer prompts and
+`ZIIRA_PLATFORM_EMAIL_*`, `--registration-mode` / `ZIIRA_REGISTRATION_MODE`, and any public URL prompt for the *links* (the
+public base URLs are still needed as environment values for nginx/TLS and before the first sign-in, but can be overridden in
+Settings). All existing flags keep working as the fallback. Fresh installs should leave registration to the Super Admin.
+
+**Settings still in the environment (recommendation):** `ZIIRA_METRICS_TOKEN` (keep in env: monitoring must work without the
+database), `ZIIRA_SITE_BUILD_HOOK_URL/SECRET` (move to Platform > Website later), `ZIIRA_SECRET_KEY` / `CREDENTIALS_KEY` (must stay
+in env), AI keys (moving to the Super Admin AI page), payment providers (done), SMS provider for platform messages (none exists:
+businesses use their own channel credentials). OAuth app credentials for Zoho Books / QuickBooks and the Lead Intel platform key
+are **not** platform-level today: each business enters its own client id/secret and key (`connect`, `leadsintel`), so nothing was
+moved; a shared Ziira-owned OAuth app would be a design change.
+
+Tests: `tests/test_platform_email.py` (mocked transports; secrets never in responses, trail or log; masking; env fallback and move;
+registration guard; public config). Not run: real mail providers (request shapes are from public documentation).

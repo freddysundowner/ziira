@@ -14,7 +14,7 @@
   "people": "Wafanyakazi na mishahara",
   "printing": "Uchapishaji na namba za simu",
   "regional": "Eneo la saa",
-  "alerts": "Tahadhari na muhtasari",
+  "alerts": "Arifa za haraka",
   "privacy": "Faragha na uhifadhi wa kumbukumbu"
  },
  "groupHint": {
@@ -23,7 +23,7 @@
   "people": "Siku za kazi, likizo na saa za ziada.",
   "printing": "Mistari kwenye risiti na ankara, na jinsi namba za simu zinavyosomwa.",
   "regional": "Mahali biashara yako ilipo: tarehe ya kila mauzo, uhamisho wa bidhaa, risiti na kiingilio cha vitabu ni tarehe ya hapa.",
-  "alerts": "Wakati Intelligence inakutumia tahadhari na jinsi muhtasari wa kila siku unavyopangiwa saa.",
+  "alerts": "Wakati Ziira inakutumia ujumbe kuhusu jambo zito. Chaguo zaidi ziko kwenye mipangilio ya Intelligence, Unapopata habari kutoka Ziira.",
   "privacy": "Jinsi unavyojibu watu kuhusu data yao kwa haraka, nani aidhinishe ufutaji, na kumbukumbu zinahifadhiwa kwa muda gani."
  },
  "set": {
@@ -43,7 +43,7 @@
   "invoice_footer": "Maandishi ya chini ya ankara",
   "timezone": "Eneo la saa",
   "intel_alert_channel": "Tuma tahadhari za dharura",
-  "intel_alert_min_severity": "Tahadhari kuanzia uzito",
+  "intel_alert_min_severity": "Nini kinahesabiwa kuwa cha haraka",
   "privacy_response_days": "Siku za kujibu ombi la faragha",
   "privacy_erasure_needs_approval": "Ufutaji unahitaji mtu wa pili",
   "retention_notifications_days": "Hifadhi ujumbe uliotumwa kwa (siku)",
@@ -67,8 +67,8 @@
   "receipt_footer": "Huchapishwa chini ya risiti za kaunta na za malipo.",
   "invoice_footer": "Huchapishwa chini ya ankara, mfano taarifa za benki au masharti ya malipo.",
   "timezone": "Jina kama Africa/Nairobi au Europe/London. Tarehe za biashara (siku ambayo mauzo, risiti au kiingilio kinahusika) na muhtasari wa kila siku hufuata eneo hili.",
-  "intel_alert_channel": "Watumie ujumbe watu sahihi Intelligence inapogundua jambo zito, au weka mambo ndani ya programu tu.",
-  "intel_alert_min_severity": "Mambo yenye uzito huu au zaidi hutumwa kama tahadhari; mengine husubiri muhtasari wa kila siku.",
+  "intel_alert_channel": "Watumie ujumbe watu sahihi jambo zito linapotokea, au weka kila kitu ndani ya programu.",
+  "intel_alert_min_severity": "Chochote chenye uharaka huu au zaidi hutumwa kama arifa; kingine husubiri muhtasari wa kila siku.",
   "privacy_response_days": "Ombi linapaswa kujibiwa ndani ya siku hizi tangu lifike. Tumia muda ambao sheria au sera yako inataka.",
   "privacy_erasure_needs_approval": "Ikiwa imewashwa, mtu mwingine tofauti na aliyeomba lazima aidhinishe kabla data haijafutwa.",
   "retention_notifications_days": "Baada ya muda huu, anwani na maandishi ya ujumbe uliokamilika hufichwa. 0 inamaanisha kuhifadhi.",
@@ -92,10 +92,10 @@
    "email": "Kwa barua pepe"
   },
   "intel_alert_min_severity": {
-   "low": "Chini",
-   "medium": "Wastani",
-   "high": "Juu",
-   "critical": "Dharura"
+   "low": "Kila kitu",
+   "medium": "Mambo ya haraka na ya hivi karibuni",
+   "high": "Mambo ya haraka",
+   "critical": "Mambo ya haraka sana tu"
   }
  },
  "day": {

@@ -17,7 +17,7 @@ subscribes = []
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["intel.check", "intel.llm", "intel.ask_tool", "intel.action", "kernel.personal_data", "kernel.inbound_command"]
+implements = ["intel.check", "intel.llm", "intel.ask_tool", "intel.action", "kernel.personal_data", "kernel.inbound_command", "kernel.ai_platform"]
 
 [permissions]
 "findings.view" = "View findings"

@@ -107,7 +107,7 @@ export type AskSource = Schemas["AskSourceOut"];
 /** Example questions offered in an empty conversation (their words are in the translations). */
 export const EXAMPLE_KEYS = ["sales", "overdue", "lowStock", "profit"] as const;
 
-const KNOWN_REASONS: readonly string[] = ["not_enabled", "no_consent", "purpose_off", "budget", "not_configured", "terms_unconfirmed"];
+const KNOWN_REASONS: readonly string[] = ["not_enabled", "no_consent", "purpose_off", "budget", "not_configured", "terms_unconfirmed", "spend_cap"];
 /** Why the assistant cannot be used, as a translation key; a reason this screen does not know reads as the generic one. */
 export function reasonKey(reason: string | null | undefined): string {
   return reason && KNOWN_REASONS.includes(reason) ? reason : "default";

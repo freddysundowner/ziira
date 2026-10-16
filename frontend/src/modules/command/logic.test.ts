@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { byArea, changeOf, type Figure, groupFigures, keyFigure, layoutBrief, severityCounts, toTimeInput } from "./logic";
+import { byArea, changeOf, type Figure, groupFigures, keyFigure, layoutBrief, toTimeInput } from "./logic";
 
 const fig = (over: Partial<Figure>): Figure => ({ metric: "m", label: "L", kind: "money", value: "1", previous: null, branch_id: null, branch_name: null, higher_is_better: true, ...over });
 
@@ -32,12 +32,6 @@ describe("groupFigures", () => {
   it("finds the first company-wide money figure", () => {
     expect(keyFigure([fig({ metric: "x", branch_id: "b" }), fig({ metric: "n", kind: "count" }), fig({ metric: "k" })])?.metric).toBe("k");
     expect(keyFigure([])).toBeUndefined();
-  });
-});
-
-describe("severityCounts", () => {
-  it("orders most serious first and drops zeros", () => {
-    expect(severityCounts({ low: 2, critical: 1, odd: 3, high: 0 })).toEqual([{ severity: "critical", count: 1 }, { severity: "low", count: 2 }, { severity: "odd", count: 3 }]);
   });
 });
 

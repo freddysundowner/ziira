@@ -343,6 +343,9 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
             from ziira.kernel import registration
 
             registration.purge()
+            from ziira.kernel.platform import mail
+
+            mail.purge_log()
             from ziira.kernel import throttle
 
             throttle.purge()

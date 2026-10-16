@@ -8,9 +8,10 @@ import { Alert, api, Button, formatCountdown, Spinner, unwrap, useCountdown, use
 import { useCountries } from "./useCountries";
 import { CheckEmail } from "./register/CheckEmail";
 import type { FormApi } from "./register/form";
-import { LEGAL } from "./register/legal";
+import { linksFrom, usePublicConfig } from "./register/publicConfig";
 import { RegisterLayout } from "./register/RegisterLayout";
 import { SidePanel } from "./register/SidePanel";
+import { SignUpClosed } from "./register/SignUpClosed";
 import {
   clearDraft, type Context, EMPTY, type FieldKey, firstIncomplete, loadDraft, problemsOf, saveDraft, serverProblems, STEPS, type StepId, type Values,
 } from "./register/state";
@@ -35,6 +36,8 @@ export function Register() {
   const plan = params.get("plan");
   const choices = useEditionChoices();
   const { countries, currencies, byCode } = useCountries();
+  const config = usePublicConfig();
+  const links = linksFrom(config.data);
 
   const restored = useRef(loadDraft()).current;
   const [values, setValues] = useState<Values>(restored?.values ?? EMPTY);
@@ -182,6 +185,9 @@ export function Register() {
   const chosenEdition = choices.data?.find((e) => e.id === values.edition);
   const side = <SidePanel values={values} edition={chosenEdition} country={country} trial={trial.data} />;
 
+  const mode = config.data?.registration;
+  if (!sent && (mode === "closed" || (mode === "invite" && !params.get("invite")))) return <SignUpClosed invite={mode === "invite"} support={links.support} />;
+
   if (sent) {
     return (
       <RegisterLayout step={null} done={done} reachable={reachable} onGo={goTo} side={side}>
@@ -220,7 +226,7 @@ export function Register() {
           {step === "password" && <StepPassword form={form} server={password.state} serverMessage={password.message} />}
           {step === "business" && <StepBusiness form={form} countries={countries} currencies={currencies} country={country} onCountry={chooseCountry} />}
           {step === "review" && (
-            <StepReview form={form} edition={chosenEdition} country={country} terms={LEGAL.terms} privacy={LEGAL.privacy} onEdit={goTo}
+            <StepReview form={form} edition={chosenEdition} country={country} terms={links.terms} privacy={links.privacy} onEdit={goTo}
               serverError={failure} />
           )}
 

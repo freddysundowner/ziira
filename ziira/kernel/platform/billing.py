@@ -24,7 +24,7 @@ from sqlalchemy import text
 from ziira.kernel import platform_mail
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import Conflict, NotFound, ValidationFailed
-from ziira.kernel.platform import contacts, plans, providers, settings, subscriptions
+from ziira.kernel.platform import behaviour, contacts, plans, providers, settings, subscriptions
 
 log = logging.getLogger("ziira.billing")
 ZERO = Decimal("0.00")
@@ -622,16 +622,14 @@ def renewal_invoice(
 
 def _pay_link() -> str:
     """Where an owner pays by themselves (sign-in needed): added to invoice and reminder emails."""
-    from ziira.kernel.config import get_settings
-
-    return f"\nPay online or print the invoice: {get_settings().public_web_url.rstrip('/')}/billing (sign in first)\n"
+    return f"\nPay online or print the invoice: {behaviour.public_web_url()}/billing (sign in first)\n"
 
 
 def _email_owners(tenant_id: UUID, subject: str, body: str) -> int:
     sent = 0
     for owner in contacts.owner_contacts(tenant_id):
         try:
-            platform_mail.send(owner["email"], subject, f"Hello {owner['name']},\n\n{body}")
+            platform_mail.send(owner["email"], subject, f"Hello {owner['name']},\n\n{body}", "billing")
             sent += 1
         except Exception:  # noqa: BLE001 - one undeliverable address must not stop the billing run
             log.warning("Could not email %s", owner["email"], exc_info=True)
@@ -887,6 +885,7 @@ def _tell_billing_operators(tenant_id: UUID, plan: dict[str, Any], by_name: str,
                 f"Plan request: {tenant.name if tenant else tenant_id}",
                 f"{by_name} asked to move {tenant.name if tenant else ''} ({tenant.code if tenant else ''}) to "
                 f"{plan['name']}.\n\n{note}\n\nOpen the Super Admin > Billing to review.",
+                "billing",
             )
         except Exception:  # noqa: BLE001
             log.warning("Could not tell %s about a plan request", address, exc_info=True)

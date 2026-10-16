@@ -160,10 +160,10 @@ describe("the warning when production has no second factor", () => {
     handlers["GET /api/v1/operator/me"] = () => json(me({ mfa_off_in_production: true }));
     handlers["GET /api/v1/operator/units"] = () => json([]);
     await open("/operator/units");
-    expect(await screen.findByText("Two-step verification is off for the Super Admin")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
-    expect(screen.queryByText("Two-step verification is off for the Super Admin")).toBeNull();
-    expect(sessionStorage.getItem("ziira.operator.mfa-warning")).toBe("1");
+    expect(await screen.findByText("Staff sign in with a password alone")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Hide for now" }));
+    expect(screen.queryByText("Staff sign in with a password alone")).toBeNull();
+    expect(sessionStorage.getItem("ziira.operator.risk.mfa_off")).toBe("1");
   });
 
   it("is not shown when it does not apply", async () => {
@@ -171,7 +171,7 @@ describe("the warning when production has no second factor", () => {
     handlers["GET /api/v1/operator/units"] = () => json([]);
     await open("/operator/units");
     await screen.findByRole("navigation", { name: "Console areas" });
-    expect(screen.queryByText("Two-step verification is off for the Super Admin")).toBeNull();
+    expect(screen.queryByText("Staff sign in with a password alone")).toBeNull();
   });
 });
 

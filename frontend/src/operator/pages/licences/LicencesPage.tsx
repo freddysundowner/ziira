@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, MoreHorizontal, Plus } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Alert, Badge, type BadgeTone, Button, type Column, DataTable, formatDate, Menu, PageHeader, type Schemas, toast, useTranslation } from "@/sdk";
 
@@ -20,7 +21,8 @@ export default function LicencesPage() {
   const canBill = useOperatorCan("platform.billing");
   const refresh = useRefreshOperator();
   const stepUp = useStepUp();
-  const [dialog, setDialog] = useState<{ kind: "issue" } | { kind: "revoke" | "invoice"; licence: Licence } | null>(null);
+  const [params] = useSearchParams();
+  const [dialog, setDialog] = useState<{ kind: "issue" } | { kind: "revoke" | "invoice"; licence: Licence } | null>(params.get("new") === "1" && canIssue ? { kind: "issue" } : null);
   const licences = useQuery({ queryKey: ["operator", "licences"], queryFn: () => opUnwrap(opApi.GET("/api/v1/operator/licences")) });
 
   const download = async (call: () => Promise<{ filename: string; content: string }>) => {

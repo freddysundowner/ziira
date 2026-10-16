@@ -15,7 +15,7 @@ export default function FactsCard({ finding: f }: { finding: Finding }) {
   const { branchName, currencyOf } = useNames();
   const currency = currencyOf(f.company_id);
   const words = { yes: t("yes"), no: t("no") };
-  const facts = factsOf(f.figures, plain.data?.figures ?? {}, 12);
+  const facts = factsOf(f.figures ?? {}, plain.data?.figures ?? {}, 12);
   const period = f.period_start ? `${formatDate(f.period_start)}${f.period_end && f.period_end !== f.period_start ? ` – ${formatDate(f.period_end)}` : ""}` : null;
   const rows: { label: string; value: string }[] = [
     ...(f.amount ? [{ label: t("amount"), value: money(f.amount, currency) }] : []),

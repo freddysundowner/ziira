@@ -40,7 +40,7 @@ export const buy: HelpGuide[] = [
       { do: "Send the order to the supplier yourself (print it or use your usual way). Then click **Mark as sent**.", note: "Ziira does not send the order to the supplier." },
     ],
     problems: [
-      { p: "My order is waiting for approval", fix: "Someone else must approve it under **Command Center > Approvals**. You cannot approve your own." },
+      { p: "My order is waiting for approval", fix: "Someone else must approve it under **Waiting for you** in the left menu. You cannot approve your own." },
       { p: "I want to change an order", fix: "While it is a draft, click **Edit**. After approval, ask your approver." },
       { p: "The supplier's cost is different from the quote", fix: "Type the cost you agreed. Ziira flags bills with a different price." },
     ],

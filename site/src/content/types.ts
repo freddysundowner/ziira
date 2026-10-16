@@ -32,6 +32,9 @@ export interface HowStep { title: string; text: string[]; result: string; img?: 
 
 export type PageKind = "page" | "home" | "contact" | "pricing" | "legal" | "glossary" | "guides" | "sources" | "integrations" | "hub" | "help" | "complete" | "steps";
 
+/** The opening story on a steps page: a picture the reader recognises, an example note, and the question that leads into the steps. */
+export interface HowStory { title: string; paragraphs: string[]; noteTitle: string; note: string[]; noteCaption: string; after: string[]; teaser: string }
+
 export interface PageDef {
   id: string;
   /** URL path below the language root, no slashes at the ends ("" = the language home). Localised per language. */
@@ -60,8 +63,10 @@ export interface PageDef {
   /** Hub pages: a full-width grid of benefit cards, each linking to a page. */
   tiles?: Tile[];
   /** Hub pages: how many blocks appear as full-width cards after the tiles (all by default). */
+  /** Capabilities this page is about that depend on an outside service (src/content/availability.ts): while any is "soon" the page shows a Coming soon banner with a Get notified link. */
+  avail?: import("./availability").AvailKey[];
   /** kind "steps": the numbered steps (also published as HowTo structured data), the minutes it takes to read, and a "what it checks" list drawn from the generated catalogue. */
-  how?: { steps: HowStep[]; minutes: number; checksH2?: string };
+  how?: { steps: HowStep[]; minutes: number; checksH2?: string; story?: HowStory };
   /** Pages the platform publishes: its safe HTML replaces the built-in body (see lib/cmsPages.ts). */
   cmsHtml?: string;
 }

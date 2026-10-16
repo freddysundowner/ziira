@@ -72,14 +72,15 @@ describe("the menu follows the role", () => {
     await open("/operator", "billing", ["platform.view", "platform.billing", "platform.subscribers", "platform.plans", "platform.licences"]);
     expect(await screen.findByRole("heading", { name: "Dashboard" })).toBeTruthy();
     const nav = screen.getByRole("navigation", { name: "Console areas" });
-    for (const name of ["Dashboard", "Subscribers", "Licences", "Plans", "Billing", "Platform units", "Platform health"]) expect(await within(nav).findByRole("link", { name })).toBeTruthy();
-    expect(within(nav).queryByRole("link", { name: "Operators" })).toBeNull();
+    for (const name of ["Dashboard", "Subscribers", "Licences", "Plan requests", "Plans & pricing", "Invoices & payments", "Payment methods", "Add-ons & units", "Health", "Backups & upgrades", "Payment attempts"]) expect(await within(nav).findByRole("link", { name })).toBeTruthy();
+    for (const name of ["Operators & roles", "Audit trail", "Email", "Platform settings", "AI providers"]) expect(within(nav).queryByRole("link", { name })).toBeNull();   // not this role's
+    expect(within(nav).getByText("Revenue")).toBeTruthy();                                                                                                              // the section headings
   });
 
   it("shows Operators to a super admin", async () => {
     handlers["GET /api/v1/operator/dashboard"] = () => json(dashboard());
     await open("/operator");
-    expect(await within(await screen.findByRole("navigation", { name: "Console areas" })).findByRole("link", { name: "Operators" })).toBeTruthy();
+    expect(await within(await screen.findByRole("navigation", { name: "Console areas" })).findByRole("link", { name: "Operators & roles" })).toBeTruthy();
   });
 
   it("keeps the old businesses address working", async () => {
@@ -108,14 +109,14 @@ describe("the dashboard", () => {
     expect(screen.getByText(/Monthly recurring \(USD\)/)).toBeTruthy();
     expect(screen.getAllByText(/Monthly recurring/)).toHaveLength(2);
     expect(screen.getByText(/Each currency is shown on its own/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Plan requests waiting/ }).getAttribute("href")).toBe("/operator/billing/requests");
+    expect(within(screen.getByRole("navigation", { name: "Console areas" })).getByRole("link", { name: "Plan requests" }).getAttribute("href")).toBe("/operator/billing/requests");
   });
 
   it("says so, with a way to retry, when it cannot be read", async () => {
     handlers["GET /api/v1/operator/dashboard"] = () => json({ error: "boom", message: "The database is busy" }, 500);
     await open("/operator/dashboard");
     expect(await screen.findByText("The database is busy")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Try again/ })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: /Try again/ }).length).toBeGreaterThan(0);
   });
 });
 

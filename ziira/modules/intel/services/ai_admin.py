@@ -12,17 +12,16 @@ from ziira.modules.intel.services import ai
 from ziira.sdk import Session, ValidationFailed, audit_record, check_company, current_context, update_company_settings
 
 
-def provider_label() -> str:
+def provider_label(state: ai.AiState) -> str:
     """How the consent text names the provider and model."""
-    chosen = ai.provider()
-    if chosen is None:
+    if not state.provider:
         return "the platform's AI provider"
-    return f"{chosen.label or chosen.name}, model {chosen.model_id()}".strip(", ")
+    return f"{state.provider_label or state.provider}, model {state.model}".strip(", ")
 
 
-def consent_texts() -> dict[str, str]:
+def consent_texts(state: ai.AiState) -> dict[str, str]:
     """The current consent text in each language."""
-    label = provider_label()
+    label = provider_label(state)
     return {lang: ai_rules.consent_text(lang, label) for lang in ai_rules.LANGUAGES}
 
 
@@ -44,16 +43,15 @@ def update(session: Session, company_id: UUID, *, enabled: bool | None, accept_v
     ctx.require(AI_MANAGE, company_id=company_id)
     state = ai.get_state(session, company_id)
     changes: dict[str, Any] = {}
-    chosen = ai.provider()
     if enabled is True and not (state.enabled and state.consent_valid):
-        if chosen is None or not chosen.configured():
+        if not state.provider or not state.configured:
             raise ValidationFailed("The platform has no AI provider set up yet, so the assistant cannot be switched on")
         if accept_version != ai_rules.CONSENT_VERSION or language not in ai_rules.LANGUAGES:
             raise ValidationFailed("Read the current consent text and accept it to switch the assistant on")
-        text = ai_rules.consent_text(language, provider_label())
+        text = ai_rules.consent_text(language, provider_label(state))
         repo.add_consent(session, company_id=company_id, user_id=ctx.user_id, action="granted",
                          version=ai_rules.CONSENT_VERSION, language=language, consent_text=text,
-                         text_hash=ai_rules.consent_hash(text), provider=chosen.name, model=chosen.model_id() or None)
+                         text_hash=ai_rules.consent_hash(text), provider=state.provider, model=state.model or None)
     if enabled is not None:
         changes["ai_enabled"] = enabled
     if enabled is False and (state.enabled or state.consent_valid):

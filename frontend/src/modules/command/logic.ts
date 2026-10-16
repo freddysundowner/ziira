@@ -64,14 +64,6 @@ export function keyFigure(figures: readonly Figure[]): Figure | undefined {
   return figures.find((f) => !f.branch_id && f.kind === "money");
 }
 
-export const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"] as const;
-
-/** Severity counts as an ordered list, most serious first; unknown severities from future checks come last. */
-export function severityCounts(bySeverity: Record<string, number>): { severity: string; count: number }[] {
-  const rank = (s: string) => { const i = (SEVERITY_ORDER as readonly string[]).indexOf(s); return i < 0 ? SEVERITY_ORDER.length : i; };
-  return Object.entries(bySeverity).filter(([, n]) => n > 0).sort((a, b) => rank(a[0]) - rank(b[0])).map(([severity, count]) => ({ severity, count }));
-}
-
 /** "07:30:00" from the API to "07:30" for a time input. */
 export const toTimeInput = (time: string): string => time.slice(0, 5);
 

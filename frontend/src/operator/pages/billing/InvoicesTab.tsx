@@ -22,8 +22,8 @@ export default function InvoicesTab() {
   const status = params.get("status") ?? "";
   const [typed, setTyped] = useState(params.get("subscriber") ?? "");
   const subscriber = useDebounced(typed.trim().toLowerCase());
-  const [open, setOpen] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [open, setOpen] = useState<string | null>(params.get("open"));
+  const [creating, setCreating] = useState(params.get("new") === "1" && canBill);
 
   const list = usePagedList<Invoice>(["operator", "invoices", status, subscriber], (limit, offset) =>
     opUnwrap(opApi.GET("/api/v1/operator/invoices", { params: { query: { limit, offset, ...(status ? { status } : {}), ...(subscriber ? { tenant_code: subscriber } : {}) } } })), PAGE);

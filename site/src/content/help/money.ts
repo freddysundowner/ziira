@@ -9,7 +9,6 @@ export const money: HelpGuide[] = [
     who: "Accounts staff, managers and the owner", time: "About 12 minutes",
     keywords: ["reconciliation", "mobile money", "M-Pesa statement", "bank statement", "unmatched payments", "match"],
     need: ["The statement as a CSV file.", "A payment account for it under **Payment accounts**."],
-    status: "Statement matching is tested only on sample files. Compare your first real result with the statement before you rely on it.",
     steps: [
       { do: "Click **Money > Payments**, then the **Reconciliation** tab.", result: "Two lists: the transactions from your statement, and **Matches**.", shot: { key: "recon-1-page", alt: "The Reconciliation page with the Upload statement and Match now buttons and lists of statement transactions and matches", legend: ["Upload statement", "Match now", "Statement transactions", "Match and Ignore"] } },
       { do: "Click **Upload statement**. Choose the **Account**, the **Statement type** and the **Statement file**. Click **Upload**.", result: "The transactions from your statement appear in the first list. Uploading the same file twice adds nothing twice." },

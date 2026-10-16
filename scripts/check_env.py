@@ -174,8 +174,8 @@ def check(env: dict[str, str]) -> list[Finding]:
     elif mode != "closed":
         provider = get("PLATFORM_EMAIL_PROVIDER")
         if not provider:
-            error("PLATFORM_EMAIL_PROVIDER", f"registration is '{mode}' but no way to send the verification email is "
-                                              "set; set a provider or ZIIRA_REGISTRATION_MODE=closed")
+            warn("PLATFORM_EMAIL_PROVIDER", f"registration is '{mode}' and no environment email is set: sign-up stays "
+                                             "closed until email is set up in the Super Admin (Platform > Email)")
         elif provider not in EMAIL_PROVIDERS:
             error("PLATFORM_EMAIL_PROVIDER", f"'{provider}' is not one of: {', '.join(sorted(EMAIL_PROVIDERS))}")
         if provider and not get("PLATFORM_EMAIL_SECRET"):

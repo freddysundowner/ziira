@@ -13,7 +13,7 @@ export default function ActionsPage() {
   const [tab, setTab] = useState<Tab>("waiting");
   return (
     <>
-      <PageHeader title={t("actionsPage.title")} description={t("actionsPage.hint")} back={{ to: "/findings", label: t("title") }} />
+      <PageHeader title={t("actionsPage.title")} description={t("actionsPage.hint")} back={{ to: "/intelligence", label: t("today.title") }} />
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "waiting", label: t("actionsPage.waiting") }, { id: "history", label: t("actionsPage.history") }]} />
       {tab === "waiting" ? <WaitingTab /> : <HistoryTab />}
     </>

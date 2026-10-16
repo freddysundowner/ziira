@@ -84,7 +84,7 @@ describe("buildNavigation", () => {
     const n = buildNavigation(all, access("all"), orderedGroups({ menu_groups: ["people", "stock"] }));
     expect(ids(n)).toEqual(["command", "people", "stock", "sell", "/plugin-page", "settings"]);
   });
-  it("calls the Command Center an inbox when Intelligence and the Command Center are not on", () => {
+  it("calls the area an inbox when Intelligence and its daily summary are not on", () => {
     expect(area(nav("all"), "command").titleKey).toBe("nav.areas.inbox");
     const intel = defineModule({ unit: "command", menu: [item("/command", { area: "command" })] });
     expect(area(nav("all", [...all, intel]), "command").titleKey).toBe("nav.areas.command");
@@ -140,8 +140,8 @@ describe("the real modules", () => {
   it("keeps sections to about seven entries", () => {
     expect(n.areas.filter((a) => a.variant === "list").map((a) => [a.id, areaPages(a).length]).filter(([, c]) => (c as number) > 8)).toEqual([]);
   });
-  it("gives a full business eleven or fewer sidebar entries including Home", () => {
-    expect(n.entries.length + 1).toBeLessThanOrEqual(11);
+  it("gives a full business twelve or fewer sidebar entries including Home and Waiting for you", () => {
+    expect(n.entries.length + 1).toBeLessThanOrEqual(12);
     expect(n.entries.every((e) => e.kind === "area")).toBe(true);
   });
   it("puts every page in an area, except the person's own account", () => {

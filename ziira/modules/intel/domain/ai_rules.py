@@ -49,8 +49,8 @@ def scrub_value(value: Any) -> Any:
     return value
 
 
-_SECRET_SHAPES = re.compile(r"(?i)(sk-[A-Za-z0-9_-]{10,}|bearer\s+[A-Za-z0-9._~+/=-]{10,}|"
-                            r"x-api-key['\":= ]+[A-Za-z0-9._~+/=-]{8,})")
+_SECRET_SHAPES = re.compile(r"(?i)(sk-[A-Za-z0-9_-]{10,}|AIza[A-Za-z0-9_-]{20,}|bearer\s+[A-Za-z0-9._~+/=-]{10,}|"
+                            r"x-(?:api|goog-api)-key['\":= ]+[A-Za-z0-9._~+/=-]{8,}|[?&]key=[A-Za-z0-9._~+/=-]{8,})")
 
 
 def hide_secrets(text: str, secrets: Iterable[str] = ()) -> str:

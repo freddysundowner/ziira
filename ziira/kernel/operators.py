@@ -250,7 +250,8 @@ def tell_new_address(email: str, name: str, ip_address: str | None) -> None:
             email, "New sign-in to the Ziira Super Admin",
             f"Hello {name},\n\nYour account signed in to the Ziira Super Admin from an address it has not used "
             f"before: {ip_address or 'unknown'}, at {_now():%Y-%m-%d %H:%M} UTC.\n\nIf this was you, nothing more "
-            "is needed. If it was not, change your password now and ask another superadmin to reset it.")
+            "is needed. If it was not, change your password now and ask another superadmin to reset it.",
+            "security")
     except Unavailable:
         log.warning("Could not send the new-address sign-in email", exc_info=True)
 

@@ -88,6 +88,8 @@ way. Pages are about 14px rows (32px high) with a tinted background, stronger te
 at least 4.5:1 in light and dark. Pure rules: `sdk/areas.ts` (tests in `sdk/areas.test.ts`); drawing: `shell/Sidebar.tsx`; the tab bar and Settings' own grouped
 list: `shell/AreaFrame.tsx`. There is no area-level tab bar.
 
+**Intelligence and Waiting for you.** The `command` area is titled **Intelligence** (Today, Things to look at, Daily summary, Suggestions); **Waiting for you** (`waiting` area, one sidebar link directly under Home with a count from `setNavBadge`) holds Approvals and Exceptions, which are not Intelligence. The Intelligence screens follow the **vocabulary rule**: no technical term in the Simple layer (finding, baseline, severity, check code, fingerprint, coverage, entity, connector, evidence, parameter ...): use the words in `docs/intelligence.md` ("Plain words"); technical names only in the glossary popover and behind "Show technical details" / "Show technical names" (Expert layer, `useTechnical`). Swahili strings for these screens are written carefully but still need a native speaker's review.
+
 A module places a page by giving its **menu entry** an `area` (`AREA_IDS` in `sdk/module.ts`):
 
 | Entry field | Meaning |
@@ -100,6 +102,7 @@ A module places a page by giving its **menu entry** an `area` (`AREA_IDS` in `sd
 | `primary: true` | a filled button at the top of the section (Point of sale in Sell) |
 | `keywords` | translation key of extra search words (Add-ons matches apps, plugins, modules, features) |
 | `hidden: true` | only found by search (My account, opened from the account menu) |
+| `when` | the entry is listed only while this navigation flag is on (`setNavFlag` in `sdk/navFlags.ts`); a module switches flags from a component it contributes to the `shell.background` slot, which the layout keeps mounted (Suggestions appears when the action mode is Prepare or Act for me, or any suggestion exists) |
 | `section` | Settings only: the heading it is listed under (business, access, channels, intelligence, data, platform) |
 
 Detail and form pages need nothing: a page belongs to the entry whose path is its longest prefix (`/orders/:id` keeps Purchase orders highlighted). A

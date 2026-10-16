@@ -93,7 +93,7 @@ def test_password_only_operators_are_a_visible_choice() -> None:
 def test_closed_registration_needs_no_email_provider() -> None:
     env = {k: v for k, v in GOOD.items() if "EMAIL" not in k}
     assert errors({**env, "ZIIRA_REGISTRATION_MODE": "closed"}) == []
-    assert errors({**env, "ZIIRA_REGISTRATION_MODE": "open"}) == ["ZIIRA_PLATFORM_EMAIL_PROVIDER"]
+    assert errors({**env, "ZIIRA_REGISTRATION_MODE": "open"}) == []        # a warning: email is set up in the Super Admin
 
 
 def test_the_env_file_reader_handles_comments_quotes_and_export(tmp_path: Path) -> None:

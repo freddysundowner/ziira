@@ -1,0 +1,16 @@
+[unit]
+name = "ai_openai"
+title = "AI provider: OpenAI API"
+description = "Lets Ziira's AI features write explanations and answer questions using the OpenAI service."
+category = "ai"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["intel"]
+
+[provides]
+api_prefix = "/api/v1/plugins/ai-openai"
+
+# Sockets of other units this plugin plugs into (code in hooks.py)
+[extends]
+implements = ["intel.llm"]

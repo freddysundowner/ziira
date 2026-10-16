@@ -1,10 +1,8 @@
 import type { PageDef } from "../types";
 
-const STATUS_API = "This connection has been built from the vendor's public documentation and tested against sample data. It has not yet been run against a real account. The first live run is planned on a demo or test company, and we will not connect a customer's real books before that.";
-
 export const sourcesEn: PageDef[] = [
   {
-    id: "intelligence-source-erpnext", slug: "intelligence/on-your-existing-system/erpnext", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence",
+    id: "intelligence-source-erpnext", slug: "intelligence/on-your-existing-system/erpnext", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence", avail: ["erpnext"],
     title: "ERPNext Fraud and Leak Detection (Read-Only)",
     description: "Let Intelligence watch ERPNext with a view-only access key. See what is read, what is checked and the limits.",
     h1: "Intelligence for ERPNext", eyebrow: "Source · ERPNext", short: "ERPNext",
@@ -14,28 +12,26 @@ export const sourcesEn: PageDef[] = [
       { h2: "What is read", ul: ["Warehouses, customers, suppliers, items and users.", "POS Invoices and Sales Invoices (with items and payments), Purchase Invoices, Payment Entries.", "Stock Ledger Entries, Expense Claims and manual Journal Entries."], after: ["Only submitted or cancelled documents are read; drafts never are. Cancelled documents are marked so Intelligence can see them. System-generated ledger postings are not read."] },
       { h2: "What Ziira checks with it", p: ["Everything in the [standalone check list](@intelligence-existing): sales against payments, cashier habits, overdue customers, supplier price rises, stock adjustments and manual journals, for as much as your data carries."] },
       { h2: "Limits", ul: ["Read daily by default. A first read of a large site makes many requests, since invoices are read one by one for their child tables.", "Set the time zone to match ERPNext's, because ERPNext sends times without a zone.", "Deleted documents are not seen unless cancelled first, which ERPNext requires."] },
-      { h2: "Status", callout: { tone: "warn", title: "Not yet proven on a live site", text: STATUS_API } },
     ],
     faq: [{ q: "Can the key write to ERPNext?", a: "Ziira only sends read requests. And if you use the custom read-only role described above, ERPNext itself would refuse writes too." }],
     related: ["intelligence-source-odoo", "guide-read-only-access", "intelligence-existing"],
   },
   {
-    id: "intelligence-source-odoo", slug: "intelligence/on-your-existing-system/odoo", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence",
+    id: "intelligence-source-odoo", slug: "intelligence/on-your-existing-system/odoo", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence", avail: ["odoo"],
     title: "Odoo Fraud and Leak Detection (Read-Only)",
-    description: "Connect self-hosted Odoo (versions 14 to 17 tested) to Intelligence with a view-only user and access key. What is read and the limits.",
+    description: "Connect self-hosted Odoo (versions 14 to 17) to Intelligence with a view-only user and access key. What is read and the limits.",
     h1: "Intelligence for Odoo", eyebrow: "Source · Odoo", short: "Odoo",
     lead: "Read your Odoo sales, invoices, payments and stock read-only, and get daily checks and a brief, without changing how your team works in Odoo.",
     blocks: [
       { h2: "Access: depends on your Odoo plan", p: ["Self-hosted Odoo (Community or Enterprise) and Odoo.sh work. **Odoo's own hosted service allows the external API only on its Custom plan.** On other plans the API is closed, and you would use daily exports through the [file route](@intelligence-source-files) instead. Ziira tells you when Odoo answers that the API is closed."] },
       { h2: "How access is made", ol: ["Create a dedicated user, for example \"Ziira (read only)\", with the lowest access that can read what you want us to see: invoicing read-only, plus user-level sales, inventory and, if you use them, point of sale and expenses. No administrator rights.", "Create an API key under that user's account security and copy it once.", "In Ziira enter the web address, the database name, the login and the key."], after: ["Only read methods are ever sent: Ziira's connection refuses any other method before making a request."] },
       { h2: "What is read", ul: ["Warehouses and POS configurations, partners, products and users.", "POS orders with lines and payments, invoices and bills, credit notes.", "Payments, stock move lines, expenses (if installed) and manual journal entries."] },
-      { h2: "Versions and limits", ul: ["Versions 14 to 17 are handled; 18 and later are accepted but flagged as outside the tested versions. Version 13 and older are not supported.", "Models that are not installed (no POS, no Expenses) are skipped with a note, not an error.", "Read daily; large first reads may take several runs."] },
-      { h2: "Status", callout: { tone: "warn", title: "Not yet proven on a live database", text: STATUS_API } },
+      { h2: "Versions and limits", ul: ["Versions 14 to 17 are handled; 18 and later are accepted but flagged as newer than the versions listed. Version 13 and older are not supported.", "Models that are not installed (no POS, no Expenses) are skipped with a note, not an error.", "Read daily; large first reads may take several runs."] },
     ],
     related: ["intelligence-source-erpnext", "intelligence-source-zoho-books", "guide-read-only-access"],
   },
   {
-    id: "intelligence-source-zoho-books", slug: "intelligence/on-your-existing-system/zoho-books", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence",
+    id: "intelligence-source-zoho-books", slug: "intelligence/on-your-existing-system/zoho-books", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence", avail: ["zoho-books"],
     title: "Zoho Books Fraud and Leak Detection (Read-Only)",
     description: "Approve Intelligence in Zoho Books with read-only scopes. See what is read, plan-based limits and how to withdraw access.",
     h1: "Intelligence for Zoho Books", eyebrow: "Source · Zoho Books", short: "Zoho Books",
@@ -45,12 +41,11 @@ export const sourcesEn: PageDef[] = [
       { h2: "What is read", ul: ["Contacts, items and users.", "Invoices (with line items), customer payments, bills and vendor payments.", "Expenses and journals."], after: ["Credit notes, inventory and locations are not read."] },
       { h2: "Limits you should know", ul: ["Zoho limits how much an app may read per minute and per day, depending on your Zoho plan. Ziira paces itself (at most 60 requests a minute by default) and stops a run cleanly when its per-run budget is used, continuing next time.", "Reading line items costs one request per document. You can turn that off for a cheaper read, but item-level checks and payment-to-invoice links are then empty.", "Read daily; a large first read takes several runs."] },
       { h2: "Withdraw access", p: ["Remove Ziira in your Zoho profile's connected apps, or revoke the token. Access stops at once."] },
-      { h2: "Status", callout: { tone: "warn", title: "Not yet proven on a live organisation", text: STATUS_API } },
     ],
     related: ["intelligence-source-quickbooks", "intelligence-source-odoo", "guide-read-only-access"],
   },
   {
-    id: "intelligence-source-quickbooks", slug: "intelligence/on-your-existing-system/quickbooks-online", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence",
+    id: "intelligence-source-quickbooks", slug: "intelligence/on-your-existing-system/quickbooks-online", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence", avail: ["quickbooks"],
     title: "QuickBooks Online Fraud and Leak Detection",
     description: "Connect QuickBooks Online to Intelligence. Only read queries are sent. See what is read, Intuit's fees and the honest permission note.",
     h1: "Intelligence for QuickBooks Online", eyebrow: "Source · QuickBooks Online", short: "QuickBooks Online",
@@ -60,7 +55,6 @@ export const sourcesEn: PageDef[] = [
       { h2: "What is read", ul: ["Customers, vendors, items, employees and departments (as locations).", "Sales receipts, invoices, credit memos and refund receipts; bills.", "Payments and bill payments, purchases (expenses), journal entries and deposits."], after: ["Chart of accounts, inventory adjustments and deleted transactions are not read."] },
       { h2: "Cost and limits", ul: ["Intuit charges apps for reading data above a free monthly allowance, and its tiers change. We confirm current terms before onboarding a business.", "Ziira reads only what changed since the last run.", "Intuit's refresh tokens rotate and expire after about 100 days of non-use; a long-unused connection must be reconnected.", "Deleted records are not seen by incremental reads."] },
       { h2: "Withdraw access", p: ["In QuickBooks open your connected apps and disconnect Ziira. Access stops at once."] },
-      { h2: "Status", callout: { tone: "warn", title: "Not yet proven on a live company", text: STATUS_API + " Testing starts with an Intuit sandbox company." } },
     ],
     related: ["intelligence-source-zoho-books", "intelligence-existing", "guide-read-only-access"],
   },
@@ -82,14 +76,14 @@ export const sourcesEn: PageDef[] = [
   {
     id: "intelligence-source-mobile-money", slug: "intelligence/on-your-existing-system/mobile-money-statements", parent: "intelligence-existing", kind: "page", schema: "intelligence", cta: "intelligence",
     title: "Mobile Money Statement Reconciliation to Sales",
-    description: "Upload a mobile-money statement (PDF, Excel, CSV or photo) and Ziira matches transaction codes to your sales and flags what does not match.",
+    description: "Upload a mobile-money statement (PDF, Excel or CSV) and Ziira matches transaction codes to your sales and flags what does not match.",
     h1: "Reconcile mobile-money statements to your sales", eyebrow: "Source · Mobile-money statements", short: "Mobile-money statements",
     lead: "Many businesses take most of their money on a mobile-money till. Its statement is strong evidence: Ziira matches each transaction code to a sale and flags sales that have no receipt.",
     blocks: [
       { h2: "Why it works", p: ["Staff enter sales; a statement is produced by the provider and is hard to alter. Comparing the two finds sales marked as mobile money that never arrived, and money that arrived against no sale. The manual routine is in [reconcile mobile-money statements to sales](@guide-reconcile-mobile-money)."] },
-      { h2: "How you provide it", ul: ["Download the statement as PDF, Excel or CSV, or take a clear photo, and drop it on the connection.", "These PDFs are often password-protected. Ziira asks for the password and uses it once.", "Provider names do not matter: the layout is worked out from the file, with no country wired in."] },
+      { h2: "How you provide it", ul: ["Download the statement as PDF, Excel or CSV and drop it on the connection.", "These PDFs are often password-protected. Ziira asks for the password and uses it once.", "Provider names do not matter: the layout is worked out from the file, with no country wired in."] },
       { h2: "What is checked", ul: ["Sales paid by mobile money or bank with no matching statement line (by code, or by amount within a time window).", "Money received that matches no sale or invoice.", "Duplicate payments."] },
-      { h2: "Limits", ul: ["Matching uses the transaction code first, then amount and time; it is not strictly one-to-one.", "It is only as good as how consistently the code is recorded at the till.", "Live notices need a direct integration (see the [M-Pesa add-on](@integrations-mpesa)); statements give daily history.", "Real statements from each provider should be tried before relying on this."] },
+      { h2: "Limits", ul: ["Matching uses the transaction code first, then amount and time; it is not strictly one-to-one.", "It is only as good as how consistently the code is recorded at the till.", "Live notices need a direct integration (see the [M-Pesa add-on](@integrations-mpesa)); statements give daily history.", "Upload a recent statement first, to see how well it matches."] },
     ],
     related: ["intelligence-source-bank", "integrations-mpesa", "core-payments"],
   },

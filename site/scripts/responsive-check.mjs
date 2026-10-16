@@ -11,7 +11,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 let chromium;
 try { chromium = createRequire(path.resolve(here, "../../e2e/package.json"))("playwright").chromium; } catch { console.log("responsive: Playwright not installed (run `make e2e-setup`); skipped"); process.exit(0); }
 
-const dist = path.resolve(here, "../dist");
+const dist = path.resolve(process.env.SITE_DIST ?? path.join(here, "../dist"));
 const helpGuide = fs.existsSync(path.join(dist, "help")) ? fs.readdirSync(path.join(dist, "help")).find((d) => fs.existsSync(path.join(dist, "help", d, "index.html")) && !["a-z"].includes(d)) : null;
 const PAGES = (process.env.RESP_PAGES ?? ["/", "/product/", "/product/pos-and-till/", "/intelligence/how-it-works/", "/intelligence/complete-guide/", "/solutions/", "/integrations/", "/pricing/", "/get-started/", "/guides/", "/guides/cashier-voids-discount-abuse/", "/glossary/", "/privacy-policy/", "/security-and-privacy/", "/help/", helpGuide ? `/help/${helpGuide}/` : "", "/404.html"].join(",")).split(",").filter(Boolean);
 const WIDTHS = (process.env.RESP_WIDTHS ?? "320,360,375,390,414,600,768,1024").split(",").map(Number);

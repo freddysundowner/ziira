@@ -32,6 +32,10 @@ class Brief:
     short: str
 
 
+# The words a business uses for how urgent something is (the stored severities are critical, high, medium, low, info).
+URGENCY = {"critical": "Urgent", "high": "Urgent", "medium": "Soon", "low": "Worth a look", "info": "Worth a look"}
+
+
 def fmt(value: Decimal, kind: str, currency: str) -> str:
     if kind == "money":
         return f"{currency} {value:,.2f}".strip()
@@ -54,7 +58,7 @@ def compose(*, business: str, day: date, kind: str, currency: str, pulse: list[P
             findings: list[FindingLine], more_findings: int = 0) -> Brief:
     """A brief in plain words. `short` is the SMS form (top items only); `body` is the full text (email, app)."""
     period = "Yesterday" if kind == "daily" else "Last 7 days"
-    title = f"{business}: {'daily' if kind == 'daily' else 'weekly'} brief, {format_day(day)}"
+    title = f"{business}: {'daily' if kind == 'daily' else 'weekly'} summary, {format_day(day)}"
     lines = [title, ""]
     if pulse:
         lines.append(f"{period}")
@@ -63,13 +67,14 @@ def compose(*, business: str, day: date, kind: str, currency: str, pulse: list[P
             lines.append(f"- {p.label}{where}: {fmt(p.value, p.kind, currency)}{change(p.value, p.previous)}")
         lines.append("")
     if findings:
-        lines.append("Needs your attention")
+        lines.append("Needs you")
         for i, f in enumerate(findings, 1):
-            lines.append(f"{i}. [{f.severity}] {f.summary}" + (f" Next: {f.action}" if f.action else ""))
+            next_step = f" Next: {f.action}" if f.action else ""
+            lines.append(f"{i}. [{URGENCY.get(f.severity, 'Worth a look')}] {f.summary}{next_step}")
         if more_findings > 0:
-            lines.append(f"...and {more_findings} more in the Command Center.")
+            lines.append(f"...and {more_findings} more to look at in Ziira.")
     elif pulse:
-        lines.append("Nothing needs your attention.")
+        lines.append("Nothing needs you.")
     body = "\n".join(lines).strip()
     top = [f"{business} {period.lower()}:"]
     top += [f"{p.label} {fmt(p.value, p.kind, currency)}" for p in pulse[:3] if not p.branch_name]

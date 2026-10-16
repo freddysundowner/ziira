@@ -1,0 +1,131 @@
+{
+ "nav": {
+  "ai": "AI"
+ },
+ "ai": {
+  "title": "Watoa huduma wa AI",
+  "description": "Huduma ya AI ambayo msaidizi anatumia, ufunguo wake, mifumo na gharama inayoweza kuwa. Biashara hazioni ufunguo.",
+  "noAccess": "Ni mmiliki wa jukwaa pekee anayeweza kusimamia watoa huduma wa AI.",
+  "loadFailed": "Mipangilio ya AI haikuweza kupakiwa",
+  "noDefault": "Hakuna mtoa huduma mkuu aliyechaguliwa wala kwenye mazingira, kwa hivyo msaidizi wa AI hapatikani. Hifadhi ufunguo wa mtoa huduma, uwashe na umfanye mkuu.",
+  "fromEnvironment": "Hakuna mkuu aliyechaguliwa hapa, kwa hivyo mtoa huduma wa mazingira ya seva ({{provider}}) anatumika. Chagua mkuu hapa chini ili kusimamia kutoka ukurasa huu.",
+  "capReached": "Kikomo cha matumizi cha mwezi kimefikiwa. Maombi ya AI yanakataliwa hadi mwezi ujao au hadi uongeze kikomo.",
+  "productionNote": "Kwenye uzalishaji mtoa huduma haitwi hadi masharti yake ya data yakubaliwe hapa chini.",
+  "on": "Umewashwa",
+  "off": "Umezimwa",
+  "isDefault": "Mkuu",
+  "enable": "Washa mtoa huduma huyu",
+  "save": "Hifadhi",
+  "close": "Funga",
+  "saved": "{{name}} imehifadhiwa",
+  "refreshed": "Mifumo {{count}} imepatikana",
+  "refresh": "Onyesha upya mifumo",
+  "provider": {
+   "line": "Ufunguo hutumwa kama: {{auth}}. Orodha ya mifumo na bei zilikaguliwa {{checked}}."
+  },
+  "key": {
+   "label": "Ufunguo wa API",
+   "hint": "Bandika ufunguo kutoka kwenye ukurasa wa mtoa huduma. Huhifadhiwa umesimbwa na haonyeshwi tena.",
+   "saved": "Ufunguo umehifadhiwa, unaishia {{last4}}",
+   "none": "Hakuna ufunguo uliohifadhiwa",
+   "keep": "Weka",
+   "remove": "Ondoa ufunguo"
+  },
+  "feature": {
+   "explain": "Maelezo",
+   "explainHint": "Maandishi mafupi kuhusu jambo lililogunduliwa",
+   "rank": "Kupanga",
+   "rankHint": "Kupanga mambo muhimu zaidi",
+   "ask": "Uliza Ziira",
+   "askHint": "Maswali yenye zana: tumia mfumo mzuri"
+  },
+  "tier": {
+   "best_value": "Thamani bora",
+   "higher_quality": "Ubora wa juu",
+   "cheapest": "Nafuu zaidi"
+  },
+  "price": {
+   "unknown": "bei haijawekwa",
+   "unknownWarn": "Mfumo huu hauna bei inayojulikana, kwa hivyo matumizi hayawezi kukadiriwa. Chagua mfumo ulioorodheshwa.",
+   "perMillion": "Bei ni dola za Marekani kwa tokeni milioni: ingizo / towe.",
+   "updated": "Bei zilisasishwa {{date}}."
+  },
+  "notLive": "haumo kwenye orodha halisi ya mtoa huduma",
+  "priceOverridden": "bei yako",
+  "baseUrl": {
+   "label": "Anwani ya msingi (hiari)",
+   "hint": "Acha tupu kutumia {{url}}."
+  },
+  "terms": {
+   "check": "Nimekubali masharti ya {{provider}} ya matumizi ya data na makubaliano ya usindikaji wa data yapo.",
+   "who": "Imekubaliwa na {{who}} tarehe {{when}}.",
+   "requiredProduction": "Inahitajika kwenye uzalishaji kabla ya ombi lolote kutumwa.",
+   "optional": "Haihitajiki nje ya uzalishaji.",
+   "read": "Soma masharti"
+  },
+  "live": {
+   "at": "Orodha ya mifumo ilipatikana {{when}}",
+   "never": "Orodha ya mifumo bado haijapatikana"
+  },
+  "test": {
+   "button": "Jaribu muunganisho",
+   "ok": "Inafanya kazi. Milisekunde {{ms}} na {{model}}; jaribio hili liligharimu takriban {{cost}}.",
+   "lastOk": "jaribio la mwisho lilifaulu {{when}}",
+   "lastBad": "jaribio la mwisho lilishindwa {{when}}"
+  },
+  "default": {
+   "make": "Fanya mkuu",
+   "title": "Fanya {{provider}} kuwa mkuu",
+   "warning": "Ridhaa {{count}} za biashara zilizotolewa kwa {{from}} zitaisha. Biashara hizo zitaombwa kukubali tena kabla msaidizi hajafanya kazi.",
+   "noChange": "Hakuna ridhaa itakayoisha.",
+   "typeLabel": "Andika {{name}} kuthibitisha",
+   "confirm": "Badilisha mkuu"
+  },
+  "cap": {
+   "title": "Kikomo cha matumizi cha mwezi",
+   "hint": "Makadirio kutoka idadi ya tokeni na jedwali la bei. Kikifikiwa, maombi ya AI yanakataliwa.",
+   "spent": "Mwezi huu: {{spend}} kati ya {{cap}}",
+   "none": "hakuna kikomo",
+   "label": "Kikomo kwa dola za Marekani",
+   "labelHint": "Acha tupu kama hakuna kikomo.",
+   "saved": "Kikomo kimehifadhiwa"
+  },
+  "usage": {
+   "title": "Matumizi ya mwezi huu",
+   "hint": "Makadirio kutoka idadi ya tokeni. Hakuna maswali wala data binafsi inayohifadhiwa hapa.",
+   "loadFailed": "Matumizi hayakuweza kupakiwa",
+   "empty": "Hakuna maombi ya AI bado mwezi huu.",
+   "provider": "Mtoa huduma",
+   "calls": "Maombi",
+   "tokensIn": "Tokeni za ingizo",
+   "tokensOut": "Tokeni za towe",
+   "cost": "Gharama inayokadiriwa",
+   "perDay": "Gharama kwa siku",
+   "top": "Biashara zinazotumia zaidi",
+   "businessLine": "maombi {{calls}}, {{cost}}"
+  },
+  "quality": {
+   "button": "Endesha ukaguzi wa ubora",
+   "title": "Ukaguzi wa ubora",
+   "intro": "Maswali matano ya biashara kwa Kiingereza na Kiswahili, yanayojibiwa na {{model}} kwa biashara ya kubuni. Unakagua namba, matumizi ya zana, kukataa kubuni na kupuuza maagizo yaliyofichwa kwenye rekodi.",
+   "cost": "Hii inatuma maombi {{questions}} halisi na inagharimu takriban {{cost}}.",
+   "noPrice": "Bei ya mfumo huu haijulikani, kwa hivyo gharama halisi inaweza kutofautiana.",
+   "agree": "Naelewa hii inatumia pesa.",
+   "run": "Endesha ukaguzi",
+   "score": "Alama {{score}} kati ya 100",
+   "facts": "wastani wa milisekunde {{ms}}, tokeni {{tokens}}, takriban {{cost}}",
+   "verdict": {
+    "good": "Nzuri",
+    "acceptable": "Inakubalika",
+    "poor": "Dhaifu"
+   },
+   "check": {
+    "number_trace": "namba zimethibitishwa",
+    "tool_use": "zana sahihi",
+    "refusal": "hakubuni namba",
+    "injection": "alipuuza agizo lililofichwa",
+    "answered": "alijibu"
+   }
+  }
+ }
+}

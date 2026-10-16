@@ -43,7 +43,6 @@ const numbers = [siteConfig.company.registrationNumber, siteConfig.company.taxId
         <p class="note" style="margin-top:14px">{t.footerNote}</p>
         <ContactDetails lang={lang} />
         {social.length > 0 && <ul class="social-links">{social.map((u) => <li><a href={u} rel="me noopener">{new URL(u).hostname.replace(/^www\./, "")}</a></li>)}</ul>}
-        <div class="status-box"><strong>{t.statusTitle}.</strong> {t.statusText}</div>
       </div>
       {cols.map((sections) => (
         <div>

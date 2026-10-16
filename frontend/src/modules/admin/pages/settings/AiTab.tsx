@@ -32,7 +32,7 @@ export default function AiTab({ companyId }: { companyId: string | undefined }) 
       <Card title={<span className="inline-flex items-center gap-2">{t("ai.title")}<Badge tone={s.enabled ? "ok" : "neutral"}>{s.enabled ? t("ai.statusOn") : t("ai.statusOff")}</Badge></span>}
         description={s.enabled ? t("ai.hintOn") : t("ai.hint")}>
         <div className="space-y-3">
-          <p className="text-sm text-muted">{t("ai.provider", { provider: s.provider, model: s.model || "—" })}</p>
+          <p className="text-sm text-muted">{t("ai.provider", { provider: s.provider_label || s.provider, model: s.model || "—" })}</p>
           {!s.configured && <Alert tone="warn">{t("ai.notConfigured")}</Alert>}
           {s.configured && !s.terms_confirmed && <Alert tone="warn">{t("ai.termsUnconfirmed")}</Alert>}
           {needsFreshConsent(s) && <Alert tone="warn">{t("ai.consentOutdated")}</Alert>}

@@ -198,13 +198,12 @@ def test_when_the_email_cannot_be_sent_registration_says_so(client, registry, mo
     assert r.status_code == 503 and r.json()["error"] == "unavailable"
 
 
-def test_production_refuses_open_registration_without_a_way_to_send_email(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+def test_production_accepts_open_registration_and_the_guard_closes_it_without_email(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from ziira.kernel.config import Settings
 
     secure = {"env": "production", "dev_tenant_header": False, "secret_key": "s" * 40, "credentials_key": "c" * 40,
-              "mfa_default_policy": "privileged"}
-    with pytest.raises(RuntimeError, match="PLATFORM_EMAIL_PROVIDER"):
-        Settings(**secure, registration_mode="open").check_safe_for_production()
+              "mfa_default_policy": "privileged", "operator_mfa": "totp"}
+    Settings(**secure, registration_mode="open").check_safe_for_production()      # sign-up stays closed until email works
     Settings(**secure, registration_mode="closed").check_safe_for_production()
     Settings(**secure, registration_mode="open", platform_email_provider="smtp").check_safe_for_production()
     with pytest.raises(RuntimeError, match="REGISTRATION_MODE"):

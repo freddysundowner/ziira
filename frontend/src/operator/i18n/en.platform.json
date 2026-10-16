@@ -11,7 +11,9 @@
    "customers": "Customers",
    "sell": "Plans and billing",
    "platform": "Platform"
-  }
+  },
+  "email": "Email",
+  "settings": "Settings"
  },
  "status": {
   "trialing": "Trial",
@@ -1017,5 +1019,123 @@
   "copyLink": "Copy the link",
   "secretSaved": "I have passed it on",
   "email": "Email"
+ },
+ "email": {
+  "title": "Platform email",
+  "intro": "The email the platform sends itself: sign-up confirmations, password resets and billing messages. Enter a provider's credentials, send a test, then make it live.",
+  "loadFailed": "Could not load the email settings",
+  "readOnly": "Only a superadmin can change the platform email.",
+  "status": {
+   "source": {
+    "platform": "Using the settings saved here",
+    "environment": "Currently using environment settings",
+    "development": "Development: messages are only recorded, not sent",
+    "none": "No way to send email is set up"
+   },
+   "working": "Working",
+   "notWorking": "Not working yet",
+   "lastSuccess": "Last successful send",
+   "never": "none yet",
+   "failures": "Failures in the last 24 hours",
+   "lastTest": "Last test"
+  },
+  "move": "Move to platform settings",
+  "moveHint": "Copies the host, port, username and sender here. You then type the password or key and test it.",
+  "moved": "Settings copied. Add the secret and send a test.",
+  "provider": {
+   "live": "Live",
+   "tested": "Test passed",
+   "notTested": "Not tested",
+   "setNow": "Set",
+   "notSet": "Not set: type to set",
+   "keepSecret": "Leave empty to keep",
+   "remove": "Remove",
+   "keep": "Keep",
+   "save": "Save",
+   "saved": "{{name}} saved",
+   "test": "Send a test email",
+   "makeLive": "Make live",
+   "isLive": "This is the live provider",
+   "useEnvironment": "Go back to environment settings",
+   "check": "Check configuration",
+   "activated": "Email now goes through {{name}}",
+   "reverted": "Email now uses the environment settings"
+  },
+  "sender": {
+   "title": "Sender",
+   "from": "From address",
+   "fromName": "From name",
+   "replyTo": "Reply-to",
+   "save": "Save sender",
+   "saved": "Sender saved",
+   "hint": "Use an address on a domain you own and have verified with the provider."
+  },
+  "test": {
+   "to": "Send the test to",
+   "toHint": "Default: your own address",
+   "ok": "Delivered to the provider",
+   "failed": "Not delivered"
+  },
+  "check": {
+   "title": "Configuration check",
+   "ok": "OK",
+   "warn": "Note",
+   "bad": "Problem",
+   "info": "Advice"
+  },
+  "log": {
+   "title": "Recent messages",
+   "empty": "Nothing has been sent yet.",
+   "time": "When",
+   "kind": "Kind",
+   "to": "To",
+   "status": "Result",
+   "sent": "Sent",
+   "failed": "Failed",
+   "kinds": {
+    "registration": "Registration",
+    "password_reset": "Password reset",
+    "billing": "Billing",
+    "security": "Security",
+    "test": "Test",
+    "other": "Other"
+   },
+   "retention": "Lines are kept for 90 days."
+  }
+ },
+ "psettings": {
+  "title": "Platform settings",
+  "intro": "How the platform behaves for visitors: who may register, the defaults for new businesses, and the public addresses and links.",
+  "loadFailed": "Could not load the settings",
+  "readOnly": "Only a superadmin can change these.",
+  "save": "Save",
+  "saved": "{{name}} saved",
+  "fromEnv": "Using the environment value",
+  "unset": "Not set",
+  "registration": {
+   "title": "Registration",
+   "mode": "Who may register",
+   "open": "Open: anyone can create a business",
+   "invite": "Invite only: a person needs an invitation code",
+   "closed": "Closed: only operators create businesses",
+   "needsEmail": "Open and invite-only registration need working email, because every sign-up sends a confirmation link.",
+   "edition": "Default edition",
+   "editionHint": "Used when a sign-up does not choose one",
+   "trial": "Trial length override (days)",
+   "trialHint": "Empty: each plan's own trial length"
+  },
+  "public": {
+   "title": "Public addresses and links",
+   "webUrl": "Public web address",
+   "webUrlHint": "Used in the links in emails",
+   "apiUrl": "Public API address",
+   "apiUrlHint": "Used for payment and other callbacks",
+   "terms": "Terms link",
+   "privacy": "Privacy link",
+   "help": "Help link",
+   "site": "Website address",
+   "support": "Support email",
+   "hint": "Shown in the sign-up wizard; an empty value falls back to the environment."
+  }
  }
 }

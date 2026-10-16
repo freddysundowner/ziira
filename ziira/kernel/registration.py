@@ -36,7 +36,7 @@ from ziira.kernel.errors import (
     ValidationFailed,
 )
 from ziira.kernel.phone import check_calling_code, normalise_phone
-from ziira.kernel.platform import plans, subscriptions
+from ziira.kernel.platform import behaviour, plans, subscriptions
 from ziira.kernel.registry import Registry
 from ziira.kernel.security import hash_password, hash_secret, new_secret
 from ziira.kernel.tenants import CODE_PATTERN, create_tenant, drop_tenant
@@ -134,7 +134,8 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
              business_type: str | None = None, plan: str | None = None) -> Started:
     """Ask for a business. Saves the request and emails a verification link; creates nothing else."""
     settings = get_settings()
-    if settings.registration_mode == "closed":
+    mode_now = behaviour.registration_mode()
+    if mode_now == "closed":
         raise Forbidden("Registration is closed: ask the operator to create your business")
     with _field("business_name"):
         business = _clean(business_name, "The business name", 2, 120)
@@ -177,7 +178,7 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
     with _field("password"):
         passwords.check(password, login=address)                              # length, common passwords, not the email
         password_hash = hash_password(password)
-    invite = _check_invite(invite_code) if settings.registration_mode == "invite" else None
+    invite = _check_invite(invite_code) if mode_now == "invite" else None
 
     since = datetime.now(UTC) - timedelta(hours=1)
     with master_session() as s:
@@ -202,11 +203,11 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
              "ed": chosen, "ph": contact, "ro": hints["owner_role"], "bs": hints["business_size"],
              "ss": hints["staff_size"], "bt": hints["business_type"], "pl": plan_code,
              "x": datetime.now(UTC) + timedelta(hours=settings.registration_token_hours)})
-    link = f"{settings.public_web_url.rstrip('/')}/register/verify?token={token}"
+    link = f"{behaviour.public_web_url()}/register/verify?token={token}"
     platform_mail.send(address, "Confirm your email to create your business",
                        f"Hello {owner},\n\nTo finish creating {business}, confirm your email address:\n\n{link}\n\n"
                        f"The link works for {settings.registration_token_hours} hours and only once. If you did not "
-                       "ask for this, ignore this message: nothing will be created.\n")
+                       "ask for this, ignore this message: nothing will be created.\n", "registration")
     return Started(dev_token=token if settings.env != "production" else None)
 
 
@@ -320,7 +321,8 @@ def trial_offer(edition: str | None, plan: str | None = None) -> dict[str, Any] 
         return None
     if found["status"] != "active" or not found["trial_days"]:
         return None
-    return {"plan_code": str(found["code"]), "plan_name": str(found["name"]), "trial_days": int(found["trial_days"])}
+    return {"plan_code": str(found["code"]), "plan_name": str(found["name"]),
+            "trial_days": behaviour.trial_days(int(found["trial_days"]))}
 
 
 def _start_trial(tenant_id: UUID, detail: dict[str, Any]) -> None:

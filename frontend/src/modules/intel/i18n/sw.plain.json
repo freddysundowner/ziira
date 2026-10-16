@@ -1,0 +1,337 @@
+{
+  "band": {
+    "urgent": "Haraka",
+    "soon": "Hivi karibuni",
+    "look": "Inafaa kuangalia"
+  },
+  "today": {
+    "menu": "Leo",
+    "title": "Leo",
+    "need_one": "Jambo {{count}} linakuhitaji leo.",
+    "need_other": "Mambo {{count}} yanakuhitaji leo.",
+    "urgent_one": "{{count}} ni la haraka.",
+    "urgent_other": "{{count}} ni ya haraka.",
+    "itIsUrgent": "Ni la haraka.",
+    "allUrgent": "Yote ni ya haraka.",
+    "nothing": "Hakuna kinachokuhitaji leo.",
+    "nothingHint": "Ziira imeangalia biashara yako na haijapata cha kukusumbua.",
+    "emptyTitle": "Kila kitu kiko sawa",
+    "emptyHint": "Kitu kikihitaji umakini wako kitaonekana hapa kwanza.",
+    "seeAll": "Ona yote {{count}}",
+    "setupTitle": "Weka Ziira kwa dakika mbili",
+    "setupHint": "Chagua kinachokuhusu na lini upate muhtasari wako wa kila siku. Hadi hapo, Ziira inaangalia kila kitu.",
+    "setupAction": "Anza"
+  },
+  "things": {
+    "menu": "Mambo ya kuangalia",
+    "title": "Mambo ya kuangalia",
+    "hint": "Kile Ziira ilichoona kwenye biashara yako. Kila kimoja ni swali la kujibu, si lawama.",
+    "tab": {
+      "open": "Wazi",
+      "waiting": "Vinavyomsubiri mtu",
+      "done": "Vilivyokamilika"
+    },
+    "tabHint": {
+      "open": "Mambo ambayo hakuna aliyeyashika bado.",
+      "waiting": "Mtu analishughulikia, aliombwa aeleze, au uliliweka kando kwa baadaye.",
+      "done": "Vilivyorekebishwa, au vilivyotiwa alama kuwa si tatizo."
+    },
+    "empty": {
+      "open": "Hakuna kinachokuhitaji",
+      "waiting": "Hakuna kinachomsubiri mtu",
+      "done": "Bado hakuna kilichokamilika"
+    },
+    "emptyHint": {
+      "open": "Ziira imeangalia na haijapata cha kukusumbua. Furahia siku yako.",
+      "waiting": "Ukimpa mtu kitu, au ukikiweka kando, kitaonekana hapa.",
+      "done": "Mambo unayotia alama kuwa yamerekebishwa au si tatizo yanahifadhiwa hapa."
+    },
+    "count": "Mambo {{things}}, yanaonyeshwa kama kadi {{cards}}",
+    "more": "Onyesha zaidi",
+    "display": "Jinsi ya kuyaonyesha",
+    "cards": "Kadi",
+    "table": "Orodha"
+  },
+  "card": {
+    "why": "Kwa nini ni muhimu:",
+    "lookInto": "Liangalie",
+    "howMany": "Kama hii",
+    "involved": "Pesa zinazohusika",
+    "showAll": "Onyesha zote {{count}}",
+    "hide": "Ficha orodha",
+    "andMore": "…na {{count}} zaidi",
+    "snoozedUntil": "inarudi {{date}}"
+  },
+  "assignMany": "Mambo yote {{count}} kwenye kadi hii yatakwenda kwa mtu utakayemchagua.",
+  "snooze": {
+    "label": "Nikumbushe baadaye",
+    "three": "Baada ya siku 3",
+    "week": "Wiki ijayo",
+    "done": "Imewekwa kando. Itarudi yenyewe, au mapema zaidi ikiwa mbaya zaidi."
+  },
+  "thing": {
+    "title": "Jambo la kuangalia",
+    "noticed": "Tulichoona",
+    "why": "Kwa nini ni muhimu",
+    "next": "Unachoweza kufanya baadaye",
+    "snoozed": "Imewekwa kando hadi {{date}}. Itarudi mapema ikiwa mbaya zaidi."
+  },
+  "facts": {
+    "title": "Ukweli wenyewe",
+    "found": "Tulichokipata",
+    "normal": "Kawaida au kinachoruhusiwa"
+  },
+  "related": {
+    "title": "Pia kuhusu hili",
+    "hint": "Mambo mengine wazi kuhusu mtu au mahali pale pale."
+  },
+  "tech": {
+    "show": "Onyesha maelezo ya kiufundi",
+    "names": "Onyesha majina ya kiufundi",
+    "title": "Maelezo ya kiufundi",
+    "hint": "Kwa msaada na kwa wanaopenda undani. Huhitaji haya ili kutumia Ziira.",
+    "checkCode": "Msimbo wa ukaguzi",
+    "checkName": "Jina la ukaguzi",
+    "findingId": "Kitambulisho cha rekodi",
+    "limits": "Mipaka iliyotumika",
+    "numbers": "Namba ghafi"
+  },
+  "ignore": {
+    "title": "Si tatizo",
+    "hint": "Je, hili ni la kawaida kwa biashara yako? Iambie Ziira nayo itaacha kulileta.",
+    "what": "Ziira ifanye nini?",
+    "scope": {
+      "this": "Hili moja tu",
+      "branch": "Puuza aina hii ya jambo huko {{where}}",
+      "person": "Puuza aina hii ya jambo kwa {{where}}",
+      "everywhere": "Puuza aina hii ya jambo kila mahali"
+    },
+    "howLong": "Kwa muda gani",
+    "thirtyDays": "Kwa siku 30",
+    "always": "Daima",
+    "tune": "Pia ruhusu kidogo zaidi kabla Ziira haijalileta tena",
+    "reason": "Kwa nini ni sawa? (si lazima)",
+    "defaultReason": "Si tatizo",
+    "undo": "Unaweza kuubatilisha wakati wowote kwenye Ziira inaangalia nini.",
+    "confirm": "Hifadhi",
+    "done": "Imekamilika. Imefungwa.",
+    "doneMany_one": "Imekamilika. Imefungwa, na nyingine {{count}} kama hiyo.",
+    "doneMany_other": "Imekamilika. Imefungwa, na nyingine {{count}} kama hiyo."
+  },
+  "glossary": {
+    "open": "Hii inamaanisha nini?",
+    "yourNormal": {
+      "word": "Hali yako ya kawaida",
+      "means": "Kinachozoeleka kwa biashara yako, kutokana na miezi yako ya karibuni. Ziira huzungumza kitu kinapotoka mbali na hicho."
+    },
+    "urgentSoon": {
+      "word": "Haraka, Hivi karibuni, Inafaa kuangalia",
+      "means": "Jinsi jambo linavyokuhitaji haraka. Haraka maana yake leo."
+    },
+    "notAProblem": {
+      "word": "Si tatizo",
+      "means": "Lifunge, na ukipenda iambie Ziira kuwa hili ni la kawaida kwenye tawi au kwa mtu ili liache kuletwa."
+    },
+    "watches": {
+      "word": "Ziira inaangalia nini",
+      "means": "Mambo ambayo Ziira huangalia kila baada ya saa chache, kama wateja wanaochelewa au bidhaa zinazoisha. Unaweza kuzima kila moja au kubadilisha kikomo chake."
+    },
+    "watch": {
+      "word": "Kutazama",
+      "means": "Ziira inakuambia tu. Haibadilishi chochote."
+    },
+    "ask": {
+      "word": "Kuuliza",
+      "means": "Unaweza kumwomba mfanyakazi aeleze jambo."
+    },
+    "prepare": {
+      "word": "Kuandaa",
+      "means": "Ziira inaandaa kazi, kwa mfano rasimu ya oda. Mtu huidhinisha."
+    },
+    "act": {
+      "word": "Kufanya kwa niaba yangu",
+      "means": "Ziira hufanya kazi ndogo za kawaida yenyewe, ndani ya mipaka unayoweka. Kamwe si chochote kinachohusu pesa."
+    }
+  },
+  "see": {
+    "title": "Ziira inaweza kuona nini",
+    "watching": "Inaangalia mambo {{count}} kwa ajili yako.",
+    "change": "Badilisha",
+    "source": {
+      "sales": "Mauzo na kaunta",
+      "stock": "Bidhaa (hisa)",
+      "payments": "Malipo",
+      "suppliers": "Wasambazaji",
+      "books": "Hesabu za biashara",
+      "staff": "Wafanyakazi na mishahara",
+      "customers": "Wateja",
+      "other": "Mifumo yako mingine"
+    }
+  },
+  "summary": {
+    "title": "Muhtasari wako wa kila siku",
+    "arrives": "Muhtasari wako wa kila siku unafika saa {{time}} {{way}}.",
+    "inApp": "ndani ya programu",
+    "none": "Bado hupati muhtasari wa kila siku.",
+    "change": "Badilisha",
+    "turnOn": "Uwashe",
+    "inAppOption": "Ndani ya programu"
+  },
+  "quick": {
+    "menu": "Weka Ziira",
+    "title": "Weka Ziira",
+    "hint": "Chagua kinachokuhusu. Unaweza kubadilisha kila kitu baadaye.",
+    "step1": "1. Nini kinakuhusu?",
+    "step1Hint": "Ziira itaangalia haya kwa ajili yako.",
+    "everything": "Kila kitu (inapendekezwa)",
+    "forYou": "Inafaa {{edition}}",
+    "watchCount": "Mambo {{count}} yanaangaliwa",
+    "noneChosen": "Chagua angalau kimoja, vinginevyo Ziira haitaangalia chochote.",
+    "step2": "2. Muhtasari wako wa kila siku",
+    "step2Hint": "Ujumbe mfupi kila siku kuhusu hali ya biashara na kinachokuhitaji.",
+    "summaryOn": "Nitumie muhtasari wa kila siku",
+    "time": "Saa ngapi?",
+    "timeHint": "Kwa saa za eneo la biashara yako.",
+    "where": "Wapi?",
+    "step3": "3. Utakachoona",
+    "step3Hint": "Mambo kama haya yataonekana kwenye ukurasa wako wa Leo.",
+    "finish": "Washa",
+    "done": "Ziira imewekwa.",
+    "example": "Mfano",
+    "sample": {
+      "title": "Mteja amechelewa kulipa siku 45",
+      "summary": "Duka la Mary linadaiwa 24,500 na ankara ya zamani zaidi imepita tarehe yake kwa siku 45.",
+      "why": "Kadiri inavyosubiri, ndivyo ugumu wa kukusanya unavyoongezeka.",
+      "owesLabel": "Mteja anadaiwa",
+      "lateLabel": "Siku za kuchelewa"
+    }
+  },
+  "watch": {
+    "menu": "Ziira inaangalia nini",
+    "title": "Ziira inaangalia nini",
+    "hint": "Kila kitu Ziira inachokuangalia, kwa maneno rahisi. Zima mambo, au badilisha mipaka ndani ya sentensi.",
+    "setupAgain": "Weka upya",
+    "resetAll": "Rudi kwenye inayopendekezwa",
+    "resetAllTitle": "Kurudi kwenye inayopendekezwa?",
+    "resetAllAsk": "Kila kitu kitawashwa tena, na kila kikomo kitarudi kwenye tunachopendekeza.",
+    "resetAllDone": "Kila kitu kimerudi kwenye inayopendekezwa.",
+    "otherSystem": "Kutoka mfumo wako mwingine",
+    "countOn": "{{on}} kati ya {{total}} vimewashwa",
+    "topicSwitch": "Angalia {{topic}}",
+    "topicSaved": "Imehifadhiwa.",
+    "switch": "Angalia: {{title}}",
+    "moreSettings": "Mipangilio zaidi",
+    "lessSettings": "Mipangilio michache",
+    "recommendedIs": "Inayopendekezwa: {{value}}",
+    "reset": "Rudi kwenye inayopendekezwa",
+    "save": "Hifadhi",
+    "saved": "Imehifadhiwa.",
+    "on": "Ziira itaangalia hili.",
+    "off": "Ziira haitaangalia hili.",
+    "resetDone": "Imerudi kwenye inayopendekezwa."
+  },
+  "ignoreRules": {
+    "title": "Ulichoiambia Ziira ni cha kawaida",
+    "hint": "Ziira haileti haya. Ondoa moja ili kulisikia tena.",
+    "none": "Bado hakuna",
+    "noneHint": "Ukichagua \"Si tatizo\" na kuiambia Ziira ni la kawaida, litaorodheshwa hapa.",
+    "at": "Huko {{where}}",
+    "everywhere": "Kila mahali",
+    "until": "hadi {{date}}",
+    "always": "daima",
+    "by": "imesemwa na {{who}} tarehe {{date}}",
+    "remove": "Ondoa",
+    "removed": "Imeondolewa. Ziira italeta haya tena."
+  },
+  "how": {
+    "menu": "Ziira inakufanyia kiasi gani",
+    "page": "Ziira inakufanyia kiasi gani",
+    "pageHint": "Chagua Ziira ifike umbali gani inapopata kitu. Unaweza kubadilisha wakati wowote.",
+    "title": "Ziira inakufanyia kiasi gani",
+    "hint": "Hatua nne, kutoka kukuambia tu hadi kukufanyia kazi ndogo.",
+    "noCompany": "Chagua kampuni kwanza.",
+    "current": "(sasa)",
+    "example": "Kwa mfano:",
+    "changes": "Kinachobadilika:",
+    "never": "Haitawahi:",
+    "ownerOnly": "Mmiliki pekee ndiye anaweza kuwasha hili.",
+    "neverMoves": "Ziira haihamishi pesa kamwe. Chochote kinachohusu pesa, bei, mkopo au bidhaa kinasubiri mtu, na kila inachofanya kinaandikwa.",
+    "mode": {
+      "1": {
+        "name": "Kutazama",
+        "does": "Ziira inatazama biashara yako na kukuambia inachoona.",
+        "example": "Inakuambia mteja amechelewa siku 45. Wewe unaamua cha kufanya.",
+        "changes": "Hakuna kingine kinachobadilika.",
+        "never": "Kubadilisha chochote au kumwasiliana na mtu kwa niaba yako.",
+        "raise": "Ziira itakuambia tu inachoona."
+      },
+      "2": {
+        "name": "Kuuliza",
+        "does": "Mbali na kukuambia, unaweza kumwomba mfanyakazi aeleze jambo.",
+        "example": "Meneja anamuuliza keshia kwa nini kaunta ilipungua, kwa kitufe kimoja.",
+        "changes": "Unapata kitufe cha \"Muulize mtu aeleze\".",
+        "never": "Kumlaumu mtu. Inauliza tu.",
+        "raise": "Mameneja wataweza kumuuliza mtu aliyetajwa aeleze jambo."
+      },
+      "3": {
+        "name": "Kuandaa",
+        "does": "Ziira inaandaa kazi na wewe unaidhinisha. Mtu daima ana neno la mwisho.",
+        "example": "Saruji imeisha, kwa hiyo Ziira inaandika rasimu ya ombi la manunuzi. Unaikagua na kuituma.",
+        "changes": "Ukurasa wa Mapendekezo unaonekana kwenye menyu.",
+        "never": "Kutuma, kulipa au kubadilisha chochote bila ruhusa yako.",
+        "raise": "Ziira itaandaa kazi ili mtu aidhinishe. Kila moja inafanyika tu ikiidhinishwa, kwa jina la mtu huyo. Mmiliki pekee ndiye anaweza kuruhusu hili."
+      },
+      "4": {
+        "name": "Kufanya kwa niaba yangu",
+        "does": "Ziira pia hufanya kazi ndogo za kawaida yenyewe, ndani ya mipaka unayoweka.",
+        "example": "Inamtumia mteja aliyechelewa siku 30 ukumbusho wa heshima wa malipo, hadi 10 kwa siku.",
+        "changes": "Unachagua inachoweza kufanya chini ya \"Mambo ambayo Ziira inaweza kukufanyia\".",
+        "never": "Kuhamisha pesa, kubadilisha bei, mipaka ya mkopo au bidhaa.",
+        "raise": "Ziira inaweza kufanya kazi za kawaida zisizohusu pesa yenyewe, zile tu unazoruhusu, kwa kikomo cha kila siku. Mmiliki pekee ndiye anaweza kuruhusu hili."
+      }
+    },
+    "lowerWithdraw": "Mapendekezo yanayosubiri idhini yataondolewa na mapya hayataandaliwa. Mambo Ziira ilifanya yenyewe yatakoma. Yaliyokwisha kufanyika yanabaki kwenye kumbukumbu.",
+    "lowerRules": "Ziira inaacha kufanya mambo yenyewe. Mapendekezo bado yanasubiri mtu aidhinishe.",
+    "lowerPlain": "Ziira itafanya kidogo kuanzia sasa. Hakuna lililokwisha kufanyika litakalobatilishwa.",
+    "changeTitle": "Kubadilisha kuwa \"{{name}}\"?",
+    "changeConfirm": "Badilisha",
+    "saved": "Sasa imewekwa \"{{name}}\"."
+  },
+  "alerts": {
+    "menu": "Unapopata habari kutoka Ziira",
+    "title": "Unapopata habari kutoka Ziira",
+    "hint": "Jinsi Ziira inavyokufikia: arifa za haraka, muhtasari wako wa kila siku na idhini.",
+    "urgentTitle": "Arifa za haraka",
+    "urgentHint": "Ziira inaweza kuwatumia ujumbe watu sahihi mara moja jambo zito linapotokea. Mengine yote yanasubiri muhtasari wa kila siku.",
+    "channel": "Tuma arifa za haraka kwa",
+    "channelHint": "Ni njia ambazo biashara yako imeweka tu ndizo zimeorodheshwa.",
+    "off": "Usitume arifa",
+    "gone": "{{channel}} (haipatikani tena)",
+    "level": "Nini kinahesabiwa kuwa cha haraka",
+    "levelHint": "Kidogo kuliko hiki kinasubiri muhtasari wa kila siku.",
+    "levels": {
+      "critical": "Mambo ya haraka sana tu",
+      "high": "Mambo ya haraka",
+      "medium": "Mambo ya haraka na ya hivi karibuni",
+      "low": "Kila kitu"
+    },
+    "offNote": "Arifa zimezimwa. Bado utaona kila kitu kwenye programu na kwenye muhtasari wako wa kila siku.",
+    "save": "Hifadhi",
+    "saved": "Imehifadhiwa.",
+    "mineTitle": "Chaguo zako mwenyewe",
+    "mineHint": "Kila mtu huchagua jinsi anavyopenda kufikiwa kwa arifa, muhtasari wa kila siku na idhini, na saa za utulivu ambapo hakuna kinachopaswa kumsumbua.",
+    "mineLink": "Fungua akaunti yangu"
+  },
+  "suggestions": {
+    "menu": "Mapendekezo"
+  },
+  "keywords": {
+    "today": "command center overview dashboard home brief leo muhtasari",
+    "things": "findings alerts issues problems exceptions arifa matatizo",
+    "suggestions": "actions proposals approve mapendekezo idhini",
+    "watching": "checks baselines coverage thresholds limits mipaka",
+    "how": "levels automation rules autonomy viwango",
+    "alerts": "notifications alerts channels quiet hours arifa",
+    "setup": "quick start onboarding anza weka"
+  }
+}

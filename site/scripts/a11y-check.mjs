@@ -17,7 +17,7 @@ const MODES = [
   { name: "phone light", viewport: { width: 375, height: 812 }, colorScheme: "light" },
 ];
 
-const srv = await serve(path.resolve(here, "../dist"));
+const srv = await serve(path.resolve(process.env.SITE_DIST ?? path.join(here, "../dist")));
 const browser = await chromium.launch();
 let violations = 0;
 for (const mode of MODES) {

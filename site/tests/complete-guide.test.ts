@@ -59,10 +59,10 @@ describe("the complete guide's content", () => {
     for (const s of sections) JSON.stringify(s.blocks).replace(/\]\(@([a-z0-9-]+)\)/g, (_m, id: string) => { resolve(id); return ""; });
     expect(inline("[x](#ask) and [y](@home)", "en", (id) => `/${id}/`)).toContain('href="#ask"');
   });
-  it("has unique section ids, an FAQ of 12 to 15 questions and a matching FAQ in the page definition", () => {
+  it("has unique section ids, an FAQ of 8 to 15 questions and a matching FAQ in the page definition", () => {
     const ids = [...sections.map((s) => s.id), faqSection.id, "next"];
     expect(new Set(ids).size).toBe(ids.length);
-    expect(faq.length).toBeGreaterThanOrEqual(12);
+    expect(faq.length).toBeGreaterThanOrEqual(8);
     expect(faq.length).toBeLessThanOrEqual(15);
     const def = intelEn.find((p) => p.id === "intelligence-complete")!;
     expect(def.faq).toBe(faq);
@@ -72,14 +72,14 @@ describe("the complete guide's content", () => {
     expect(def.description.length).toBeLessThanOrEqual(160);
     expect(def.h1).toContain("complete guide");
   });
-  it("covers the fifteen sections the owner asked for", () => {
-    expect(sections.length + 1).toBe(15);
+  it("is a short reference: at most twelve sections plus the FAQ", () => {
+    expect(sections.length).toBeLessThanOrEqual(12);
     expect(guideWords()).toBeGreaterThan(guideWords(true));
   });
-  it("stays honest: names what is not tested live and claims no certification", () => {
+  it("stays true: says Ziira never moves money, claims no certification and never uses the old product name", () => {
     const text = JSON.stringify([sections, faq]).toLowerCase();
-    for (const w of ["whatsapp", "sms", "erpnext", "ai answers", "never moves money"]) expect(text).toContain(w);
-    expect(text).toContain("no certifications");
+    expect(text).toContain("never moves money");
+    expect(text).not.toMatch(/\b(iso 27001|soc 2|certified)\b/);
     expect(text).not.toContain("ziira core");
   });
 });

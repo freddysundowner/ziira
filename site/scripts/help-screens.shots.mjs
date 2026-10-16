@@ -31,10 +31,12 @@ export const shots = [
   { key: "account-1-edition", ten: "out", url: "/register", marks: [C("label:has(input[type=radio])"), BX("Continue")] },
   { key: "account-2-business", ten: "out", url: "/register", pre: async (p) => {
       await p.getByText("Retail / POS").click(); await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(500);
-      await p.getByLabel("Your name").fill("Demo Owner"); await p.getByLabel("Email").fill("owner@example.test"); await p.getByLabel(/^Password/).fill("not-a-real-password-1");
+      await p.getByLabel("Your full name").fill("Demo Owner"); await p.getByLabel("Work email").fill("owner@example.test");
+      await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(600);
+      for (const l of await p.locator("input[type=password]").all()) await l.fill("not-a-real-password-1");
       await p.getByRole("button", { name: "Continue" }).click(); await p.waitForTimeout(700);
-      await p.getByLabel("Business name").fill("Mama Njeri Hardware"); await p.getByLabel("Country").selectOption({ label: "Kenya" }); await p.waitForTimeout(600);
-    }, marks: [LB("Business name"), LB("Country"), BX("Create business")] },
+      await p.getByLabel("Business name").fill("Mama Njeri Hardware"); await p.getByLabel("Country").click(); await p.keyboard.type("Kenya"); await p.getByRole("option", { name: /Kenya/ }).first().click(); await p.waitForTimeout(600);
+    }, marks: [LB("Business name"), LB("Country"), BX("Continue")] },
   { key: "setup-1-organisation", ten: "shop", url: "/admin/organisation", marks: [B("Edit company"), B("Add branch"), (p) => p.getByRole("link", { name: "General", exact: true })] },
   { key: "team-1-users", ten: "shop", url: "/admin/users", marks: [B("New user"), BX("Actions")] },
   { key: "team-2-roles", ten: "shop", url: "/admin/users", pre: async (p) => { await p.getByRole("button", { name: "Actions" }).last().click(); await p.getByRole("menuitem", { name: "Roles and access" }).click(); await p.waitForTimeout(900); },
@@ -46,14 +48,11 @@ export const shots = [
   { key: "support-1-access", url: "/admin/support", marks: [BX("Give support access")], pad: 120 },
 
   // ---- 2 Sell
-  { key: "products-1-setup", ten: "shop", url: "/products-setup", marks: [TAB("Units"), TAB("Tax codes"), TAB("Price lists")] },
   { key: "products-2-new", ten: "shop", url: "/products", pre: CL("New product"), marks: [LB("Name"), DLG("select >> nth=0"), BX("Save product")] },
   { key: "products-3-price", ten: "shop", url: "/products", pre: async (p) => { await p.getByText("Cement 50kg").first().click(); await p.waitForTimeout(900); await CL("Prices")(p); },
     marks: [C("select[aria-label='Price list']"), (p) => p.getByRole("textbox", { name: "Price" }), BX("Save price")] },
-  { key: "opening-1-location", ten: "shop", url: "/stock/locations", pre: CL("New location"), marks: [DLG("select >> nth=0"), DLG("input >> nth=0")] },
   { key: "opening-2-form", ten: "shop", url: "/stock/opening", marks: [(p) => p.locator("select").first(), T("Choose a product"), BX("Add a product"), BX("Post opening stock")] },
   { key: "sale-1-open", url: "/pos/terminal", marks: [LB("Branch"), LB("Till (device)"), LB("Opening float"), BX("Open till and start selling")], pad: 90 },
-  { key: "sale-2-cart", ten: "shop", url: "/pos/terminal", pre: addCement, marks: [C("input[placeholder^='Search or scan']"), T("KES 800.00 ×"), B("Pay")], minH: 520 },
   { key: "sale-3-done", ten: "shop", url: "/pos/terminal", pre: async (p) => { await addCement(p); await p.getByRole("button", { name: /^Pay/ }).click(); await p.waitForTimeout(600); await p.getByLabel("Handed over").fill("1000"); await p.getByRole("button", { name: "Complete sale" }).click(); await p.waitForTimeout(2500); },
     marks: [T("Give change"), BX("New sale"), BX("Print receipt")], minH: 520 },
   { key: "pay-1-mobile", ten: "shop", url: "/pos/terminal", pre: async (p) => { await addCement(p); await p.getByRole("button", { name: /^Pay/ }).click(); await p.waitForTimeout(600); await p.getByRole("button", { name: "Mobile money", exact: true }).click(); await p.waitForTimeout(500); },
@@ -115,16 +114,17 @@ export const shots = [
   { key: "payroll-2-run", url: "/payroll", pre: firstRow, marks: [T("Calculated"), T("Employees"), H("Review"), BX("Submit for approval")], minH: 520 },
 
   // ---- 8 Intelligence
-  { key: "checks-1-findings", url: "/findings", marks: [T("Open findings"), LB("Status"), (p) => p.locator("main tbody tr").first()], minH: 520 },
-  { key: "checks-2-settings", url: "/findings/checks", marks: [BX("Run checks now"), (p) => p.locator("main h2").nth(1), BX("Save limits")], minH: 520 },
-  { key: "brief-1-page", url: "/command/briefs", marks: [LB("Send by"), BX("Save"), H("Preview and send")], minH: 520 },
-  { key: "finding-1-open", url: "/findings", pre: async (p) => { await p.locator('a[href^="/findings/"]:not([href="/findings/actions"]):not([href="/findings/checks"])').first().click(); await p.waitForTimeout(1500); }, marks: [BX("I have seen this"), H("What it is based on"), H("History")], minH: 520 },
-  { key: "actions-1-page", url: "/findings/actions", marks: [TAB("Waiting for me"), TAB("History")], minH: 300 },
-  { key: "ask-1-ai", url: "/admin/settings", pre: CL("AI assistant"), marks: [T("Provider:"), T("What it does"), T("What is sent to the AI provider")], minH: 520 },
-  { key: "alerts-1-account", url: "/admin/account", marks: [LB("Urgent alerts"), LB("Daily brief"), T("Quiet hours"), BX("Save")], minH: 520 },
-  { key: "level-1-page", url: "/admin/settings", pre: CL("Intelligence actions"), marks: [T("Level 1: Report only"), T("Automatic actions"), T("What was done")], minH: 520 },
+  { key: "checks-1-findings", url: "/intelligence/things", marks: [TAB("Open"), C("main select"), T("Look into it")], minH: 520 },
+  { key: "checks-2-settings", url: "/intelligence/watching", marks: [T("Set up again"), T("Look again now"), T("Tell me when the day's cash")], minH: 520 },
+  { key: "quick-1-page", url: "/intelligence/setup", marks: [T("1. What matters to you?"), T("Send me a daily summary"), BX("Turn it on")], minH: 520 },
+  { key: "brief-1-page", url: "/intelligence/summary", marks: [LB("Send by"), BX("Save"), T("See it first, or send it now")], minH: 520 },
+  { key: "finding-1-open", url: "/intelligence/things", pre: async (p) => { await p.getByRole("button", { name: "Look into it" }).or(p.getByRole("link", { name: "Look into it" })).first().click(); await p.waitForTimeout(1500); }, marks: [BX("I'm on it"), T("What we noticed"), T("The facts")], minH: 520 },
+  { key: "actions-1-page", url: "/intelligence/suggestions", marks: [TAB("Waiting for you"), TAB("Decided")], minH: 300 },
+  { key: "ask-1-ai", url: "/admin/settings", pre: CL("AI assistant"), marks: [T("Explains things in plain words"), T("What it does"), T("What is sent to the AI provider")], minH: 520 },
+  { key: "alerts-1-account", url: "/admin/account", marks: [LB("Urgent alerts"), LB("Daily summary"), T("Quiet hours"), BX("Save")], minH: 520 },
+  { key: "level-1-page", url: "/intelligence/how-much", marks: [C("label:has(input[type=radio])"), T("(now)"), (p) => p.locator("label:has(input[type=radio])").nth(3)], minH: 520 },
   { key: "connect-1-new", url: "/connect/new", marks: [H("Just drop your file"), H("Your ERP"), H("Statements and exports")], minH: 520 },
-  { key: "coverage-1-panel", url: "/command", pre: async (p) => { await p.getByText("What Ziira can check").first().scrollIntoViewIfNeeded(); await p.waitForTimeout(400); }, marks: [T("of Ziira's checks can run"), T("Cash and sales"), BX("Add connection")], minH: 420 },
+  { key: "coverage-1-panel", url: "/intelligence", pre: async (p) => { await p.getByText("What Ziira can check").first().scrollIntoViewIfNeeded(); await p.waitForTimeout(400); }, marks: [T("of Ziira's checks can run"), T("Cash and sales"), T("Connect more to check more")], minH: 420 },
 
   // ---- 9 Settings
   { key: "addons-1-page", ten: "shop", url: "/addons", marks: [BX("Change edition"), C("input[placeholder='Search add-ons']"), (p) => p.getByRole("button", { name: "Switch off" }).first()], minH: 520 },

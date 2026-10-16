@@ -29,3 +29,4 @@ export { BackupCodes } from "./mfa/BackupCodes";
 export { TwoStepSetup } from "./mfa/TwoStepSetup";
 export { useCountdown } from "./mfa/useCountdown";
 export * from "./mfa/helpers";
+export { readStored, writeStored } from "./storage";

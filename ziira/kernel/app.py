@@ -22,6 +22,9 @@ from ziira.kernel.api.edition_routes import router as edition_router
 from ziira.kernel.api.integration_routes import router as integration_router
 from ziira.kernel.api.messaging_routes import router as messaging_router
 from ziira.kernel.api.notification_routes import router as notification_router
+from ziira.kernel.api.operator_admin_routes import router as operator_admin_router
+from ziira.kernel.api.operator_ai_routes import router as operator_ai_router
+from ziira.kernel.api.operator_email_routes import router as operator_email_router
 from ziira.kernel.api.operator_payment_routes import router as operator_payment_router
 from ziira.kernel.api.operator_routes import router as operator_router
 from ziira.kernel.api.operator_unit_routes import router as operator_unit_router
@@ -30,6 +33,7 @@ from ziira.kernel.api.organisation_routes import router as organisation_router
 from ziira.kernel.api.payment_routes import router as subscription_payment_router
 from ziira.kernel.api.platform_routes import router as platform_router
 from ziira.kernel.api.privacy_routes import router as privacy_router
+from ziira.kernel.api.public_config_routes import router as public_config_router
 from ziira.kernel.api.public_plan_routes import router as public_plan_router
 from ziira.kernel.api.routes import router as kernel_router
 from ziira.kernel.api.security_routes import router as security_router
@@ -90,6 +94,10 @@ def create_app() -> FastAPI:
     app.include_router(billing_router)
     app.include_router(subscription_payment_router)
     app.include_router(operator_payment_router)
+    app.include_router(operator_email_router)
+    app.include_router(public_config_router)
+    app.include_router(operator_ai_router)
+    app.include_router(operator_admin_router)
     app.include_router(site_router)
     app.include_router(site_public_router)
     app.include_router(organisation_router)

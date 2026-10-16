@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { MoreHorizontal, UserPlus } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Alert, Badge, Button, Card, type Column, DataTable, Field, formatDate, Input, Menu, Modal, PageHeader, type Schemas, Select, StatusBadge, toast, useTranslation } from "@/sdk";
 
@@ -22,11 +23,12 @@ export default function OperatorsPage() {
   const { t } = useTranslation("operator");
   const me = useOperatorMe();
   const refresh = useRefreshOperator();
+  const [params] = useSearchParams();
   const [dialog, setDialog] = useState<
     | { kind: "add" }
     | { kind: "role" | "status" | "reset" | "resetPassword"; operator: OperatorRow }
     | null
-  >(null);
+  >(params.get("new") === "1" ? { kind: "add" } : null);
   const [secret, setSecret] = useState<Schemas["OperatorSecretOut"] | null>(null);
   const [temporary, setTemporary] = useState<{ name: string; password: string } | null>(null);
   const withCodes = me.data?.mfa_mode === "totp";

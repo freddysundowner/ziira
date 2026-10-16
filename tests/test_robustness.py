@@ -203,6 +203,8 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
             return {"topics": {"cash": True}}
         if path.endswith("/ignore") and "/intel/findings/" in path:
             return {"scope": "everywhere", "days": 1}
+        if path.endswith("/snooze") and "/intel/findings/" in path:
+            return {"days": 1}
         if path.endswith("/refund") and "/pos/" in path:
             return {"amount": "1", "method": "mobile_money", "reason": "Fuzz"}
         if path.endswith("/send-reminder") or path.endswith("/send-reminders"):

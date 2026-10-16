@@ -675,6 +675,7 @@ def _tell_operators_of_mismatch(attempt_id: UUID, invoice: dict[str, Any], probl
                 f"A payment reported by the payment provider did not match invoice {invoice['number']} and was NOT "
                 f"credited. {'; '.join(problems)}.\n\nOpen the Super Admin > Billing > Payment attempts "
                 f"(attempt {attempt_id}) to review it.",
+                "billing",
             )
         except Exception:  # noqa: BLE001
             log.warning("Could not tell %s about a payment mismatch", address, exc_info=True)

@@ -1,0 +1,337 @@
+{
+  "band": {
+    "urgent": "Urgent",
+    "soon": "Soon",
+    "look": "Worth a look"
+  },
+  "today": {
+    "menu": "Today",
+    "title": "Today",
+    "need_one": "{{count}} thing needs you today.",
+    "need_other": "{{count}} things need you today.",
+    "urgent_one": "{{count}} is urgent.",
+    "urgent_other": "{{count}} are urgent.",
+    "itIsUrgent": "It is urgent.",
+    "allUrgent": "All of them are urgent.",
+    "nothing": "Nothing needs you today.",
+    "nothingHint": "Ziira has looked at your business and found nothing to worry about.",
+    "emptyTitle": "All clear",
+    "emptyHint": "When something needs your attention it will show up here first.",
+    "seeAll": "See all {{count}}",
+    "setupTitle": "Set up Ziira in two minutes",
+    "setupHint": "Choose what matters to you and when to get your daily summary. Until then, Ziira watches everything.",
+    "setupAction": "Start"
+  },
+  "things": {
+    "menu": "Things to look at",
+    "title": "Things to look at",
+    "hint": "What Ziira noticed in your business. Each one is a question to answer, not an accusation.",
+    "tab": {
+      "open": "Open",
+      "waiting": "Waiting for someone",
+      "done": "Done"
+    },
+    "tabHint": {
+      "open": "Things nobody has picked up yet.",
+      "waiting": "Someone is on it, was asked to explain, or you put it aside for later.",
+      "done": "Fixed, or marked as not a problem."
+    },
+    "empty": {
+      "open": "Nothing needs you",
+      "waiting": "Nothing is waiting for anyone",
+      "done": "Nothing is finished yet"
+    },
+    "emptyHint": {
+      "open": "Ziira has looked and found nothing to worry about. Enjoy your day.",
+      "waiting": "When you give something to a person, or put it aside, it will show here.",
+      "done": "Things you mark as fixed or not a problem are kept here."
+    },
+    "count": "{{things}} things, shown as {{cards}} cards",
+    "more": "Show more",
+    "display": "How to show them",
+    "cards": "Cards",
+    "table": "List"
+  },
+  "card": {
+    "why": "Why it matters:",
+    "lookInto": "Look into it",
+    "howMany": "Like this",
+    "involved": "Money involved",
+    "showAll": "Show all {{count}}",
+    "hide": "Hide the list",
+    "andMore": "…and {{count}} more",
+    "snoozedUntil": "back on {{date}}"
+  },
+  "assignMany": "All {{count}} things on this card will go to the person you choose.",
+  "snooze": {
+    "label": "Remind me later",
+    "three": "In 3 days",
+    "week": "Next week",
+    "done": "Put aside. It comes back on its own, or sooner if it gets worse."
+  },
+  "thing": {
+    "title": "Thing to look at",
+    "noticed": "What we noticed",
+    "why": "Why it matters",
+    "next": "What you can do next",
+    "snoozed": "Put aside until {{date}}. It comes back sooner if it gets worse."
+  },
+  "facts": {
+    "title": "The facts",
+    "found": "What we found",
+    "normal": "Normal or allowed"
+  },
+  "related": {
+    "title": "Also about this",
+    "hint": "Other open things about the same person or place."
+  },
+  "tech": {
+    "show": "Show technical details",
+    "names": "Show technical names",
+    "title": "Technical details",
+    "hint": "For support and for people who like the detail. You do not need these to use Ziira.",
+    "checkCode": "Check code",
+    "checkName": "Check name",
+    "findingId": "Record id",
+    "limits": "Limits used",
+    "numbers": "Raw numbers"
+  },
+  "ignore": {
+    "title": "Not a problem",
+    "hint": "Is this normal for your business? Tell Ziira and it will stop raising it.",
+    "what": "What should Ziira do?",
+    "scope": {
+      "this": "Just this one",
+      "branch": "Ignore this kind of thing at {{where}}",
+      "person": "Ignore this kind of thing for {{where}}",
+      "everywhere": "Ignore this kind of thing everywhere"
+    },
+    "howLong": "For how long",
+    "thirtyDays": "For 30 days",
+    "always": "Always",
+    "tune": "Also allow a little more before Ziira raises it again",
+    "reason": "Why is it fine? (optional)",
+    "defaultReason": "Not a problem",
+    "undo": "You can take this back any time under What Ziira watches.",
+    "confirm": "Save",
+    "done": "Done. It is closed.",
+    "doneMany_one": "Done. It is closed, and {{count}} other like it.",
+    "doneMany_other": "Done. It is closed, and {{count}} others like it."
+  },
+  "glossary": {
+    "open": "What does this mean?",
+    "yourNormal": {
+      "word": "Your normal",
+      "means": "What is usual for your business, worked out from your last few months. Ziira speaks up when something is well outside it."
+    },
+    "urgentSoon": {
+      "word": "Urgent, Soon, Worth a look",
+      "means": "How quickly something needs you. Urgent means today."
+    },
+    "notAProblem": {
+      "word": "Not a problem",
+      "means": "Close it, and optionally tell Ziira that this is normal at a branch or for a person so it stops raising it."
+    },
+    "watches": {
+      "word": "What Ziira watches",
+      "means": "The things Ziira looks at every few hours, such as late customers or stock running out. You can switch each one off or change its limit."
+    },
+    "watch": {
+      "word": "Watch",
+      "means": "Ziira only tells you. It never changes anything."
+    },
+    "ask": {
+      "word": "Ask",
+      "means": "You can ask a staff member to explain something."
+    },
+    "prepare": {
+      "word": "Prepare",
+      "means": "Ziira prepares the job, for example a draft order. A person approves it."
+    },
+    "act": {
+      "word": "Act for me",
+      "means": "Ziira does small routine jobs by itself, inside limits you set. Never anything with money."
+    }
+  },
+  "see": {
+    "title": "What Ziira can see",
+    "watching": "It watches {{count}} things for you.",
+    "change": "Change",
+    "source": {
+      "sales": "Sales and tills",
+      "stock": "Stock",
+      "payments": "Payments",
+      "suppliers": "Suppliers",
+      "books": "Books",
+      "staff": "Staff and payroll",
+      "customers": "Customers",
+      "other": "Your other systems"
+    }
+  },
+  "summary": {
+    "title": "Your daily summary",
+    "arrives": "Your daily summary arrives at {{time}} {{way}}.",
+    "inApp": "in the app",
+    "none": "You do not get a daily summary yet.",
+    "change": "Change",
+    "turnOn": "Turn it on",
+    "inAppOption": "In the app"
+  },
+  "quick": {
+    "menu": "Set up Ziira",
+    "title": "Set up Ziira",
+    "hint": "Choose what matters to you. You can change everything later.",
+    "step1": "1. What matters to you?",
+    "step1Hint": "Ziira will watch these for you.",
+    "everything": "Everything (recommended)",
+    "forYou": "Suits a {{edition}}",
+    "watchCount": "{{count}} things watched",
+    "noneChosen": "Pick at least one, or Ziira will watch nothing.",
+    "step2": "2. Your daily summary",
+    "step2Hint": "A short note each day on how the business is doing and what needs you.",
+    "summaryOn": "Send me a daily summary",
+    "time": "What time?",
+    "timeHint": "In your business's time zone.",
+    "where": "Where?",
+    "step3": "3. What you will see",
+    "step3Hint": "Things like this show up on your Today page.",
+    "finish": "Turn it on",
+    "done": "Ziira is set up.",
+    "example": "Example",
+    "sample": {
+      "title": "A customer is 45 days late paying",
+      "summary": "Mary's Shop owes 24,500 and the oldest invoice is 45 days past its date.",
+      "why": "The longer it waits, the harder it is to collect.",
+      "owesLabel": "Customer owes",
+      "lateLabel": "Days late"
+    }
+  },
+  "watch": {
+    "menu": "What Ziira watches",
+    "title": "What Ziira watches",
+    "hint": "Everything Ziira looks at for you, in plain words. Switch things off, or change the limits in the sentences.",
+    "setupAgain": "Set up again",
+    "resetAll": "Back to recommended",
+    "resetAllTitle": "Back to recommended?",
+    "resetAllAsk": "Everything is switched on again, and every limit goes back to what we recommend.",
+    "resetAllDone": "Everything is back to recommended.",
+    "otherSystem": "From your other system",
+    "countOn": "{{on}} of {{total}} on",
+    "topicSwitch": "Watch {{topic}}",
+    "topicSaved": "Saved.",
+    "switch": "Watch: {{title}}",
+    "moreSettings": "More settings",
+    "lessSettings": "Fewer settings",
+    "recommendedIs": "Recommended: {{value}}",
+    "reset": "Back to recommended",
+    "save": "Save",
+    "saved": "Saved.",
+    "on": "Ziira will watch this.",
+    "off": "Ziira will not watch this.",
+    "resetDone": "Back to recommended."
+  },
+  "ignoreRules": {
+    "title": "What you told Ziira is normal",
+    "hint": "Ziira does not raise these. Remove one to hear about it again.",
+    "none": "Nothing yet",
+    "noneHint": "When you choose \"Not a problem\" and tell Ziira it is normal, it is listed here.",
+    "at": "At {{where}}",
+    "everywhere": "Everywhere",
+    "until": "until {{date}}",
+    "always": "always",
+    "by": "told by {{who}} on {{date}}",
+    "remove": "Remove",
+    "removed": "Removed. Ziira will raise these again."
+  },
+  "how": {
+    "menu": "How much Ziira does for you",
+    "page": "How much Ziira does for you",
+    "pageHint": "Choose how far Ziira goes when it finds something. You can change this at any time.",
+    "title": "How much Ziira does for you",
+    "hint": "Four steps, from only telling you to doing small jobs for you.",
+    "noCompany": "Choose a company first.",
+    "current": "(now)",
+    "example": "For example:",
+    "changes": "What changes:",
+    "never": "It will never:",
+    "ownerOnly": "Only the owner can switch this on.",
+    "neverMoves": "Ziira never moves money. Anything to do with money, prices, credit or stock waits for a person, and everything it does is written down.",
+    "mode": {
+      "1": {
+        "name": "Watch",
+        "does": "Ziira watches your business and tells you what it notices.",
+        "example": "It tells you a customer is 45 days late. You decide what to do.",
+        "changes": "Nothing else changes.",
+        "never": "Change anything or contact anyone for you.",
+        "raise": "Ziira will only tell you what it notices."
+      },
+      "2": {
+        "name": "Ask",
+        "does": "As well as telling you, you can ask a staff member to explain something.",
+        "example": "A manager asks the cashier why a till was short, with one button.",
+        "changes": "You get an \"Ask someone to explain\" button.",
+        "never": "Blame anyone. It only asks.",
+        "raise": "Managers will be able to ask a named person to explain something."
+      },
+      "3": {
+        "name": "Prepare",
+        "does": "Ziira prepares the work and you approve it. A person always has the last word.",
+        "example": "Cement ran out, so Ziira writes a draft purchase request. You check it and send it.",
+        "changes": "A Suggestions page appears in the menu.",
+        "never": "Send, pay or change anything without your OK.",
+        "raise": "Ziira will prepare jobs for a person to approve. Each is done only when approved, in that person's name. Only the owner can allow this."
+      },
+      "4": {
+        "name": "Act for me",
+        "does": "Ziira also does small routine jobs on its own, inside limits you set.",
+        "example": "It sends a polite payment reminder to a customer who is 30 days late, up to 10 a day.",
+        "changes": "You choose what it may do under \"Things Ziira may do for you\".",
+        "never": "Move money, change prices, credit limits or stock.",
+        "raise": "Ziira may do routine jobs that involve no money on its own, only the ones you allow, with a daily limit. Only the owner can allow this."
+      }
+    },
+    "lowerWithdraw": "Suggestions waiting for approval are withdrawn and no new ones are prepared. Things Ziira did by itself stop. What was already done stays on record.",
+    "lowerRules": "Ziira stops doing things by itself. Suggestions still wait for a person to approve.",
+    "lowerPlain": "Ziira will do less from now on. Nothing already done is undone.",
+    "changeTitle": "Change to \"{{name}}\"?",
+    "changeConfirm": "Change",
+    "saved": "Now set to \"{{name}}\"."
+  },
+  "alerts": {
+    "menu": "Where you hear from Ziira",
+    "title": "Where you hear from Ziira",
+    "hint": "How Ziira reaches you: urgent alerts, your daily summary and approvals.",
+    "urgentTitle": "Urgent alerts",
+    "urgentHint": "Ziira can message the right people straight away when something serious comes up. Everything else waits for the daily summary.",
+    "channel": "Send urgent alerts by",
+    "channelHint": "Only the ways your business has set up are listed.",
+    "off": "Don't send alerts",
+    "gone": "{{channel}} (no longer available)",
+    "level": "What counts as urgent",
+    "levelHint": "Anything less than this waits for the daily summary.",
+    "levels": {
+      "critical": "Only the most urgent things",
+      "high": "Urgent things",
+      "medium": "Urgent things and things for soon",
+      "low": "Everything"
+    },
+    "offNote": "Alerts are off. You will still see everything in the app and in your daily summary.",
+    "save": "Save",
+    "saved": "Saved.",
+    "mineTitle": "Your own choices",
+    "mineHint": "Each person picks how they like to be reached for alerts, the daily summary and approvals, and the quiet hours when nothing should disturb them.",
+    "mineLink": "Open my account"
+  },
+  "suggestions": {
+    "menu": "Suggestions"
+  },
+  "keywords": {
+    "today": "command center overview dashboard home brief",
+    "things": "findings alerts issues problems exceptions severity anomalies",
+    "suggestions": "actions proposals approve level 3 prepare",
+    "watching": "checks baselines coverage thresholds limits tuning rules",
+    "how": "levels action level automation rules autonomy 1 2 3 4",
+    "alerts": "notifications alerts channels quiet hours briefs approvals",
+    "setup": "quick start onboarding set up intelligence first run"
+  }
+}

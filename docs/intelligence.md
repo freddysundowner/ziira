@@ -1,5 +1,7 @@
 # Intelligence and the Command Center
 
+> In the app the section is called **Intelligence** and uses plain business words (see "Plain words" below). The technical names in this document are what the code, the API and the Expert layer use.
+
 Ziira Intelligence checks the business every day and says what needs attention; the Command Center shows the figures and
 sends the briefs. Both are built into Core (the "inside Ziira Core" mode of `docs/specs/Ziira_Intelligence_1.0.txt`).
 Standalone mode (Intelligence on a business's existing system) is the `connect` unit: `docs/standalone-mode.md`.
@@ -14,6 +16,65 @@ units (pos, inventory, ...)                  intel                              
 Nothing in `intel` or `command` reads another unit's tables. **Units supply checks and figures through extension
 points** (`docs/extending-units.md`), so each check lives next to the data it reads, is tested with that unit, and a plugin
 can add more. Only units enabled for the business take part.
+
+## Plain words (the single source for what the UI says)
+
+The web app's Simple layer never shows the technical names. Every label, empty state, toast, tooltip and error in the Intelligence area
+(and the Home widgets, the Settings pages and the My account notification card) uses the words on the left. Technical names stay in the
+code and API, in the glossary popover ("What does this mean?") and in the Expert layer ("Show technical details" on a thing, "Show
+technical names" on What Ziira watches). `frontend/src/modules/intel/bannedTerms.json` lists the words that must not appear in UI strings
+or in the per-check plain text; `plainLanguage.test.ts` and `tests/test_intel_plain.py` enforce it (strings under a `tech` key are exempt).
+
+| UI says (Simple layer) | Technical name |
+|---|---|
+| Intelligence (sidebar section) | Command Center |
+| Today | Overview (`/command`) |
+| Things to look at (tabs Open / Waiting for someone / Done) | Findings (`/intel/findings`; `view=open|waiting|done`) |
+| Daily summary | Briefs (`/command/briefs`) |
+| Suggestions | Suggested actions (proposals) |
+| Waiting for you (own sidebar entry, with a count) | Approvals and Exceptions (kernel) |
+| Urgent / Soon / Worth a look | Severity critical+high / medium / low+info |
+| Your normal | Baseline |
+| What Ziira watches | Checks (`/intel/checks`) |
+| What Ziira can see | Coverage |
+| How much Ziira does for you: Watch / Ask / Prepare / Act for me | Action levels 1 / 2 / 3 / 4 (`intel_action_level`) |
+| Things Ziira may do for you | Automation rules |
+| What Ziira did | Action log |
+| Not a problem (this one / this kind of thing at a branch, for a person, or everywhere, for 30 days or always) | Dismiss; ignore rule (`intel.suppression_rule`) |
+| I'm on it / Give to someone / Fixed / Remind me later | Acknowledge / Assign / Resolve / Snooze |
+| Where you hear from Ziira | Alert channel and minimum severity, brief schedule, per-person channels and quiet hours |
+| Set up Ziira (Quick start) | Topic switches over the per-check enable flags |
+| The six topics: Cash and sales, Stock, Customers who owe, Suppliers, Staff and payroll, Books | `topic` of a check (cash, stock, customers, suppliers, staff, books) |
+
+New URLs: `/intelligence` (Today), `/intelligence/things[/:id]`, `/intelligence/summary`, `/intelligence/suggestions`,
+`/intelligence/setup`, and under Settings > Intelligence `/intelligence/watching`, `/intelligence/how-much`, `/intelligence/alerts`.
+The old addresses (`/command`, `/command/briefs`, `/findings`, `/findings/:id`, `/findings/actions`, `/findings/checks`,
+`/admin/settings?tab=actions`) redirect. Search (cmd-K) still finds pages by the old words (findings, baselines, checks, briefs, coverage, levels, rules).
+
+### Plain text per check
+`ziira/modules/intel/domain/plain_checks.json` (English and Swahili) holds, for every registered check: `title` (the plain headline), `why`
+(why it matters), `todo` (what to do next), `topic`, `sentence` (the check's limits as a sentence with `{limit_name}` placeholders) and `units`;
+plus `_topics`, `_params` (a plain label for every limit) and `_figures` (a label and a display kind for every figure a finding carries).
+A check may declare `plain_title`, `why_it_matters`, `what_to_do` on the class instead (plugins); an entry may use `"like": "<other check>"`
+(the standalone twins). `GET /intel/plain?lang=en|sw` serves it; the web app uses it for every card and sentence. `tests/test_intel_plain.py`
+fails when a registered check has no plain text, a sentence names a limit the check lacks, or a banned technical word appears.
+The website's own check descriptions (`site/src/content/checks.plain.json`) are written separately for the public site; the two are not
+generated from each other (limit labels exist in both, in English only on the site).
+
+### Less noise
+- **Grouping**: `GET /intel/findings/grouped` returns similar findings (same check, same branch, first noticed the same day, UTC) as one group with
+  a count, the most serious severity, the money involved and up to 25 members, ranked by urgency, then money, then recency. Stored findings never change.
+  Today shows the top 5 groups ("See all 57").
+- **Snooze** (`POST /findings/{id}/snooze`, 1 to 90 days): `finding.snoozed_until`; snoozed findings are left out of lists, counts, briefs and ranking
+  until the time is up, and come back at once when the engine sees the finding get worse (a higher severity, or the money involved up by half or more).
+- **"This is normal"** (`POST /findings/{id}/ignore`): dismisses the finding, stores an ignore rule (`intel.suppression_rule`: check, company, optional
+  branch, optional person/thing, until date or always), closes the other open findings the rule covers (each dismissal is on the finding's history and the
+  audit log), and the engine does not raise a covered new finding. Rules are listed and removed in What Ziira watches (`GET/DELETE /intel/ignore-rules`).
+  With `tune: true`, and only for checks listed in `domain/plain.py: TUNABLE` (limit and the finding's value measured the same way), the check's own limit is
+  raised to 10% above this finding's size through the normal check setting (audited). Nothing else about baselines is changed.
+- **Topics**: `GET/PUT /intel/topics` switches every check of a topic (keeping limits the business changed); `configured` is false until the business has any
+  check setting, which is what makes Today offer the Quick start. `POST /intel/checks/{code}/reset` returns one check to on and its default limits.
+
 
 ## The checks engine (`ziira/modules/intel`)
 
@@ -165,8 +226,8 @@ class MyAction(ActionProvider):
   the channel `chat`), free text goes to Ask Ziira, and a number that is not exactly one active user's verified number is
   ignored without a reply. `ziira/modules/intel/inbound.py`, `services/approver_messages.py`, `services/channel_questions.py`; the
   channel layer is `docs/channels.md`.
-- **Screens**: the finding page has a "Suggested actions" card; **Findings > Actions** is the inbox of suggestions waiting for the
-  signed-in person plus the history; **Settings > Intelligence actions** has the level, the rules and the action log.
+- **Screens**: the thing's page has a "What Ziira suggests" card; **Suggestions** (in the sidebar when the mode is Prepare or Act for me, or any exist) is the inbox of suggestions
+  waiting for the signed-in person plus the history; **Settings > Intelligence > How much Ziira does for you** has the four modes, the things Ziira may do by itself and the action log.
 - **Not built**: approving by SMS or email reply; approving Core's own approval requests (leave, payroll) by reply; rule conditions
   on the customer's group or the size of one invoice (only the finding's branch and amount). Chat channels need a plugin that provides one
   (`leadsintel`) and have not been run against a live service. With no such plugin on, suggestions are announced nowhere and wait in

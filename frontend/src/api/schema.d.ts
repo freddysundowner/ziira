@@ -3224,6 +3224,599 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/operator/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Email
+         * @description The providers with their settings (secrets only as set / not set), the sender and the status.
+         */
+        get: operations["get_email_api_v1_operator_email_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/providers/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Provider */
+        put: operations["save_provider_api_v1_operator_email_providers__name__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/sender": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Sender */
+        put: operations["save_sender_api_v1_operator_email_sender_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Active
+         * @description Make a tested provider live, or go back to the environment's settings (empty name).
+         */
+        put: operations["set_active_api_v1_operator_email_active_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Test
+         * @description A test message (to the operator's own address by default). The answer is the provider's reason.
+         */
+        post: operations["send_test_api_v1_operator_email_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check
+         * @description Plain checks of the saved settings, with advice about SPF and DKIM. Looks nothing up.
+         */
+        post: operations["check_api_v1_operator_email_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/move-from-environment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move From Environment
+         * @description Copy the environment's plain mail settings here; the secret is typed in afterwards.
+         */
+        post: operations["move_from_environment_api_v1_operator_email_move_from_environment_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/email/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mail Log */
+        get: operations["mail_log_api_v1_operator_email_log_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/platform/behaviour": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Behaviour */
+        get: operations["get_behaviour_api_v1_operator_platform_behaviour_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/platform/behaviour/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Behaviour */
+        put: operations["put_behaviour_api_v1_operator_platform_behaviour__key__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Config
+         * @description Whether sign-up is open, invitation only or closed, and the terms, privacy, help and website links.
+         */
+        get: operations["public_config_api_v1_public_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Overview
+         * @description Every installed AI provider with its settings (never its key), and the platform-wide settings.
+         */
+        get: operations["get_overview_api_v1_operator_ai_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/providers/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Provider */
+        put: operations["put_provider_api_v1_operator_ai_providers__name__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/providers/{name}/refresh-models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Refresh Models
+         * @description Ask the provider which models exist for the saved key. A cheap call; no model is run.
+         */
+        post: operations["post_refresh_models_api_v1_operator_ai_providers__name__refresh_models_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/providers/{name}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Test
+         * @description A tiny real call with the saved key and the Ask model; its estimated cost is counted in the usage.
+         */
+        post: operations["post_test_api_v1_operator_ai_providers__name__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/default-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Default Change
+         * @description What making this provider the default would do: how many businesses must agree again.
+         */
+        get: operations["get_default_change_api_v1_operator_ai_default_change_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Default
+         * @description Change the default provider (typed confirmation and a reason). Consents given for the old one stop working.
+         */
+        put: operations["put_default_api_v1_operator_ai_default_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/cap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Cap */
+        put: operations["put_cap_api_v1_operator_ai_cap_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Usage
+         * @description This month's tokens and estimated spend per provider, the ten busiest businesses and spend per day.
+         */
+        get: operations["get_usage_api_v1_operator_ai_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/quality-check/estimate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Quality Estimate */
+        get: operations["get_quality_estimate_api_v1_operator_ai_quality_check_estimate_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/quality-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Quality Check
+         * @description Run the scored check with real provider calls (real spend). Refused unless the cost was confirmed.
+         */
+        post: operations["post_quality_check_api_v1_operator_ai_quality_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/tenant-overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Tenant Overrides
+         * @description Businesses an operator has put on a different provider than the default (none unless someone did).
+         */
+        get: operations["get_tenant_overrides_api_v1_operator_ai_tenant_overrides_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/ai/tenant-overrides/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Tenant Override */
+        put: operations["put_tenant_override_api_v1_operator_ai_tenant_overrides__code__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search
+         * @description Find subscribers, invoices, plans, licences (and operators, where allowed) by what they are called.
+         */
+        get: operations["search_api_v1_operator_search_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Alerts
+         * @description What needs an operator now, limited to the areas their role can act in.
+         */
+        get: operations["alerts_api_v1_operator_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/dashboard/system": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard System
+         * @description The dashboard's health tiles: readiness, queues, backup age, upgrades, mail, AI spend (never secrets).
+         */
+        get: operations["dashboard_system_api_v1_operator_dashboard_system_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/dashboard/series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard Series
+         * @description Money collected (a line per currency), new businesses or businesses lost, per month or week.
+         */
+        get: operations["dashboard_series_api_v1_operator_dashboard_series_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/dashboard/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard Feed
+         * @description The newest payments and sign-ups.
+         */
+        get: operations["dashboard_feed_api_v1_operator_dashboard_feed_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Setup
+         * @description First-time set-up from real state (email, registration, AI, payments, plans, website) and risky settings.
+         */
+        get: operations["setup_api_v1_operator_setup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Audit
+         * @description The operator action trail with filters: who, what, which subscriber, outcome, dates.
+         */
+        get: operations["audit_api_v1_operator_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/audit/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Audit Export
+         * @description The filtered trail as a CSV file (at most 5000 lines); the download is itself written to the trail.
+         */
+        get: operations["audit_export_api_v1_operator_audit_export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operator/site/availability": {
         parameters: {
             query?: never;
@@ -10863,11 +11456,6 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        /** ActiveIn */
-        ActiveIn: {
-            /** Active */
-            active: boolean;
-        };
         /** ActivityDoneIn */
         ActivityDoneIn: {
             /** Note */
@@ -11206,6 +11794,31 @@ export interface components {
             /** Detail */
             detail: string | null;
         };
+        /** AiCapIn */
+        AiCapIn: {
+            /**
+             * Cap Usd
+             * @description USD per month; null removes the cap
+             */
+            cap_usd?: string | null;
+        };
+        /** AiConnectionOut */
+        AiConnectionOut: {
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Model */
+            model: string;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Cost Usd */
+            cost_usd: string;
+        };
         /** AiConsentOut */
         AiConsentOut: {
             /**
@@ -11226,6 +11839,44 @@ export interface components {
             /** Model */
             model: string | null;
         };
+        /** AiDefaultIn */
+        AiDefaultIn: {
+            /** Provider */
+            provider: string;
+            /**
+             * Confirm
+             * @description The provider's code, typed
+             */
+            confirm: string;
+            /** Reason */
+            reason: string;
+        };
+        /** AiDefaultOut */
+        AiDefaultOut: {
+            /** From Provider */
+            from_provider: string | null;
+            /** To Provider */
+            to_provider: string;
+            /**
+             * Consents Affected
+             * @description Companies whose consent ends if the default changes
+             */
+            consents_affected: number;
+            /** Provider */
+            provider: string;
+        };
+        /** AiDefaultPreviewOut */
+        AiDefaultPreviewOut: {
+            /** From Provider */
+            from_provider: string | null;
+            /** To Provider */
+            to_provider: string;
+            /**
+             * Consents Affected
+             * @description Companies whose consent ends if the default changes
+             */
+            consents_affected: number;
+        };
         /** AiExplainIn */
         AiExplainIn: {
             /**
@@ -11234,6 +11885,230 @@ export interface components {
              * @enum {string}
              */
             language: "en" | "sw";
+        };
+        /** AiModelChoice */
+        AiModelChoice: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Tiers
+             * @description best_value, higher_quality and/or cheapest
+             */
+            tiers: string[];
+            /** Notes */
+            notes: string;
+            /**
+             * Input Per Mtok
+             * @description USD per million input tokens; null when no price is known
+             */
+            input_per_mtok: string | null;
+            /** Output Per Mtok */
+            output_per_mtok: string | null;
+            /** Price Overridden */
+            price_overridden: boolean;
+            /** In Catalog */
+            in_catalog: boolean;
+            /**
+             * Live
+             * @description In the provider's live list; null when the list was not fetched
+             */
+            live: boolean | null;
+        };
+        /** AiModelRefreshOut */
+        AiModelRefreshOut: {
+            /** Count */
+            count: number;
+            /** Missing Chosen */
+            missing_chosen: string[];
+        };
+        /** AiOverviewOut */
+        AiOverviewOut: {
+            /** Providers */
+            providers: components["schemas"]["AiProviderOut"][];
+            /** Default Provider */
+            default_provider: string | null;
+            /**
+             * Environment Provider
+             * @description With no default chosen here: the environment's provider
+             */
+            environment_provider: string | null;
+            /** Monthly Cap Usd */
+            monthly_cap_usd: string | null;
+            /** Month Spend Usd */
+            month_spend_usd: string;
+            /** Cap Reached */
+            cap_reached: boolean;
+            /** Production */
+            production: boolean;
+        };
+        /** AiPriceIn */
+        AiPriceIn: {
+            /** Input */
+            input: string;
+            /** Output */
+            output: string;
+        };
+        /** AiProviderIn */
+        AiProviderIn: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /**
+             * Api Key
+             * @description Write-only; empty keeps the saved key
+             */
+            api_key?: string | null;
+            /** Clear Key */
+            clear_key?: boolean | null;
+            /** Base Url */
+            base_url?: string | null;
+            /** Models */
+            models?: {
+                [key: string]: string;
+            } | null;
+            /** Price Overrides */
+            price_overrides?: {
+                [key: string]: components["schemas"]["AiPriceIn"] | null;
+            } | null;
+            /**
+             * Terms Acknowledged
+             * @description The provider's data-use terms are accepted and a DPA is in place
+             */
+            terms_acknowledged?: boolean | null;
+        };
+        /** AiProviderOut */
+        AiProviderOut: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Capabilities */
+            capabilities: string[];
+            /** Auth */
+            auth: string;
+            /** Default Base Url */
+            default_base_url: string;
+            /** Base Url */
+            base_url: string;
+            /** Terms Url */
+            terms_url: string;
+            /** Docs Url */
+            docs_url: string;
+            /** Verified On */
+            verified_on: string;
+            /** Prices Updated */
+            prices_updated: string;
+            /** Price Source */
+            price_source: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Key Set */
+            key_set: boolean;
+            /**
+             * Key Last4
+             * @description The last four characters of the saved key: all that is ever shown
+             */
+            key_last4: string;
+            /**
+             * Models
+             * @description The model used for each feature: explain, rank, ask
+             */
+            models: {
+                [key: string]: string;
+            };
+            /** Model Choices */
+            model_choices: components["schemas"]["AiModelChoice"][];
+            /** Live Models At */
+            live_models_at: string | null;
+            /** Last Tested At */
+            last_tested_at: string | null;
+            /** Last Test Ok */
+            last_test_ok: boolean | null;
+            /** Last Test Message */
+            last_test_message: string | null;
+            /** Terms Ack By */
+            terms_ack_by: string | null;
+            /** Terms Ack At */
+            terms_ack_at: string | null;
+            /** Is Default */
+            is_default: boolean;
+            /** Updated At */
+            updated_at: string | null;
+            /** Updated By */
+            updated_by: string | null;
+        };
+        /** AiQualityEstimateOut */
+        AiQualityEstimateOut: {
+            /** Provider */
+            provider: string;
+            /** Model */
+            model: string;
+            /** Level */
+            level: string;
+            /** Questions */
+            questions: number;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Estimated Cost Usd */
+            estimated_cost_usd: string;
+            /** Price Known */
+            price_known: boolean;
+        };
+        /** AiQualityIn */
+        AiQualityIn: {
+            /** Provider */
+            provider: string;
+            /** Model */
+            model?: string | null;
+            /**
+             * Level
+             * @default quick
+             * @enum {string}
+             */
+            level: "quick" | "full";
+            /**
+             * Confirm Cost
+             * @description The owner has seen the estimated cost and agrees to spend it
+             */
+            confirm_cost: boolean;
+        };
+        /** AiQualityOut */
+        AiQualityOut: {
+            /** Provider */
+            provider: string;
+            /** Model */
+            model: string;
+            /** Level */
+            level: string;
+            /** Score */
+            score: number;
+            /** Verdict */
+            verdict: string;
+            /** Rates */
+            rates: {
+                [key: string]: {
+                    [key: string]: number;
+                } | null;
+            };
+            /** Latency Ms Average */
+            latency_ms_average: number;
+            /** Latency Ms Slowest */
+            latency_ms_slowest: number;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Cost Usd */
+            cost_usd: string;
+            /** Price Known */
+            price_known: boolean;
+            /** Questions */
+            questions: {
+                [key: string]: unknown;
+            }[];
         };
         /** AiSettingsIn */
         AiSettingsIn: {
@@ -11293,6 +12168,12 @@ export interface components {
             calls: number;
             /** Provider */
             provider: string;
+            /**
+             * Provider Label
+             * @description The provider's name for people (empty: none set up)
+             * @default
+             */
+            provider_label: string;
             /** Model */
             model: string;
             /**
@@ -11314,7 +12195,7 @@ export interface components {
             /** Consents */
             consents: components["schemas"]["AiConsentOut"][];
             /** Usage */
-            usage: components["schemas"]["AiUsageOut"][];
+            usage: components["schemas"]["ziira__modules__intel__api__schemas__AiUsageOut"][];
             /** Unavailable Reason */
             unavailable_reason: string | null;
         };
@@ -11335,19 +12216,99 @@ export interface components {
              */
             reason: string | null;
         };
-        /** AiUsageOut */
-        AiUsageOut: {
+        /** AiTenantProviderIn */
+        AiTenantProviderIn: {
             /**
-             * Month
-             * Format: date
+             * Provider
+             * @description Null puts the business back on the default
              */
-            month: string;
-            /** Input Tokens */
-            input_tokens: number;
-            /** Output Tokens */
-            output_tokens: number;
+            provider: string | null;
+            /** Reason */
+            reason: string;
+        };
+        /** AiTenantProviderOut */
+        AiTenantProviderOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Provider */
+            provider: string;
+            /** Reason */
+            reason: string;
+            /** Set By */
+            set_by: string;
+            /**
+             * Set At
+             * Format: date-time
+             */
+            set_at: string;
+        };
+        /** AiUsageBusiness */
+        AiUsageBusiness: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
             /** Calls */
             calls: number;
+            /** Tokens */
+            tokens: number;
+            /** Cost Usd */
+            cost_usd: string;
+        };
+        /** AiUsageDay */
+        AiUsageDay: {
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Tokens */
+            tokens: number;
+            /** Cost Usd */
+            cost_usd: string;
+        };
+        /** AiUsageProvider */
+        AiUsageProvider: {
+            /** Provider */
+            provider: string;
+            /** Calls */
+            calls: number;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Cost Usd */
+            cost_usd: string;
+        };
+        /** AlertOut */
+        AlertOut: {
+            /** Key */
+            key: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "bad" | "warn" | "info";
+            /** Count */
+            count: number;
+            /** To */
+            to: string;
+            /**
+             * Needs
+             * @description The permission that can act on it
+             */
+            needs: string;
+        };
+        /** AlertsOut */
+        AlertsOut: {
+            /** Total */
+            total: number;
+            /** Worst */
+            worst: ("bad" | "warn" | "info") | null;
+            /** Items */
+            items: components["schemas"]["AlertOut"][];
         };
         /** AllocationIn */
         AllocationIn: {
@@ -11806,6 +12767,37 @@ export interface components {
             /** Overtime Hours */
             overtime_hours?: number | string | null;
         };
+        /** AuditLine */
+        AuditLine: {
+            /** Id */
+            id: number;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Operator Name */
+            operator_name: string;
+            /** Action */
+            action: string;
+            /** Target */
+            target: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Reason */
+            reason: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** AuditOut */
+        AuditOut: {
+            /** Total */
+            total: number;
+            /** Items */
+            items: components["schemas"]["AuditLine"][];
+        };
         /** AvailableChannel */
         AvailableChannel: {
             /** Channel */
@@ -12016,6 +13008,33 @@ export interface components {
             reversible: boolean;
             /** Reversal Note */
             reversal_note: string;
+        };
+        /** BehaviourIn */
+        BehaviourIn: {
+            /** Value */
+            value?: unknown;
+        };
+        /** BehaviourOut */
+        BehaviourOut: {
+            /** Values */
+            values: {
+                [key: string]: components["schemas"]["BehaviourValue"];
+            };
+            /** Editions */
+            editions: string[];
+            /** Email Working */
+            email_working: boolean;
+            /** Email Reason */
+            email_reason: string | null;
+        };
+        /** BehaviourValue */
+        BehaviourValue: {
+            /** Value */
+            value: unknown;
+            /** Effective */
+            effective: string;
+            /** Source */
+            source: string;
         };
         /** BehindBusiness */
         BehindBusiness: {
@@ -12868,6 +13887,13 @@ export interface components {
             label: string;
             /** Status */
             status: string;
+        };
+        /** CheckLine */
+        CheckLine: {
+            /** Level */
+            level: string;
+            /** Message */
+            message: string;
         };
         /** CheckOut */
         CheckOut: {
@@ -14771,6 +15797,17 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** EmailOut */
+        EmailOut: {
+            /** Source */
+            source: string;
+            /** Providers */
+            providers: components["schemas"]["MailProviderOut"][];
+            sender: components["schemas"]["SenderOut"];
+            environment: components["schemas"]["EnvMailOut"] | null;
+            status: components["schemas"]["MailStatusOut"];
+            last_test: components["schemas"]["LastTestOut"] | null;
+        };
         /** EmployeeIn */
         EmployeeIn: {
             /**
@@ -15028,6 +16065,23 @@ export interface components {
              * Format: date-time
              */
             posted_at: string;
+        };
+        /** EnvMailOut */
+        EnvMailOut: {
+            /** Provider */
+            provider: string;
+            /** From Address */
+            from_address: string;
+            /** From Name */
+            from_name: string;
+            /** Host */
+            host: string;
+            /** Port */
+            port: string;
+            /** Username */
+            username: string;
+            /** Has Secret */
+            has_secret: boolean;
         };
         /** EraseIn */
         EraseIn: {
@@ -15328,6 +16382,56 @@ export interface components {
             name: string;
             /** Failed Jobs */
             failed_jobs: number;
+        };
+        /** FeedOut */
+        FeedOut: {
+            /** Payments */
+            payments: components["schemas"]["FeedPayment"][];
+            /** Signups */
+            signups: components["schemas"]["FeedSignup"][];
+        };
+        /** FeedPayment */
+        FeedPayment: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Method */
+            method: string;
+            /** Reversed */
+            reversed: boolean;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Tenant Code */
+            tenant_code: string | null;
+            /** Tenant Name */
+            tenant_name: string | null;
+        };
+        /** FeedSignup */
+        FeedSignup: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Status */
+            status: string | null;
+            /** Plan Name */
+            plan_name: string | null;
         };
         /** FieldGuessOut */
         FieldGuessOut: {
@@ -16607,6 +17711,19 @@ export interface components {
             /** Amount */
             amount: string;
         };
+        /** LastTestOut */
+        LastTestOut: {
+            /** Provider */
+            provider: string;
+            /** At */
+            at: string;
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+            /** To */
+            to: string;
+        };
         /** LeadConvertIn */
         LeadConvertIn: {
             /** Code */
@@ -17266,6 +18383,93 @@ export interface components {
             kind: string;
             /** Is Active */
             is_active: boolean;
+        };
+        /** LogLine */
+        LogLine: {
+            /** Id */
+            id: number;
+            /**
+             * Sent At
+             * Format: date-time
+             */
+            sent_at: string;
+            /** Kind */
+            kind: string;
+            /** Recipient Masked */
+            recipient_masked: string;
+            /** Status */
+            status: string;
+            /** Provider */
+            provider: string | null;
+            /** Detail */
+            detail: string | null;
+        };
+        /** MailFieldOut */
+        MailFieldOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Secret */
+            secret: boolean;
+            /** Required */
+            required: boolean;
+            /** Help */
+            help: string;
+            /** Kind */
+            kind: string;
+            /** Options */
+            options: string[];
+            /**
+             * Value
+             * @description Null for a secret: those are never shown
+             */
+            value: string | null;
+            /** Is Set */
+            is_set: boolean;
+        };
+        /** MailProviderOut */
+        MailProviderOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Description */
+            description: string;
+            /** Dns Hint */
+            dns_hint: string;
+            /** Fields */
+            fields: components["schemas"]["MailFieldOut"][];
+            /** Configured */
+            configured: boolean;
+            /** Missing */
+            missing: string[];
+            /** Selected */
+            selected: boolean;
+            /** Tested Ok */
+            tested_ok: boolean;
+            /** Updated At */
+            updated_at: string | null;
+            /** Updated By */
+            updated_by: string | null;
+        };
+        /** MailStatusOut */
+        MailStatusOut: {
+            /**
+             * Source
+             * @description platform | environment | development | none
+             */
+            source: string;
+            /** Provider */
+            provider: string | null;
+            /** Configured */
+            configured: boolean;
+            /** Working */
+            working: boolean;
+            /** Last Success At */
+            last_success_at: string | null;
+            /** Failures 24H */
+            failures_24h: number;
         };
         /** ManualJournalIn */
         ManualJournalIn: {
@@ -18390,6 +19594,20 @@ export interface components {
             mfa_secret: string;
             /** Otpauth Uri */
             otpauth_uri: string;
+        };
+        /** OperatorSeriesOut */
+        OperatorSeriesOut: {
+            /** Metric */
+            metric: string;
+            /** Range */
+            range: string;
+            /**
+             * Buckets
+             * @description The first day of each month or week
+             */
+            buckets: string[];
+            /** Series */
+            series: components["schemas"]["SeriesLine"][];
         };
         /** OperatorSessionOut */
         OperatorSessionOut: {
@@ -20309,6 +21527,22 @@ export interface components {
              */
             can_decide: boolean;
         };
+        /** ProviderIn */
+        ProviderIn: {
+            /** Config */
+            config?: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Secrets
+             * @description Write-only; an empty value keeps the old one
+             */
+            secrets?: {
+                [key: string]: string;
+            } | null;
+            /** Clear Secrets */
+            clear_secrets?: string[] | null;
+        };
         /** ProviderOut */
         ProviderOut: {
             /** Name */
@@ -20347,6 +21581,21 @@ export interface components {
             quantity: number;
             /** Prices */
             prices: components["schemas"]["PublicPrice"][];
+        };
+        /** PublicConfig */
+        PublicConfig: {
+            /** Registration */
+            registration: string;
+            /** Terms Url */
+            terms_url: string;
+            /** Privacy Url */
+            privacy_url: string;
+            /** Help Url */
+            help_url: string;
+            /** Site Url */
+            site_url: string;
+            /** Support Email */
+            support_email: string;
         };
         /** PublicPlan */
         PublicPlan: {
@@ -21148,6 +22397,20 @@ export interface components {
             /** Cells */
             cells: string[];
         };
+        /** RiskOut */
+        RiskOut: {
+            /** Key */
+            key: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "bad" | "warn" | "info";
+            /** To */
+            to: string;
+            /** Needs */
+            needs: string;
+        };
         /** RoleIn */
         RoleIn: {
             /** Name */
@@ -21564,6 +22827,25 @@ export interface components {
             /** Is Active */
             is_active: boolean;
         };
+        /** SearchHit */
+        SearchHit: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "subscriber" | "invoice" | "plan" | "licence" | "operator";
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Subtitle */
+            subtitle: string;
+            /**
+             * To
+             * @description A path inside the console
+             */
+            to: string;
+        };
         /** SecuritySettingsIn */
         SecuritySettingsIn: {
             /**
@@ -21629,6 +22911,43 @@ export interface components {
              * @default 200
              */
             limit: number;
+        };
+        /** SenderIn */
+        SenderIn: {
+            /** From Address */
+            from_address: string;
+            /**
+             * From Name
+             * @default
+             */
+            from_name: string;
+            /**
+             * Reply To
+             * @default
+             */
+            reply_to: string;
+        };
+        /** SenderOut */
+        SenderOut: {
+            /** From Address */
+            from_address: string;
+            /** From Name */
+            from_name: string;
+            /** Reply To */
+            reply_to: string;
+        };
+        /** SeriesLine */
+        SeriesLine: {
+            /**
+             * Currency
+             * @description Null for a count; money is one line per currency
+             */
+            currency: string | null;
+            /**
+             * Points
+             * @description One decimal string per bucket
+             */
+            points: string[];
         };
         /** SeriesOut */
         SeriesOut: {
@@ -21730,6 +23049,34 @@ export interface components {
             business_date?: string | null;
             /** Reference */
             reference: string;
+        };
+        /** SetupItem */
+        SetupItem: {
+            /** Key */
+            key: string;
+            /** Done */
+            done: boolean;
+            /** To */
+            to: string;
+            /** Needs */
+            needs: string;
+            /** Optional */
+            optional: boolean;
+            /** Detail */
+            detail: string | null;
+            /** Feature */
+            feature: string | null;
+        };
+        /** SetupOut */
+        SetupOut: {
+            /** Environment */
+            environment: string;
+            /** Mode */
+            mode: string;
+            /** Items */
+            items: components["schemas"]["SetupItem"][];
+            /** Risks */
+            risks: components["schemas"]["RiskOut"][];
         };
         /** ShiftIn */
         ShiftIn: {
@@ -23129,6 +24476,45 @@ export interface components {
             /** Notes */
             notes: string[];
         };
+        /** SystemOut */
+        SystemOut: {
+            /** Ready */
+            ready: boolean;
+            /** Problems */
+            problems: number;
+            /** Queues Known */
+            queues_known: boolean;
+            /** Failed Jobs */
+            failed_jobs: number;
+            /** Jobs Due */
+            jobs_due: number;
+            /** Jobs Oldest Due Seconds */
+            jobs_oldest_due_seconds: number;
+            /** Outbox Pending */
+            outbox_pending: number;
+            /** Outbox Stuck */
+            outbox_stuck: number;
+            /** Backup Reported */
+            backup_reported: boolean;
+            /** Backup Age Hours */
+            backup_age_hours: number | null;
+            /** Businesses Behind */
+            businesses_behind: number;
+            /** Businesses Unreadable */
+            businesses_unreadable: number;
+            /** Mail Configured */
+            mail_configured: boolean;
+            /** Mail Working */
+            mail_working: boolean;
+            /** Ai Has Provider */
+            ai_has_provider: boolean;
+            /** Ai Cap Usd */
+            ai_cap_usd: string | null;
+            /** Ai Spend Usd */
+            ai_spend_usd: string;
+            /** Ai Cap Reached */
+            ai_cap_reached: boolean;
+        };
         /** TaxCardOut */
         TaxCardOut: {
             /**
@@ -23288,21 +24674,6 @@ export interface components {
             note: string | null;
             /** Created By */
             created_by: string | null;
-        };
-        /** TestIn */
-        TestIn: {
-            /**
-             * Company Id
-             * Format: uuid
-             */
-            company_id: string;
-            /**
-             * Channel
-             * @description A channel the business has
-             */
-            channel: string;
-            /** Recipient */
-            recipient: string;
         };
         /** TestOut */
         TestOut: {
@@ -24340,6 +25711,62 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** TestIn */
+        ziira__kernel__api__notification_routes__TestIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Channel
+             * @description A channel the business has
+             */
+            channel: string;
+            /** Recipient */
+            recipient: string;
+        };
+        /** AiUsageOut */
+        ziira__kernel__api__operator_ai_routes__AiUsageOut: {
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Providers */
+            providers: components["schemas"]["AiUsageProvider"][];
+            /** Top Businesses */
+            top_businesses: components["schemas"]["AiUsageBusiness"][];
+            /** Days */
+            days: components["schemas"]["AiUsageDay"][];
+            /** Cap Usd */
+            cap_usd: string | null;
+            /** Spend Usd */
+            spend_usd: string;
+            /**
+             * Cap Flag
+             * @description Set when the cap was reached this month
+             */
+            cap_flag: string | null;
+        };
+        /** ActiveIn */
+        ziira__kernel__api__operator_email_routes__ActiveIn: {
+            /**
+             * Provider
+             * @description Empty: go back to the environment's settings
+             */
+            provider: string;
+        };
+        /** TestIn */
+        ziira__kernel__api__operator_email_routes__TestIn: {
+            /** Provider */
+            provider?: string | null;
+            /**
+             * To
+             * @description Default: the signed-in operator's address
+             */
+            to?: string | null;
+        };
         /** RequestIn */
         ziira__kernel__api__privacy_routes__RequestIn: {
             /**
@@ -24421,6 +25848,11 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** ActiveIn */
+        ziira__kernel__api__schemas__ActiveIn: {
+            /** Active */
+            active: boolean;
         };
         /** ReasonIn */
         ziira__kernel__api__schemas__ReasonIn: {
@@ -24709,6 +26141,20 @@ export interface components {
              * @description Why the whole import is being undone
              */
             reason: string;
+        };
+        /** AiUsageOut */
+        ziira__modules__intel__api__schemas__AiUsageOut: {
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Calls */
+            calls: number;
         };
         /** RejectIn */
         ziira__modules__intel__api__schemas__RejectIn: {
@@ -27196,7 +28642,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ActiveIn"];
+                "application/json": components["schemas"]["ziira__kernel__api__schemas__ActiveIn"];
             };
         };
         responses: {
@@ -27314,7 +28760,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ActiveIn"];
+                "application/json": components["schemas"]["ziira__kernel__api__schemas__ActiveIn"];
             };
         };
         responses: {
@@ -28183,7 +29629,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TestIn"];
+                "application/json": components["schemas"]["ziira__kernel__api__notification_routes__TestIn"];
             };
         };
         responses: {
@@ -32893,6 +34339,1039 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OperatorAttempt"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_email_api_v1_operator_email_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_provider_api_v1_operator_email_providers__name__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MailProviderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_sender_api_v1_operator_email_sender_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SenderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_active_api_v1_operator_email_active_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__kernel__api__operator_email_routes__ActiveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_test_api_v1_operator_email_test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ziira__kernel__api__operator_email_routes__TestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LastTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_api_v1_operator_email_check_post: {
+        parameters: {
+            query?: {
+                provider?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckLine"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    move_from_environment_api_v1_operator_email_move_from_environment_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mail_log_api_v1_operator_email_log_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogLine"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_behaviour_api_v1_operator_platform_behaviour_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BehaviourOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_behaviour_api_v1_operator_platform_behaviour__key__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BehaviourIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_config_api_v1_public_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicConfig"];
+                };
+            };
+        };
+    };
+    get_overview_api_v1_operator_ai_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiOverviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_provider_api_v1_operator_ai_providers__name__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiProviderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiProviderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_refresh_models_api_v1_operator_ai_providers__name__refresh_models_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiModelRefreshOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_test_api_v1_operator_ai_providers__name__test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_default_change_api_v1_operator_ai_default_change_get: {
+        parameters: {
+            query: {
+                provider: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiDefaultPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_default_api_v1_operator_ai_default_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiDefaultIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiDefaultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_cap_api_v1_operator_ai_cap_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiCapIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiOverviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_usage_api_v1_operator_ai_usage_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ziira__kernel__api__operator_ai_routes__AiUsageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_quality_estimate_api_v1_operator_ai_quality_check_estimate_get: {
+        parameters: {
+            query: {
+                provider: string;
+                level?: "quick" | "full";
+                model?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiQualityEstimateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_quality_check_api_v1_operator_ai_quality_check_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiQualityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiQualityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_tenant_overrides_api_v1_operator_ai_tenant_overrides_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTenantProviderOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_tenant_override_api_v1_operator_ai_tenant_overrides__code__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiTenantProviderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiTenantProviderOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_api_v1_operator_search_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchHit"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    alerts_api_v1_operator_alerts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AlertsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_system_api_v1_operator_dashboard_system_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_series_api_v1_operator_dashboard_series_get: {
+        parameters: {
+            query?: {
+                metric?: "revenue" | "signups" | "churn";
+                range?: "12m" | "12w";
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorSeriesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_feed_api_v1_operator_dashboard_feed_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    setup_api_v1_operator_setup_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_api_v1_operator_audit_get: {
+        parameters: {
+            query?: {
+                operator?: string | null;
+                action?: string | null;
+                target?: string | null;
+                outcome?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_export_api_v1_operator_audit_export_get: {
+        parameters: {
+            query?: {
+                operator?: string | null;
+                action?: string | null;
+                target?: string | null;
+                outcome?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

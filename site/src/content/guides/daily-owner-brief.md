@@ -113,8 +113,8 @@ The figures are examples. Notice how short it is. Every item has a number, a rea
 
 You can write a brief by hand from a spreadsheet. It takes discipline every single day.
 
-[Ziira Intelligence](/intelligence/how-it-works/) can do it for you. It is an add-on that takes the figures from your records. It ranks the top items for each person's role. It sends the brief at the time you choose, in your own time zone.
+[Ziira Intelligence](/intelligence/how-it-works/) can do it for you. Its **Daily summary** takes the figures from your records and ranks the top things to look at for each person's role. It arrives at the time you choose, in your own time zone.
 
-[WhatsApp delivery](/integrations/whatsapp/) is available through a messaging add-on. Until you set up a channel, briefs appear in the app only. Nothing is sent without one.
+You read it in the app under **Intelligence > Daily summary**. To get it on your phone too, [WhatsApp delivery](/integrations/whatsapp/) is available through a messaging add-on. Until you set up a channel, the summary stays in the app.
 
 Whether you use a tool or a spreadsheet, the rule is the same. Keep it short, rank it, show the evidence, and give a next step.

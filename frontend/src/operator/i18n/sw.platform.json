@@ -11,7 +11,9 @@
    "customers": "Wateja",
    "sell": "Mipango na ankara",
    "platform": "Jukwaa"
-  }
+  },
+  "email": "Barua pepe",
+  "settings": "Mipangilio"
  },
  "status": {
   "trialing": "Majaribio",
@@ -1017,5 +1019,123 @@
   "copyLink": "Nakili kiungo",
   "secretSaved": "Nimempa",
   "email": "Barua pepe"
+ },
+ "email": {
+  "title": "Barua pepe ya jukwaa",
+  "intro": "Barua pepe ambazo jukwaa lenyewe hutuma: uthibitisho wa usajili, kubadilisha nenosiri na ujumbe wa malipo. Weka vitambulisho vya mtoa huduma, tuma jaribio, kisha uanze kuitumia.",
+  "loadFailed": "Imeshindwa kupakia mipangilio ya barua pepe",
+  "readOnly": "Ni msimamizi mkuu tu anayeweza kubadilisha barua pepe ya jukwaa.",
+  "status": {
+   "source": {
+    "platform": "Inatumia mipangilio iliyohifadhiwa hapa",
+    "environment": "Kwa sasa inatumia mipangilio ya mazingira",
+    "development": "Maendeleo: ujumbe unarekodiwa tu, haujatumwa",
+    "none": "Hakuna njia ya kutuma barua pepe iliyowekwa"
+   },
+   "working": "Inafanya kazi",
+   "notWorking": "Bado haifanyi kazi",
+   "lastSuccess": "Kutuma kwa mwisho kulikofanikiwa",
+   "never": "bado",
+   "failures": "Hitilafu katika saa 24 zilizopita",
+   "lastTest": "Jaribio la mwisho"
+  },
+  "move": "Hamishia kwenye mipangilio ya jukwaa",
+  "moveHint": "Inanakili seva, mlango, jina la mtumiaji na mtumaji hapa. Kisha unaandika nenosiri au ufunguo na kujaribu.",
+  "moved": "Mipangilio imenakiliwa. Weka siri kisha utume jaribio.",
+  "provider": {
+   "live": "Inatumika",
+   "tested": "Jaribio limefaulu",
+   "notTested": "Haijajaribiwa",
+   "setNow": "Imewekwa",
+   "notSet": "Haijawekwa: andika kuweka",
+   "keepSecret": "Acha wazi kubaki na ya zamani",
+   "remove": "Ondoa",
+   "keep": "Weka",
+   "save": "Hifadhi",
+   "saved": "{{name}} imehifadhiwa",
+   "test": "Tuma barua pepe ya jaribio",
+   "makeLive": "Anza kutumia",
+   "isLive": "Huyu ndiye mtoa huduma anayetumika",
+   "useEnvironment": "Rudi kwenye mipangilio ya mazingira",
+   "check": "Kagua mipangilio",
+   "activated": "Barua pepe sasa hupitia {{name}}",
+   "reverted": "Barua pepe sasa inatumia mipangilio ya mazingira"
+  },
+  "sender": {
+   "title": "Mtumaji",
+   "from": "Anwani ya mtumaji",
+   "fromName": "Jina la mtumaji",
+   "replyTo": "Anwani ya majibu",
+   "save": "Hifadhi mtumaji",
+   "saved": "Mtumaji amehifadhiwa",
+   "hint": "Tumia anwani ya kikoa chako ulichothibitisha kwa mtoa huduma."
+  },
+  "test": {
+   "to": "Tuma jaribio kwa",
+   "toHint": "Chaguo-msingi: anwani yako",
+   "ok": "Imefika kwa mtoa huduma",
+   "failed": "Haikufika"
+  },
+  "check": {
+   "title": "Ukaguzi wa mipangilio",
+   "ok": "Sawa",
+   "warn": "Kumbuka",
+   "bad": "Tatizo",
+   "info": "Ushauri"
+  },
+  "log": {
+   "title": "Ujumbe wa karibuni",
+   "empty": "Hakuna kilichotumwa bado.",
+   "time": "Lini",
+   "kind": "Aina",
+   "to": "Kwa",
+   "status": "Matokeo",
+   "sent": "Imetumwa",
+   "failed": "Imeshindwa",
+   "kinds": {
+    "registration": "Usajili",
+    "password_reset": "Nenosiri",
+    "billing": "Malipo",
+    "security": "Usalama",
+    "test": "Jaribio",
+    "other": "Nyingine"
+   },
+   "retention": "Mistari huhifadhiwa kwa siku 90."
+  }
+ },
+ "psettings": {
+  "title": "Mipangilio ya jukwaa",
+  "intro": "Jinsi jukwaa linavyofanya kazi kwa wageni: nani anaweza kujisajili, chaguo-msingi za biashara mpya, na anwani na viungo vya umma.",
+  "loadFailed": "Imeshindwa kupakia mipangilio",
+  "readOnly": "Ni msimamizi mkuu tu anayeweza kubadilisha haya.",
+  "save": "Hifadhi",
+  "saved": "{{name}} imehifadhiwa",
+  "fromEnv": "Inatumia thamani ya mazingira",
+  "unset": "Haijawekwa",
+  "registration": {
+   "title": "Usajili",
+   "mode": "Nani anaweza kujisajili",
+   "open": "Wazi: yeyote anaweza kufungua biashara",
+   "invite": "Mwaliko tu: mtu anahitaji msimbo wa mwaliko",
+   "closed": "Umefungwa: waendeshaji tu ndio hufungua biashara",
+   "needsEmail": "Usajili wazi na wa mwaliko unahitaji barua pepe inayofanya kazi, kwa sababu kila usajili hutuma kiungo cha uthibitisho.",
+   "edition": "Toleo la kawaida",
+   "editionHint": "Hutumika usajili usipochagua toleo",
+   "trial": "Siku za majaribio (badilisha)",
+   "trialHint": "Wazi: kila mpango hutumia siku zake"
+  },
+  "public": {
+   "title": "Anwani na viungo vya umma",
+   "webUrl": "Anwani ya wavuti ya umma",
+   "webUrlHint": "Hutumika katika viungo vya barua pepe",
+   "apiUrl": "Anwani ya API ya umma",
+   "apiUrlHint": "Hutumika kwa simu za malipo na nyingine",
+   "terms": "Kiungo cha masharti",
+   "privacy": "Kiungo cha faragha",
+   "help": "Kiungo cha msaada",
+   "site": "Anwani ya tovuti",
+   "support": "Barua pepe ya msaada",
+   "hint": "Huonekana kwenye usajili; thamani tupu hutumia ya mazingira."
+  }
  }
 }

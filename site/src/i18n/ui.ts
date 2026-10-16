@@ -4,7 +4,7 @@ export interface Ui {
   skip: string; menu: string; signIn: string; getStarted: string; home: string; breadcrumbs: string;
   primaryNav: string; footerNav: string; keepReading: string; faq: string; readMore: string; updated: string; published: string; minRead: string;
   product: string; intelligence: string; company: string; resources: string; legal: string;
-  statusTitle: string; statusText: string; contactSend: string; contactName: string; contactEmail: string; contactMessage: string; contactCompany: string;
+  contactSend: string; contactName: string; contactEmail: string; contactMessage: string; contactCompany: string;
   contactNotConfigured: string; contactEmailLine: string; contactPrivacyNote: string; honeypot: string;
   pricingEmpty: string; pricingPlans: string; templateNotice: string; templateTitle: string; guidesIntro: string;
   glossaryIntro: string; notFoundTitle: string; notFoundText: string; ctaCoreTitle: string; ctaCoreText: string; ctaIntelTitle: string; ctaIntelText: string;
@@ -19,7 +19,6 @@ export const ui: Record<Lang, Ui> = {
     skip: "Skip to main content", menu: "Menu", signIn: "Sign in", getStarted: "Get started", home: "Home", breadcrumbs: "Breadcrumb",
     primaryNav: "Main", footerNav: "Site", keepReading: "Keep reading", faq: "Frequently asked questions", readMore: "Read more", updated: "Updated", published: "Published", minRead: "min read",
     product: "Product", intelligence: "Intelligence", company: "Company", resources: "Resources", legal: "Legal",
-    statusTitle: "Where we are", statusText: "Ziira is being prepared for its first pilot businesses. Where a connection to an outside service has been built from that service's public documentation but not yet run against a live account, we say so on the page.",
     contactSend: "Send message", contactName: "Your name", contactEmail: "Email address", contactMessage: "What would you like to know?", contactCompany: "Business name (optional)",
     contactNotConfigured: "The contact form is not switched on yet.", contactEmailLine: "You can reach us at", contactPrivacyNote: "We use what you send only to reply to you.", honeypot: "Leave this field empty",
     pricingEmpty: "Plans and prices are not published yet. Tell us about your business and we will reply with what fits.", pricingPlans: "Plans",

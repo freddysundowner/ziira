@@ -18,6 +18,7 @@ from tests.finance_helpers import FIN, make_books_shop
 from tests.stock_helpers import system
 from ziira.modules.finance.pulse import FinancePulse
 from ziira.modules.intel.services import baselines, engine
+from ziira.sdk import format_day
 
 INTEL = "/api/v1/intel"
 NOW = datetime.now(UTC)
@@ -166,7 +167,7 @@ def test_entries_posted_long_after_their_date(client, ctl) -> None:  # type: ign
     assert len(rows) == 2
     old = next(r for k, r in rows.items() if n30 in k)
     assert old.severity == "medium" and old.amount == Dec("500.00") and str(old.branch_id) == str(hq)
-    assert "dated " + str(TODAY - timedelta(days=30)) in old.summary and "30 days later" in old.summary
+    assert "dated " + format_day(TODAY - timedelta(days=30)) in old.summary and "30 days later" in old.summary
     assert labels(old) == {f"Entry {n30}"}
     closed = next(r for k, r in rows.items() if n_closed in k)
     assert closed.severity == "high" and closed.amount == Dec("900.00") and closed.branch_id is None
@@ -209,11 +210,11 @@ def test_a_reopened_period_is_flagged(client, ctl) -> None:  # type: ignore[no-u
     run(ctl, code)
     rows = found(ctl, code)
     assert len(rows) == 2
-    quiet = next(r for r in rows if str(ids["quiet_day"].replace(day=1)) in r.summary)
-    busy = next(r for r in rows if str(ids["busy_day"].replace(day=1)) in r.summary)
+    quiet = next(r for r in rows if format_day(ids["quiet_day"].replace(day=1)) in r.summary)
+    busy = next(r for r in rows if format_day(ids["busy_day"].replace(day=1)) in r.summary)
     assert quiet.severity == "medium" and "Since then" not in quiet.summary
     assert busy.severity == "high" and "Since then 1 entry has been posted into it" in busy.summary
-    assert f"on {TODAY}" in busy.summary
+    assert f"on {format_day(TODAY)}" in busy.summary
 
 
 # --------------------------------------------------------------------------- manual journals
@@ -408,7 +409,7 @@ def test_old_bank_lines_never_reconciled(client, rec) -> None:  # type: ignore[n
     bank = next(r for k, r in rows.items() if "1020 Bank" in k)
     assert bank.severity == "low" and bank.amount == Dec("700.00")             # 1000 in, 300 out
     assert "2 entries" in bank.summary and "net " in bank.summary and "700.00" in bank.summary
-    assert f"from {d60}" in bank.summary
+    assert f"from {format_day(d60)}" in bank.summary
     card = next(r for k, r in rows.items() if "1040" in k)
     assert card.severity == "medium" and card.amount == Dec("400.00")          # 100 days old: twice the limit
 

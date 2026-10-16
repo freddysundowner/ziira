@@ -1,11 +1,5 @@
 {
-  "howItWorks": "Jinsi Intelligence inavyofanya kazi",
-  "menu": "Kituo cha Uongozi",
-  "title": "Kituo cha Uongozi",
-  "hint": "{{company}}, hali ya leo hadi sasa ({{date}}), ikilinganishwa na jana.",
-  "hintShort": "Biashara inaendeleaje leo, na nini kinakuhitaji.",
   "company": "Kampuni",
-  "myBriefs": "Muhtasari wangu",
   "refresh": "Sasisha takwimu",
   "refreshed": "Takwimu zimesasishwa.",
   "lastRefreshed": "Imesasishwa mara ya mwisho {{time}}",
@@ -19,22 +13,6 @@
   "vsYesterday": "{{percent}}% kuliko jana",
   "emptyTitle": "Bado hakuna takwimu",
   "emptyHint": "Takwimu zitaonekana hapa sehemu za biashara unazotumia (mauzo, malipo, fedha na nyinginezo) zitakapotuma taarifa. Hukusanywa kila saa.",
-  "attention": "Yanayohitaji umakini wako",
-  "attentionHint": "Mambo muhimu zaidi ambayo Intelligence imegundua katika eneo lako.",
-  "noAttention": "Hakuna kinachohitaji umakini wako kwa sasa.",
-  "allFindings": "Tazama yote",
-  "openCount_one": "Jambo {{count}} wazi",
-  "openCount_other": "Mambo {{count}} wazi",
-  "amountInvolved": "{{amount}} zinahusika",
-  "nextStep": "Hatua: {{action}}",
-  "aiReason": "Kwa nini lipo hapa (imeandikwa na AI): {{reason}}",
-  "severity": {
-    "critical": "Dharura",
-    "high": "Juu",
-    "medium": "Wastani",
-    "low": "Chini",
-    "info": "Kwa taarifa"
-  },
   "area": {
     "pos": "Mauzo",
     "finance": "Fedha",
@@ -46,19 +24,19 @@
   },
   "retry": "Jaribu tena",
   "loading": "Inapakia…",
-  "widgetEmpty": "Bado hakuna takwimu. Fungua Kituo cha Uongozi.",
+  "widgetEmpty": "Bado hakuna takwimu.",
   "todayWidget": "Leo",
-  "briefsTitle": "Muhtasari",
-  "briefsHint": "Muhtasari mfupi wa biashara, unaotumwa kwako muda unaochagua, au kuonyeshwa hapa.",
+  "briefsTitle": "Muhtasari wa kila siku",
+  "briefsHint": "Ujumbe mfupi kuhusu hali ya biashara na kinachokuhitaji, unaotumwa saa utakayochagua au kuonyeshwa hapa.",
   "tabMine": "Muhtasari wangu",
-  "tabEveryone": "Ratiba za wote",
+  "tabEveryone": "Wa kila mtu",
   "kind": {
     "daily": "Muhtasari wa kila siku",
     "weekly": "Muhtasari wa kila wiki"
   },
   "kindHint": {
-    "daily": "Takwimu za jana na yanayohitaji umakini, kila siku.",
-    "weekly": "Siku saba zilizopita na yanayohitaji umakini, mara moja kwa wiki."
+    "daily": "Takwimu za jana na kinachokuhitaji, kila siku.",
+    "weekly": "Siku saba zilizopita na kinachokuhitaji, mara moja kwa wiki."
   },
   "channel": "Tuma kwa",
   "channels": {
@@ -84,20 +62,20 @@
   "openProfile": "Fungua akaunti yangu",
   "save": "Hifadhi",
   "stopBrief": "Acha muhtasari huu",
-  "scheduleSaved": "Ratiba ya muhtasari imehifadhiwa.",
-  "scheduleRemoved": "Hutapokea tena muhtasari huu.",
-  "previewTitle": "Hakiki na tuma",
-  "previewHint": "Angalia muhtasari wako ungesema nini sasa hivi, au ujitumie sasa (mara moja kwa siku kwa kila aina).",
+  "scheduleSaved": "Imehifadhiwa.",
+  "scheduleRemoved": "Hutapata tena muhtasari huu.",
+  "previewTitle": "Uone kwanza, au utume sasa",
+  "previewHint": "Ona muhtasari wako ungesema nini sasa, au ujitumie sasa (mara moja kwa siku kwa kila aina).",
   "which": "Muhtasari",
   "sendVia": "Tuma kwa",
   "showPreview": "Onyesha hakiki",
   "sendNow": "Tuma sasa",
-  "sendNowTitle": "Tuma muhtasari huu sasa?",
+  "sendNowTitle": "Kutuma muhtasari huu sasa?",
   "sendNowMessage": "Muhtasari wako utatumwa sasa. Njia: {{channel}}.",
-  "briefSent": "Muhtasari umetumwa. Utaupata kwenye historia yako.",
+  "briefSent": "Imetumwa. Utaipata kwenye historia yako.",
   "history": "Muhtasari niliotumiwa",
   "noBriefs": "Bado hakuna muhtasari",
-  "noBriefsHint": "Chagua saa hapo juu, au tuma mmoja sasa. Muhtasari unaopokea huhifadhiwa hapa.",
+  "noBriefsHint": "Chagua saa hapo juu, au tuma moja sasa. Unaoupokea unahifadhiwa hapa.",
   "date": "Tarehe",
   "subject": "Kichwa",
   "sentVia": "Ilitumwa kwa",
@@ -107,10 +85,15 @@
   "briefTitle": "Muhtasari",
   "person": "Mtu",
   "searchPeople": "Tafuta watu",
-  "noSchedules": "Hakuna aliyeweka muhtasari bado",
-  "noSchedulesHint": "Kila mtu huchagua saa zake kwenye kichupo cha Muhtasari wangu.",
+  "noSchedules": "Bado hakuna aliyeweka muhtasari",
+  "noSchedulesHint": "Watu huchagua saa zao wenyewe kwenye kichupo cha Muhtasari wangu.",
   "source": {
-    "connected": "Kutoka mfumo uliounganisha"
+    "connected": "Kutoka mfumo wako mwingine"
   },
-  "channelGone": "{{channel}} (haipatikani)"
+  "channelGone": "{{channel}} (haipatikani)",
+  "figuresTitle": "Biashara inaendeleaje",
+  "figuresHint": "Leo hadi sasa ({{date}}) ikilinganishwa na jana.",
+  "backToToday": "Leo",
+  "keywords": "briefs daily brief weekly brief digest report ripoti",
+  "figuresShow": "Onyesha biashara inaendeleaje"
 }

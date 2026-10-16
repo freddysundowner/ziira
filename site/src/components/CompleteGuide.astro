@@ -24,19 +24,14 @@ const nav = (id: string) => { const k = order.indexOf(id); return { prev: k > 0 
 const link = (id: string, label?: string) => ({ href: urlFor(id, lang), label: label ?? "" });
 const go = [
   { h: "Start here", links: [
-    ["intelligence-how", "How Intelligence works, step by step"], ["intelligence-existing", "Use it with the system you already have"], ["get-started", "Create your business or talk to us"], ["pricing", "Plans and pricing"],
+    ["intelligence-how", "How Intelligence works, step by step"], ["intelligence-existing", "Use it with the system you already have"], ["get-started", "Create your business or talk to us"],
   ] },
   { h: "Connect a source", links: [
-    ["intelligence-source-erpnext", "ERPNext, read-only"], ["intelligence-source-odoo", "Odoo, read-only"], ["intelligence-source-zoho-books", "Zoho Books, read-only"], ["intelligence-source-quickbooks", "QuickBooks Online, read-only"],
-    ["intelligence-source-bank", "Bank statements"], ["intelligence-source-mobile-money", "Mobile-money statements"], ["intelligence-source-files", "Sales, stock and expense files (CSV, Excel, PDF)"],
+    ["intelligence-source-erpnext", "ERPNext (view only)"], ["intelligence-source-odoo", "Odoo (view only)"], ["intelligence-source-zoho-books", "Zoho Books (view only)"], ["intelligence-source-quickbooks", "QuickBooks Online (view only)"],
+    ["intelligence-source-bank", "Bank statements"], ["intelligence-source-mobile-money", "Mobile-money statements"], ["intelligence-source-files", "Sales, stock and expense files"],
   ] },
-  { h: "Step-by-step help", links: [
-    ["helpj-intelligence", "Help centre: all the Intelligence guides"], ["help-what-intelligence-checks", "What Intelligence checks"], ["help-daily-brief", "Read your daily brief"], ["help-work-through-findings", "Work through your alerts"],
-    ["help-approve-suggested-actions", "Approve suggested actions"], ["help-ask-ziira", "Ask Ziira a question"], ["help-alerts-and-quiet-hours", "Set up alerts and quiet hours"], ["help-choose-the-action-level", "Choose the action level"], ["help-connect-your-system", "Connect your system"], ["help-coverage-panel", "Read the coverage panel"],
-  ] },
-  { h: "Read more", links: [
-    ["guide-cashier-voids-discount-abuse", "How to spot cashier voids and discount abuse"], ["guide-stock-shrinkage", "How to detect stock shrinkage"], ["guide-reconcile-mobile-money", "How to reconcile mobile-money statements to sales"], ["guide-read-only-access", "Connect your ERP safely, read-only"],
-    ["guide-daily-owner-brief", "What a daily owner brief should contain"], ["guide-separation-of-duties", "How small businesses separate duties"], ["security", "Security and privacy"], ["glossary", "Glossary of business words"],
+  { h: "What to click", links: [
+    ["helpj-intelligence", "Help centre: the Intelligence guides"], ["help-set-up-intelligence", "Set up Ziira in two minutes"], ["help-work-through-findings", "Deal with a thing to look at"], ["help-connect-your-system", "Connect your system or upload a statement"],
   ] },
 ];
 const sorted = go.map((g) => ({ h: g.h, links: g.links.map(([id, label]) => ({ ...link(id), label })) }));

@@ -34,7 +34,7 @@ export default function ThingsPage() {
   const [mine, setMine] = useState(!canManage && canRespond);
   const [search, setSearch] = useState("");
   const q = useDebounced(search.trim());
-  const filters: GroupedFilters = { band, area, companyId, branchId, search: q, mine };
+  const filters: GroupedFilters = { band, area, companyId, branchId, search: q, mine, source };
   const filtered = !!(band || area || companyId || branchId || q || mine || source);
   const list = useGrouped(view, shown, filters);
   const branches = companies.find((c) => c.id === (companyId || (companies.length === 1 ? companies[0].id : "")))?.branches ?? [];

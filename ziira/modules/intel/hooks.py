@@ -36,3 +36,5 @@ provides(INTEL_ASK_TOOL)(FindingDetail)
 provides(INBOUND_COMMAND)(ProposalReplies)
 
 from ziira.modules.intel import privacy as _privacy  # noqa: E402, F401, I001 - registers the personal-data provider
+
+from ziira.modules.intel import platform_ai as _platform_ai  # noqa: E402, F401, I001 - answers the Super Admin

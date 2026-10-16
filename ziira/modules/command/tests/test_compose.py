@@ -28,10 +28,10 @@ def test_a_brief_with_figures_and_findings() -> None:
                PulseLine("Sales", "money", D(5000), None, "Thika")],
         findings=[FindingLine("high", "Two cash sales have no money received.", "Ask the cashier to explain."),
                   FindingLine("low", "Stock of Cement is low.", None)], more_findings=3)
-    assert brief.subject == "Demo Hardware: daily brief, 2026-10-14"
+    assert brief.subject == "Demo Hardware: daily summary, 14 Oct 2026"
     assert "- Sales: KES 12,000.00 (up 20%)" in brief.body and "- Sales [Thika]: KES 5,000.00" in brief.body
-    assert "1. [high] Two cash sales have no money received. Next: Ask the cashier to explain." in brief.body
-    assert "2. [low] Stock of Cement is low." in brief.body and "...and 3 more" in brief.body
+    assert "1. [Urgent] Two cash sales have no money received. Next: Ask the cashier to explain." in brief.body
+    assert "2. [Worth a look] Stock of Cement is low." in brief.body and "...and 3 more" in brief.body
     assert brief.short.startswith("Demo Hardware yesterday:") and "Attention: Two cash sales" in brief.short
     assert "(+4 more)" in brief.short and len(brief.short) <= 900
 
@@ -39,7 +39,7 @@ def test_a_brief_with_figures_and_findings() -> None:
 def test_a_quiet_day_says_so_and_a_weekly_one_says_the_period() -> None:
     quiet = compose(business="B", day=date(2026, 10, 14), kind="weekly", currency="USD",
                     pulse=[PulseLine("Sales", "money", D(1), None)], findings=[])
-    assert "Nothing needs your attention." in quiet.body and "Last 7 days" in quiet.body and "weekly brief" in quiet.subject
+    assert "Nothing needs you." in quiet.body and "Last 7 days" in quiet.body and "weekly summary" in quiet.subject
     assert quiet.short.endswith("Nothing needs attention.")
 
 

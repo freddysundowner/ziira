@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { readStored, writeStored } from "@/sdk/storage";
+import { readStored, writeStored } from "@/sdk";
 
 const KEY = "ziira.intel.technical";
 

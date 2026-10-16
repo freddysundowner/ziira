@@ -1,0 +1,131 @@
+{
+ "nav": {
+  "ai": "AI"
+ },
+ "ai": {
+  "title": "AI providers",
+  "description": "Which AI service the assistant uses, its key, the models and what it may cost. Businesses never see the key.",
+  "noAccess": "Only the platform owner can manage the AI providers.",
+  "loadFailed": "The AI settings could not be loaded",
+  "noDefault": "No default provider is chosen and none is set in the environment, so the AI assistant is unavailable. Save a key for a provider, switch it on and make it the default.",
+  "fromEnvironment": "No default is chosen here, so the provider named in the server's environment ({{provider}}) is used. Choose a default below to manage it from this page.",
+  "capReached": "The monthly spending cap has been reached. AI requests are refused until next month or until you raise the cap.",
+  "productionNote": "In production a provider is not called until its data terms are acknowledged below.",
+  "on": "On",
+  "off": "Off",
+  "isDefault": "Default",
+  "enable": "Switch this provider on",
+  "save": "Save",
+  "close": "Close",
+  "saved": "{{name}} saved",
+  "refreshed": "{{count}} models found",
+  "refresh": "Refresh models",
+  "provider": {
+   "line": "Key sent as: {{auth}}. Model list and prices checked {{checked}}."
+  },
+  "key": {
+   "label": "API key",
+   "hint": "Paste the key from the provider's dashboard. It is stored encrypted and is never shown again.",
+   "saved": "Key saved ending {{last4}}",
+   "none": "No key saved yet",
+   "keep": "Keep",
+   "remove": "Remove key"
+  },
+  "feature": {
+   "explain": "Explanations",
+   "explainHint": "Short texts about a finding",
+   "rank": "Ranking",
+   "rankHint": "Ordering the top findings",
+   "ask": "Ask Ziira",
+   "askHint": "Questions with tools: use a good model"
+  },
+  "tier": {
+   "best_value": "Best value",
+   "higher_quality": "Higher quality",
+   "cheapest": "Cheapest"
+  },
+  "price": {
+   "unknown": "price not set",
+   "unknownWarn": "This model has no known price, so spending cannot be estimated. Choose a listed model.",
+   "perMillion": "Prices are US dollars per million tokens: input / output.",
+   "updated": "Prices updated {{date}}."
+  },
+  "notLive": "not in the provider's live list",
+  "priceOverridden": "your price",
+  "baseUrl": {
+   "label": "Base URL (optional)",
+   "hint": "Leave empty to use {{url}}."
+  },
+  "terms": {
+   "check": "I have accepted {{provider}}'s data-use terms and a data processing agreement is in place.",
+   "who": "Acknowledged by {{who}} on {{when}}.",
+   "requiredProduction": "Required in production before any request is sent.",
+   "optional": "Not required outside production.",
+   "read": "Read the terms"
+  },
+  "live": {
+   "at": "Model list fetched {{when}}",
+   "never": "Model list not fetched yet"
+  },
+  "test": {
+   "button": "Test connection",
+   "ok": "Works. {{ms}} ms with {{model}}; this test cost about {{cost}}.",
+   "lastOk": "last test passed {{when}}",
+   "lastBad": "last test failed {{when}}"
+  },
+  "default": {
+   "make": "Make default",
+   "title": "Make {{provider}} the default",
+   "warning": "{{count}} business consent(s) given for {{from}} will end. Those businesses are asked to agree again before the assistant works for them.",
+   "noChange": "No consent will end.",
+   "typeLabel": "Type {{name}} to confirm",
+   "confirm": "Change default"
+  },
+  "cap": {
+   "title": "Monthly spending cap",
+   "hint": "An estimate from token counts and the price table. When it is reached, AI requests are refused.",
+   "spent": "This month: {{spend}} of {{cap}}",
+   "none": "no cap",
+   "label": "Cap in US dollars",
+   "labelHint": "Leave empty for no cap.",
+   "saved": "Cap saved"
+  },
+  "usage": {
+   "title": "Use this month",
+   "hint": "Estimated from token counts. No prompts or personal data are stored here.",
+   "loadFailed": "The usage could not be loaded",
+   "empty": "No AI requests yet this month.",
+   "provider": "Provider",
+   "calls": "Requests",
+   "tokensIn": "Tokens in",
+   "tokensOut": "Tokens out",
+   "cost": "Estimated cost",
+   "perDay": "Cost per day",
+   "top": "Busiest businesses",
+   "businessLine": "{{calls}} requests, {{cost}}"
+  },
+  "quality": {
+   "button": "Run quality check",
+   "title": "Quality check",
+   "intro": "Five fixed business questions in English and Swahili, answered by {{model}} against a made-up business. It checks numbers, tool use, refusing to invent and ignoring instructions hidden in records.",
+   "cost": "This sends {{questions}} real requests and costs about {{cost}}.",
+   "noPrice": "The price of this model is unknown, so the real cost may differ.",
+   "agree": "I understand this spends money.",
+   "run": "Run the check",
+   "score": "Score {{score}} of 100",
+   "facts": "{{ms}} ms average, {{tokens}} tokens, about {{cost}}",
+   "verdict": {
+    "good": "Good",
+    "acceptable": "Acceptable",
+    "poor": "Poor"
+   },
+   "check": {
+    "number_trace": "numbers traced",
+    "tool_use": "right tools",
+    "refusal": "no invented figures",
+    "injection": "ignored hidden instruction",
+    "answered": "answered"
+   }
+  }
+ }
+}

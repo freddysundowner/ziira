@@ -13,8 +13,6 @@ export default function BillingPage() {
       <RouteTabs label={t("billing.sections")} tabs={[
         { to: "/operator/billing/invoices", label: t("billing.tabs.invoices") },
         { to: "/operator/billing/requests", label: t("billing.tabs.requests") },
-        { to: "/operator/billing/payment-attempts", label: t("billing.tabs.attempts") },
-        { to: "/operator/billing/payment-methods", label: t("billing.tabs.methods") },
         { to: "/operator/billing/settings", label: t("billing.tabs.settings") },
       ]} />
       <Outlet />

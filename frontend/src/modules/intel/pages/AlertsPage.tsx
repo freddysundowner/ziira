@@ -27,7 +27,7 @@ export default function AlertsPage() {
   const dirty = !!settings.data && (channel !== settings.data.intel_alert_channel || level !== settings.data.intel_alert_min_severity);
 
   const save = useMutation({
-    mutationFn: () => unwrap(api.PATCH("/api/v1/companies/{company_id}/settings", { params: { path: { company_id: companyId! } }, body: { intel_alert_channel: channel, intel_alert_min_severity: level } })),
+    mutationFn: () => unwrap(api.PATCH("/api/v1/companies/{company_id}/settings", { params: { path: { company_id: companyId! } }, body: { intel_alert_channel: channel, intel_alert_min_severity: level as (typeof LEVELS)[number] } })),
     onSuccess: (data) => { qc.setQueryData(key, data); toast(t("alerts.saved"), "ok"); },
   });
   const options = channelOptions(channels, channel, ["off"]);
