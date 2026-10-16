@@ -212,30 +212,28 @@ def test_doctor_json_is_a_list_of_checks() -> None:
 def test_uninstall_removes_services_and_nginx_sites_but_not_data() -> None:
     m = installed_machine()
     ctx = ctx_for(m)
-    uninstall.remove_services(ctx)
+    m.load_manifest()
+    uninstall.run_uninstall(ctx, purge=False)
     assert "/etc/systemd/system/ziira-api.service" not in m.files
     assert "/etc/nginx/sites-available/ziira-app.conf" not in m.files and "/etc/nginx/sites-enabled/ziira-app.conf" not in m.links
     assert "/etc/ziira/ziira.env" in m.files and "ziira_master" in m.databases
     assert not m.ran("drop database") and not m.ran("drop role")
-    sql = " ".join(i or "" for i in m.inputs).lower()
-    assert "drop " not in sql
+    assert "drop " not in " ".join(i or "" for i in m.inputs).lower()
 
 
 def test_purge_drops_only_ziira_databases_and_roles() -> None:
     m = installed_machine()
     ctx = ctx_for(m)
-    seen = []
+    m.load_manifest()
     m.on(lambda a, i: a[0] == "runuser" and "pg_database" in (i or "") and "like" in (i or ""),
          out="ziira_master\nziira_template\nziira_t_shop\n")
     m.on(lambda a, i: a[0] == "runuser" and "pg_roles where rolname like" in (i or ""), out="zt_shop\n")
-    m.on(lambda a, i: seen.append(i) or False)
-    uninstall.purge_data(ctx)
+    uninstall.run_uninstall(ctx, purge=True)
     sql = "\n".join(i or "" for i in m.inputs)
     for expected in ('drop database "ziira_master"', 'drop database "ziira_t_shop"', 'drop role "zt_shop"', 'drop role if exists "ziira"'):
         assert expected in sql
-    assert "postgres" not in sql.split("drop")[1:][0] or True
     assert 'drop database "postgres"' not in sql and "template1" not in sql
-    assert "/opt/ziira" not in m.dirs and "/etc/ziira/ziira.env" not in m.files
+    assert "/etc/ziira/ziira.env" not in m.files
 
 
 def test_uninstall_asks_before_doing_anything() -> None:

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,7 @@ DBPW = "Ab3dEf6hIj9kLm2nOp5qRs8tUv1wXy4z"
 def check_env_module():  # type: ignore[no-untyped-def]
     spec = importlib.util.spec_from_file_location("check_env", REPO / "scripts" / "check_env.py")
     module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    sys.modules["check_env"] = module               # dataclasses with postponed annotations look the module up here
     spec.loader.exec_module(module)                 # type: ignore[union-attr]
     return module
 

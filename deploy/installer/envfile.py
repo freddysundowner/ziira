@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import re
 
+from installer.util import removeprefix
+
 SECRET_NAME = re.compile(r"(KEY|SECRET|PASSWORD|TOKEN)", re.I)
 URL_WITH_PASSWORD = re.compile(r"://[^/@\s:]+:[^@\s]+@")
 HEADER = ("# Ziira production configuration. Written by deploy/install.sh; safe to edit.\n"
@@ -23,7 +25,7 @@ def parse(text: str) -> dict[str, str]:
         value = value.strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1]
-        out[key.strip().removeprefix("export ").strip()] = value
+        out[removeprefix(key.strip(), "export ").strip()] = value
     return out
 
 

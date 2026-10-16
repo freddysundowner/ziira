@@ -25,7 +25,8 @@ class Machine(FakeSystem):
         super().__init__(dry_run=dry_run)
         self.files["/etc/os-release"] = OS_RELEASE[os_name]
         self.files["/proc/meminfo"] = "MemTotal:        8000000 kB\n"
-        self.dirs |= {"/etc/nginx", "/etc/nginx/sites-enabled", "/etc/nginx/sites-available", "/etc/nginx/conf.d", "/etc/nginx/snippets"}
+        self.dirs |= {"/etc/logrotate.d", "/etc/systemd", "/etc/systemd/system", "/usr/local", "/usr/local/bin", "/var/lib", "/var/log",
+                      "/var/www", "/var/backups", "/etc/fail2ban", "/etc/fail2ban/jail.d", "/etc/cron.d", "/etc/nginx", "/etc/nginx/sites-enabled", "/etc/nginx/sites-available", "/etc/nginx/conf.d", "/etc/nginx/snippets"}
         # the source checkout
         for f in ("pyproject.toml", "ziira/kernel/app.py", "deploy/installer/cli.py", "scripts/check_env.py", "frontend/dist/index.html",
                   "site/dist/index.html", "site/package-lock.json", "frontend/package.json"):
@@ -41,10 +42,14 @@ class Machine(FakeSystem):
         self.databases: set[str] = {"postgres", "template1"}
         self.certbot_fails = False
         self.programs |= {"runuser", "psql", "pg_isready", "df", "stat"}
+        self.running_units = ""
         self.packages_present = False
         self.listening = ""
         self.clusters: list[tuple[int, str, int, str]] = []
         self.operators: list[tuple[str, str]] = []
+        self.max_connections = 100
+        self.connections_in_use = 5
+        self.passwd: dict[str, str] = {}              # user -> home directory of users that already exist
         self.enabled: set[str] = set()
         self.ufw_on = False
         self.certbot_timer = False
@@ -96,6 +101,8 @@ class Machine(FakeSystem):
             self.pg_major = int(argv[1])
             return Result()
         if argv[0] == "apt-get" and "install" in argv:
+            if "nginx" in argv:
+                self.programs.add("nginx")
             for a in argv:
                 if a.startswith("postgresql-client-"):
                     self.files[f"/usr/lib/postgresql/{a.rsplit('-', 1)[1]}/bin/pg_dump"] = "x"
@@ -111,6 +118,8 @@ class Machine(FakeSystem):
             return Result()
         if argv[0] == "apt-cache":
             return Result(0, "x:\n  Candidate: 3.12.3\n" if "python3.12" in j else "x:\n  Candidate: (none)\n")
+        if "-c" in argv and "import ssl" in j:
+            return Result(0, "ok\n")
         if "-c" in argv and "sys.version_info" in j:
             return Result(0, "3.12\n")
         if "discover" in j:
@@ -138,6 +147,12 @@ class Machine(FakeSystem):
             for f in ("fullchain.pem", "privkey.pem", "chain.pem"):
                 self.files[f"/etc/letsencrypt/live/{name}/{f}"] = "SANS:" + ",".join(sans) + ("\nSTAGING" if "--staging" in argv else "")
             return Result()
+        if argv[0] == "certbot" and "delete" in argv:
+            name = argv[argv.index("--cert-name") + 1]
+            for f in [f for f in self.files if f.startswith(f"/etc/letsencrypt/live/{name}/")]:
+                del self.files[f]
+            self.dirs.discard(f"/etc/letsencrypt/live/{name}")
+            return Result()
         if argv[0] == "systemctl":
             return self._systemctl(argv)
         if argv[0] == "openssl":
@@ -147,7 +162,13 @@ class Machine(FakeSystem):
         if "operator" in argv and "create" in argv:
             self.operators.append((argv[argv.index("create") + 2], argv[argv.index("create") + 1]))
             return Result()
+        if argv[:2] == ["getent", "passwd"]:
+            home = self.passwd.get(argv[2])
+            return Result(0, f"{argv[2]}:x:999:999::{home}:/usr/sbin/nologin\n") if home else Result(2)
+        if argv[:2] == ["systemctl", "list-units"]:
+            return Result(0, self.running_units)
         if argv[0] == "useradd":
+            self.passwd[argv[-1]] = argv[argv.index("--home-dir") + 1]
             self.users.add(argv[-1])
             return Result()
         if argv[0] == "sshd":
@@ -172,6 +193,8 @@ class Machine(FakeSystem):
             return Result(0, "enabled\n") if argv[-1] in self.enabled else Result(1, "disabled\n")
         if sub == "is-active":
             return Result(0, "active\n") if argv[-1] in self.enabled | {"nginx"} else Result(3, "inactive\n")
+        if sub == "list-units":
+            return Result(0, self.running_units)
         if sub == "list-unit-files":
             return Result(0, "certbot.timer enabled\n" if self.certbot_timer else "")
         return Result()
@@ -198,12 +221,18 @@ class Machine(FakeSystem):
         sql = input or ""
         if "show server_version_num" in sql:
             return Result(0, f"{self.pg_major}0004\n") if self.pg_major else Result(2, "", "psql: could not connect")
+        if "from pg_roles where rolname !~" in sql:
+            return Result(0, "\n".join(["postgres", *sorted(self.roles)]) + "\n")
         if "from pg_roles where rolname" in sql and "rolcanlogin" in sql:
             return Result(0, "1110\n")
         if "from pg_roles" in sql:
             import re
             name = re.search(r"rolname = '([^']+)'", sql)
             return Result(0, "1\n" if name and name.group(1) in self.roles else "")
+        if "not datistemplate" in sql:
+            return Result(0, "\n".join(sorted(d for d in self.databases if d not in ("template1",))) + "\n")
+        if "current_setting('max_connections')" in sql:
+            return Result(0, f"{self.max_connections} {self.connections_in_use}\n")
         if "from pg_database" in sql:
             import re
             name = re.search(r"datname = '([^']+)'", sql)
@@ -214,6 +243,14 @@ class Machine(FakeSystem):
             assert m
             self.roles[m.group(1)] = m.group(2)
             return Result()
+        if sql.startswith("drop database"):
+            import re
+            self.databases.discard(re.match(r'drop database "([^"]+)"', sql).group(1))  # type: ignore[union-attr]
+            return Result()
+        if sql.startswith("drop role"):
+            import re
+            self.roles.pop(re.search(r'"([^"]+)"', sql).group(1), None)  # type: ignore[union-attr]
+            return Result()
         if sql.startswith("create database"):
             import re
             self.databases.add(re.match(r'create database "([^"]+)"', sql).group(1))  # type: ignore[union-attr]
@@ -223,3 +260,54 @@ class Machine(FakeSystem):
     def _login(self, argv: list[str]) -> Result:
         user = argv[argv.index("-U") + 1] if "-U" in argv else ""
         return Result(0, "1\n") if user in self.roles else Result(2, "", "FATAL: password authentication failed")
+
+
+# --------------------------------------------------------------------------- servers that already run other things
+NGINX_DUMP = """# configuration file /etc/nginx/nginx.conf:
+user www-data;
+http { include /etc/nginx/sites-enabled/*; gzip on; }
+# configuration file /etc/nginx/sites-enabled/shop:
+server { listen 80; listen 443 ssl; server_name shop.example.com www.shop.example.com; }
+# configuration file /etc/nginx/sites-enabled/blog:
+server { listen 80; server_name blog.example.net; }
+# configuration file /etc/nginx/sites-enabled/default:
+server { listen 80 default_server; server_name _; }
+"""
+OTHER_CONF = {
+    "/etc/nginx/nginx.conf": "user www-data;\nhttp { include /etc/nginx/sites-enabled/*; gzip on; }\n",
+    "/etc/nginx/sites-available/shop": "server { listen 80; listen 443 ssl; server_name shop.example.com; }\n",
+    "/etc/nginx/sites-available/blog": "server { listen 80; server_name blog.example.net; }\n",
+    "/etc/nginx/sites-available/default": "server { listen 80 default_server; server_name _; }\n",
+}
+
+
+def busy_server(**kw) -> Machine:  # type: ignore[no-untyped-def]
+    """Ubuntu 24.04 that already runs nginx with two sites (+ the stock default), an app on 3000 and 8000, PostgreSQL 16
+    with other people's databases and roles, a Let's Encrypt certificate for another name, and a running app service."""
+    m = Machine(**kw)
+    m.programs |= {"nginx", "python3.12", "node", "ufw"}
+    for path, text in OTHER_CONF.items():
+        m.files[path] = text
+    for name in ("shop", "blog", "default"):
+        m.links[f"/etc/nginx/sites-enabled/{name}"] = f"/etc/nginx/sites-available/{name}"
+    m.dirs |= {"/etc/nginx/snippets", "/etc/letsencrypt", "/etc/letsencrypt/live", "/etc/letsencrypt/live/shop.example.com"}
+    m.files["/etc/letsencrypt/live/shop.example.com/fullchain.pem"] = "SANS:shop.example.com,www.shop.example.com"
+    m.on(lambda a, i: a[:2] == ["nginx", "-T"], out=NGINX_DUMP)
+    m.on(lambda a, i: a[:2] == ["nginx", "-v"], err="nginx version: nginx/1.24.0 (Ubuntu)")
+    m.on(lambda a, i: a[0].endswith("node") and "--version" in a, out="v22.3.0\n")
+    m.on(lambda a, i: a[0].endswith("python3.12") and "--version" in a, out="Python 3.12.3\n")
+    m.on(lambda a, i: a[:2] == ["systemctl", "is-active"] and a[-1] == "nginx", out="active\n")
+    m.running_units = "shop-api.service loaded active running Shop API\nbackup-agent.service loaded active running agent\n"
+    m.listening = ('LISTEN 0 511 0.0.0.0:80 0.0.0.0:* users:(("nginx",pid=1,fd=6))\n'
+                   'LISTEN 0 511 0.0.0.0:443 0.0.0.0:* users:(("nginx",pid=1,fd=7))\n'
+                   'LISTEN 0 511 127.0.0.1:3000 0.0.0.0:* users:(("node",pid=5,fd=3))\n'
+                   'LISTEN 0 511 127.0.0.1:8000 0.0.0.0:* users:(("gunicorn",pid=6,fd=3))\n'
+                   'LISTEN 0 128 0.0.0.0:22 0.0.0.0:* users:(("sshd",pid=7,fd=3))\n')
+    m.preinstall_pg(16)
+    m.databases |= {"shopdb", "blogdb"}
+    m.roles["shopuser"] = "their-password"
+    return m
+
+
+def snapshot(m: Machine) -> tuple[dict[str, str], dict[str, str], set[str]]:
+    return dict(m.files), dict(m.links), set(m.dirs)

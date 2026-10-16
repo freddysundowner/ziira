@@ -5,6 +5,7 @@ import os
 import re
 from datetime import datetime, timezone
 
+from installer import util
 from installer.context import Ctx
 from installer.ui import StepFailed
 
@@ -63,7 +64,8 @@ def build_release(ctx: Ctx, src: str, rel_id: str, *, venv: bool = True) -> str:
     if venv:
         sysm.run([py, "-m", "venv", f"{partial}/venv"], desc=f"create the virtual environment in {final}/venv")
         sysm.run([f"{partial}/venv/bin/pip", "install", "--quiet", "--no-cache-dir", "--upgrade", "pip"], timeout=600)
-        sysm.run([f"{partial}/venv/bin/pip", "install", "--quiet", "--no-cache-dir", partial], timeout=1800,
+        sysm.run(util.niced([f"{partial}/venv/bin/pip", "install", "--quiet", "--no-cache-dir", partial]), timeout=1800,
+                 env={"MAKEFLAGS": "-j1"},
                  desc=f"pip install the application ({final})")
         check = sysm.run([f"{partial}/venv/bin/python", "-c",
                           "from ziira.kernel.registry import discover; print(len(discover()))"],

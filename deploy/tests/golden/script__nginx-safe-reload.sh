@@ -1,5 +1,5 @@
 #!/bin/sh
-# Reload nginx; if the new redirect list breaks the configuration, put the previous list back first.
+# Reload nginx (never restart); if the new redirect list breaks the configuration, put the previous list back first.
 set -u
 if nginx -t >/dev/null 2>&1; then
     systemctl reload nginx

@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from installer import config, nginxconf, units
@@ -32,7 +32,7 @@ def certs(cfg: config.Config) -> dict[str, tuple[str, str, str]]:
 
 
 def options(cfg: config.Config, **kw) -> NginxOptions:  # type: ignore[no-untyped-def]
-    base = dict(version=(1, 24, 0), certs=certs(cfg), https=True, hsts="on", ocsp=False, brotli=False,
+    base = dict(version=(1, 24, 0), certs=certs(cfg), https=True, hsts="on", ocsp=False,
                 csp_hashes=["eQtQGoyst61TlDOMudw6dpdpY/pD+ZrRP8eLAxmDq78="], catch_all=True, hook_token="TOKEN123")
     base.update(kw)
     return NginxOptions(**base)
@@ -150,6 +150,7 @@ def test_upload_limit_is_raised_only_for_uploads_and_matches_the_api() -> None:
     assert 10_500_000 < 11 * 1024 * 1024 and 2_000_000 < 2 * 1024 * 1024
 
 
+@settings(deadline=None)             # the first call imports the application
 @given(st.from_regex(r"/api/v1/[a-z/]{0,30}(upload|files/detect|x)?", fullmatch=True))
 def test_upload_rule_agrees_with_the_api_for_any_path(path: str) -> None:
     from ziira.kernel.http_middleware import _is_file_upload
@@ -165,15 +166,38 @@ def test_no_directive_is_set_twice_inside_one_snippet_or_location() -> None:
             assert len(single) == len(set(single)), (path, single)
 
 
-def test_directives_the_distribution_already_sets_are_not_repeated() -> None:
+def test_nothing_global_changes_on_a_shared_nginx() -> None:
+    """Joining an existing nginx: only ziira_-named http-level objects, no global directive, per-server settings instead."""
     cfg = cfg_for()
-    stock = "http {\n    sendfile on;\n    gzip on;\n    # gzip_vary on;\n    server_tokens off;\n    gzip_types text/css;\n}\n"
-    already = nginxconf.directives_in(stock)
-    assert {"gzip", "server_tokens", "gzip_types", "sendfile"} <= already and "gzip_vary" not in already
-    common = nginxconf.common_conf(cfg, options(cfg, already_set=already))
-    assert "\ngzip on;" not in common and "server_tokens" not in common and "gzip_types" not in common
-    assert "gzip_vary on;" in common and "gzip_comp_level 5;" in common
-    assert "\ngzip on;" in nginxconf.common_conf(cfg, options(cfg))
+    common = nginxconf.common_conf(cfg, options(cfg))
+    http_level = re.findall(r"^(?!#)(\w+)(?: |$)", common, re.M)
+    assert set(http_level) <= {"log_format", "limit_req_zone", "map", "upstream"}
+    assert "gzip" not in common and "server_tokens" not in common and "client_max_body_size" not in common
+    for name in re.findall(r"zone=(\w+):", common) + re.findall(r"upstream (\w+)", common) + re.findall(r"log_format (\w+)", common):
+        assert name.startswith("ziira"), name
+    assert "map $remote_addr $ziira_local" in common
+    snippet = nginxconf.server_snippet()
+    assert "server_tokens off;" in snippet and "gzip on;" in snippet and "limit_req_status 429;" in snippet
+    app = nginxconf.all_files(cfg, options(cfg))["/etc/nginx/sites-available/ziira-app.conf"]
+    assert app.count("include snippets/ziira-server.conf;") >= 2          # both the port-80 and the 443 server
+
+
+def test_behind_mode_serves_plain_http_on_loopback_with_no_certificates() -> None:
+    cfg = cfg_for("--proxy-mode", "snippet")
+    o = options(cfg, behind_port=8081, base="/etc/ziira/nginx", sites="sites", certs={}, hsts="off", catch_all=False)
+    files = nginxconf.all_files(cfg, o)
+    assert "/etc/ziira/nginx/nginx.conf" in files and "/etc/ziira/nginx/sites/ziira-app.conf" in files
+    assert not any(p.startswith("/etc/nginx/") for p in files)                          # the system nginx is not involved
+    main = files["/etc/ziira/nginx/nginx.conf"]
+    assert "include sites/ziira-*.conf;" in main and "user ziira;" in main and "pid /run/ziira-nginx.pid;" in main
+    for name in ("site", "app", "admin"):
+        conf = files[f"/etc/ziira/nginx/sites/ziira-{name}.conf"]
+        assert "listen 127.0.0.1:8081;" in conf and "ssl" not in conf and "listen 80" not in conf and "listen 443" not in conf
+    assert "X-Forwarded-For $http_x_forwarded_for;" in files["/etc/ziira/nginx/snippets/ziira-proxy.conf"]
+    assert "X-Forwarded-Proto https;" in files["/etc/ziira/nginx/snippets/ziira-proxy.conf"]
+    assert "location ^~ /api/v1/operator { return 404; }" in files["/etc/ziira/nginx/sites/ziira-app.conf"]
+    check_golden("behind__app.conf", files["/etc/ziira/nginx/sites/ziira-app.conf"])
+    check_golden("behind__nginx.conf", main)
 
 
 def test_proxy_headers_overwrite_the_forwarded_for_header() -> None:
@@ -222,7 +246,7 @@ def test_tls_profile() -> None:
     assert "RC4" not in tls and "CBC" not in tls and "DHE-RSA" not in tls.replace("ECDHE-RSA", "")
     cfg = cfg_for()
     with_ocsp = nginxconf.all_files(cfg, options(cfg, ocsp=True))["/etc/nginx/sites-available/ziira-app.conf"]
-    assert "ssl_stapling on;" in with_ocsp and "ssl_trusted_certificate /etc/letsencrypt/live/app.ziira.io/chain.pem;" in with_ocsp
+    assert "ssl_stapling on;" in with_ocsp and "ssl_trusted_certificate /etc/letsencrypt/live/ziira-app.ziira.io/chain.pem;" in with_ocsp
     assert "ssl_stapling" not in nginxconf.all_files(cfg, options(cfg, ocsp=False))["/etc/nginx/sites-available/ziira-app.conf"]
 
 
@@ -330,3 +354,72 @@ def test_timers_cover_backup_restore_test_and_verification() -> None:
     backup = units.job_service(cfg, units.JOBS[0])
     assert "backup --dir /var/backups/ziira --keep-daily 35 --keep-monthly 12" in backup
     assert "Persistent=true" in units.job_timer(units.JOBS[0])
+
+
+# --------------------------------------------------------------------------- old systems (Ubuntu 20.04: nginx 1.18, systemd 245)
+NGINX_118_DIRECTIVES = {
+    "access_log", "add_header", "allow", "client_max_body_size", "default_type", "deny", "error_log", "error_page", "gzip", "gzip_comp_level",
+    "gzip_min_length", "gzip_proxied", "gzip_types", "gzip_vary", "if", "include", "index", "internal", "keepalive", "limit_req",
+    "limit_req_status", "limit_req_zone", "listen", "location", "log_format", "map", "proxy_connect_timeout", "proxy_http_version",
+    "proxy_pass", "proxy_read_timeout", "proxy_redirect", "proxy_send_timeout", "proxy_set_header", "resolver", "resolver_timeout", "return",
+    "root", "server", "server_name", "server_tokens", "ssl_certificate", "ssl_certificate_key", "ssl_ciphers", "ssl_prefer_server_ciphers",
+    "ssl_protocols", "ssl_session_cache", "ssl_session_tickets", "ssl_session_timeout", "ssl_stapling", "ssl_stapling_verify",
+    "ssl_trusted_certificate", "try_files", "upstream", "default", "user", "worker_processes", "pid", "events",
+    "worker_connections", "http", "sendfile", "client_body_temp_path", "proxy_temp_path", "fastcgi_temp_path",
+    "uwsgi_temp_path", "scgi_temp_path",
+}
+SYSTEMD_245_KEYS = {
+    "Description", "After", "Wants", "Type", "User", "Group", "EnvironmentFile", "Environment", "WorkingDirectory", "ExecStart", "ExecReload",
+    "ExecStartPre", "ExecStop", "Restart", "RestartSec", "TimeoutStopSec", "LimitNOFILE", "NoNewPrivileges", "ProtectSystem", "ProtectHome",
+    "PrivateTmp", "PrivateDevices", "ProtectKernelTunables", "ProtectKernelModules", "ProtectKernelLogs", "ProtectControlGroups",
+    "ProtectClock", "ProtectHostname", "RestrictSUIDSGID", "RestrictRealtime", "RestrictNamespaces", "LockPersonality",
+    "SystemCallArchitectures", "RestrictAddressFamilies", "CapabilityBoundingSet", "AmbientCapabilities", "UMask", "ReadWritePaths",
+    "WantedBy", "OnCalendar", "RandomizedDelaySec", "Persistent", "Unit", "PathChanged", "PIDFile", "KillMode",
+}
+
+
+def directives(conf: str) -> set[str]:
+    body = re.sub(r'"[^"]*"', '""', re.sub(r"(?m)^\s*#.*$", "", conf))
+    return set(re.findall(r"(?:^|[;{}]\s*|\n\s*)([a-z_][a-z0-9_]*)\b", body))
+
+
+@pytest.mark.parametrize("version", [(1, 18, 0), (1, 24, 0), (1, 26, 0)])
+def test_every_directive_we_render_exists_in_nginx_118(version: tuple[int, int, int]) -> None:
+    cfg = cfg_for("--operator-networks", "203.0.113.0/24")
+    files = nginxconf.all_files(cfg, options(cfg, version=version, ocsp=True))
+    files.update(nginxconf.all_files(cfg_for("--proxy-mode", "snippet"), options(cfg, behind_port=8081, base="/etc/ziira/nginx",
+                                                                                 sites="sites", certs={})))
+    for path, text in files.items():
+        found = directives(text)
+        gated = ({"ssl_reject_handshake"} if version >= (1, 19, 4) else set()) | ({"http2"} if version >= (1, 25, 1) else set())
+        unknown = found - NGINX_118_DIRECTIVES - gated - {"ssl", "http2"}          # `ssl`/`http2` are listen parameters, not directives here
+        assert not unknown, (path, unknown)
+
+
+def test_new_only_directives_are_not_rendered_for_old_nginx() -> None:
+    cfg = cfg_for()
+    old = "".join(nginxconf.all_files(cfg, options(cfg, version=(1, 18, 0))).values())
+    assert "http2 on;" not in old and "ssl_reject_handshake" not in old and "listen 443 ssl http2" in old
+    assert "reuseport" not in old and "http3" not in old and "quic" not in old.lower()
+    new = "".join(nginxconf.all_files(cfg, options(cfg, version=(1, 26, 0))).values())
+    assert "http2 on;" in new and "ssl_reject_handshake on;" in new
+
+
+def test_golden_app_vhost_for_nginx_118() -> None:
+    cfg = cfg_for()
+    check_golden("app__nginx118.conf", nginxconf.all_files(cfg, options(cfg, version=(1, 18, 0)))["/etc/nginx/sites-available/ziira-app.conf"])
+
+
+def test_tls_settings_work_with_openssl_111() -> None:
+    tls = nginxconf.tls_snippet(options(cfg_for()))
+    assert "TLSv1.3" in tls and "ECDHE" in tls and "CHACHA20" in tls          # all supported by OpenSSL 1.1.1 / nginx 1.18
+
+
+def test_every_systemd_directive_exists_in_systemd_245() -> None:
+    cfg = cfg_for("--proxy-mode", "snippet")
+    texts = [units.api_service(cfg, 2), units.worker_service(cfg), units.rebuild_service(cfg), units.own_nginx_service(cfg),
+             units.nginx_reload_path(cfg), units.nginx_reload_service(cfg), *[units.job_service(cfg, j) for j in units.JOBS],
+             *[units.job_timer(j) for j in units.JOBS], *units.certbot_timer_fallback(["ziira-a"])]
+    for text in texts:
+        keys = set(re.findall(r"^([A-Z][A-Za-z]+)=", text, re.M))
+        assert keys <= SYSTEMD_245_KEYS, keys - SYSTEMD_245_KEYS

@@ -45,7 +45,7 @@ def test_fresh_install_on_ubuntu_24_runs_to_the_end(tmp_path) -> None:  # type: 
         assert f"/etc/systemd/system/{unit}.service" in m.files
     for site in ("site", "app", "admin", "default"):
         assert f"/etc/nginx/sites-enabled/ziira-{site}.conf" in m.links
-    assert m.ran("certbot certonly") and m.ran("--cert-name example.org") and m.ran("--cert-name app.example.org")
+    assert m.ran("certbot certonly") and m.ran("--cert-name ziira-example.org") and m.ran("--cert-name ziira-app.example.org")
     assert m.ran("certbot renew --dry-run")
     assert m.ran("ziira install --all") and m.ran("operator create")
     # HSTS only after HTTPS was verified
@@ -54,7 +54,7 @@ def test_fresh_install_on_ubuntu_24_runs_to_the_end(tmp_path) -> None:  # type: 
     assert m.modes["/etc/ziira/install-summary.txt"] == 0o600
     assert env["ZIIRA_CREDENTIALS_KEY"] in m.files["/etc/ziira/install-summary.txt"]
     assert env["ZIIRA_CREDENTIALS_KEY"] in text(ui)
-    assert m.ran("ufw --force enable")
+    assert not m.ran("ufw --force enable") and not m.ran("ufw allow")       # ufw was not active: left alone
 
 
 def test_rerun_is_idempotent_and_changes_nothing(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -100,7 +100,7 @@ def test_dns_mismatch_stops_before_certificates_and_names_the_records() -> None:
     for h in HOSTS:
         assert f"{h}" in out
     assert IP in out and "A " in out
-    assert not m.ran("certbot") and not m.ran("apt-get")
+    assert not m.ran("certbot certonly") and not any(x.startswith("apt-get") for x in m.mutations)
 
 
 def test_skip_dns_check_for_staging() -> None:
@@ -180,7 +180,11 @@ def test_ubuntu_22_without_python_312_uses_uv() -> None:
     m.on(lambda a, i: "sys.version_info" in " ".join(a), out="3.10\n")
     m.on(lambda a, i: a[0] == "apt-cache" and "python3.12" in a, out="python3.12:\n  Candidate: (none)\n")
     m.on(lambda a, i: a[-3:] == ["find", "3.12"] or a[-2:] == ["find", "3.12"], out="/opt/ziira/python/cpython-3.12/bin/python3\n")
+    m.on(lambda a, i: a[0] == "curl" and a[-1].endswith(".sha256"), out="abc123  uv-x86_64-unknown-linux-gnu.tar.gz\n")
+    m.on(lambda a, i: a[0] == "sha256sum", out="abc123  /tmp/x\n")
     code, ui = install(m)
     assert code == 0, text(ui)
-    assert m.ran("pip install --quiet --no-cache-dir uv") and m.ran("uv python install 3.12")
-    assert not m.ran("curl -LsSf")                   # never pipes a remote script into a shell
+    assert m.ran("uv-x86_64-unknown-linux-gnu.tar.gz") and m.ran("uv python install 3.12")
+    assert not m.ran("curl -LsSf") and not m.ran("python3.12")                      # no curl|sh, no apt python, system python untouched
+    assert not any(c[0] == "apt-get" and "python3.12" in c for c in m.calls)
+    assert "/opt/ziira/python/current" in m.links

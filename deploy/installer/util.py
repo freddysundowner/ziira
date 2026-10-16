@@ -11,6 +11,28 @@ IDENT = re.compile(r"^[a-z_][a-z0-9_]{0,62}$")
 EMAIL = re.compile(r"^[^@\s'\"\\]+@[^@\s'\"\\]+\.[^@\s'\"\\]+$")
 
 
+LOW_PRIORITY = ["nice", "-n", "10", "ionice", "-c3"]
+
+
+def niced(argv: list[str]) -> list[str]:
+    """Run a heavy command at low CPU and disk priority so other software on a shared server is not starved."""
+    return [*LOW_PRIORITY, *argv]
+
+
+def node_memory_mb(available_mb: int) -> int:
+    """Heap limit for the Node build: half of the free RAM, between 512 MB and 1536 MB."""
+    return max(512, min(1536, available_mb // 2)) if available_mb else 1536
+
+
+def removeprefix(text: str, prefix: str) -> str:
+    """str.removeprefix is Python 3.9+; the installer must run on 3.8."""
+    return text[len(prefix):] if prefix and text.startswith(prefix) else text
+
+
+def removesuffix(text: str, suffix: str) -> str:
+    return text[: -len(suffix)] if suffix and text.endswith(suffix) else text
+
+
 def new_secret(nbytes: int = 48) -> str:
     """A URL-safe random secret (64 characters for the default)."""
     return secrets.token_urlsafe(nbytes)

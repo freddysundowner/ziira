@@ -36,7 +36,7 @@ def worker_count(cpus: int, ram_mb: int) -> int:
 def _service(description: str, exec_start: str, cfg: Config, *, after: str = "network-online.target postgresql.service",
              rw: list[str] | None = None, extra: str = "", env_file: str | None = None, restart: bool = True,
              exec_reload: str = "", stop_timeout: int = 0) -> str:
-    paths = " ".join([cfg.state_dir, cfg.backup_dir, *(rw or [])])
+    paths = " ".join([cfg.state_dir, cfg.backup_dir, "/var/log/ziira", *(rw or [])])
     envf = env_file or f"{cfg.env_dir}/ziira.env"
     lines = [
         "[Unit]", f"Description={description}", f"After={after}", "Wants=network-online.target", "",
@@ -102,25 +102,49 @@ ExecStart={cfg.install_dir}/bin/nginx-safe-reload.sh
 """
 
 
-def nginx_safe_reload_script(cfg: Config) -> str:
+def nginx_safe_reload_script(cfg: Config, behind: bool = False) -> str:
     redirects = f"{cfg.state_dir}/nginx/site-redirects.conf"
+    test = f"nginx -c {cfg.env_dir}/nginx/nginx.conf -t" if behind else "nginx -t"
+    unit = "ziira-nginx" if behind else "nginx"
     return f"""#!/bin/sh
-# Reload nginx; if the new redirect list breaks the configuration, put the previous list back first.
+# Reload nginx (never restart); if the new redirect list breaks the configuration, put the previous list back first.
 set -u
-if nginx -t >/dev/null 2>&1; then
-    systemctl reload nginx
+if {test} >/dev/null 2>&1; then
+    systemctl reload {unit}
     exit 0
 fi
 if [ -f "{redirects}.prev" ]; then
     cp "{redirects}.prev" "{redirects}"
-    if nginx -t >/dev/null 2>&1; then
-        systemctl reload nginx
+    if {test} >/dev/null 2>&1; then
+        systemctl reload {unit}
         echo "ziira: the new redirect list was rejected by nginx -t; the previous one was restored" >&2
         exit 1
     fi
 fi
 echo "ziira: nginx -t fails; not reloading" >&2
 exit 1
+"""
+
+
+def own_nginx_service(cfg: Config) -> str:
+    """Our own nginx process for "behind" mode: a separate service with its own configuration and pid file."""
+    return f"""[Unit]
+Description=Ziira nginx (127.0.0.1 only, behind another proxy)
+After=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/run/ziira-nginx.pid
+ExecStartPre=/usr/sbin/nginx -c {cfg.env_dir}/nginx/nginx.conf -t -q -g 'daemon on; master_process on;'
+ExecStart=/usr/sbin/nginx -c {cfg.env_dir}/nginx/nginx.conf -g 'daemon on; master_process on;'
+ExecReload=/usr/sbin/nginx -c {cfg.env_dir}/nginx/nginx.conf -g 'daemon on; master_process on;' -s reload
+ExecStop=-/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/ziira-nginx.pid
+TimeoutStopSec=10
+KillMode=mixed
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
 """
 
 
@@ -164,16 +188,18 @@ WantedBy=timers.target
 """
 
 
-def certbot_timer_fallback() -> tuple[str, str]:
-    service = """[Unit]
-Description=Renew Let's Encrypt certificates (Ziira)
+def certbot_timer_fallback(lineages: list[str]) -> tuple[str, str]:
+    """Used only when the server has no certbot renewal job at all. Renews OUR lineages and nothing else."""
+    loop = "; ".join(f"/usr/bin/certbot renew --quiet --cert-name {n}" for n in lineages)
+    service = f"""[Unit]
+Description=Renew the Ziira Let's Encrypt certificates
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/certbot renew --quiet
+ExecStart=/bin/sh -c '{loop}'
 """
     timer = """[Unit]
-Description=Twice daily certificate renewal check (Ziira)
+Description=Twice daily renewal check of the Ziira certificates
 
 [Timer]
 OnCalendar=*-*-* 00,12:00:00
@@ -187,15 +213,8 @@ WantedBy=timers.target
     return service, timer
 
 
-def certbot_deploy_hook() -> str:
-    return """#!/bin/sh
-# Runs after every successful renewal: serve the new certificate.
-nginx -t >/dev/null 2>&1 && systemctl reload nginx
-"""
-
-
 def logrotate_conf() -> str:
-    return """/var/log/nginx/ziira/*.log {
+    return """/var/log/ziira/nginx/*.log {
     daily
     rotate 30
     missingok
@@ -212,14 +231,13 @@ def logrotate_conf() -> str:
 
 
 def fail2ban_jail(cfg: Config) -> str:
-    return f"""# Managed by the Ziira installer.
-[sshd]
+    """A jail of our own (unique name) that reads only our nginx error logs; existing jails are never modified."""
+    return """# Managed by the Ziira installer.
+[ziira-limit-req]
 enabled = true
-
-[nginx-limit-req]
-enabled = true
+filter = nginx-limit-req
 port = http,https
-logpath = {"/var/log/nginx/ziira"}/*.error.log
+logpath = /var/log/ziira/nginx/*.error.log
 maxretry = 20
 findtime = 10m
 bantime = 1h

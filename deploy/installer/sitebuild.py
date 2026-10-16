@@ -71,6 +71,8 @@ def parse_redirects(text: str) -> list[dict[str, str]]:
 
 
 def run(argv: list[str], *, env: dict[str, str], cwd: str, timeout: int = 1800) -> subprocess.CompletedProcess[str]:
+    if argv[0] in ("npm", "rsync"):
+        argv = ["nice", "-n", "10", "ionice", "-c3", *argv]          # a shared server: do not starve the other software
     return subprocess.run(argv, cwd=cwd, env=env, capture_output=True, text=True, timeout=timeout, check=False)
 
 

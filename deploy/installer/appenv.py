@@ -33,6 +33,9 @@ def build(cfg: Config, *, secret_key: str, credentials_key: str, metrics_token: 
         "ZIIRA_REGISTRATION_MODE": cfg.registration_mode,
         "ZIIRA_OPERATOR_MFA": cfg.operator_mfa,
         "ZIIRA_BACKUP_DIR": cfg.backup_dir,
+        "ZIIRA_TEMPLATE_DATABASE": cfg.template_db,
+        "ZIIRA_TENANT_DB_PREFIX": cfg.tenant_db_prefix,
+        "ZIIRA_TENANT_ROLE_PREFIX": cfg.tenant_role_prefix,
         "ZIIRA_PG_DUMP_COMMAND": f"/usr/lib/postgresql/{pg_major}/bin/pg_dump",
         "ZIIRA_PG_RESTORE_COMMAND": f"/usr/lib/postgresql/{pg_major}/bin/pg_restore",
     }

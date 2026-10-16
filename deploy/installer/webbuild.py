@@ -5,6 +5,7 @@ import base64
 import hashlib
 import re
 
+from installer import util
 from installer.context import PATH, Ctx
 from installer.release import KEEP_RELEASES, prune
 from installer.ui import StepFailed
@@ -26,7 +27,8 @@ def build_env(ctx: Ctx, extra: dict[str, str] | None = None) -> dict[str, str]:
     node = ctx.facts.get("node_bin", "")
     env = {"PATH": f"{node}:{PATH}" if node else PATH, "HOME": ctx.cfg.state_dir, "CI": "1",
            "npm_config_cache": f"{ctx.cfg.state_dir}/.npm", "npm_config_update_notifier": "false",
-           "NODE_OPTIONS": "--max-old-space-size=1536"}
+           "NODE_OPTIONS": f"--max-old-space-size={util.node_memory_mb(int(ctx.facts.get('ram_available_mb', 0) or 0))}",
+           "npm_config_jobs": "1", "MAKEFLAGS": "-j1"}
     env.update(extra or {})
     return env
 
@@ -77,9 +79,9 @@ def build_frontend(ctx: Ctx, release_path: str, rel_id: str) -> str | None:
         sysm.run(["rsync", "-a", "--delete", "--exclude", "node_modules", "--exclude", "dist", f"{src}/", f"{work}/"],
                  user=user, desc=f"copy frontend/ to the build workspace {work}")
         env = build_env(ctx, {"VITE_HELP_URL": f"https://{cfg.root_domain}/help"})
-        sysm.run(["npm", "ci", "--no-audit", "--no-fund"], user=user, cwd=work, env=env, timeout=1800,
+        sysm.run(util.niced(["npm", "ci", "--no-audit", "--no-fund"]), user=user, cwd=work, env=env, timeout=1800,
                  desc="npm ci (web app)")
-        sysm.run(["npm", "run", "build"], user=user, cwd=work, env=env, timeout=1800, desc="npm run build (web app)")
+        sysm.run(util.niced(["npm", "run", "build"]), user=user, cwd=work, env=env, timeout=1800, desc="npm run build (web app)")
         dist = f"{work}/dist"
     out = publish_dir(ctx, dist, "app", rel_id)
     ui.ok(f"web app published to {out}")

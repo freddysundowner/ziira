@@ -11,8 +11,9 @@ from installer.config import Config
 from installer.system import System
 from installer.ui import UI, StepFailed
 
-SUPPORTED_OS = {("ubuntu", "22.04"), ("ubuntu", "24.04"), ("debian", "12")}
-VOLATILE = {"pg_action", "disk_free_mb"}          # facts that change between runs: not part of the saved state
+SUPPORTED_OS = {("ubuntu", "20.04"), ("ubuntu", "22.04"), ("ubuntu", "24.04"), ("debian", "12")}
+END_OF_LIFE = {("ubuntu", "20.04")}
+VOLATILE = {"pg_action", "disk_free_mb", "ram_available_mb"}          # facts that change between runs: not part of the saved state
 PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 
@@ -65,6 +66,14 @@ class Ctx:
         return not self.cfg.no_services
 
     # ---------------------------------------------------------------- environment file
+    def existing_state(self) -> dict[str, object]:
+        """The saved install state (install.json) of an earlier run, or {}."""
+        import json
+        try:
+            return dict(json.loads(self.sys.read_text(self.state_path) or "{}"))
+        except ValueError:
+            return {}
+
     def existing_env(self) -> dict[str, str]:
         return envfile.parse(self.sys.read_text(self.env_path) or "")
 

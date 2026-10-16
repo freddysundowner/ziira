@@ -13,46 +13,25 @@ from installer.ui import StepFailed
 SITES = ("ziira-site.conf", "ziira-app.conf", "ziira-admin.conf", "ziira-default.conf")
 
 
-# --------------------------------------------------------------------------- nginx
-def other_sites(ctx: Ctx) -> list[str]:
-    """Enabled nginx sites that are neither ours nor the distribution's stock 'default'."""
-    sysm = ctx.sys
-    found: list[str] = []
-    for name in sysm.listdir("/etc/nginx/sites-enabled"):
-        if name.startswith("ziira-") or name == "default":
-            continue
-        found.append(f"sites-enabled/{name}")
-    for name in sysm.listdir("/etc/nginx/conf.d"):
-        if name.endswith(".conf") and not name.startswith("ziira-"):
-            found.append(f"conf.d/{name}")
-    return found
-
-
 def nginx_options(ctx: Ctx, *, https: bool, hsts: str = "off") -> NginxOptions:
-    certs = cert_paths(ctx) if https else {}
+    """Rendering options. In "behind" mode our files live under /etc/ziira/nginx and serve plain HTTP on 127.0.0.1."""
+    cfg = ctx.cfg
+    behind = cfg.ports if ctx.facts.get("mode") == "behind" else 0
+    certs = cert_paths(ctx) if (https and not behind) else {}
     if "nginx_version" not in ctx.facts:
         v = ctx.sys.run(["nginx", "-v"], probe=True, check=False)
         ctx.facts["nginx_version"] = (v.err or v.out).strip()
     version = nginxconf.parse_version(str(ctx.facts.get("nginx_version", "")))
-    others = ctx.facts.get("other_sites")
-    if others is None:
-        others = other_sites(ctx)
-        ctx.facts["other_sites"] = others
     ocsp = ctx.facts.get("ocsp")
     if ocsp is None:        # a later run (update): keep what the installed configuration already does
         ocsp = "ssl_stapling on" in (ctx.sys.read_text("/etc/nginx/sites-available/ziira-app.conf") or "")
-    brotli = ctx.facts.get("brotli")
-    if brotli is None:
-        brotli = "brotli on" in (ctx.sys.read_text("/etc/nginx/conf.d/ziira-common.conf") or "")
-    from installer.nginxconf import directives_in
-    o = NginxOptions(version=version, certs=certs, https=https, hsts=hsts, ocsp=bool(ocsp),
-                     already_set=directives_in(ctx.sys.read_text("/etc/nginx/nginx.conf") or ""),
-                     brotli=bool(brotli), catch_all=not others,
-                     csp_hashes=[], hook_token=ctx.secrets().hook_token if ctx.rebuild_enabled else "",
-                     public_ip=str(ctx.facts.get("public_ip", "")))
     from installer.webbuild import app_csp_hashes
-    o.csp_hashes = app_csp_hashes(ctx)
-    return o
+    return NginxOptions(
+        version=version, certs=certs, https=https or bool(behind), hsts="off" if behind else hsts, ocsp=bool(ocsp) and not behind,
+        catch_all=bool(ctx.facts.get("catch_all")) and not behind, csp_hashes=app_csp_hashes(ctx),
+        default_cert=(f"{cfg.env_dir}/tls/default.crt", f"{cfg.env_dir}/tls/default.key"),
+        hook_token=ctx.secrets().hook_token if ctx.rebuild_enabled else "", public_ip=str(ctx.facts.get("public_ip", "")),
+        behind_port=behind, base=f"{cfg.env_dir}/nginx" if behind else "/etc/nginx", sites="sites" if behind else "sites-available")
 
 
 def cert_paths(ctx: Ctx) -> dict[str, tuple[str, str, str]]:
@@ -70,34 +49,39 @@ def cert_paths(ctx: Ctx) -> dict[str, tuple[str, str, str]]:
     return out
 
 
+def nginx_commands(ctx: Ctx) -> tuple[list[str], str]:
+    """(argv prefix that tests our configuration, systemd unit that serves it): the shared nginx, or our own in behind mode."""
+    if ctx.facts.get("mode") == "behind":
+        return ["nginx", "-c", f"{ctx.cfg.env_dir}/nginx/nginx.conf"], "ziira-nginx"
+    return ["nginx"], "nginx"
+
+
 def apply_nginx(ctx: Ctx, files: dict[str, str]) -> bool:
-    """Write the files, test the configuration, reload. On a failed test the previous files are put back."""
+    """Write our files, test the configuration, reload (never restart). If the test fails every file is put back."""
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
+    behind = ctx.facts.get("mode") == "behind"
     previous = {path: sysm.read_text(path) for path in files}
-    # files of ours that must disappear (the catch-all, when other sites make it unsafe)
-    stale = [f"/etc/nginx/sites-available/{n}" for n in SITES if f"/etc/nginx/sites-available/{n}" not in files
-             and sysm.exists(f"/etc/nginx/sites-available/{n}")]
     changed = [p for p, text in files.items() if sysm.write_text(p, text)]
     new_links: list[str] = []
     for name in SITES:
         available, enabled = f"/etc/nginx/sites-available/{name}", f"/etc/nginx/sites-enabled/{name}"
+        if behind:
+            continue
         if available in files:
             if sysm.symlink(enabled, available):
                 changed.append(enabled)
                 new_links.append(enabled)
-        elif sysm.exists(enabled):
+        elif sysm.exists(enabled) and sysm.manifest.known(enabled):     # only ever remove a link that is ours
             sysm.remove(enabled)
             changed.append(enabled)
     stock_default = sysm.readlink("/etc/nginx/sites-enabled/default")
-    for path in stale:
-        sysm.remove(path)
-    if ctx.facts.get("other_sites") == [] and sysm.exists("/etc/nginx/sites-enabled/default"):
-        text = sysm.read_text("/etc/nginx/sites-available/default") or ""
-        if "default_server" in text:
-            sysm.remove("/etc/nginx/sites-enabled/default")
-            changed.append("sites-enabled/default")
-            ui.info("disabled the stock nginx 'default' site (it would clash with the catch-all; the file in sites-available is kept)")
-    test = sysm.run(["nginx", "-t"], probe=cfg.dry_run, check=False)
+    if not behind and files.get("/etc/nginx/sites-available/ziira-default.conf") and stock_default \
+            and not ctx.facts.get("nginx_preexisting"):
+        # Only on an nginx that we installed ourselves a minute ago: its welcome page would clash with our catch-all.
+        sysm.remove("/etc/nginx/sites-enabled/default")
+        changed.append("sites-enabled/default")
+    test_cmd, unit = nginx_commands(ctx)
+    test = sysm.run([*test_cmd, "-t"], probe=cfg.dry_run, check=False)
     if not test.ok and not cfg.dry_run:
         for path, text in previous.items():
             if text is None:
@@ -108,29 +92,33 @@ def apply_nginx(ctx: Ctx, files: dict[str, str]) -> bool:
             sysm.remove(link)
         if stock_default and not sysm.exists("/etc/nginx/sites-enabled/default"):
             sysm.symlink("/etc/nginx/sites-enabled/default", stock_default)
-        raise StepFailed("nginx rejected the generated configuration; the previous configuration was restored",
+        raise StepFailed("nginx rejected the generated configuration; our files were put back and nothing else was touched",
                          hint=(test.err or test.out).strip()[-1500:])
     if changed and ctx.real_services:
-        active = sysm.run(["systemctl", "is-active", "--quiet", "nginx"], probe=True, check=False).ok
-        sysm.run(["systemctl", "reload" if active else "restart", "nginx"], desc="reload nginx")
-        sysm.run(["systemctl", "enable", "nginx"], check=False)
+        active = sysm.run(["systemctl", "is-active", "--quiet", unit], probe=True, check=False).ok
+        if active:
+            sysm.run(["systemctl", "reload", unit], desc=f"systemctl reload {unit} (never a restart)")
+        elif unit == "ziira-nginx" or not ctx.facts.get("nginx_preexisting"):
+            sysm.run(["systemctl", "enable", "--now", unit], desc=f"start {unit}")
+        else:
+            ui.warn("nginx is installed but not running; it was not started (it is not ours). Start it when you are ready: "
+                    "systemctl start nginx")
     return bool(changed)
 
 
 def step_nginx(ctx: Ctx) -> None:
     ui = ctx.ui
+    if ctx.facts.get("mode") == "behind":
+        ui.already("first (port 80) stage not needed: no certificates are requested behind another proxy")
+        return
     paths = {p for trio in cert_paths(ctx).values() for p in trio[:2]}
     if paths and all(ctx.sys.exists(p) for p in paths) and ctx.sys.exists("/etc/nginx/sites-enabled/ziira-app.conf"):
         ui.already("certificates and nginx sites exist: the port-80-only stage is skipped (no downtime on re-runs)")
         return
     files = nginxconf.all_files(ctx.cfg, nginx_options(ctx, https=False))
     ctx.sys.makedirs(nginxconf.LOG_DIR, owner="root", group="adm", mode=0o750)
-    changed = apply_nginx(ctx, files)
-    if ctx.facts.get("other_sites"):
-        ui.warn("other nginx sites exist (" + ", ".join(ctx.facts["other_sites"]) + "): the catch-all that refuses unknown "
-                "Host names was NOT installed so they keep working")
-    if changed:
-        ui.ok("nginx serves the three hosts on port 80 (ACME challenge ready)")
+    if apply_nginx(ctx, files):
+        ui.ok("nginx serves our three hosts on port 80 (ACME challenge ready); other sites untouched")
     else:
         ui.already("nginx port-80 configuration")
 
@@ -173,7 +161,7 @@ def request_cert(ctx: Ctx, lineage: str, hosts: list[str]) -> bool:
             return False
         force = staging_now != cfg.staging
     cmd = ["certbot", "certonly", "--webroot", "-w", nginxconf.ACME_ROOT, "--cert-name", lineage, "--non-interactive",
-           "--agree-tos", "-m", cfg.email, "--no-eff-email", "--expand"]
+           "--agree-tos", "-m", cfg.email, "--no-eff-email", "--expand", "--deploy-hook", "systemctl reload nginx"]
     for h in hosts:
         cmd += ["-d", h]
     if cfg.staging:
@@ -184,6 +172,7 @@ def request_cert(ctx: Ctx, lineage: str, hosts: list[str]) -> bool:
                  + (" (Let's Encrypt STAGING)" if cfg.staging else ""))
     if not r.ok and not cfg.dry_run:
         raise StepFailed(f"Let's Encrypt did not issue the certificate for {', '.join(hosts)}", hint=certbot_hint(r.out + r.err))
+    sysm.manifest.note("lineages", lineage)
     return True
 
 
@@ -206,6 +195,9 @@ def certbot_hint(output: str) -> str:
 def step_ssl(ctx: Ctx) -> None:
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
     issued: list[str] = []
+    if ctx.facts.get("mode") == "behind":
+        ui.already("no certificates: TLS is the other proxy's job (see the snippets)")
+        return
     if cfg.self_signed:
         ui.warn("self-signed certificates: browsers will warn; for staging and tests only")
         for lineage, hosts in cfg.lineages().items():
@@ -233,31 +225,38 @@ def step_ssl(ctx: Ctx) -> None:
     # renewal
     if cfg.self_signed or cfg.no_services:
         return
-    hook = "/etc/letsencrypt/renewal-hooks/deploy/ziira-reload-nginx.sh"
-    sysm.makedirs("/etc/letsencrypt/renewal-hooks/deploy")
-    if sysm.write_text(hook, units.certbot_deploy_hook(), mode=0o755):
-        ui.ok("renewal hook installed: nginx reloads after every renewal")
+    # Renewal: reuse the timer or cron job that is already there; install our own (renewing ONLY our lineages) if none.
     timer = sysm.run(["systemctl", "list-unit-files", "certbot.timer"], probe=True, check=False)
+    existing_cron = any(sysm.exists(f) for f in ("/etc/cron.d/certbot", "/etc/cron.daily/certbot"))
     if "certbot.timer" in timer.out:
+        ui.already("certificate renewal: the existing certbot.timer is reused")
         if ctx.units_to_enable(["certbot.timer"]):
-            sysm.run(["systemctl", "enable", "--now", "certbot.timer"], desc="enable certbot.timer")
-    elif ctx.units_to_enable(["ziira-certbot-renew.timer"]):
-        service, tm = units.certbot_timer_fallback()
-        sysm.write_text("/etc/systemd/system/ziira-certbot-renew.service", service)
-        sysm.write_text("/etc/systemd/system/ziira-certbot-renew.timer", tm)
-        sysm.run(["systemctl", "daemon-reload"])
-        sysm.run(["systemctl", "enable", "--now", "ziira-certbot-renew.timer"])
-        ui.ok("this system has no certbot.timer: installed ziira-certbot-renew.timer instead")
-    if not issued:
-        ui.already("automatic renewal (tested when the certificates were issued; run `certbot renew --dry-run` to test again)")
-        return
-    dry = sysm.run(["certbot", "renew", "--dry-run", "--non-interactive"], check=False, timeout=600,
-                   desc="certbot renew --dry-run (proves renewal works)")
-    if dry.ok or cfg.dry_run:
-        ui.ok("certbot renew --dry-run succeeded: automatic renewal works")
+            ui.warn("certbot.timer exists but is not enabled/active: enable it yourself (it also renews other certificates): "
+                    "systemctl enable --now certbot.timer")
+    elif existing_cron:
+        ui.already("certificate renewal: the existing certbot cron job is reused")
     else:
-        ui.warn("certbot renew --dry-run FAILED: certificates will not renew by themselves until this is fixed:\n"
-                + (dry.out + dry.err).strip()[-600:])
+        service, tm = units.certbot_timer_fallback(list(cfg.lineages()))
+        changed = sysm.write_text("/etc/systemd/system/ziira-certbot-renew.service", service)
+        changed |= sysm.write_text("/etc/systemd/system/ziira-certbot-renew.timer", tm)
+        if changed:
+            sysm.run(["systemctl", "daemon-reload"])
+        if ctx.units_to_enable(["ziira-certbot-renew.timer"]):
+            sysm.run(["systemctl", "enable", "--now", "ziira-certbot-renew.timer"])
+            ui.ok("no renewal timer existed: installed ziira-certbot-renew.timer (renews only our certificates)")
+    if not issued:
+        ui.already("automatic renewal (tested when the certificates were issued)")
+        return
+    failed = []
+    for lineage in cfg.lineages():
+        dry = sysm.run(["certbot", "renew", "--dry-run", "--non-interactive", "--cert-name", lineage], check=False, timeout=600,
+                       desc=f"certbot renew --dry-run --cert-name {lineage} (proves renewal works)")
+        if not dry.ok and not cfg.dry_run:
+            failed.append(f"{lineage}: {(dry.out + dry.err).strip()[-300:]}")
+    if failed:
+        ui.warn("certbot renew --dry-run FAILED: our certificates will not renew by themselves until this is fixed:\n" + "\n".join(failed))
+    else:
+        ui.ok("certbot renew --dry-run succeeded for our certificates: automatic renewal works")
 
 
 def https_works(ctx: Ctx) -> bool:
@@ -271,8 +270,34 @@ def https_works(ctx: Ctx) -> bool:
     return True
 
 
+def ensure_default_cert(ctx: Ctx) -> None:
+    """nginx older than 1.19.4 cannot refuse a TLS handshake, so the catch-all HTTPS server needs a (throwaway) certificate."""
+    cfg, sysm = ctx.cfg, ctx.sys
+    cert, key = f"{cfg.env_dir}/tls/default.crt", f"{cfg.env_dir}/tls/default.key"
+    if sysm.exists(cert):
+        return
+    sysm.makedirs(f"{cfg.env_dir}/tls", mode=0o750, owner="root", group="root")
+    sysm.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "3650", "-keyout", key, "-out", cert,
+              "-subj", "/CN=ziira-default-refuse"], desc="openssl: throwaway certificate for the catch-all server")
+    sysm.run(["chmod", "600", key], check=False)
+
+
 def step_nginx_tls(ctx: Ctx) -> None:
     cfg, ui = ctx.cfg, ctx.ui
+    if ctx.facts.get("catch_all") and ctx.facts.get("mode") != "behind":
+        v = nginxconf.parse_version(str(ctx.facts.get("nginx_version", "")))
+        if v < (1, 19, 4):
+            ensure_default_cert(ctx)
+    if ctx.facts.get("mode") == "behind":
+        ctx.sys.makedirs(nginxconf.LOG_DIR, owner="root", group="adm", mode=0o750)
+        ctx.sys.makedirs(f"{cfg.state_dir}/nginx-tmp", mode=0o750, owner=cfg.service_user, group=cfg.service_user)
+        if apply_nginx(ctx, nginxconf.all_files(cfg, nginx_options(ctx, https=True))):
+            ui.ok(f"our own nginx serves the three hosts on 127.0.0.1:{cfg.ports} (plain HTTP, for your proxy to front)")
+        else:
+            ui.already("our nginx configuration")
+        from installer import snippets
+        snippets.write(ctx)
+        return
     trusted = not (cfg.self_signed or cfg.staging)
     # Phase 1: HTTPS without HSTS, so a certificate problem can never lock a browser out.
     existing_hsts = "Strict-Transport-Security" in (ctx.sys.read_text("/etc/nginx/snippets/ziira-headers-app.conf") or "")
@@ -344,40 +369,55 @@ def ssh_port(ctx: Ctx) -> int | None:
 
 
 def step_system(ctx: Ctx) -> None:
+    """Log rotation for our logs; firewall and fail2ban only as far as the owner allowed."""
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
-    sysm.write_text("/etc/logrotate.d/ziira-nginx", units.logrotate_conf())
+    sysm.makedirs("/var/log/ziira", mode=0o750, owner="root", group="adm")
+    sysm.write_text("/etc/logrotate.d/ziira", units.logrotate_conf())
     if cfg.no_services:
         ui.already("firewall and fail2ban skipped (--no-services)")
         return
-    # firewall
-    if cfg.no_firewall:
-        ui.already("firewall untouched (--no-firewall)")
-    else:
-        port = ssh_port(ctx)
-        if port is None:
-            ui.warn("could not find the SSH port, so the firewall was NOT enabled (enabling it could lock you out). "
-                    "Run: ufw allow <ssh-port>/tcp && ufw allow 80,443/tcp && ufw enable")
+    inv = ctx.facts.get("inventory")
+    ufw = getattr(inv, "ufw", None)
+    if ufw is None:
+        ufw = "absent"
+        if sysm.which("ufw"):
+            ufw = "active" if "Status: active" in sysm.run(["ufw", "status"], probe=True, check=False).out else "inactive"
+    behind = ctx.facts.get("mode") == "behind"
+    if ufw == "active":
+        if behind:
+            ui.already("firewall: ufw is active; nothing to add (behind mode listens on 127.0.0.1 only)")
         else:
             status = sysm.run(["ufw", "status"], probe=True, check=False).out
-            rules = [f"{port}/tcp", "80/tcp", "443/tcp"]
-            added = [r for r in rules if not re.search(rf"^{re.escape(r)}\s+ALLOW", status, re.M)]
+            added = [r for r in ("80/tcp", "443/tcp") if not re.search(rf"^{re.escape(r)}\s+ALLOW", status, re.M)]
             for r in added:
-                sysm.run(["ufw", "allow", r], desc=f"ufw allow {r}")
-            if "Status: active" not in status:
-                sysm.run(["ufw", "default", "deny", "incoming"])
-                sysm.run(["ufw", "default", "allow", "outgoing"])
-                sysm.run(["ufw", "--force", "enable"], desc="ufw enable (SSH, 80 and 443 allowed first)")
-                ui.ok(f"firewall enabled: only SSH ({port}), 80 and 443 are open; PostgreSQL is not exposed")
-            elif added:
-                ui.ok("firewall: opened " + ", ".join(added))
+                sysm.run(["ufw", "allow", r], desc=f"ufw allow {r} (an added rule; nothing is reset or deleted)")
+            if added:
+                ui.ok("firewall: ufw is active, opened " + ", ".join(added) + " (existing rules and policies unchanged)")
             else:
-                ui.already("firewall allows SSH, 80 and 443")
-    # fail2ban
-    if cfg.no_fail2ban:
-        ui.already("fail2ban skipped (--no-fail2ban)")
-    elif sysm.write_text("/etc/fail2ban/jail.d/ziira.local", units.fail2ban_jail(cfg)):
-        sysm.run(["systemctl", "enable", "--now", "fail2ban"], check=False)
-        sysm.run(["systemctl", "restart", "fail2ban"], check=False)
-        ui.ok("fail2ban: sshd and nginx rate-limit jails enabled")
+                ui.already("firewall: ufw already allows 80 and 443")
+    elif cfg.manage_firewall and not behind:
+        port = ssh_port(ctx)
+        if port is None:
+            ui.warn("could not find the SSH port, so ufw was NOT enabled (it could lock you out)")
+        elif ui.confirm(f"Enable ufw now with SSH ({port}), 80 and 443 allowed and everything else incoming denied? "
+                        "This can block other services on this server.", default=cfg.yes):
+            for r in (f"{port}/tcp", "80/tcp", "443/tcp"):
+                sysm.run(["ufw", "allow", r])
+            sysm.run(["ufw", "default", "deny", "incoming"])
+            sysm.run(["ufw", "--force", "enable"], desc="ufw enable")
+            ui.ok(f"ufw enabled: SSH ({port}), 80 and 443 allowed")
+        else:
+            ui.already("firewall untouched (not confirmed)")
     else:
-        ui.already("fail2ban jails")
+        ui.already("firewall untouched (ufw is not active; --manage-firewall would enable it after a confirmation)")
+    if inv is not None and (getattr(inv, "iptables_rules", 0) or getattr(inv, "nftables", False) or getattr(inv, "firewalld", False)):
+        ui.warn("iptables/nftables/firewalld rules exist outside ufw and were not touched: check that ports 80 and 443 are open")
+    # fail2ban: only when asked, in a file of our own, never replacing an existing jail
+    if not cfg.fail2ban:
+        ui.already("fail2ban untouched (--fail2ban would add a ziira-only jail)")
+    elif sysm.write_text("/etc/fail2ban/jail.d/ziira-nginx.local", units.fail2ban_jail(cfg)):
+        sysm.run(["systemctl", "enable", "--now", "fail2ban"], check=False)
+        sysm.run(["systemctl", "reload", "fail2ban"], check=False, desc="reload fail2ban (picks up the new jail; others unchanged)")
+        ui.ok("fail2ban: added the jail 'ziira-limit-req' in jail.d/ziira-nginx.local")
+    else:
+        ui.already("fail2ban jail")

@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from urllib.parse import unquote, urlparse
 
+from installer import util
 from installer.context import Ctx
 from installer.system import System
 from installer.ui import UI
@@ -59,7 +60,12 @@ def check_ports(ctx: Ctx) -> list[Check]:
     from installer.pgdetect import parse_listening
     listening = parse_listening(ctx.sys.run(["ss", "-ltnpH"], probe=True, check=False).out)
     out = []
-    for port in (80, 443):
+    if ctx.facts.get("mode") == "behind":
+        port = ctx.cfg.ports
+        owner = listening.get(port)
+        out.append(Check("PASS", f"port {port}", f"our nginx listens ({owner})") if owner is not None else
+                   Check("FAIL", f"port {port}", "our nginx (ziira-nginx) is not listening: systemctl status ziira-nginx"))
+    for port in () if ctx.facts.get("mode") == "behind" else (80, 443):
         owner = listening.get(port)
         out.append(Check("PASS", f"port {port}", f"listening ({owner or 'nginx'})") if owner is not None else
                    Check("FAIL", f"port {port}", "nothing is listening: start nginx (systemctl start nginx)"))
@@ -85,7 +91,9 @@ def cert_days_left(ctx: Ctx, host: str) -> int | None:
 
 
 def check_certs(ctx: Ctx) -> list[Check]:
-    out = []
+    out: list[Check] = []
+    if ctx.facts.get("mode") == "behind":
+        return [Check("PASS", "certificates", "not ours: TLS is terminated by the other proxy")]
     for host in ctx.cfg.hosts():
         days = cert_days_left(ctx, host)
         if days is None:
@@ -106,7 +114,8 @@ def check_nginx(ctx: Ctx) -> list[Check]:
 
 
 def check_services(ctx: Ctx) -> list[Check]:
-    names = ["nginx", "ziira-api", "ziira-worker", "fail2ban"] if not ctx.cfg.no_fail2ban else ["nginx", "ziira-api", "ziira-worker"]
+    behind = ctx.facts.get("mode") == "behind"
+    names = ["ziira-nginx" if behind else "nginx", "ziira-api", "ziira-worker"] + (["fail2ban"] if ctx.cfg.fail2ban else [])
     if ctx.rebuild_enabled:
         names.append("ziira-site-rebuild")
     pg = int(ctx.facts.get("pg_major", 16) or 16)
@@ -235,7 +244,7 @@ def run_checks(ctx: Ctx) -> list[Check]:
         try:
             results += fn(ctx)
         except Exception as error:  # noqa: BLE001 - a broken check is itself a finding
-            results.append(Check("WARN", fn.__name__.removeprefix("check_"), f"the check itself failed: {error}"))
+            results.append(Check("WARN", util.removeprefix(fn.__name__, "check_"), f"the check itself failed: {error}"))
     return results
 
 

@@ -9,6 +9,8 @@ The same rules are partly enforced by the application at start-up (`Settings.che
 script is stricter and also looks at consistency (registration needs email, metrics need a token, ...).
 """
 
+from __future__ import annotations
+
 import ipaddress
 import json
 import os
@@ -45,7 +47,8 @@ def read_env_file(path: Path) -> dict[str, str]:
         value = value.strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1]
-        values[key.strip().removeprefix("export ").strip()] = value
+        name = key.strip()
+        values[(name[len("export "):] if name.startswith("export ") else name).strip()] = value
     return values
 
 

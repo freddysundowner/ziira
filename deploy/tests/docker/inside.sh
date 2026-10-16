@@ -8,10 +8,25 @@ cd /src/deploy
 export ZIIRA_OPERATOR_PASSWORD='container-test-password'
 ARGS=(--yes --root-domain example.test --email ops@example.test --admin-email admin@example.test --from-dir /src
       --no-services --skip-dns-check --staging --self-signed --agree-tos --registration-mode closed)
+echo "image: $(. /etc/os-release; echo "$PRETTY_NAME"), $(python3 --version), no nginx yet: $(command -v nginx || echo none)"
+
+echo "== 0. the installer runs on this system's own python3, and inspects without changing anything"
+check "every installer module imports under $(python3 --version)" python3 -c "
+import importlib, pkgutil, sys
+sys.path.insert(0, '/src/deploy')
+for m in pkgutil.iter_modules(['/src/deploy/installer']):
+    if m.name != '__main__':
+        importlib.import_module('installer.' + m.name)"
+before="$(find /etc /opt /var/www /var/lib -xdev -type f 2>/dev/null | sort | md5sum)"
+bash /src/deploy/install.sh --inspect > /tmp/inspect.log 2>&1; rc=$?
+tail -12 /tmp/inspect.log
+check "--inspect exits 0" test "$rc" -eq 0
+check "--inspect printed the inventory and the plan" grep -q "PLAN (mode:" /tmp/inspect.log
+check "--inspect changed no file" test "$before" = "$(find /etc /opt /var/www /var/lib -xdev -type f 2>/dev/null | sort | md5sum)"
 
 echo "== 1. dry run (changes nothing)"
 before="$(find /etc /opt /var/www -xdev -type f 2>/dev/null | sort | md5sum)"
-python3 -m installer "${ARGS[@]}" --dry-run --no-services > /tmp/dry.log 2>&1; rc=$?
+bash /src/deploy/install.sh "${ARGS[@]}" --dry-run > /tmp/dry.log 2>&1; rc=$?
 tail -5 /tmp/dry.log
 check "dry run exits 0" test "$rc" -eq 0
 after="$(find /etc /opt /var/www -xdev -type f 2>/dev/null | sort | md5sum)"
@@ -19,13 +34,14 @@ check "dry run changed no file" test "$before" = "$after"
 check "dry run printed a plan" grep -q "would" /tmp/dry.log
 
 echo "== 2. config-only install"
-python3 -m installer "${ARGS[@]}" > /tmp/install.log 2>&1; rc=$?
+bash /src/deploy/install.sh "${ARGS[@]}" > /tmp/install.log 2>&1; rc=$?
 tail -15 /tmp/install.log
 check "installer exits 0" test "$rc" -eq 0
 check "nginx -t accepts the rendered configuration" nginx -t
 check "env file is 0640 root:ziira" test "$(stat -c '%a %U:%G' /etc/ziira/ziira.env)" = "640 root:ziira"
 check "check_env.py reports no ERROR" bash -c "! python3 /src/scripts/check_env.py /etc/ziira/ziira.env | grep -q '^ERROR'"
 check "three sites are enabled" test "$(ls /etc/nginx/sites-enabled | grep -c '^ziira-')" -ge 3
+check "nginx -t passes (version $(nginx -v 2>&1 | sed 's/.*nginx\///'))" nginx -t
 check "the staff host has the rebuild hook and the app host does not" bash -c \
   "grep -q '_hooks/site-rebuild' /etc/nginx/sites-available/ziira-admin.conf && ! grep -q '_hooks' /etc/nginx/sites-available/ziira-app.conf"
 
@@ -34,7 +50,7 @@ snapshot() { find /etc/nginx /etc/ziira /etc/systemd -type f -not -name 'install
 snapshot > /tmp/snap1
 cp /etc/ziira/install.json /tmp/install1.json
 sum1="$(md5sum < /tmp/snap1)"
-python3 -m installer "${ARGS[@]}" > /tmp/rerun.log 2>&1; rc=$?
+bash /src/deploy/install.sh "${ARGS[@]}" > /tmp/rerun.log 2>&1; rc=$?
 check "second run exits 0" test "$rc" -eq 0
 snapshot > /tmp/snap2
 sum2="$(md5sum < /tmp/snap2)"
@@ -47,7 +63,7 @@ echo "== 4. served for real: start nginx and fetch each host (self-signed, so -k
 mkdir -p /var/www/ziira/app/releases/t && echo '<html><script>var a=1</script><body>app</body></html>' > /var/www/ziira/app/releases/t/index.html
 ln -sfn /var/www/ziira/app/releases/t /var/www/ziira/app/current
 echo '<html><body>site</body></html>' > /var/www/ziira/site/releases/initial/index.html 2>/dev/null || true
-nginx
+nginx -s quit 2>/dev/null; sleep 1; nginx
 sleep 1
 body() { curl -sk --resolve "$1:443:127.0.0.1" "https://$1$2"; }
 code() { curl -sk -o /dev/null -w '%{http_code}' --resolve "$1:443:127.0.0.1" "https://$1$2"; }

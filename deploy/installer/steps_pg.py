@@ -11,6 +11,8 @@ from installer.ui import StepFailed
 PGDG_KEY_URL = "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
 PGDG_KEY_FINGERPRINT = "B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8"
 PGDG_KEY_PATH = "/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc"
+PGDG_MAIN = "https://apt.postgresql.org/pub/repos/apt"
+PGDG_ARCHIVE = "https://apt-archive.postgresql.org/pub/repos/apt"
 PGDG_LIST = "/etc/apt/sources.list.d/pgdg.list"
 
 
@@ -40,6 +42,8 @@ def detect(ctx: Ctx) -> pgdetect.PgFacts:
         elif port in facts.listening:
             facts.unreachable_ports.append(port)
     r = sysm.run(["dpkg-query", "-W", "-f=${Package}\\n", "postgresql-[0-9]*"], probe=True, check=False)
+    if ctx.cfg.pg_port and ctx.cfg.pg_port in facts.reachable:          # the owner chose one of several
+        facts.reachable = {ctx.cfg.pg_port: facts.reachable[ctx.cfg.pg_port]}
     facts.packages = sorted(int(p.split("-")[1]) for p in r.out.split() if p.startswith("postgresql-") and p.split("-")[1].isdigit())
     return facts
 
@@ -49,23 +53,25 @@ def add_pgdg_repo(ctx: Ctx) -> None:
     """Official PostgreSQL apt repository, with the signing key checked against its published fingerprint."""
     sysm = ctx.sys
     codename = ctx.facts.get("codename") or "stable"
-    line = f"deb [signed-by={PGDG_KEY_PATH}] https://apt.postgresql.org/pub/repos/apt {codename}-pgdg main\n"
+    # Releases the main repository no longer serves (for example Ubuntu 20.04) live on the archive host.
+    head = sysm.run(["curl", "-fsI", "--max-time", "20", f"{PGDG_MAIN}/dists/{codename}-pgdg/Release"], probe=True, check=False)
+    host = PGDG_MAIN if (head.ok or ctx.cfg.dry_run) else PGDG_ARCHIVE
+    if host == PGDG_ARCHIVE:
+        ctx.ui.info(f"{codename}-pgdg is no longer on apt.postgresql.org: using apt-archive.postgresql.org")
+    line = f"deb [signed-by={PGDG_KEY_PATH}] {host} {codename}-pgdg main\n"
     if sysm.read_text(PGDG_LIST) == line and sysm.exists(PGDG_KEY_PATH):
         ctx.ui.already("PostgreSQL apt repository (PGDG)")
         return
-    sysm.makedirs("/usr/share/postgresql-common/pgdg")
-    tmp = "/tmp/pgdg-key.asc"
-    sysm.run(["curl", "-fsSL", "--max-time", "60", "-o", tmp, PGDG_KEY_URL], desc="download the PostgreSQL repository signing key")
+    key = sysm.run(["curl", "-fsSL", "--max-time", "60", PGDG_KEY_URL], probe=True, check=False,
+                   desc="download the PostgreSQL repository signing key").out
     if not ctx.cfg.dry_run:
-        r = sysm.run(["gpg", "--show-keys", "--with-colons", tmp])
+        r = sysm.run(["gpg", "--show-keys", "--with-colons", "-"], input=key)
         fingerprints = {ln.split(":")[9] for ln in r.out.splitlines() if ln.startswith("fpr:")}
         if PGDG_KEY_FINGERPRINT not in fingerprints:
-            sysm.run(["rm", "-f", tmp], check=False)
             raise StepFailed("the PostgreSQL repository key does not have the expected fingerprint "
                              f"{PGDG_KEY_FINGERPRINT}; refusing to trust it",
                              hint="Do not continue; check that the connection to postgresql.org is not intercepted.")
-    sysm.run(["install", "-m", "0644", tmp, PGDG_KEY_PATH], desc=f"install the key at {PGDG_KEY_PATH}")
-    sysm.run(["rm", "-f", tmp], check=False)
+    sysm.write_text(PGDG_KEY_PATH, key)
     sysm.write_text(PGDG_LIST, line)
     sysm.run(["apt-get", "update"], env={"DEBIAN_FRONTEND": "noninteractive"}, desc="apt-get update")
     ctx.ui.ok("added the official PostgreSQL apt repository (key fingerprint verified)")

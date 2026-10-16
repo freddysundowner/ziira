@@ -9,7 +9,7 @@ from installer.config import Config
 from installer.context import Ctx
 from installer.steps import NAMES, STEPS
 from installer.system import CommandFailed, System
-from installer.ui import UI, StepFailed
+from installer.ui import UI, Finished, StepFailed
 
 LOG_PATH = "/var/log/ziira-install.log"
 
@@ -87,13 +87,14 @@ def main(argv: Sequence[str] | None = None, *, system: System | None = None, ui:
         return 0
     ui = ui or UI(interactive=not cfg.yes and sys.stdin.isatty())
     try:
-        collect_answers(cfg, ui)
+        if not cfg.inspect:
+            collect_answers(cfg, ui)
     except (EOFError, KeyboardInterrupt):
         ui.fail("cancelled")
         return 130
     cfg.resolve_defaults()
-    problems = cfg.validate()
-    if not cfg.dry_run and not cfg.no_services and not cfg.admin_password:
+    problems = [] if cfg.inspect else cfg.validate()
+    if not cfg.inspect and not cfg.dry_run and not cfg.no_services and not cfg.admin_password:
         problems.append("the first super admin's password is missing (set ZIIRA_OPERATOR_PASSWORD, or run interactively)")
     if cfg.admin_password and len(cfg.admin_password) < 12:
         problems.append("the super admin password must have at least 12 characters")
@@ -102,7 +103,9 @@ def main(argv: Sequence[str] | None = None, *, system: System | None = None, ui:
         return 2
     system = system or System(dry_run=cfg.dry_run, say=ui.plan)
     ctx = Ctx(cfg=cfg, sys=system, ui=ui)
-    steps = select_steps(cfg)
+    steps = [s for s in STEPS if s[0] == "inspect"] if cfg.inspect else select_steps(cfg)
+    if not cfg.dry_run and not cfg.inspect:
+        system.load_manifest()
     if cfg.dry_run:
         ui.info("DRY RUN: nothing will be changed. Read-only checks still run, so the plan reflects this machine.")
     exit_code = 0
@@ -110,8 +113,14 @@ def main(argv: Sequence[str] | None = None, *, system: System | None = None, ui:
         ui.step(number, len(steps), title)
         try:
             fn(ctx)  # type: ignore[operator]
+            if not cfg.inspect:
+                system.save_manifest()
+        except Finished as done:
+            ui.info(str(done))
+            break
         except StepFailed as error:
             ui.fail(error.message, error.hint)
+            system.save_manifest()
             ui.info(f"Nothing is half-done that a re-run cannot resume. Run the installer again after fixing this "
                     f"(it skips what is finished). Step: {name}")
             exit_code = 1
@@ -120,7 +129,7 @@ def main(argv: Sequence[str] | None = None, *, system: System | None = None, ui:
             ui.fail(str(error), "A re-run resumes where this stopped.")
             exit_code = 1
             break
-    _final(ctx, exit_code)
+    _final(ctx, exit_code if not cfg.inspect else 1)
     if not cfg.dry_run and system.is_root():
         try:
             with open(LOG_PATH, "a") as log:

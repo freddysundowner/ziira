@@ -33,11 +33,11 @@ def test_nothing_is_hard_coded_to_one_domain() -> None:
 
 
 def test_cert_lineages() -> None:
-    assert load(*GOOD).lineages() == {"ziira.io": ["ziira.io", "www.ziira.io"], "app.ziira.io": ["app.ziira.io"],
-                                      "admin.ziira.io": ["admin.ziira.io"]}
+    assert load(*GOOD).lineages() == {"ziira-ziira.io": ["ziira.io", "www.ziira.io"], "ziira-app.ziira.io": ["app.ziira.io"],
+                                      "ziira-admin.ziira.io": ["admin.ziira.io"]}
     single = load(*GOOD, "--cert-mode", "single").lineages()
-    assert list(single) == ["ziira.io"] and len(single["ziira.io"]) == 4
-    assert load(*GOOD).lineage_of("www.ziira.io") == "ziira.io"
+    assert list(single) == ["ziira-ziira.io"] and len(single["ziira-ziira.io"]) == 4
+    assert load(*GOOD).lineage_of("www.ziira.io") == "ziira-ziira.io"       # always ziira-<host>: never an existing lineage
 
 
 def test_registration_defaults_follow_the_mailer() -> None:
@@ -57,7 +57,7 @@ def test_staging_and_self_signed_switch_hsts_off() -> None:
     (("--root-domain", "ziira.io", "--app-host", "ziira.io", "--email", "a@b.co", "--admin-email", "c@d.co"), "three different"),
     (("--root-domain", "ziira.io", "--email", "a@b.co", "--admin-email", "c@d.co", "--operator-networks", "nonsense"), "network"),
     (("--root-domain", "ziira.io", "--email", "a@b.co", "--admin-email", "c@d.co", "--install-dir", "relative"), "absolute"),
-    (("--root-domain", "ziira.io", "--email", "a@b.co", "--admin-email", "c@d.co", "--db-role", "Bad-Role"), "database role"),
+    (("--root-domain", "ziira.io", "--email", "a@b.co", "--admin-email", "c@d.co", "--db-prefix", "Bad-Prefix"), "db-prefix"),
     (("--root-domain", "ziira.io", "--email", "a@b.co", "--admin-email", "c@d.co", "--repo", "x", "--from-dir", "/y"), "only one"),
 ])
 def test_validation_names_the_problem(args: tuple[str, ...], needle: str) -> None:

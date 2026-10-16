@@ -15,6 +15,8 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from installer.manifest import BACKUP_ROOT, MANIFEST_PATH, Manifest, checksum
+
 
 @dataclass
 class Result:
@@ -40,6 +42,52 @@ class System:
         self.dry_run = dry_run
         self.say = say or (lambda s: None)          # prints "would ..." lines in dry-run mode
         self.fake = False
+        self.manifest = Manifest()
+        self.stamp = __import__("time").strftime("%Y%m%d%H%M%S")        # names this run's backups
+
+    # ---------------------------------------------------------------- manifest (what we changed, so uninstall can undo it)
+    def backup_path(self, path: str) -> str:
+        return f"{BACKUP_ROOT}/{self.stamp}{path}"
+
+    def load_manifest(self) -> None:
+        self.manifest = Manifest.loads(self.read_text(MANIFEST_PATH))
+
+    def save_manifest(self) -> None:
+        """Written only when there is something to record (an install that stopped at its plan leaves no trace)."""
+        if not self.dry_run and (self.manifest.entries or self.manifest.extra):
+            self._raw_write(MANIFEST_PATH, self.manifest.dumps())
+
+    def raw_remove(self, path: str) -> None:
+        """Delete a file without recording it (used for the manifest itself)."""
+        if not self.dry_run and os.path.lexists(path):
+            os.remove(path)
+
+    def _raw_write(self, path: str, content: str) -> None:
+        self._note_dirs(os.path.dirname(path))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as handle:
+            handle.write(content)
+        os.chmod(path, 0o600)
+
+    def _before_change(self, path: str, kind: str = "file") -> None:
+        """Called before a file/link is created, replaced or removed: record it, and keep a copy of what was there."""
+        if self.manifest.known(path):
+            return
+        if not self.exists(path):
+            self.manifest.add(path, kind, "created")
+            return
+        backup = self.backup_path(path)
+        before = self.readlink(path)
+        if before is not None:                                           # a symlink: remember where it pointed
+            self.manifest.add(path, "link", "modified", backup="link:" + before)
+        else:
+            text = self.read_text(path) or ""
+            self._store_backup(path, backup)
+            self.manifest.add(path, kind, "modified", backup=backup, digest=checksum(text))
+
+    def _store_backup(self, path: str, backup: str) -> None:
+        os.makedirs(os.path.dirname(backup), exist_ok=True)
+        shutil.copy2(path, backup)
 
     # ---------------------------------------------------------------- commands
     def run(self, argv: Sequence[str], *, probe: bool = False, check: bool = True, input: str | None = None,
@@ -149,10 +197,21 @@ class System:
             if changed:
                 self.say(f"create directory {path}")
             return changed
+        self._note_dirs(path)
         os.makedirs(path, exist_ok=True)
         if self._chmod_chown(path, mode, owner, group):
             changed = True
         return changed
+
+    def _note_dirs(self, path: str) -> None:
+        """Record every missing ancestor directory (outermost first) as created by us."""
+        missing = []
+        probe = path.rstrip("/")
+        while probe and not self.exists(probe):
+            missing.append(probe)
+            probe = probe.rsplit("/", 1)[0]
+        for d in reversed(missing):
+            self.manifest.add(d, "dir", "created")
 
     def write_text(self, path: str, content: str, *, mode: int = 0o644, owner: str | None = None,
                    group: str | None = None, secret: bool = False) -> bool:
@@ -165,6 +224,7 @@ class System:
             return not same
         changed = not same
         if not same:
+            self._before_change(path)
             os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
             tmp = f"{path}.ziira-new"
             fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
@@ -197,6 +257,7 @@ class System:
         if self.dry_run:
             self.say(f"point {link} -> {target}")
             return True
+        self._before_change(link, "link")
         tmp = f"{link}.ziira-new"
         if os.path.lexists(tmp):
             os.remove(tmp)
@@ -207,7 +268,11 @@ class System:
     def remove(self, path: str) -> None:
         if self.dry_run:
             self.say(f"remove {path}")
-        elif os.path.islink(path) or os.path.isfile(path):
+            return
+        if self.exists(path) and not self.manifest.known(path) and not os.path.isdir(path):
+            self._before_change(path)
+            self.manifest.entries[-1]["action"] = "removed"
+        if os.path.islink(path) or os.path.isfile(path):
             os.remove(path)
         elif os.path.isdir(path):
             shutil.rmtree(path)
@@ -217,4 +282,5 @@ class System:
         if self.dry_run:
             self.say(f"copy {src} -> {dst}")
             return
+        self._note_dirs(dst)
         shutil.copytree(src, dst, symlinks=True, ignore=shutil.ignore_patterns(*exclude), dirs_exist_ok=False)

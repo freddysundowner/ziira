@@ -3,14 +3,12 @@ from __future__ import annotations
 
 import re
 
-from installer import pgdetect
-from installer.context import SUPPORTED_OS, Ctx
+from installer.context import END_OF_LIFE, SUPPORTED_OS, Ctx
 from installer.ui import StepFailed
+from installer.util import removeprefix
 
-PACKAGES = ["ca-certificates", "curl", "gnupg", "openssl", "git", "rsync", "xz-utils", "build-essential", "python3",
-            "python3-venv", "python3-pip", "nginx", "certbot", "logrotate", "ufw"]
 PYTHON_CANDIDATES = ["python3.14", "python3.13", "python3.12"]
-NODE_MAJOR = 22
+NODE_MAJOR = 20          # Node 20 LTS: officially supports glibc 2.31 (Ubuntu 20.04)
 MIN_NODE = 20
 
 
@@ -49,6 +47,9 @@ def step_preflight(ctx: Ctx) -> None:
         ui.warn(msg + "; continuing because of --allow-unsupported-os")
     else:
         ui.already(f"operating system {osr.get('PRETTY_NAME', ident + ' ' + version)}")
+        if (ident, version) in END_OF_LIFE:
+            ui.warn(f"{osr.get('PRETTY_NAME')} is past its standard support: Ziira works on it with a private Python and Node, "
+                    "but plan to move to a supported release; other software on this server may not get security updates")
 
     cpus, ram, disk = sysm.cpu_count(), sysm.ram_mb(), sysm.disk_free_mb(cfg.install_dir)
     ctx.facts.update(cpus=cpus, ram_mb=ram, disk_free_mb=disk)
@@ -64,19 +65,6 @@ def step_preflight(ctx: Ctx) -> None:
         raise StepFailed(f"only {disk // 1024} GB free; at least 5 GB are needed (10 GB recommended)")
     if disk < 10 * 1024:
         ui.warn(f"{disk // 1024} GB free; 10 GB or more is recommended (backups grow)")
-
-    # ports 80 and 443: free, or already nginx
-    listening = pgdetect.parse_listening(sysm.run(["ss", "-ltnpH"], probe=True, check=False).out)
-    for port in (80, 443):
-        owner = listening.get(port)
-        if owner is None:
-            continue
-        if owner in ("nginx", ""):
-            ui.already(f"port {port} is served by nginx" if owner else f"port {port} is in use (process unknown, assuming nginx)")
-        else:
-            raise StepFailed(f"port {port} is already used by '{owner}'",
-                             hint=f"Stop or reconfigure {owner} (for example: systemctl disable --now {owner}), then run again.")
-    ctx.facts["listening"] = {str(k): v for k, v in listening.items()}
 
     # DNS
     hosts = cfg.hosts()
@@ -112,31 +100,24 @@ def step_preflight(ctx: Ctx) -> None:
 
 
 def step_packages(ctx: Ctx) -> None:
-    cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
-    wanted = list(PACKAGES)
-    if not cfg.no_fail2ban:
-        wanted.append("fail2ban")
-    missing = ctx.apt_missing(wanted)
-    if not missing:
-        ui.already("system packages: " + ", ".join(wanted))
+    """Install only the packages the plan found missing (no upgrade, no recommends, nothing removed)."""
+    sysm, ui = ctx.sys, ctx.ui
+    wanted = list(ctx.facts.get("packages", []))
+    if not wanted:
+        ui.already("system packages: everything needed is present")
     else:
-        sysm.run(["apt-get", "update"], env={"DEBIAN_FRONTEND": "noninteractive"}, desc="apt-get update")
-        ctx.apt_install(missing)
-        ui.ok("installed " + ", ".join(missing))
-    # Brotli is optional: use it when the distribution packages it.
-    r = sysm.run(["apt-cache", "policy", "libnginx-mod-http-brotli-filter"], probe=True, check=False)
-    available = r.ok and "Candidate:" in r.out and "(none)" not in r.out
-    have = bool(sysm.listdir("/etc/nginx/modules-enabled")) and any("brotli" in f for f in sysm.listdir("/etc/nginx/modules-enabled"))
-    if available and not have and ctx.real_services:
-        sysm.run(["apt-get", "install", "-y", "libnginx-mod-http-brotli-filter", "libnginx-mod-http-brotli-static"],
-                 env={"DEBIAN_FRONTEND": "noninteractive"}, check=False, desc="install the nginx brotli module")
-        have = any("brotli" in f for f in sysm.listdir("/etc/nginx/modules-enabled"))
-    ctx.facts["brotli"] = have
-    v = sysm.run(["nginx", "-v"], probe=True, check=False)
-    ctx.facts["nginx_version"] = (v.err or v.out).strip()
+        ui.info("installing (missing only, --no-install-recommends): " + ", ".join(wanted))
+        sysm.run(["apt-get", "update"], env={"DEBIAN_FRONTEND": "noninteractive"}, desc="apt-get update (package lists only; no upgrade)")
+        ctx.apt_install(wanted)
+        sysm.manifest.note("packages", " ".join(wanted))
+        ui.ok("installed " + ", ".join(wanted))
+    if sysm.which("nginx"):
+        v = sysm.run(["nginx", "-v"], probe=True, check=False)
+        ctx.facts["nginx_version"] = (v.err or v.out).strip()
 
 
-def find_python(ctx: Ctx) -> str | None:
+def system_python_ok(ctx: Ctx) -> str | None:
+    """A system python 3.12+ that already exists (the system python3 itself is never changed or replaced)."""
     for name in PYTHON_CANDIDATES + ["python3"]:
         path = ctx.sys.which(name)
         if not path:
@@ -146,14 +127,50 @@ def find_python(ctx: Ctx) -> str | None:
             major, minor = (int(x) for x in r.out.strip().split("."))
             if (major, minor) >= (3, 12):
                 return path
-    # a Python installed by an earlier run of this installer (uv)
-    for candidate in (f"{ctx.cfg.install_dir}/python/current/bin/python3",):
-        if ctx.sys.exists(candidate):
-            return candidate
     return None
 
 
+def find_python(ctx: Ctx) -> str | None:
+    found = system_python_ok(ctx)
+    if found:
+        return found
+    # a private Python installed by an earlier run of this installer (uv)
+    candidate = f"{ctx.cfg.install_dir}/python/current/bin/python3"
+    return candidate if ctx.sys.exists(candidate) else None
+
+
+def uv_archive(arch: str) -> str:
+    return {"x86_64": "x86_64-unknown-linux-gnu", "aarch64": "aarch64-unknown-linux-gnu"}.get(arch, "x86_64-unknown-linux-gnu")
+
+
+def install_uv(ctx: Ctx) -> str:
+    """The official uv release binary, checked against its published SHA-256, in <install>/tools/uv. Returns its path."""
+    cfg, sysm = ctx.cfg, ctx.sys
+    target = f"{cfg.install_dir}/tools/uv"
+    binary = f"{target}/uv"
+    if sysm.exists(binary):
+        return binary
+    arch = uv_archive(sysm.run(["uname", "-m"], probe=True, check=False).out.strip())
+    name = f"uv-{arch}.tar.gz"
+    base = "https://github.com/astral-sh/uv/releases/latest/download"
+    tmp = f"/tmp/ziira-{name}"
+    sysm.run(["curl", "-fsSL", "--max-time", "300", "-o", tmp, f"{base}/{name}"], desc=f"download {name} (the official uv release)")
+    sums = sysm.run(["curl", "-fsSL", "--max-time", "60", f"{base}/{name}.sha256"], probe=True, check=False)
+    if not cfg.dry_run:
+        expected = sums.out.split()[0] if sums.out.split() else ""
+        actual = sysm.run(["sha256sum", tmp]).out.split()[0]
+        if not expected or actual != expected:
+            sysm.run(["rm", "-f", tmp], check=False)
+            raise StepFailed("the downloaded uv archive does not match its published SHA-256; refusing to use it",
+                             hint="Check the server's outbound HTTPS, or install Python 3.12+ yourself and run again.")
+    sysm.makedirs(target)
+    sysm.run(["tar", "-xzf", tmp, "-C", target, "--strip-components=1"], desc=f"unpack uv into {target}")
+    sysm.run(["rm", "-f", tmp], check=False)
+    return binary
+
+
 def step_python(ctx: Ctx) -> None:
+    """The application needs Python 3.12+. The system python3 is never touched: use an existing 3.12+ or a private one (uv)."""
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
     if cfg.no_services:
         ui.already("Python skipped (--no-services: no virtual environment is built)")
@@ -163,32 +180,21 @@ def step_python(ctx: Ctx) -> None:
         ctx.facts["python"] = found
         ui.already(f"Python 3.12+ found at {found}")
         return
-    # 1. the distribution's own python3.12 (Ubuntu 24.04 ships it; Debian 12 and Ubuntu 22.04 do not)
-    r = sysm.run(["apt-cache", "policy", "python3.12"], probe=True, check=False)
-    if r.ok and "Candidate:" in r.out and "(none)" not in r.out:
-        ctx.apt_install(["python3.12", "python3.12-venv"])
-        ctx.facts["python"] = "/usr/bin/python3.12"
-        ui.ok("installed python3.12 from the distribution")
-        return
-    # 2. uv, installed from PyPI into a private virtual environment (no curl | sh), fetches a standalone Python
-    tools = f"{cfg.install_dir}/tools"
+    uv = install_uv(ctx)
     py_dir = f"{cfg.install_dir}/python"
-    sysm.makedirs(cfg.install_dir)
-    sysm.run(["python3", "-m", "venv", tools], desc=f"create {tools} (virtual environment for uv)")
-    sysm.run([f"{tools}/bin/pip", "install", "--quiet", "--no-cache-dir", "uv"], timeout=900)
-    sysm.run([f"{tools}/bin/uv", "python", "install", "3.12"], env={"UV_PYTHON_INSTALL_DIR": py_dir}, timeout=1800,
-             desc="uv python install 3.12")
-    found_uv = sysm.run([f"{tools}/bin/uv", "python", "find", "3.12"], env={"UV_PYTHON_INSTALL_DIR": py_dir},
-                        probe=True, check=False)
-    path = found_uv.out.strip()
+    sysm.makedirs(py_dir)
+    env = {"UV_PYTHON_INSTALL_DIR": py_dir, "UV_NO_CONFIG": "1"}
+    sysm.run([uv, "python", "install", "3.12"], env=env, timeout=1800, desc="uv python install 3.12 (private; system python untouched)")
+    path = sysm.run([uv, "python", "find", "3.12"], env=env, probe=True, check=False).out.strip()
     if not path and not cfg.dry_run:
-        raise StepFailed("Python 3.12 or newer is required and could not be installed",
-                         hint="This distribution has no python3.12 package and the standalone download failed. Install "
-                              "Python 3.12+ yourself (or use Ubuntu 24.04), then run the installer again.")
+        raise StepFailed("Python 3.12 could not be installed", hint="Check the server's outbound HTTPS (github.com), then run again.")
     ctx.facts["python"] = path or f"{py_dir}/cpython-3.12/bin/python3"
     if path:
         sysm.symlink(f"{py_dir}/current", path.rsplit("/bin/", 1)[0])
-    ui.ok(f"installed a standalone Python 3.12 with uv at {ctx.facts['python']}")
+        probe = sysm.run([path, "-c", "import ssl, sqlite3, venv; print('ok')"], probe=True, check=False)
+        if probe.out.strip() != "ok":
+            raise StepFailed("the private Python 3.12 does not run on this system", hint=(probe.err or probe.out)[-400:])
+    ui.ok(f"installed a private Python 3.12 at {ctx.facts['python']} (the system python3 was not touched)")
 
 
 def node_ok(ctx: Ctx, path: str) -> bool:
@@ -202,7 +208,7 @@ def step_node(ctx: Ctx) -> None:
     if cfg.prebuilt or cfg.no_services:
         ui.already("Node.js not needed (--prebuilt or --no-services)")
         return
-    for candidate in (f"{cfg.install_dir}/node/current/bin/node", sysm.which("node") or ""):
+    for candidate in (f"{cfg.install_dir}/tools/node/current/bin/node", sysm.which("node") or ""):
         if candidate and node_ok(ctx, candidate):
             ctx.facts["node_bin"] = candidate.rsplit("/", 1)[0]
             ui.already(f"Node.js {sysm.run([candidate, '--version'], probe=True, check=False).out.strip()} at {candidate}")
@@ -213,14 +219,15 @@ def step_node(ctx: Ctx) -> None:
     line = next((ln for ln in sums.out.splitlines() if ln.endswith(f"-linux-{arch}.tar.xz")), "")
     if not line:
         if cfg.dry_run:
-            ui.plan(f"download Node.js {NODE_MAJOR} (linux-{arch}) from nodejs.org, verify its SHA-256, unpack into {cfg.install_dir}/node")
-            ctx.facts["node_bin"] = f"{cfg.install_dir}/node/current/bin"
+            ui.plan(f"download Node.js {NODE_MAJOR} (linux-{arch}) from nodejs.org, verify its SHA-256, "
+                    f"unpack into {cfg.install_dir}/tools/node")
+            ctx.facts["node_bin"] = f"{cfg.install_dir}/tools/node/current/bin"
             return
         raise StepFailed("could not read the Node.js release list from nodejs.org",
                          hint="Check the server's outbound HTTPS, or install Node.js 20+ yourself, or use --prebuilt.")
     digest, filename = line.split()
-    version = filename.removeprefix("node-").split("-linux")[0]
-    target = f"{cfg.install_dir}/node/{version}"
+    version = removeprefix(filename, "node-").split("-linux")[0]
+    target = f"{cfg.install_dir}/tools/node/{version}"
     tmp = f"/tmp/{filename}"
     sysm.run(["curl", "-fsSL", "--max-time", "600", "-o", tmp, f"{base}/{filename}"], desc=f"download {filename}")
     if not cfg.dry_run:
@@ -231,6 +238,6 @@ def step_node(ctx: Ctx) -> None:
     sysm.makedirs(target)
     sysm.run(["tar", "-xJf", tmp, "-C", target, "--strip-components=1"], desc=f"unpack Node.js into {target}")
     sysm.run(["rm", "-f", tmp], check=False)
-    sysm.symlink(f"{cfg.install_dir}/node/current", target)
-    ctx.facts["node_bin"] = f"{cfg.install_dir}/node/current/bin"
+    sysm.symlink(f"{cfg.install_dir}/tools/node/current", target)
+    ctx.facts["node_bin"] = f"{cfg.install_dir}/tools/node/current/bin"
     ui.ok(f"installed Node.js {version} into {target}")

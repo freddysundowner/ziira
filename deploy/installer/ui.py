@@ -8,6 +8,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 
+class Finished(Exception):
+    """Not a failure: the run ends here on purpose (for example --inspect)."""
+
+
 class StepFailed(Exception):
     """A step cannot continue; the message says what is wrong and what to do."""
 

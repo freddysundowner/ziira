@@ -27,10 +27,26 @@ class FakeSystem(System):
         self.disk_mb = 50_000
         self.dns: dict[str, tuple[list[str], list[str]]] = {}
         self.users: set[str] = set()
-        self.programs: set[str] = {"python3", "curl", "git", "ss", "dpkg-query", "apt-get", "nginx", "systemctl", "openssl"}
+        self.programs: set[str] = {"python3", "curl", "git", "ss", "dpkg-query", "apt-get", "systemctl", "openssl"}
         self.said: list[str] = []
         self.say = self.said.append
         self.mutations: list[str] = []
+
+    def _store_backup(self, path: str, backup: str) -> None:
+        self.files[backup] = self.files.get(path, "")
+
+    def _raw_write(self, path: str, content: str) -> None:
+        self._note_dirs(posixpath.dirname(path))
+        self.files[path] = content
+        self.dirs.add(posixpath.dirname(path))
+
+    def save_manifest(self) -> None:
+        if not self.dry_run and (self.manifest.entries or self.manifest.extra):
+            self._raw_write("/var/lib/ziira/install-manifest.json", self.manifest.dumps())
+
+    def raw_remove(self, path: str) -> None:
+        if not self.dry_run:
+            self.files.pop(path, None)
 
     # ---------------------------------------------------------------- scripting
     def on(self, match: Matcher, out: str = "", code: int = 0, err: str = "") -> FakeSystem:
@@ -139,6 +155,7 @@ class FakeSystem(System):
             if changed:
                 self.say(f"create directory {path}")
             return changed
+        self._note_dirs(path)
         parts = path.strip("/").split("/")
         for i in range(1, len(parts) + 1):
             self.dirs.add("/" + "/".join(parts[:i]))
@@ -155,6 +172,7 @@ class FakeSystem(System):
             return changed
         if changed:
             self.mutations.append(f"write {path}")
+            self._before_change(path)
         self.files[path] = content
         self.modes[path] = mode
         self.owners[path] = (owner, group)
@@ -168,6 +186,7 @@ class FakeSystem(System):
             self.say(f"point {link} -> {target}")
             return True
         self.mutations.append(f"link {link}")
+        self._before_change(link, "link")
         self.links[link] = target
         return True
 
@@ -176,18 +195,23 @@ class FakeSystem(System):
             self.say(f"remove {path}")
             return
         self.mutations.append(f"remove {path}")
+        if self.exists(path) and not self.manifest.known(path) and path not in self.dirs:
+            self._before_change(path)
+            self.manifest.entries[-1]["action"] = "removed"
         self.files.pop(path, None)
         self.links.pop(path, None)
         for p in [p for p in list(self.files) + list(self.links) if p.startswith(path.rstrip("/") + "/")]:
             self.files.pop(p, None)
             self.links.pop(p, None)
-        self.dirs.discard(path)
+        for d in [d for d in self.dirs if d == path or d.startswith(path.rstrip("/") + "/")]:
+            self.dirs.discard(d)
 
     def copy_tree(self, src: str, dst: str, *, exclude: Sequence[str] = ()) -> None:
         if self.dry_run:
             self.say(f"copy {src} -> {dst}")
             return
         self.mutations.append(f"copy {src} {dst}")
+        self._note_dirs(dst)
         for p in [p for p in list(self.files) if p.startswith(src.rstrip("/") + "/")]:
             self.files[dst + p[len(src):]] = self.files[p]
         self.dirs.add(dst)

@@ -25,8 +25,8 @@ class Config:
     env_dir: str = "/etc/ziira"
     # --- PostgreSQL
     postgres_new_cluster: bool = False  # allow a second PostgreSQL 16 cluster when only an older one exists
-    db_role: str = "ziira"
-    master_db: str = "ziira_master"
+    db_prefix: str = "ziira_"           # every database and role we create starts with this
+    pg_port: int = 0                    # which PostgreSQL when several run (0 = the only one, or ask)
     # --- first super admin (the password comes from ZIIRA_OPERATOR_PASSWORD or a prompt, never a flag)
     admin_name: str = "Platform admin"
     admin_email: str = ""
@@ -59,8 +59,12 @@ class Config:
     skip_dns_check: bool = False
     public_ip: str = ""
     no_services: bool = False           # config-only: write and validate files, touch no service
-    no_firewall: bool = False
-    no_fail2ban: bool = False
+    manage_firewall: bool = False       # allowed to ENABLE ufw (never done by default)
+    fail2ban: bool = False              # install/enable fail2ban with a ziira-only jail (never done by default)
+    inspect: bool = False               # only print the inventory and the plan
+    proxy_mode: str = ""                # "snippet": another proxy owns 80/443: run behind it and write config for it
+    ports: int = 0                      # run our own nginx on 127.0.0.1:<port> (plain HTTP) behind another proxy
+    snippet_dir: str = ""               # where proxy snippets go (default <install_dir>/proxy-snippets)
     allow_unsupported_os: bool = False
     api_port: int = 8000
     rebuild_port: int = 9001
@@ -75,6 +79,31 @@ class Config:
     smtp_password: str = field(default="", repr=False)
 
     # ---------------------------------------------------------------- derived
+    @property
+    def db_role(self) -> str:
+        return self.db_prefix.rstrip("_") or "ziira"
+
+    @property
+    def master_db(self) -> str:
+        return f"{self.db_prefix}master"
+
+    @property
+    def template_db(self) -> str:
+        return f"{self.db_prefix}template"
+
+    @property
+    def tenant_db_prefix(self) -> str:
+        return f"{self.db_prefix}t_"
+
+    @property
+    def tenant_role_prefix(self) -> str:
+        return "zt_" if self.db_prefix == "ziira_" else f"{self.db_prefix}r_"
+
+    @property
+    def behind(self) -> bool:
+        """Run our own nginx on a local port behind another proxy instead of joining/owning ports 80/443."""
+        return self.ports > 0 or self.proxy_mode == "snippet"
+
     def resolve_defaults(self) -> None:
         self.root_domain = self.root_domain.strip().lower().rstrip(".")
         if self.root_domain:
@@ -82,6 +111,12 @@ class Config:
             self.admin_host = (self.admin_host or f"admin.{self.root_domain}").strip().lower()
         if not self.registration_mode:
             self.registration_mode = "invite" if self.smtp_host else "closed"
+        if self.db_prefix and not self.db_prefix.endswith("_"):
+            self.db_prefix += "_"
+        if self.proxy_mode == "snippet" and not self.ports:
+            self.ports = 8081
+        if self.behind:
+            self.hsts = "off"
         if self.staging or self.self_signed:
             self.hsts = "off"               # a browser must never pin a certificate nobody trusts
 
@@ -99,9 +134,10 @@ class Config:
     def lineages(self) -> dict[str, list[str]]:
         """Certificate name -> host names on it. per-host: the site (with www), app and admin each get their own."""
         if self.cert_mode == "single":
-            return {self.root_domain: self.hosts()}
+            return {f"ziira-{self.root_domain}": self.hosts()}
         site = [self.root_domain] + ([self.www_host] if self.www else [])
-        return {self.root_domain: site, self.app_host: [self.app_host], self.admin_host: [self.admin_host]}
+        return {f"ziira-{self.root_domain}": site, f"ziira-{self.app_host}": [self.app_host],
+                f"ziira-{self.admin_host}": [self.admin_host]}
 
     def lineage_of(self, host: str) -> str:
         for name, hosts in self.lineages().items():
@@ -150,9 +186,12 @@ class Config:
                 problems.append(f"{label} must be an absolute path without '..'")
         if not util.valid_ident(self.service_user.replace("-", "_")):
             problems.append("service user must be a simple lower-case name")
-        for label, value in (("database role", self.db_role), ("master database", self.master_db)):
-            if not util.valid_ident(value):
-                problems.append(f"{label} must be lower-case letters, digits and underscores")
+        if not util.valid_ident(self.db_prefix.rstrip("_") or "x") or len(self.db_prefix) > 20:
+            problems.append("--db-prefix must be lower-case letters, digits and underscores (at most 20), e.g. ziira_")
+        if self.proxy_mode not in ("", "snippet"):
+            problems.append("--proxy-mode must be snippet")
+        if self.ports and not 1024 <= self.ports <= 65000:
+            problems.append("--ports must be a local port between 1024 and 65000")
         if self.cert_mode not in ("per-host", "single"):
             problems.append("--cert-mode must be per-host or single")
         if self.hsts not in ("off", "on", "include-subdomains"):
@@ -209,11 +248,11 @@ def build_parser() -> argparse.ArgumentParser:
     a("--www", dest="www", action="store_true", default=None, help="also serve www.<root> as a redirect (default)")
     a("--no-www", dest="www", action="store_false", default=None)
     a("--email", help="contact email for Let's Encrypt")
-    a("--install-dir"), a("--service-user"), a("--web-root"), a("--backup-dir")
+    a("--install-dir"), a("--web-root"), a("--backup-dir")
     a("--postgres-new-cluster", action="store_true", default=None,
       help="if only a PostgreSQL older than 16 exists, create a second 16 cluster on another port (needs your consent)")
-    a("--db-role", help="PostgreSQL role the application uses (default ziira)")
-    a("--master-db", help="master database name (default ziira_master)")
+    a("--db-prefix", help="prefix of every database and role we create (default ziira_: role ziira, ziira_master, ziira_t_<code>)")
+    a("--pg-port", type=int, help="which PostgreSQL to use when several run")
     a("--admin-name"), a("--admin-email")
     a("--smtp-host"), a("--smtp-port", type=int), a("--smtp-user"), a("--smtp-from"), a("--smtp-from-name")
     a("--default-plan", help="plan code given to new registrations (optional; can be set in the Super Admin)")
@@ -235,7 +274,13 @@ def build_parser() -> argparse.ArgumentParser:
     a("--public-ip", help="this server's public IP (default: looked up)")
     a("--no-services", action="store_true", default=None,
       help="config-only: write and validate files; install no database, start no service (for tests and staging images)")
-    a("--no-firewall", action="store_true", default=None), a("--no-fail2ban", action="store_true", default=None)
+    a("--manage-firewall", action="store_true", default=None, help="allow the installer to ENABLE ufw (asks to confirm)")
+    a("--fail2ban", action="store_true", default=None, help="install/enable fail2ban with a ziira-only jail")
+    a("--inspect", action="store_true", default=None, help="print what is on this server and what would change; change nothing")
+    a("--proxy-mode", choices=["snippet"], help="another proxy owns 80/443: run behind it and write config snippets for it")
+    a("--ports", type=int, help="run our own nginx on 127.0.0.1:PORT (plain HTTP) to be fronted by another proxy")
+    a("--snippet-dir", help="folder for the proxy snippets")
+    a("--user", dest="service_user", help="system user to run Ziira as (default ziira)")
     a("--allow-unsupported-os", action="store_true", default=None)
     a("--api-port", type=int), a("--rebuild-port", type=int), a("--workers", type=int)
     a("--dry-run", action="store_true", help="print the plan, change nothing")

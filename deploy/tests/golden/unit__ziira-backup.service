@@ -31,4 +31,4 @@ RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 CapabilityBoundingSet=
 AmbientCapabilities=
 UMask=0027
-ReadWritePaths=/var/lib/ziira /var/backups/ziira
+ReadWritePaths=/var/lib/ziira /var/backups/ziira /var/log/ziira

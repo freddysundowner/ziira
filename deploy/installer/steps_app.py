@@ -31,8 +31,9 @@ def step_user(ctx: Ctx) -> None:
     if sysm.user_exists(cfg.service_user):
         ui.already(f"system user '{cfg.service_user}'")
     else:
-        sysm.run(["useradd", "--system", "--user-group", "--home-dir", cfg.state_dir, "--create-home", "--shell",
+        sysm.run(["useradd", "--system", "--user-group", "--home-dir", cfg.state_dir, "--no-create-home", "--shell",
                   "/usr/sbin/nologin", cfg.service_user], desc=f"create system user {cfg.service_user} (no login)")
+        sysm.manifest.note("users", cfg.service_user)
         ui.ok(f"created system user '{cfg.service_user}' (no login shell)")
     u = cfg.service_user
     changed = False
@@ -42,7 +43,7 @@ def step_user(ctx: Ctx) -> None:
             (f"{cfg.state_dir}/site-build", 0o750, u, u), (cfg.backup_dir, 0o750, u, u),
             (cfg.web_root, 0o755, "root", "root"), (f"{cfg.web_root}/app", 0o755, "root", "root"),
             (f"{cfg.web_root}/site", 0o755, u, u), ("/var/www/letsencrypt", 0o755, "root", "root"),
-            ("/var/log/nginx/ziira", 0o750, "root", "adm")):
+            ("/var/log/ziira", 0o750, "root", "adm"), ("/var/log/ziira/nginx", 0o750, "root", "adm")):
         if sysm.makedirs(path, mode=mode, owner=owner, group=group):
             changed = True
     if changed:
@@ -65,7 +66,8 @@ def install_helpers(ctx: Ctx) -> None:
                            backup_dir=cfg.backup_dir)
         changed |= sysm.write_text(f"/usr/local/bin/{name}", text, mode=0o755)
     sysm.makedirs(f"{cfg.install_dir}/bin")
-    changed |= sysm.write_text(f"{cfg.install_dir}/bin/nginx-safe-reload.sh", units.nginx_safe_reload_script(cfg), mode=0o755,
+    changed |= sysm.write_text(f"{cfg.install_dir}/bin/nginx-safe-reload.sh",
+                               units.nginx_safe_reload_script(cfg, ctx.facts.get("mode") == "behind"), mode=0o755,
                                owner="root", group="root")
     if changed:
         ui.ok("installed the helper commands: ziira-cli, ziira-doctor, ziira-update, ziira-backup-now")
@@ -199,6 +201,8 @@ def step_services(ctx: Ctx) -> None:
     }
     if ctx.rebuild_enabled:
         files["/etc/systemd/system/ziira-site-rebuild.service"] = units.rebuild_service(cfg)
+    if ctx.facts.get("mode") == "behind":
+        files["/etc/systemd/system/ziira-nginx.service"] = units.own_nginx_service(cfg)
     for job in units.JOBS:
         files[f"/etc/systemd/system/ziira-{job.name}.service"] = units.job_service(cfg, job)
         files[f"/etc/systemd/system/ziira-{job.name}.timer"] = units.job_timer(job)

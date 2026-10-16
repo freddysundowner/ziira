@@ -15,7 +15,7 @@ die() { printf '\n\033[1;31mStopped: %s\033[0m\n' "$1" >&2; exit 1; }
 
 wants_help=0
 for arg in "$@"; do
-  case "$arg" in -h|--help|--version|--list-steps|--dry-run) wants_help=1 ;; esac
+  case "$arg" in -h|--help|--version|--list-steps|--dry-run|--inspect) wants_help=1 ;; esac
 done
 
 if [ "$(id -u)" -ne 0 ] && [ "$wants_help" -eq 0 ]; then
@@ -26,25 +26,26 @@ if [ -r /etc/os-release ]; then
   # shellcheck disable=SC1091
   . /etc/os-release
   case "${ID:-}:${VERSION_ID:-}" in
-    ubuntu:22.04|ubuntu:24.04|debian:12) ;;
+    ubuntu:20.04|ubuntu:22.04|ubuntu:24.04|debian:12) ;;
     *) if [[ " $* " != *" --allow-unsupported-os "* ]]; then
-         printf '\033[1;33mWarning: %s is not a tested system (Ubuntu 22.04/24.04, Debian 12).\033[0m\n' "${PRETTY_NAME:-unknown}" >&2
+         printf '\033[1;33mWarning: %s is not a tested system (Ubuntu 20.04/22.04/24.04, Debian 12).\033[0m\n' "${PRETTY_NAME:-unknown}" >&2
        fi ;;
   esac
 fi
 
+# The installer itself needs only a python3 of version 3.8 or newer (Ubuntu 20.04 ships 3.8). It never installs or replaces a
+# system python: the application gets its own private Python 3.12 later, if the system one is older.
 PY=""
-for candidate in python3.14 python3.13 python3.12 python3.11 python3.10 python3; do
-  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
+for candidate in python3.13 python3.12 python3.11 python3.10 python3.9 python3.8 python3; do
+  if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 8) else 1)' 2>/dev/null; then
     PY="$(command -v "$candidate")"; break
   fi
 done
 if [ -z "$PY" ]; then
-  [ "$(id -u)" -eq 0 ] || die "python3 (3.10 or newer) is needed to run the installer"
-  echo "Installing python3 for the installer ..."
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq && apt-get install -y -qq python3 python3-venv >/dev/null
-  PY="$(command -v python3)" || die "could not install python3"
+  if command -v python3 >/dev/null 2>&1; then
+    die "python3 is $(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null || echo unknown) but the installer needs 3.8 or newer. Nothing was changed. Install a newer python3 yourself (for example: apt install python3.8), then run this again; the application's own Python 3.12 is installed separately and privately."
+  fi
+  die "python3 is not installed. Nothing was changed. Install it yourself (apt install python3), then run this again. The installer never installs or replaces the system python."
 fi
 
 cd "$HERE"

@@ -1,0 +1,44 @@
+
+[1/1] Inspecting this server (read-only) and planning
+  WHAT IS ALREADY ON THIS SERVER (read-only inspection; nothing has been changed)
+  
+  System        Ubuntu 24.04 LTS; 4 CPU, 8192 MB RAM (8192 MB available), 48 GB free; SSH port 22
+  Listening ports (local address, port, process):
+    0.0.0.0            22     sshd
+    0.0.0.0            80     nginx
+    0.0.0.0            443    nginx
+    127.0.0.1          3000   node
+    127.0.0.1          5432   postgres
+    127.0.0.1          8000   gunicorn
+  Web servers   nginx (running)
+  nginx sites already configured (never edited by the installer):
+    /etc/nginx/sites-enabled/shop: shop.example.com www.shop.example.com   listen 80, 443 ssl
+    /etc/nginx/sites-enabled/blog: blog.example.net   listen 80
+    /etc/nginx/sites-enabled/default: _   listen 80 default_server
+  Certificates in /etc/letsencrypt (never touched):
+    shop.example.com: shop.example.com, www.shop.example.com
+  Firewall      ufw inactive; iptables rules outside ufw/docker: 0; nftables ruleset: no; firewalld: no
+  fail2ban      installed
+  PostgreSQL:
+    cluster 16/main port 5432 online
+    port 5432: PostgreSQL 16, connections 5/100
+      databases (names only): blogdb, postgres, shopdb
+      roles (names only):     postgres, shopuser
+  Python        /usr/bin/python3.12 (Python 3.12.3); /usr/bin/python3 ()
+  Node.js       v22.3.0
+  Other running services (may be other apps): shop-api, backup-agent
+  
+  PLAN (mode: join); the installer will:
+    + JOIN the existing nginx: add our own files only (sites-available/ziira-*.conf, snippets/ziira-*.conf, conf.d/ziira-common.conf); no existing file is edited or deleted; reload (never restart) after nginx -t
+    + API on 127.0.0.1:8001, website rebuild receiver on 127.0.0.1:9001 (never on 0.0.0.0)
+    + apt-get install --no-install-recommends ca-certificates curl rsync logrotate certbot python3-venv xz-utils   [no apt upgrade, no package removed, no system python3/node change]
+    + PostgreSQL 16 on port 5432 is used as it is (no restart, no reload, no config change): create role 'ziira' and databases 'ziira_master', 'ziira_template' and 'ziira_t_<business>'
+    + firewall: left alone (ufw is not active; pass --manage-firewall to let the installer enable it)
+    + certbot certonly (webroot) for ONLY our names, lineages ziira-example.org, ziira-app.example.org, ziira-admin.example.org; other certificates and their renewal are never touched; an existing renewal timer is reused
+    + everything we add lives under /opt/ziira, /etc/ziira, /var/lib/ziira, /var/log/ziira, /var/backups/ziira, /var/www/ziira; systemd units ziira-*; every changed system file is recorded in /var/lib/ziira/install-manifest.json (uninstall.sh undoes exactly that)
+  
+  WARNINGS
+    ! port 8000 is taken; the API will use 127.0.0.1:8001
+    ! PostgreSQL on port 5432 has only 95 free connection slots (5 of 100 in use); Ziira may need up to about 100. Raise max_connections yourself or use PgBouncer (docs/performance.md)
+  inspection finished: nothing was changed
+  

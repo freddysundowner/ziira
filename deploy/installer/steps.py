@@ -1,19 +1,21 @@
 """The ordered list of steps, and the final summary."""
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import Callable, Tuple
 
 from installer.context import Ctx
 from installer.steps_app import step_env, step_migrate, step_release, step_services, step_user, step_webapp
 from installer.steps_base import step_node, step_packages, step_preflight, step_python
+from installer.steps_inspect import step_inspect
 from installer.steps_pg import step_postgres
 from installer.steps_web import step_nginx, step_nginx_tls, step_site, step_ssl, step_system
 
-Step = tuple[str, str, Callable[[Ctx], None]]
+Step = Tuple[str, str, Callable[[Ctx], None]]       # typing generics: this runs at import time on Python 3.8
 
 STEPS: list[Step] = [
+    ("inspect", "Inspecting this server (read-only) and planning", step_inspect),
     ("preflight", "Checking the server (system, resources, ports, DNS)", step_preflight),
-    ("packages", "System packages (nginx, certbot, git, firewall ...)", step_packages),
+    ("packages", "System packages (only the missing ones)", step_packages),
     ("python", "Python 3.12 or newer for the application", step_python),
     ("node", "Node.js (to build the web app and website)", step_node),
     ("user", "Service user and folders", step_user),

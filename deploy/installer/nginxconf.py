@@ -1,9 +1,13 @@
 """nginx configuration, rendered from data (no template engine, so the output is plain and testable).
 
-Layout written by the installer (nothing else under /etc/nginx is touched):
-  conf.d/ziira-common.conf        log format, rate-limit zones, upstream, gzip, server_tokens off
-  snippets/ziira-*.conf           TLS, proxy headers, per-host security headers
+Joining an existing nginx ("join" mode): only files named ziira-* are added, nothing existing is edited or deleted, and no
+global http{} setting changes:
+  conf.d/ziira-common.conf        log format, rate-limit zones and map/upstream, ALL named ziira_* (nothing else global)
+  snippets/ziira-*.conf           TLS, proxy headers, per-host security headers, per-server gzip/server_tokens
   sites-available/ziira-*.conf    one file per host (+ symlinks in sites-enabled)
+
+"Behind" mode (another proxy owns ports 80/443): the same files under /etc/ziira/nginx, served by our own nginx process on
+127.0.0.1:<port>, plain HTTP, TLS being the other proxy's job.
 """
 from __future__ import annotations
 
@@ -15,7 +19,7 @@ from installer.config import Config
 CIPHERS = ("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:"
            "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305")
 ACME_ROOT = "/var/www/letsencrypt"
-LOG_DIR = "/var/log/nginx/ziira"
+LOG_DIR = "/var/log/ziira/nginx"
 REDIRECTS_FILE = "/var/lib/ziira/nginx/site-redirects.conf"
 # Content-Security-Policy of the static site: copied from site/public/_headers (no third-party anything).
 SITE_CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
@@ -33,19 +37,20 @@ class NginxOptions:
     https: bool = True              # False: first stage, port 80 only (certificates are being requested)
     hsts: str = "off"               # off | on | include-subdomains (already decided: only true after certs work)
     ocsp: bool = False
-    brotli: bool = False
     csp_hashes: list[str] = field(default_factory=list)
     catch_all: bool = True
     default_cert: tuple[str, str] | None = None     # for nginx older than 1.19.4 (no ssl_reject_handshake)
     hook_token: str = ""
     public_ip: str = ""
-    # Directives the distribution's own nginx.conf already sets (nginx refuses a second copy in the same context).
-    already_set: frozenset[str] = frozenset()
+    behind_port: int = 0            # >0: "behind" mode, own nginx on 127.0.0.1:<port>, plain HTTP, no certificates
+    base: str = "/etc/nginx"        # where our files go
+    sites: str = "sites-available"  # folder (under base) of the per-host files
 
 
-def directives_in(nginx_conf: str) -> frozenset[str]:
-    """Names of the directives that are active (not commented out) in an nginx.conf."""
-    return frozenset(re.findall(r"^\s*([a-z][a-z0-9_]*)\s", nginx_conf, re.M))
+def paths(o: NginxOptions) -> dict[str, str]:
+    """Locations of our files for this mode."""
+    return {"common": f"{o.base}/conf.d/ziira-common.conf", "snippets": f"{o.base}/snippets",
+            "sites": f"{o.base}/{o.sites}"}
 
 
 def parse_version(text: str) -> tuple[int, int, int]:
@@ -55,6 +60,8 @@ def parse_version(text: str) -> tuple[int, int, int]:
 
 
 def _listen_443(o: NginxOptions) -> str:
+    if o.behind_port:
+        return f"    listen 127.0.0.1:{o.behind_port};\n"
     if o.version >= (1, 25, 1):
         return "    listen 443 ssl;\n    listen [::]:443 ssl;\n    http2 on;\n"
     return "    listen 443 ssl http2;\n    listen [::]:443 ssl http2;\n"
@@ -66,18 +73,8 @@ def hsts_value(mode: str) -> str:
 
 # --------------------------------------------------------------------------- shared files
 def common_conf(cfg: Config, o: NginxOptions) -> str:
-    def d(name: str, value: str) -> str:
-        """`name value;` unless the distribution's nginx.conf already sets it."""
-        return "" if name in o.already_set else f"{name} {value};\n"
-
-    gzip_types = ("text/plain text/css text/xml application/xml application/javascript text/javascript "
-                  "application/json image/svg+xml application/manifest+json")
-    brotli = ("brotli on;\nbrotli_comp_level 5;\nbrotli_types " + gzip_types + ";\n") if o.brotli else ""
-    gzip = "".join([d("gzip", "on"), d("gzip_vary", "on"), d("gzip_comp_level", "5"), d("gzip_min_length", "1024"),
-                    d("gzip_proxied", "any"), d("gzip_types", gzip_types)])
+    """The only http-level things we add: all names start with ziira, so they cannot clash with anything already there."""
     return f"""# Managed by the Ziira installer. Edits are overwritten on the next install run.
-{d("server_tokens", "off")}{d("server_names_hash_bucket_size", "128")}{d("client_max_body_size", "2m")}
-
 log_format ziira '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent '
                  '"$http_referer" "$http_user_agent" host=$host rt=$request_time urt=$upstream_response_time rid=$request_id';
 
@@ -86,7 +83,6 @@ log_format ziira '$remote_addr - $remote_user [$time_local] "$request" $status $
 limit_req_zone $binary_remote_addr zone=ziira_api:10m rate=50r/s;
 limit_req_zone $binary_remote_addr zone=ziira_operator_auth:10m rate=6r/m;
 limit_req_zone $binary_remote_addr zone=ziira_hook:1m rate=6r/m;
-{d("limit_req_status", "429")}
 
 # Only the server itself may read probes and metrics.
 map $remote_addr $ziira_local {{
@@ -99,8 +95,24 @@ upstream ziira_api {{
     server 127.0.0.1:{cfg.api_port};
     keepalive 16;
 }}
+"""
 
-{gzip}{brotli}"""
+
+GZIP_TYPES = ("text/plain text/css text/xml application/xml application/javascript text/javascript application/json "
+              "image/svg+xml application/manifest+json")
+
+
+def server_snippet() -> str:
+    """Settings that would be global elsewhere, applied inside our own servers only."""
+    return f"""server_tokens off;
+limit_req_status 429;
+gzip on;
+gzip_vary on;
+gzip_comp_level 5;
+gzip_min_length 1024;
+gzip_proxied any;
+gzip_types {GZIP_TYPES};
+"""
 
 
 def tls_snippet(o: NginxOptions) -> str:
@@ -114,15 +126,16 @@ ssl_session_tickets off;
 """
 
 
-def proxy_snippet(timeout: int = 60) -> str:
+def proxy_snippet(timeout: int = 60, behind: bool = False) -> str:
+    xff, proto = ("$http_x_forwarded_for", "https") if behind else ("$remote_addr", "$scheme")
     return f"""# Headers for requests handed to the API. X-Forwarded-For is OVERWRITTEN with the connecting address (the API is
 # started with ZIIRA_TRUST_FORWARDED_FOR=true and reads the last entry), so a client cannot forge its address.
 proxy_http_version 1.1;
 proxy_set_header Connection "";
 proxy_set_header Host $host;
 proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $remote_addr;
-proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For {xff};
+proxy_set_header X-Forwarded-Proto {proto};
 proxy_set_header X-Forwarded-Host $host;
 proxy_set_header X-Request-ID $request_id;
 proxy_connect_timeout 5s;
@@ -203,6 +216,8 @@ def redirects_conf(rows: list[dict[str, str]]) -> str:
 
 # --------------------------------------------------------------------------- server blocks
 def _ssl(cfg: Config, o: NginxOptions, host: str) -> str:
+    if o.behind_port:
+        return ""
     cert, key, chain = o.certs[host]
     block = f"    ssl_certificate {cert};\n    ssl_certificate_key {key};\n    include snippets/ziira-tls.conf;\n"
     if o.ocsp:
@@ -212,10 +227,13 @@ def _ssl(cfg: Config, o: NginxOptions, host: str) -> str:
 
 
 def _logs(name: str) -> str:
-    return f"    access_log {LOG_DIR}/{name}.access.log ziira;\n    error_log {LOG_DIR}/{name}.error.log warn;\n"
+    return (f"    access_log {LOG_DIR}/{name}.access.log ziira;\n    error_log {LOG_DIR}/{name}.error.log warn;\n"
+            "    include snippets/ziira-server.conf;\n")
 
 
 def _port80(names: list[str], target_host: str, o: NginxOptions, label: str) -> str:
+    if o.behind_port:
+        return ""
     body = ("    location / { return 301 https://" + target_host + "$request_uri; }\n") if o.https else \
            ('    location / { default_type text/plain; return 503 "This server is being set up. Try again in a few minutes."; }\n')
     return (f"server {{\n    listen 80;\n    listen [::]:80;\n    server_name {' '.join(names)};\n{_logs(label)}"
@@ -428,22 +446,53 @@ def default_vhost(o: NginxOptions) -> str:
     return out + f"\nserver {{\n{listen}    server_name _;\n{tls}}}\n"
 
 
+def standalone_conf(cfg: Config) -> str:
+    """Main configuration of OUR OWN nginx process in "behind" mode (the system nginx, if any, is not involved)."""
+    tmp = f"{cfg.state_dir}/nginx-tmp"
+    return f"""# Managed by the Ziira installer. Our own nginx, listening on 127.0.0.1 only; another proxy fronts it.
+user {cfg.service_user};
+worker_processes 2;
+pid /run/ziira-nginx.pid;
+error_log {LOG_DIR}/main.error.log warn;
+events {{ worker_connections 1024; }}
+http {{
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    sendfile on;
+    access_log off;
+    client_body_temp_path {tmp}/body;
+    proxy_temp_path {tmp}/proxy;
+    fastcgi_temp_path {tmp}/fastcgi;
+    uwsgi_temp_path {tmp}/uwsgi;
+    scgi_temp_path {tmp}/scgi;
+    include conf.d/ziira-common.conf;
+    include sites/ziira-*.conf;
+}}
+"""
+
+
 def all_files(cfg: Config, o: NginxOptions) -> dict[str, str]:
     """Every nginx file the installer owns, path -> content."""
+    p = paths(o)
+    snip, sites = p["snippets"], p["sites"]
     files = {
-        "/etc/nginx/conf.d/ziira-common.conf": common_conf(cfg, o),
-        "/etc/nginx/snippets/ziira-tls.conf": tls_snippet(o),
-        "/etc/nginx/snippets/ziira-proxy.conf": proxy_snippet(),
-        "/etc/nginx/snippets/ziira-proxy-long.conf": proxy_snippet(180),
-        "/etc/nginx/snippets/ziira-acme.conf": acme_snippet(),
-        "/etc/nginx/snippets/ziira-headers-site.conf": site_headers(o),
-        "/etc/nginx/snippets/ziira-headers-app.conf": app_headers(cfg, o),
-        "/etc/nginx/snippets/ziira-headers-admin.conf": app_headers(cfg, o, admin=True),
-        "/etc/nginx/snippets/ziira-admin-allow.conf": admin_allow_snippet(cfg),
-        "/etc/nginx/sites-available/ziira-site.conf": site_vhost(cfg, o),
-        "/etc/nginx/sites-available/ziira-app.conf": app_vhost(cfg, o),
-        "/etc/nginx/sites-available/ziira-admin.conf": admin_vhost(cfg, o),
+        p["common"]: common_conf(cfg, o),
+        f"{snip}/ziira-server.conf": server_snippet(),
+        f"{snip}/ziira-proxy.conf": proxy_snippet(60, bool(o.behind_port)),
+        f"{snip}/ziira-proxy-long.conf": proxy_snippet(180, bool(o.behind_port)),
+        f"{snip}/ziira-headers-site.conf": site_headers(o),
+        f"{snip}/ziira-headers-app.conf": app_headers(cfg, o),
+        f"{snip}/ziira-headers-admin.conf": app_headers(cfg, o, admin=True),
+        f"{snip}/ziira-admin-allow.conf": admin_allow_snippet(cfg),
+        f"{sites}/ziira-site.conf": site_vhost(cfg, o),
+        f"{sites}/ziira-app.conf": app_vhost(cfg, o),
+        f"{sites}/ziira-admin.conf": admin_vhost(cfg, o),
     }
+    if o.behind_port:
+        files[f"{o.base}/nginx.conf"] = standalone_conf(cfg)
+        return files
+    files[f"{snip}/ziira-tls.conf"] = tls_snippet(o)
+    files[f"{snip}/ziira-acme.conf"] = acme_snippet()
     if o.catch_all:
-        files["/etc/nginx/sites-available/ziira-default.conf"] = default_vhost(o)
+        files[f"{sites}/ziira-default.conf"] = default_vhost(o)
     return files
