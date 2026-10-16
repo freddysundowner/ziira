@@ -1,0 +1,39 @@
+{
+  "name": "ziira-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Ziira marketing website: static, pre-rendered, SEO first",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "tsc --noEmit",
+    "seo:check": "node scripts/seo-check.mjs",
+    "check": "npm run build && npm run seo:check && npm run links:check",
+    "links:check": "node scripts/seo-check.mjs --links-only",
+    "test": "vitest run",
+    "a11y": "node scripts/a11y-check.mjs",
+    "lhci": "node scripts/lighthouse.mjs",
+    "screens": "node scripts/capture-screens.mjs && node scripts/screens-stale.mjs",
+    "screens:stale": "node scripts/screens-stale.mjs",
+    "help:screens": "node scripts/capture-help-screens.mjs",
+    "responsive": "node scripts/responsive-check.mjs"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "astro": "^7.3.8",
+    "satori": "^0.60.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "cheerio": "^1.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  }
+}

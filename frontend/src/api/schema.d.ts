@@ -80,6 +80,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/register/trial": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Register Trial
+         * @description The trial a new business would start on (null when there is none): for the sign-up form to tell the truth.
+         */
+        get: operations["register_trial_api_v1_register_trial_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/register/verify": {
         parameters: {
             query?: never;
@@ -408,44 +428,6 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/api-keys": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Api Keys */
-        get: operations["list_api_keys_api_v1_api_keys_get"];
-        put?: never;
-        /**
-         * Create Api Key
-         * @description Create a key for a server-to-server integration. The key is shown only in this response.
-         */
-        post: operations["create_api_key_api_v1_api_keys_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/api-keys/{key_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Revoke Api Key */
-        delete: operations["revoke_api_key_api_v1_api_keys__key_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -897,6 +879,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/channels/available": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Available Channels
+         * @description The channels this business can use: only those whose provider (plugin) is enabled for it. Every screen that
+         *     offers
+         *     a choice of channel builds it from this list. With `company_id`, says which are set up.
+         */
+        get: operations["get_available_channels_api_v1_notifications_channels_available_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/channels": {
         parameters: {
             query?: never;
@@ -1014,6 +1018,135 @@ export interface paths {
         post?: never;
         /** Delete Opt Out */
         delete: operations["delete_opt_out_api_v1_notifications_opt_outs__optout_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get My Preferences
+         * @description How I want to be messaged: a channel for each kind of message, quiet hours, language, my verified number.
+         */
+        get: operations["get_my_preferences_api_v1_notifications_me_preferences_get"];
+        /**
+         * Put My Preferences
+         * @description Change my channel choices and quiet hours (the times are read in the company's time zone).
+         */
+        put: operations["put_my_preferences_api_v1_notifications_me_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/me/verified-number": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post My Number
+         * @description Add the number I reply from: a code is sent to prove it is mine, by the first channel the business has set up
+         *     that reaches it (then the next; email last).
+         */
+        post: operations["post_my_number_api_v1_notifications_me_verified_number_post"];
+        /**
+         * Delete My Number
+         * @description Remove my verified number.
+         */
+        delete: operations["delete_my_number_api_v1_notifications_me_verified_number_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/me/verified-number/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post My Number Verify
+         * @description Type the code I received: the number becomes mine, and replies from it count as me.
+         */
+        post: operations["post_my_number_verify_api_v1_notifications_me_verified_number_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Templates
+         * @description The message templates of a business, per channel that needs them, and where each stands with its provider.
+         */
+        get: operations["get_templates_api_v1_notifications_templates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/templates/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Templates Submit
+         * @description Send every draft or rejected template to the provider for approval.
+         */
+        post: operations["post_templates_submit_api_v1_notifications_templates_submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/templates/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Templates Sync
+         * @description Ask the provider for its decisions on the templates that were submitted.
+         */
+        post: operations["post_templates_sync_api_v1_notifications_templates_sync_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1233,7 +1366,8 @@ export interface paths {
         put?: never;
         /**
          * Sign In
-         * @description Step one: email and password. The answer is a challenge; there is no way in without the second factor.
+         * @description Email and password. With a second factor the answer is a challenge for `/mfa/verify`; with a password alone
+         *     (the default) it is the signed-in session.
          */
         post: operations["sign_in_api_v1_operator_sign_in_post"];
         delete?: never;
@@ -1253,9 +1387,29 @@ export interface paths {
         put?: never;
         /**
          * Verify
-         * @description Step two: the code from the authenticator app.
+         * @description Step two, when a second factor is required: the code from the authenticator app.
          */
         post: operations["verify_api_v1_operator_mfa_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change Password
+         * @description Change your own password (needs the current one). Your other sign-ins end.
+         */
+        post: operations["change_password_api_v1_operator_password_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1273,6 +1427,26 @@ export interface paths {
         put?: never;
         /** Sign Out */
         post: operations["sign_out_api_v1_operator_sign_out_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/sign-out-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Out All
+         * @description End every sign-in of yours, on every device, this one included.
+         */
+        post: operations["sign_out_all_api_v1_operator_sign_out_all_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1353,6 +1527,2145 @@ export interface paths {
          * @description Close one of your support sessions.
          */
         post: operations["end_session_api_v1_operator_sessions__session_id__end_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Who is signed in and whether a change would ask to confirm again.
+         */
+        get: operations["me_api_v1_operator_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm
+         * @description Confirm your password again (or, with a second factor, a fresh code) so changes are allowed for a while.
+         */
+        post: operations["confirm_api_v1_operator_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Units
+         * @description Every unit found on disk, with its state on the platform and how many businesses have it.
+         */
+        get: operations["units_api_v1_operator_units_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/units/{name}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Unit Plan
+         * @description What an install, upgrade or uninstall would do, and what stands in its way. Changes nothing.
+         */
+        get: operations["unit_plan_api_v1_operator_units__name__plan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/units/{name}/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Install
+         * @description Install a unit and the units it requires (the command line's `ziira install`).
+         */
+        post: operations["install_api_v1_operator_units__name__install_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/units/{name}/upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upgrade
+         * @description Apply a unit's new version in every business database that has it.
+         */
+        post: operations["upgrade_api_v1_operator_units__name__upgrade_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/units/{name}/uninstall": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Uninstall
+         * @description Stop offering a unit. Refused for the kernel, units others need, and while any business database has it.
+         */
+        post: operations["uninstall_api_v1_operator_units__name__uninstall_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/businesses/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Businesses Overview
+         * @description Every business with its figures. Never any of their records.
+         */
+        get: operations["businesses_overview_api_v1_operator_businesses_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/businesses/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Business
+         * @description One business: its units, the support access it has given and the staff sessions open in it.
+         */
+        get: operations["business_api_v1_operator_businesses__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/businesses/{code}/units/{unit}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enable Unit
+         * @description Switch a unit on for a business (with a reason; the business's audit log shows who and why).
+         */
+        post: operations["enable_unit_api_v1_operator_businesses__code__units__unit__enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/businesses/{code}/units/{unit}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable Unit
+         * @description Switch a unit off for a business (its data is kept).
+         */
+        post: operations["disable_unit_api_v1_operator_businesses__code__units__unit__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/businesses/upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upgrade Businesses
+         * @description Bring business databases up to date: those named, or all that are behind. Each business is done on its own.
+         */
+        post: operations["upgrade_businesses_api_v1_operator_businesses_upgrade_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health
+         * @description Readiness, migrations, backups, queues, registrations and extra plugins.
+         */
+        get: operations["health_api_v1_operator_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/operators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Operator List
+         * @description The platform staff, their second-factor state and whether they must change their password.
+         */
+        get: operations["operator_list_api_v1_operator_operators_get"];
+        put?: never;
+        /**
+         * Create Operator
+         * @description Add a member of staff. They choose their own password at the first sign-in; a temporary password (or, with a
+         *     second factor, the secret for their authenticator) is shown once: give it to them.
+         */
+        post: operations["create_operator_api_v1_operator_operators_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Actions
+         * @description The newest lines of the operator action trail.
+         */
+        get: operations["actions_api_v1_operator_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dashboard
+         * @description Recurring revenue (per currency), trials, churn, money overdue and what needs attention.
+         */
+        get: operations["get_dashboard_api_v1_operator_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Roles
+         * @description The operator roles and what each may do.
+         */
+        get: operations["roles_api_v1_operator_roles_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/platform-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Platform Settings
+         * @description Vendor details, tax lines, payment instructions, dunning, proration, retention and the default plan.
+         */
+        get: operations["platform_settings_api_v1_operator_platform_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/platform-settings/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Setting */
+        put: operations["put_setting_api_v1_operator_platform_settings__key__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Plans */
+        get: operations["list_plans_api_v1_operator_plans_get"];
+        put?: never;
+        /** Create Plan */
+        post: operations["create_plan_api_v1_operator_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/plans/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Plan */
+        get: operations["get_plan_api_v1_operator_plans__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Plan
+         * @description Change a plan. Subscribers keep the units and limits they were sold; sync one from its page to move it over.
+         */
+        patch: operations["patch_plan_api_v1_operator_plans__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/operator/plans/{code}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Plan Price
+         * @description Add a price from a date (now by default). Earlier prices are kept for the record and never change.
+         */
+        post: operations["add_plan_price_api_v1_operator_plans__code__prices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/plans/{code}/prices/{price_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Plan Price
+         * @description Take back a price that has not started yet.
+         */
+        delete: operations["remove_plan_price_api_v1_operator_plans__code__prices__price_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/addons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Addons */
+        get: operations["list_addons_api_v1_operator_addons_get"];
+        put?: never;
+        /** Create Addon */
+        post: operations["create_addon_api_v1_operator_addons_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/addons/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Addon */
+        patch: operations["patch_addon_api_v1_operator_addons__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/operator/addons/{code}/prices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Addon Price */
+        post: operations["add_addon_price_api_v1_operator_addons__code__prices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/addons/{code}/prices/{price_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Addon Price */
+        delete: operations["remove_addon_price_api_v1_operator_addons__code__prices__price_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Coupons */
+        get: operations["list_coupons_api_v1_operator_coupons_get"];
+        put?: never;
+        /** Create Coupon */
+        post: operations["create_coupon_api_v1_operator_coupons_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/coupons/{code}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Coupon Status */
+        post: operations["coupon_status_api_v1_operator_coupons__code__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Subscribers
+         * @description Every business with its plan, usage and money; search and filter.
+         */
+        get: operations["list_subscribers_api_v1_operator_subscribers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Subscriber */
+        get: operations["subscriber_api_v1_operator_subscribers__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Subscription
+         * @description Give a business without a subscription one (a trial, a paid period, or free).
+         */
+        post: operations["start_subscription_api_v1_operator_subscribers__code__subscription_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change Plan
+         * @description Move to another plan. An upgrade applies now with the pro rata difference invoiced; a downgrade starts at the end
+         *     of the period unless the platform setting says otherwise.
+         */
+        post: operations["change_plan_api_v1_operator_subscribers__code__plan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/trial": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Extend Trial */
+        post: operations["extend_trial_api_v1_operator_subscribers__code__trial_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/comp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Comp */
+        post: operations["comp_api_v1_operator_subscribers__code__comp_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/coupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Coupon */
+        post: operations["apply_coupon_api_v1_operator_subscribers__code__coupon_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/sync-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync Plan
+         * @description Copy the plan's current units and limits into this subscription (not the price).
+         */
+        post: operations["sync_plan_api_v1_operator_subscribers__code__sync_plan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Suspend */
+        post: operations["suspend_api_v1_operator_subscribers__code__suspend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reactivate */
+        post: operations["reactivate_api_v1_operator_subscribers__code__reactivate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_api_v1_operator_subscribers__code__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/uncancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Uncancel */
+        post: operations["uncancel_api_v1_operator_subscribers__code__uncancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Notes */
+        patch: operations["notes_api_v1_operator_subscribers__code__notes_patch"];
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Subscriber
+         * @description What the platform holds about this subscriber (subscription, invoices, payments, contacts). The business's own
+         *     data
+         *     is exported by the business, or with `ziira backup --tenant CODE`.
+         */
+        get: operations["export_subscriber_api_v1_operator_subscribers__code__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Delete
+         * @description Schedule the business's deletion after the cooling-off period. Refused while its subscription is live.
+         */
+        post: operations["request_delete_api_v1_operator_subscribers__code__delete_post"];
+        /** Cancel Delete */
+        delete: operations["cancel_delete_api_v1_operator_subscribers__code__delete_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/privacy/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Find Contact
+         * @description Where a person's email appears in the platform's own records (for a data subject request).
+         */
+        post: operations["find_contact_api_v1_operator_privacy_contact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/privacy/contact/erase": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Erase Contact */
+        post: operations["erase_contact_api_v1_operator_privacy_contact_erase_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invoices */
+        get: operations["list_invoices_api_v1_operator_invoices_get"];
+        put?: never;
+        /**
+         * Create Invoice
+         * @description A draft (or issued) invoice for a subscriber or a licence customer. Tax lines come from the platform settings.
+         */
+        post: operations["create_invoice_api_v1_operator_invoices_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Invoice */
+        get: operations["get_invoice_api_v1_operator_invoices__invoice_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Invoice */
+        patch: operations["patch_invoice_api_v1_operator_invoices__invoice_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/operator/invoices/{invoice_id}/html": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Invoice Page
+         * @description The printable invoice.
+         */
+        get: operations["invoice_page_api_v1_operator_invoices__invoice_id__html_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/invoices/{invoice_id}/issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Issue Invoice */
+        post: operations["issue_invoice_api_v1_operator_invoices__invoice_id__issue_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/invoices/{invoice_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Void Invoice */
+        post: operations["void_invoice_api_v1_operator_invoices__invoice_id__void_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/invoices/{invoice_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Payment
+         * @description Record money received (bank transfer, cash, mobile money ...). Paid in full: the subscription moves on.
+         */
+        post: operations["record_payment_api_v1_operator_invoices__invoice_id__payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payments/{payment_id}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reverse Payment */
+        post: operations["reverse_payment_api_v1_operator_payments__payment_id__reverse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/plan-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Plan Requests */
+        get: operations["plan_requests_api_v1_operator_plan_requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/plan-requests/{request_id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decide Request
+         * @description Approve a business's plan request (its invoice is issued, or the change applied) or decline it.
+         */
+        post: operations["decide_request_api_v1_operator_plan_requests__request_id__decide_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/billing/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Billing
+         * @description Run the recurring billing pass now (renewal invoices, reminders, dunning). The worker does this hourly.
+         */
+        post: operations["run_billing_api_v1_operator_billing_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/licences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Licences */
+        get: operations["list_licences_api_v1_operator_licences_get"];
+        put?: never;
+        /**
+         * Issue Licence
+         * @description Make and sign a licence with this deployment's signing key (vendor side only).
+         */
+        post: operations["issue_licence_api_v1_operator_licences_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/licences/{licence_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Licence File */
+        get: operations["licence_file_api_v1_operator_licences__licence_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/licences/{licence_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Licence */
+        post: operations["revoke_licence_api_v1_operator_licences__licence_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/licence-revocations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Revocation File
+         * @description A signed list of revoked licences, to install on self-hosted copies (`ziira licence install FILE`).
+         */
+        get: operations["revocation_file_api_v1_operator_licence_revocations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/operators/{operator_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Operator
+         * @description Change a role or disable/enable an operator (never yourself, never the last superadmin).
+         */
+        patch: operations["patch_operator_api_v1_operator_operators__operator_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/operator/operators/{operator_id}/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Operator Password
+         * @description A random temporary password for someone who forgot theirs (their sign-ins end; they must change it at the next
+         *     one). Shown once.
+         */
+        post: operations["reset_operator_password_api_v1_operator_operators__operator_id__reset_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/operators/{operator_id}/reset-mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset Operator Mfa
+         * @description A new second-factor secret for someone who lost their device (their sign-ins end). Shown once.
+         */
+        post: operations["reset_operator_mfa_api_v1_operator_operators__operator_id__reset_mfa_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Plans
+         * @description Public, active plans with the prices in force now, and public add-ons. Cached for a minute.
+         */
+        get: operations["public_plans_api_v1_public_plans_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Plan
+         * @description Where this business stands: plan, status, usage against limits, what is owed.
+         */
+        get: operations["my_plan_api_v1_billing_plan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Status
+         * @description A light read for the app shell: is there something the owner should see (trial ending, overdue, suspended)?
+         */
+        get: operations["my_status_api_v1_billing_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Invoices
+         * @description This business's invoices (drafts the vendor is still preparing are not shown).
+         */
+        get: operations["my_invoices_api_v1_billing_invoices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/invoices/{invoice_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Invoice */
+        get: operations["my_invoice_api_v1_billing_invoices__invoice_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/invoices/{invoice_id}/html": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Invoice Page
+         * @description The printable invoice (open it and print or save as PDF).
+         */
+        get: operations["my_invoice_page_api_v1_billing_invoices__invoice_id__html_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/change-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Change
+         * @description Ask for another plan. The vendor is told and prepares an invoice; the plan changes when it is paid (or the vendor
+         *     applies it). Nothing is charged by asking.
+         */
+        post: operations["request_change_api_v1_billing_change_request_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/change-request/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Withdraw Request */
+        delete: operations["withdraw_request_api_v1_billing_change_request__request_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel
+         * @description Cancel at the end of the period already paid for. Everything keeps working until then, and the data is kept.
+         */
+        post: operations["cancel_api_v1_billing_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume
+         * @description Take back a cancellation that has not happened yet.
+         */
+        post: operations["resume_api_v1_billing_resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Licence
+         * @description On a self-hosted copy: what the installed licence allows, its expiry and the limits against use.
+         */
+        get: operations["my_licence_api_v1_billing_licence_get"];
+        put?: never;
+        /**
+         * Install Licence
+         * @description Install (or renew with) a licence file from the vendor. It is checked against the vendor's public key.
+         */
+        post: operations["install_licence_api_v1_billing_licence_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/pay/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Pay Options
+         * @description How this invoice can be paid now: the payment methods that serve its currency and the business's country.
+         */
+        get: operations["pay_options_api_v1_billing_pay_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/subscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subscribe
+         * @description Choose a plan and interval (and a coupon): the invoice is made at once, ready to pay.
+         */
+        post: operations["subscribe_api_v1_billing_subscribe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Payments */
+        get: operations["my_payments_api_v1_billing_payments_get"];
+        put?: never;
+        /**
+         * Start Payment
+         * @description Start paying an invoice. A second call while an attempt is open returns that attempt: nobody is charged twice.
+         */
+        post: operations["start_payment_api_v1_billing_payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/payments/{attempt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Payment Status
+         * @description Where a payment stands. While it is open, the provider is asked at most every few seconds.
+         */
+        get: operations["payment_status_api_v1_billing_payments__attempt_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/payments/{attempt_id}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Payment
+         * @description "Check again": ask the provider now.
+         */
+        post: operations["check_payment_api_v1_billing_payments__attempt_id__check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/webhooks/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Provider Webhook
+         * @description A payment provider's notification (public). The signature on the raw body is checked first; the notification then
+         *     only makes us ask the provider. Not genuine: 401. Our own failure: 500, so the provider tries again.
+         */
+        post: operations["provider_webhook_api_v1_billing_webhooks__provider__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-gateways": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Gateways
+         * @description Every installed payment method with its settings. Secrets are only reported as set or not set.
+         */
+        get: operations["list_gateways_api_v1_operator_payment_gateways_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-gateways/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Gateway */
+        put: operations["save_gateway_api_v1_operator_payment_gateways__name__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-gateways/{name}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Gateway
+         * @description The lightest safe call to the provider: does it accept the keys? Moves no money.
+         */
+        post: operations["test_gateway_api_v1_operator_payment_gateways__name__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Attempts */
+        get: operations["list_attempts_api_v1_operator_payment_attempts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-attempts/{attempt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Attempt */
+        get: operations["get_attempt_api_v1_operator_payment_attempts__attempt_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-attempts/{attempt_id}/recheck": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recheck
+         * @description Ask the provider now what became of this payment (it is credited if confirmed).
+         */
+        post: operations["recheck_api_v1_operator_payment_attempts__attempt_id__recheck_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/payment-attempts/{attempt_id}/mark-paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Paid
+         * @description For a stuck case: confirm by hand that this was paid (with the reason). Credits the invoice.
+         */
+        post: operations["mark_paid_api_v1_operator_payment_attempts__attempt_id__mark_paid_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/invoices/{invoice_id}/payment-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Invoice Attempts */
+        get: operations["invoice_attempts_api_v1_operator_invoices__invoice_id__payment_attempts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Availability
+         * @description Whether the Website area exists here and whether this operator may use it (the menu follows this).
+         */
+        get: operations["availability_api_v1_operator_site_availability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Settings */
+        get: operations["read_settings_api_v1_operator_site_settings_get"];
+        /**
+         * Write Settings
+         * @description Check and save settings (all or nothing). A bad value answers 422 with `fields`: a message per setting.
+         */
+        put: operations["write_settings_api_v1_operator_site_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pages */
+        get: operations["pages_api_v1_operator_site_pages_get"];
+        put?: never;
+        /** Create Page */
+        post: operations["create_page_api_v1_operator_site_pages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/starters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Starters
+         * @description Outlines for the legal pages in a language: not legal advice; the publish check refuses them until completed.
+         */
+        get: operations["starters_api_v1_operator_site_pages_starters_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page */
+        get: operations["page_api_v1_operator_site_pages__page_id__get"];
+        /** Update Page */
+        put: operations["update_page_api_v1_operator_site_pages__page_id__put"];
+        post?: never;
+        /** Delete Page */
+        delete: operations["delete_page_api_v1_operator_site_pages__page_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Published
+         * @description Mark the page to go live with the next site publish.
+         */
+        post: operations["mark_published_api_v1_operator_site_pages__page_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Draft
+         * @description Take the page off the site with the next site publish (it stays here as a draft).
+         */
+        post: operations["mark_draft_api_v1_operator_site_pages__page_id__unpublish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Versions */
+        get: operations["versions_api_v1_operator_site_pages__page_id__versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}/versions/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Version */
+        get: operations["version_api_v1_operator_site_pages__page_id__versions__version__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Diff */
+        get: operations["diff_api_v1_operator_site_pages__page_id__diff_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/pages/{page_id}/versions/{version}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore
+         * @description Make an old version's content the newest version (history keeps everything).
+         */
+        post: operations["restore_api_v1_operator_site_pages__page_id__versions__version__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview
+         * @description The safe HTML a Markdown text becomes (nothing is saved).
+         */
+        post: operations["preview_api_v1_operator_site_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Assets */
+        get: operations["assets_api_v1_operator_site_assets_get"];
+        put?: never;
+        /**
+         * Upload Asset
+         * @description Add a picture: the image file is the request body (PNG, JPEG or WebP). It is checked and re-encoded, which
+         *     removes camera and location data.
+         */
+        post: operations["upload_asset_api_v1_operator_site_assets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/assets/{asset_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Asset File
+         * @description The stored picture, for the media library's own thumbnails (needs the operator's sign-in).
+         */
+        get: operations["asset_file_api_v1_operator_site_assets__asset_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/assets/{asset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Asset */
+        put: operations["update_asset_api_v1_operator_site_assets__asset_id__put"];
+        post?: never;
+        /** Delete Asset */
+        delete: operations["delete_asset_api_v1_operator_site_assets__asset_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Validate
+         * @description Whether the working copy could be published now, and why not.
+         */
+        get: operations["validate_api_v1_operator_site_validate_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Status
+         * @description What is live and what a publish would change.
+         */
+        get: operations["status_api_v1_operator_site_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish
+         * @description Make the working copy the live site content, then ask the site to rebuild (done after the reply).
+         */
+        post: operations["publish_api_v1_operator_site_publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/publishes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Publishes */
+        get: operations["publishes_api_v1_operator_site_publishes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/publishes/{publish_id}/retry-hook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Retry Hook
+         * @description Try the site rebuild again now (for a publish whose rebuild failed or is still waiting).
+         */
+        post: operations["retry_hook_api_v1_operator_site_publishes__publish_id__retry_hook_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plans Preview
+         * @description The public plans exactly as the website receives them (edited under Plans).
+         */
+        get: operations["plans_preview_api_v1_operator_site_plans_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/site": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Site
+         * @description The published website content: settings, pages (HTML and Markdown), the plans, pictures. The static site's build
+         *     fetches this. Cacheable; `If-None-Match` gives 304.
+         */
+        get: operations["public_site_api_v1_public_site_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/site/assets/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public Asset
+         * @description A picture that is part of the live site (never one that is only in the library). Named by its hash, so it may be
+         *     cached for a year.
+         */
+        get: operations["public_asset_api_v1_public_site_assets__name__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1544,6 +3857,326 @@ export interface paths {
          * @description Delete a switched-off unit's data for this business (cannot be undone). `confirm` must be the unit's name.
          */
         post: operations["remove_api_v1_units__name__remove_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/editions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Editions
+         * @description The editions a new business can choose from (no sign-in needed: the sign-up form shows them).
+         */
+        get: operations["list_editions_api_v1_editions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/edition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Edition
+         * @description This business's edition and how far along its first steps are.
+         */
+        get: operations["my_edition_api_v1_edition_get"];
+        put?: never;
+        /**
+         * Switch Edition
+         * @description Move to another edition. Its units are switched on; nothing already on is switched off and no data is touched.
+         */
+        post: operations["switch_edition_api_v1_edition_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/edition/steps/{step}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Mark Step
+         * @description Tick (or untick) a first step.
+         */
+        put: operations["mark_step_api_v1_edition_steps__step__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/edition/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Hide Checklist
+         * @description Hide or show the first-steps checklist on Home (owner).
+         */
+        put: operations["hide_checklist_api_v1_edition_checklist_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/countries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Countries
+         * @description Every country a business can pick when it registers, sorted by name. No sign-in needed: the sign-up form uses it.
+         *     Any country works even without a pack: its currency and calling code can be typed.
+         */
+        get: operations["list_countries_api_v1_countries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Api Keys
+         * @description Keys with how they are limited and used (last used, how many requests, from which address).
+         */
+        get: operations["list_api_keys_api_v1_api_keys_get"];
+        put?: never;
+        /**
+         * Create Api Key
+         * @description Create a key for a server-to-server integration. The key is shown only in this response.
+         */
+        post: operations["create_api_key_api_v1_api_keys_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys/{key_id}/rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rotate Api Key
+         * @description Replace a key with a new one that has the same permissions and limits; the old one works for a while longer.
+         */
+        post: operations["rotate_api_key_api_v1_api_keys__key_id__rotate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/api-keys/{key_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke Api Key */
+        delete: operations["revoke_api_key_api_v1_api_keys__key_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Webhook Events
+         * @description The events a webhook can subscribe to, and the payload fields each carries.
+         */
+        get: operations["webhook_events_api_v1_webhooks_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/endpoints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Webhooks */
+        get: operations["list_webhooks_api_v1_webhooks_endpoints_get"];
+        put?: never;
+        /**
+         * Create Webhook
+         * @description Register an endpoint. The signing secret is in this response only.
+         */
+        post: operations["create_webhook_api_v1_webhooks_endpoints_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/endpoints/{endpoint_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Webhook */
+        get: operations["get_webhook_api_v1_webhooks_endpoints__endpoint_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Webhook */
+        delete: operations["delete_webhook_api_v1_webhooks_endpoints__endpoint_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Webhook */
+        patch: operations["update_webhook_api_v1_webhooks_endpoints__endpoint_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/webhooks/endpoints/{endpoint_id}/secret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rotate Webhook Secret
+         * @description A new signing secret (shown once). The old one stops working at once.
+         */
+        post: operations["rotate_webhook_secret_api_v1_webhooks_endpoints__endpoint_id__secret_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/endpoints/{endpoint_id}/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ping Webhook
+         * @description Queue a test delivery; its result appears in the delivery log within moments.
+         */
+        post: operations["ping_webhook_api_v1_webhooks_endpoints__endpoint_id__ping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/endpoints/{endpoint_id}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Webhook Deliveries */
+        get: operations["list_webhook_deliveries_api_v1_webhooks_endpoints__endpoint_id__deliveries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/deliveries/{delivery_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Webhook Delivery */
+        get: operations["get_webhook_delivery_api_v1_webhooks_deliveries__delivery_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/deliveries/{delivery_id}/redeliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Redeliver Webhook
+         * @description Send a delivery again, with the same event id.
+         */
+        post: operations["redeliver_webhook_api_v1_webhooks_deliveries__delivery_id__redeliver_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1760,6 +4393,191 @@ export interface paths {
          * @description Begin approving Ziira in the other system: returns the address to send the person's browser to.
          */
         post: operations["start_api_v1_connect_oauth__kind__start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/move/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Move Options
+         * @description The first step of "Move to Ziira Core": which kinds of record can be brought over now (and which need a unit
+         *     switched on), what the other system holds, and the branches' stock locations to choose from.
+         */
+        get: operations["get_move_options_api_v1_connect_connections__connection_id__move_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/move/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Move Preview
+         * @description What bringing the chosen records over would do: for each kind what would be created, what is already in Ziira
+         *     and what cannot be brought over, and why. Checked by the owning units' own rules. Writes nothing.
+         */
+        post: operations["post_move_preview_api_v1_connect_connections__connection_id__move_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Move
+         * @description Bring the records over: one Data Import batch per kind, tagged with this connection, imported in the background.
+         *     Customers, suppliers and products first, then stock and balances. Safe to run again: nothing is created twice.
+         */
+        post: operations["post_move_api_v1_connect_connections__connection_id__move_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/moves": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Moves
+         * @description Earlier moves from this connection, newest first.
+         */
+        get: operations["get_moves_api_v1_connect_connections__connection_id__moves_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/moves/{move_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get One Move
+         * @description Progress of a move (poll it): each batch with its counts, and whether anything needs attention.
+         */
+        get: operations["get_one_move_api_v1_connect_moves__move_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/moves/{move_id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Undo
+         * @description Take back what can be taken back (opening balances, through Data Import's reverse). Products, customers,
+         *     suppliers and stock cannot be deleted; switch unwanted ones off or adjust them in their own screens.
+         */
+        post: operations["post_undo_api_v1_connect_moves__move_id__undo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/move/suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Suggestion
+         * @description Whether to offer "Ready to run on Ziira? Move your data" for this company.
+         */
+        get: operations["get_suggestion_api_v1_connect_move_suggestion_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/overlap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Overlap
+         * @description Areas that a connected system and Core units both cover, and whether the business still has to choose between
+         *     pausing the connection and keeping both. Standalone checks stay silent where Core covers the same branch.
+         */
+        get: operations["get_overlap_api_v1_connect_overlap_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connect/connections/{connection_id}/overlap-choice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Overlap Choice
+         * @description Remember "keep both" for this connection (its checks go on while Core covers the same areas), or ask again.
+         */
+        post: operations["post_overlap_choice_api_v1_connect_connections__connection_id__overlap_choice_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2754,7 +5572,7 @@ export interface paths {
         };
         /**
          * Get Cash Flow
-         * @description Cash, bank, M-Pesa and card balances at the start and end, and what moved them.
+         * @description Cash, bank, mobile money and card balances at the start and end, and what moved them.
          */
         get: operations["get_cash_flow_api_v1_finance_reports_cash_flow_get"];
         put?: never;
@@ -2855,7 +5673,7 @@ export interface paths {
         put?: never;
         /**
          * Post Expense
-         * @description Write a draft expense: a cost paid at once from cash, bank, M-Pesa or card, with its receipt reference.
+         * @description Write a draft expense: a cost paid at once from cash, bank, mobile money or card, with its receipt reference.
          */
         post: operations["post_expense_api_v1_finance_expenses_post"];
         delete?: never;
@@ -2933,7 +5751,7 @@ export interface paths {
         put?: never;
         /**
          * Post Reconciliation
-         * @description Start reconciling a bank, M-Pesa or card account to a statement (its date and closing balance).
+         * @description Start reconciling a bank, mobile money or card account to a statement (its date and closing balance).
          */
         post: operations["post_reconciliation_api_v1_finance_bank_reconciliations_post"];
         delete?: never;
@@ -3576,7 +6394,8 @@ export interface paths {
         };
         /**
          * Get Findings
-         * @description Findings in the user's scope, most serious first. Without a status filter, open ones only.
+         * @description Findings in the user's scope, most serious first. Without a status filter, open ones only (those put aside for
+         *     now are left out unless `snoozed` says otherwise).
          */
         get: operations["get_findings_api_v1_intel_findings_get"];
         put?: never;
@@ -3598,6 +6417,183 @@ export interface paths {
         get: operations["get_summary_api_v1_intel_findings_summary_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/grouped": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Grouped
+         * @description Similar findings (same kind, same branch, same day) as one group each, most pressing first: urgency, money at
+         *     stake, recency. The findings themselves are unchanged.
+         */
+        get: operations["get_grouped_api_v1_intel_findings_grouped_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/plain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Plain
+         * @description Plain words for checks (title, why it matters, what to do, limits as a sentence), topics, facts and limits.
+         */
+        get: operations["get_plain_api_v1_intel_plain_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Topics */
+        get: operations["get_topics_api_v1_intel_topics_get"];
+        /**
+         * Put Topics
+         * @description Choose what Ziira watches by topic: every check of a topic is switched on or off.
+         */
+        put: operations["put_topics_api_v1_intel_topics_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/ignore-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Ignore Rules
+         * @description The "this is normal" rules in force.
+         */
+        get: operations["get_ignore_rules_api_v1_intel_ignore_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/ignore-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Ignore Rule */
+        delete: operations["delete_ignore_rule_api_v1_intel_ignore_rules__rule_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/related": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Related
+         * @description Other open findings about the same person or thing, or of the same kind at the same branch.
+         */
+        get: operations["get_related_api_v1_intel_findings__finding_id__related_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/ignore-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Ignore Options */
+        get: operations["get_ignore_options_api_v1_intel_findings__finding_id__ignore_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/snooze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Snooze
+         * @description Put a finding aside for some days (null days: bring it back). It returns by itself, or sooner if it gets
+         *     worse.
+         */
+        post: operations["post_snooze_api_v1_intel_findings__finding_id__snooze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/findings/{finding_id}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Ignore
+         * @description "Not a problem" for a kind of thing at a branch or for a person, for some days or always.
+         */
+        post: operations["post_ignore_api_v1_intel_findings__finding_id__ignore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3756,7 +6752,7 @@ export interface paths {
         };
         /**
          * Get Checks
-         * @description The checks that run for this business, with their limits.
+         * @description The checks that run for this business, with their limits (and their topic: see `GET /plain` for plain words).
          */
         get: operations["get_checks_api_v1_intel_checks_get"];
         put?: never;
@@ -3785,6 +6781,26 @@ export interface paths {
          * @description Switch a check off or on, or change its limits.
          */
         patch: operations["patch_check_api_v1_intel_checks__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/intel/checks/{code}/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Reset Check
+         * @description Back to the recommended settings for one check: on, with its default limits.
+         */
+        post: operations["post_reset_check_api_v1_intel_checks__code__reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/intel/run": {
@@ -4183,6 +7199,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/payments/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Providers
+         * @description The payment providers and statement formats switched on for this business, each described as data: the credential
+         *     and settings forms the web app draws.
+         */
+        get: operations["get_providers_api_v1_payments_providers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payments/accounts": {
         parameters: {
             query?: never;
@@ -4229,7 +7266,8 @@ export interface paths {
         get?: never;
         /**
          * Put Credentials
-         * @description Store the account's Daraja credentials, encrypted. They cannot be read back.
+         * @description Store the account's provider credentials (the fields its provider describes), encrypted. They cannot be read
+         *     back.
          */
         put: operations["put_credentials_api_v1_payments_accounts__account_id__credentials_put"];
         post?: never;
@@ -4250,7 +7288,7 @@ export interface paths {
         put?: never;
         /**
          * Post Callback Token
-         * @description Make a new secret for the account's callback addresses; register the returned URLs with Safaricom. The old
+         * @description Make a new secret for the account's callback addresses; register the returned URLs with the provider. The old
          *     ones stop working.
          */
         post: operations["post_callback_token_api_v1_payments_accounts__account_id__callback_token_post"];
@@ -4271,7 +7309,7 @@ export interface paths {
         put?: never;
         /**
          * Post Statement
-         * @description Upload a statement (M-Pesa or bank CSV). Uploading it twice adds nothing.
+         * @description Upload a statement (a bank CSV, or a format a provider plugin reads). Uploading it twice adds nothing.
          */
         post: operations["post_statement_api_v1_payments_accounts__account_id__statements_post"];
         delete?: never;
@@ -4415,7 +7453,7 @@ export interface paths {
         put?: never;
         /**
          * Post Intent
-         * @description Put an M-Pesa payment prompt on the customer's phone. Send an Idempotency-Key so a retry does not prompt
+         * @description Put a mobile-money payment prompt on the customer's phone. Send an Idempotency-Key so a retry does not prompt
          *     twice.
          */
         post: operations["post_intent_api_v1_payments_intents_post"];
@@ -4514,7 +7552,7 @@ export interface paths {
         put?: never;
         /**
          * Post Settlement
-         * @description M-Pesa paid its takings (less charges) into the bank.
+         * @description Mobile-money takings (less charges) reached the bank.
          */
         post: operations["post_settlement_api_v1_payments_settlements_post"];
         delete?: never;
@@ -5462,6 +8500,26 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pos/devices/{device_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Device
+         * @description Change the store a device sells from (not while a till is open on it).
+         */
+        patch: operations["patch_device_api_v1_pos_devices__device_id__patch"];
         trace?: never;
     };
     "/api/v1/pos/devices/{device_id}/status": {
@@ -7393,6 +10451,226 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plugins/leadsintel/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get State
+         * @description Where the connection stands. Never holds a key.
+         */
+        get: operations["get_state_api_v1_plugins_leadsintel_state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Key
+         * @description Check the Lead Intel platform key with Lead Intel and store it encrypted.
+         */
+        put: operations["put_key_api_v1_plugins_leadsintel_key_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Check
+         * @description Is the stored platform key still accepted by Lead Intel?
+         */
+        post: operations["post_check_api_v1_plugins_leadsintel_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Connect
+         * @description Ask Lead Intel to connect a new WhatsApp number. Setup takes a while: poll `/whatsapp/refresh`.
+         */
+        post: operations["post_connect_api_v1_plugins_leadsintel_whatsapp_connect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Refresh
+         * @description Ask Lead Intel how the connection is going.
+         */
+        post: operations["post_refresh_api_v1_plugins_leadsintel_whatsapp_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Cancel
+         * @description Stop a connection that has not finished.
+         */
+        post: operations["post_cancel_api_v1_plugins_leadsintel_whatsapp_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Disconnect
+         * @description Remove the connected number from Lead Intel and stop using WhatsApp.
+         */
+        post: operations["post_disconnect_api_v1_plugins_leadsintel_whatsapp_disconnect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/existing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Existing
+         * @description Is this number already on Lead Intel, and can it be claimed by an SMS code?
+         */
+        post: operations["post_existing_api_v1_plugins_leadsintel_whatsapp_existing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Claim
+         * @description Start claiming a number already on Lead Intel: it sends a code by SMS to the number.
+         */
+        post: operations["post_claim_api_v1_plugins_leadsintel_whatsapp_claim_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/whatsapp/claim/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Claim Verify
+         * @description Type the code the number received.
+         */
+        post: operations["post_claim_verify_api_v1_plugins_leadsintel_whatsapp_claim_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plugins/leadsintel/inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Inbox
+         * @description What people wrote to the business by WhatsApp (replies to reminders, commands from staff).
+         */
+        get: operations["get_inbox_api_v1_plugins_leadsintel_inbox_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -7455,6 +10733,30 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** ActionLine */
+        ActionLine: {
+            /** Id */
+            id: number;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Operator Name */
+            operator_name: string;
+            /** Action */
+            action: string;
+            /** Target */
+            target: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Reason */
+            reason: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** ActionLogOut */
         ActionLogOut: {
             /**
@@ -7509,6 +10811,11 @@ export interface components {
             /** Message */
             message: string;
             result: components["schemas"]["ActionResultOut"] | null;
+            /**
+             * Channel
+             * @default app
+             */
+            channel: string;
         };
         /** ActionResultOut */
         ActionResultOut: {
@@ -7614,6 +10921,85 @@ export interface components {
             owner_user_id: string | null;
             /** Note */
             note: string | null;
+        };
+        /** AddonIn */
+        AddonIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "unit" | "users" | "branches" | "companies";
+            /** Unit Name */
+            unit_name?: string | null;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+            /**
+             * Sort Order
+             * @default 100
+             */
+            sort_order: number;
+        };
+        /** AddonOut */
+        AddonOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Kind */
+            kind: string;
+            /** Unit Name */
+            unit_name: string | null;
+            /** Quantity */
+            quantity: number;
+            /** Is Public */
+            is_public: boolean;
+            /** Status */
+            status: string;
+            /** Sort Order */
+            sort_order: number;
+            /** Prices */
+            prices?: components["schemas"]["PlatformPriceOut"][];
+            /** Current Prices */
+            current_prices?: components["schemas"]["PlatformPriceOut"][];
+        };
+        /** AddonPatch */
+        AddonPatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Quantity */
+            quantity?: number | null;
+            /** Is Public */
+            is_public?: boolean | null;
+            /** Status */
+            status?: ("active" | "retired") | null;
+            /** Sort Order */
+            sort_order?: number | null;
         };
         /** AdjustmentIn */
         AdjustmentIn: {
@@ -8005,6 +11391,27 @@ export interface components {
              * @description Permission codes the key may use
              */
             scopes: string[];
+            /**
+             * Read Only
+             * @description A read-only key can make GET requests only
+             * @default false
+             */
+            read_only: boolean;
+            /**
+             * Company Id
+             * @description Limit the key to one company
+             */
+            company_id?: string | null;
+            /**
+             * Branch Id
+             * @description Limit the key to one branch (needs the company)
+             */
+            branch_id?: string | null;
+            /**
+             * Rate Limit Per Minute
+             * @description Requests a minute; empty uses the platform's default
+             */
+            rate_limit_per_minute?: number | null;
             /** Expires At */
             expires_at?: string | null;
         };
@@ -8019,6 +11426,14 @@ export interface components {
             name: string;
             /** Scopes */
             scopes: string[];
+            /** Read Only */
+            read_only: boolean;
+            /** Company Id */
+            company_id: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Rate Limit Per Minute */
+            rate_limit_per_minute: number | null;
             /**
              * Created At
              * Format: date-time
@@ -8028,6 +11443,23 @@ export interface components {
             expires_at: string | null;
             /** Revoked At */
             revoked_at: string | null;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Last Ip */
+            last_ip: string | null;
+            /** Use Count */
+            use_count: number;
+            /** Rotated From */
+            rotated_from: string | null;
+        };
+        /** ApiKeyRotateIn */
+        ApiKeyRotateIn: {
+            /**
+             * Grace Hours
+             * @description How long the old key keeps working (0: stops now)
+             * @default 24
+             */
+            grace_hours: number;
         };
         /** AppliedOut */
         AppliedOut: {
@@ -8057,6 +11489,20 @@ export interface components {
             } | null;
             /** Note */
             note?: string | null;
+        };
+        /** AreaOverlapOut */
+        AreaOverlapOut: {
+            /**
+             * Area
+             * @enum {string}
+             */
+            area: "sales" | "receivables" | "payables" | "stock" | "payments" | "expenses" | "journals";
+            /** Branch Ids */
+            branch_ids: string[];
+            /** Company Wide */
+            company_wide: boolean;
+            /** Connection Ids */
+            connection_ids: string[];
         };
         /** AskAnswerOut */
         AskAnswerOut: {
@@ -8252,6 +11698,27 @@ export interface components {
             /** Permissions */
             permissions: string[];
         };
+        /** AttemptOut */
+        AttemptOut: {
+            /**
+             * Attempted At
+             * Format: date-time
+             */
+            attempted_at: string;
+            /** Ok */
+            ok: boolean;
+            /** Status Code */
+            status_code: number | null;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Error */
+            error: string | null;
+        };
+        /** AttemptReasonIn */
+        AttemptReasonIn: {
+            /** Reason */
+            reason: string;
+        };
         /** AttendanceIn */
         AttendanceIn: {
             /**
@@ -8339,6 +11806,42 @@ export interface components {
             /** Overtime Hours */
             overtime_hours?: number | string | null;
         };
+        /** AvailableChannel */
+        AvailableChannel: {
+            /** Channel */
+            channel: string;
+            /** Label */
+            label: string;
+            /** Providers */
+            providers: string[];
+            /**
+             * Configured
+             * @description The business has set it up and it is ready to send
+             */
+            configured: boolean;
+            /** Supports Templates */
+            supports_templates: boolean;
+            /** Supports Buttons */
+            supports_buttons: boolean;
+            /** Supports Inbound */
+            supports_inbound: boolean;
+            /** Window Hours */
+            window_hours: number | null;
+        };
+        /** BackupStatus */
+        BackupStatus: {
+            /**
+             * Reported
+             * @description False when ZIIRA_BACKUP_DIR is not set or not a folder
+             */
+            reported: boolean;
+            /** Master Taken At */
+            master_taken_at: string | null;
+            /** Master Age Hours */
+            master_age_hours: number | null;
+            /** Tenants Without Backup */
+            tenants_without_backup: string[];
+        };
         /** BalanceSheetOut */
         BalanceSheetOut: {
             /**
@@ -8381,6 +11884,34 @@ export interface components {
             confirmation_method: "phone_callback" | "in_person" | "signed_letter";
             /** Note */
             note?: string | null;
+        };
+        /** Banner */
+        Banner: {
+            /**
+             * Level
+             * @description info, warning or blocked
+             */
+            level: string;
+            /** Message */
+            message: string;
+            /** Status */
+            status: string;
+            /**
+             * Kind
+             * @description trial (running), trial_ended, past_due, grace, suspended or other: how the screen words it
+             * @default other
+             */
+            kind: string;
+            /**
+             * Date
+             * @description When the trial or period ended, or will end
+             */
+            date?: string | null;
+            /**
+             * Days Left
+             * @description Whole days until a running trial ends
+             */
+            days_left?: number | null;
         };
         /** BarcodesIn */
         BarcodesIn: {
@@ -8449,6 +11980,56 @@ export interface components {
             reverted_at: string | null;
             /** Revert Reason */
             revert_reason: string | null;
+            /**
+             * Source Kind
+             * @description What staged the rows when no file was uploaded
+             */
+            source_kind?: string | null;
+            /** Source Id */
+            source_id?: string | null;
+        };
+        /** BatchStateOut */
+        BatchStateOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "products" | "customers" | "suppliers" | "opening_stock" | "customer_balances" | "supplier_balances";
+            /** Title */
+            title: string;
+            /** Phase */
+            phase: number;
+            /** Batch Id */
+            batch_id: string | null;
+            /**
+             * Status
+             * @description The batch's status, or waiting / nothing_new / unavailable
+             */
+            status: string;
+            /** Staged */
+            staged: number;
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Reversible */
+            reversible: boolean;
+            /** Reversal Note */
+            reversal_note: string;
+        };
+        /** BehindBusiness */
+        BehindBusiness: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Behind
+             * @description Migration files not yet applied, by unit
+             */
+            behind: {
+                [key: string]: string[];
+            };
         };
         /** BillIn */
         BillIn: {
@@ -8662,6 +12243,19 @@ export interface components {
             /** Lines */
             lines?: components["schemas"]["BillLineIn"][] | null;
         };
+        /** BillingRunOut */
+        BillingRunOut: {
+            /** Invoices */
+            invoices: number;
+            /** Cancelled */
+            cancelled: number;
+            /** Reminders */
+            reminders: number;
+            /** Moved */
+            moved: number;
+            /** Deletions */
+            deletions: number;
+        };
         /** BranchIn */
         BranchIn: {
             /** Code */
@@ -8672,6 +12266,19 @@ export interface components {
             address?: string | null;
             /** Phone */
             phone?: string | null;
+        };
+        /** BranchLineOut */
+        BranchLineOut: {
+            /** External Ref */
+            external_ref: string;
+            /** External Name */
+            external_name: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Branch Name */
+            branch_name: string | null;
+            /** Ignored */
+            ignored: boolean;
         };
         /** BranchMapIn */
         BranchMapIn: {
@@ -8737,6 +12344,18 @@ export interface components {
             /** Branch Name */
             branch_name: string;
             statement: components["schemas"]["ProfitAndLossOut"];
+        };
+        /** BranchStockOut */
+        BranchStockOut: {
+            /**
+             * Branch Id
+             * Format: uuid
+             */
+            branch_id: string;
+            /** Branch Name */
+            branch_name: string | null;
+            /** Locations */
+            locations: components["schemas"]["LocationChoiceOut"][];
         };
         /** BranchSummary */
         BranchSummary: {
@@ -8842,12 +12461,179 @@ export interface components {
              */
             created_at: string;
         };
+        /** BusinessDetail */
+        BusinessDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Edition */
+            edition: string | null;
+            /** Country */
+            country: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Last Activity */
+            last_activity: string | null;
+            /** Users */
+            users: number;
+            /** Enabled Units */
+            enabled_units: string[];
+            /**
+             * Behind
+             * @description Its database lacks some migrations of the code on disk
+             */
+            behind: boolean;
+            /**
+             * Error
+             * @description Set when the business's database could not be read
+             */
+            error: string | null;
+            /** Units */
+            units: components["schemas"]["BusinessUnit"][];
+            /**
+             * Grants
+             * @description Support access the business has given and not withdrawn
+             */
+            grants: components["schemas"]["BusinessGrant"][];
+            /**
+             * Sessions
+             * @description Staff sessions open in it now
+             */
+            sessions: components["schemas"]["BusinessSession"][];
+            /** Behind Units */
+            behind_units: {
+                [key: string]: string[];
+            };
+        };
+        /** BusinessGrant */
+        BusinessGrant: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Level */
+            level: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** BusinessOut */
         BusinessOut: {
             /** Code */
             code: string;
             /** Name */
             name: string;
+        };
+        /** BusinessRow */
+        BusinessRow: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Edition */
+            edition: string | null;
+            /** Country */
+            country: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Last Activity */
+            last_activity: string | null;
+            /** Users */
+            users: number;
+            /** Enabled Units */
+            enabled_units: string[];
+            /**
+             * Behind
+             * @description Its database lacks some migrations of the code on disk
+             */
+            behind: boolean;
+            /**
+             * Error
+             * @description Set when the business's database could not be read
+             */
+            error: string | null;
+        };
+        /** BusinessSession */
+        BusinessSession: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Operator Name */
+            operator_name: string;
+            /** Level */
+            level: string;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Mine */
+            mine: boolean;
+        };
+        /** BusinessUnit */
+        BusinessUnit: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Kind */
+            kind: string;
+            /** Category */
+            category: string;
+            /** Installed */
+            installed: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /** Has Data */
+            has_data: boolean;
+            /** Can Enable */
+            can_enable: boolean;
+            /** Can Disable */
+            can_disable: boolean;
+            /** Why Not Disable */
+            why_not_disable: string | null;
+            /** Requires */
+            requires: string[];
+            /** Will Also Enable */
+            will_also_enable: string[];
         };
         /** CallbackTokenOut */
         CallbackTokenOut: {
@@ -8860,6 +12646,11 @@ export interface components {
             urls: {
                 [key: string]: string;
             };
+        };
+        /** CancelIn */
+        CancelIn: {
+            /** Reason */
+            reason?: string | null;
         };
         /** CardRowOut */
         CardRowOut: {
@@ -8989,20 +12780,49 @@ export interface components {
             /** Value */
             value: string;
         };
-        /** ChallengeOut */
-        ChallengeOut: {
-            /**
-             * Challenge
-             * @description Send this back with the code from the authenticator app
-             */
-            challenge: string;
-        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** Current Password */
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ChangePlanIn */
+        ChangePlanIn: {
+            /** Plan Code */
+            plan_code: string;
+            /** Interval */
+            interval?: ("month" | "year" | "one_time") | null;
+            /** Currency */
+            currency?: string | null;
+            /**
+             * Effective
+             * @default auto
+             * @enum {string}
+             */
+            effective: "auto" | "now" | "period_end";
+            /**
+             * Bill Prorated
+             * @description Issue an invoice for the pro rata difference of an upgrade
+             * @default true
+             */
+            bill_prorated: boolean;
+        };
+        /** ChangeRequestIn */
+        ChangeRequestIn: {
+            /** Plan Code */
+            plan_code: string;
+            /** Interval */
+            interval?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Coupon Code */
+            coupon_code?: string | null;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
         };
         /** ChannelIn */
         ChannelIn: {
@@ -9073,6 +12893,18 @@ export interface components {
             params: {
                 [key: string]: unknown;
             };
+            /**
+             * Topic
+             * @default cash
+             * @enum {string}
+             */
+            topic: "cash" | "stock" | "customers" | "suppliers" | "staff" | "books";
+            /**
+             * Source
+             * @default ziira
+             * @enum {string}
+             */
+            source: "connected" | "ziira";
         };
         /** CheckUpdateIn */
         CheckUpdateIn: {
@@ -9204,6 +13036,15 @@ export interface components {
             /** Total */
             total: string | null;
         };
+        /** CompIn */
+        CompIn: {
+            /** Plan Code */
+            plan_code?: string | null;
+            /** Until */
+            until?: string | null;
+            /** Reason */
+            reason: string;
+        };
         /** CompanyIn */
         CompanyIn: {
             /** Name */
@@ -9242,6 +13083,12 @@ export interface components {
             currency: string;
             /** Country */
             country?: string | null;
+            /**
+             * Timezone
+             * @description The company's time zone: every time shown to its people uses it
+             * @default UTC
+             */
+            timezone: string;
             /** Branches */
             branches: components["schemas"]["BranchOut"][];
         };
@@ -9277,7 +13124,7 @@ export interface components {
             /** Bill Match Tolerance Percent */
             bill_match_tolerance_percent?: number | string | null;
             /** Reminder Channel */
-            reminder_channel?: ("off" | "sms" | "email") | null;
+            reminder_channel?: string | null;
             /** Reminder Min Days Overdue */
             reminder_min_days_overdue?: number | null;
             /** Reminder Repeat Days */
@@ -9299,7 +13146,7 @@ export interface components {
             /** Timezone */
             timezone?: string | null;
             /** Intel Alert Channel */
-            intel_alert_channel?: ("off" | "sms" | "email") | null;
+            intel_alert_channel?: string | null;
             /** Intel Alert Min Severity */
             intel_alert_min_severity?: ("low" | "medium" | "high" | "critical") | null;
             /** Intel Action Level */
@@ -9330,11 +13177,8 @@ export interface components {
             late_posting: "redirect" | "reject";
             /** Bill Match Tolerance Percent */
             bill_match_tolerance_percent: string;
-            /**
-             * Reminder Channel
-             * @enum {string}
-             */
-            reminder_channel: "off" | "sms" | "email";
+            /** Reminder Channel */
+            reminder_channel: string;
             /** Reminder Min Days Overdue */
             reminder_min_days_overdue: number;
             /** Reminder Repeat Days */
@@ -9355,11 +13199,8 @@ export interface components {
             invoice_footer: string;
             /** Timezone */
             timezone: string;
-            /**
-             * Intel Alert Channel
-             * @enum {string}
-             */
-            intel_alert_channel: "off" | "sms" | "email";
+            /** Intel Alert Channel */
+            intel_alert_channel: string;
             /**
              * Intel Alert Min Severity
              * @enum {string}
@@ -9464,6 +13305,29 @@ export interface components {
             help: string;
             /** Example */
             example: string;
+        };
+        /** ConfirmIn */
+        ConfirmIn: {
+            /**
+             * Password
+             * @description The password (mfa_mode off)
+             */
+            password?: string | null;
+            /**
+             * Code
+             * @description An authenticator code (mfa_mode totp)
+             */
+            code?: string | null;
+        };
+        /** ConfirmOut */
+        ConfirmOut: {
+            /**
+             * Mfa Verified At
+             * Format: date-time
+             */
+            mfa_verified_at: string;
+            /** Valid Minutes */
+            valid_minutes: number;
         };
         /** ConnectionDetailOut */
         ConnectionDetailOut: {
@@ -9652,6 +13516,17 @@ export interface components {
             how_to: string;
             /** File Fields */
             file_fields: components["schemas"]["FileFieldOut"][];
+        };
+        /** ContactFound */
+        ContactFound: {
+            /** Email */
+            email: string;
+            /** Invoices */
+            invoices: {
+                [key: string]: unknown;
+            }[];
+            /** Registrations */
+            registrations: number;
         };
         /** ContactIn */
         ContactIn: {
@@ -9856,6 +13731,55 @@ export interface components {
             /** Posted At */
             posted_at: string | null;
         };
+        /** CountryOut */
+        CountryOut: {
+            /**
+             * Code
+             * @description ISO 3166 two-letter code
+             */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Calling
+             * @description Phone calling code, digits only
+             */
+            calling: string;
+            /**
+             * Currency
+             * @description The usual currency (ISO 4217); the business may choose another
+             */
+            currency: string;
+            /**
+             * Zone
+             * @description The usual IANA time zone
+             */
+            zone: string;
+            /**
+             * Pack
+             * @description The country pack (plugin) that names this country, if there is one
+             */
+            pack: string | null;
+            /**
+             * Pack Available
+             * @description That pack is installed here, so it is switched on at sign-up
+             */
+            pack_available: boolean;
+            /**
+             * Tax Id Label
+             * @description What the country calls a business tax number (empty: use 'Tax number')
+             */
+            tax_id_label: string;
+            /**
+             * Tax Id Pattern
+             * @description A regular expression hint for the tax number (not enforced by the server)
+             */
+            tax_id_pattern: string;
+            /** Date Format */
+            date_format: string;
+            /** Number Format */
+            number_format: string;
+        };
         /** CountsOut */
         CountsOut: {
             /** Pending */
@@ -9872,6 +13796,76 @@ export interface components {
             failed: number;
             /** Reverted */
             reverted: number;
+        };
+        /** CouponApplyIn */
+        CouponApplyIn: {
+            /** Code */
+            code: string;
+        };
+        /** CouponIn */
+        CouponIn: {
+            /** Code */
+            code: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Percent Off */
+            percent_off?: number | string | null;
+            /**
+             * Amounts
+             * @description Fixed discount per currency
+             */
+            amounts?: {
+                [key: string]: number | string;
+            };
+            /**
+             * Duration
+             * @default once
+             * @enum {string}
+             */
+            duration: "once" | "repeating" | "forever";
+            /** Duration Periods */
+            duration_periods?: number | null;
+            /** Max Redemptions */
+            max_redemptions?: number | null;
+            /** Expires At */
+            expires_at?: string | null;
+            /** Plan Codes */
+            plan_codes?: string[];
+        };
+        /** CouponOut */
+        CouponOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Description */
+            description: string;
+            /** Percent Off */
+            percent_off: string | null;
+            /** Amounts */
+            amounts: {
+                [key: string]: string;
+            };
+            /** Duration */
+            duration: string;
+            /** Duration Periods */
+            duration_periods: number | null;
+            /** Max Redemptions */
+            max_redemptions: number | null;
+            /** Redeemed */
+            redeemed: number;
+            /** Expires At */
+            expires_at: string | null;
+            /** Plan Codes */
+            plan_codes: string[];
+            /** Status */
+            status: string;
         };
         /** CoverageAreaOut */
         CoverageAreaOut: {
@@ -9910,15 +13904,6 @@ export interface components {
              * Format: date-time
              */
             as_of: string;
-        };
-        /** CredentialsIn */
-        CredentialsIn: {
-            /** Consumer Key */
-            consumer_key: string;
-            /** Consumer Secret */
-            consumer_secret: string;
-            /** Passkey */
-            passkey: string;
         };
         /** CreditChangeIn */
         CreditChangeIn: {
@@ -10194,12 +14179,105 @@ export interface components {
             /** Status */
             status?: ("active" | "on_hold" | "inactive") | null;
         };
+        /** DashboardOut */
+        DashboardOut: {
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Period Days */
+            period_days: number;
+            /** Mrr */
+            mrr: components["schemas"]["MrrRow"][];
+            /** New Subscribers */
+            new_subscribers: number;
+            /** Churned */
+            churned: number;
+            trials: components["schemas"]["TrialStats"];
+            /** Past Due */
+            past_due: components["schemas"]["OwedRow"][];
+            /** By Status */
+            by_status: {
+                [key: string]: number;
+            };
+            /** By Plan */
+            by_plan: {
+                [key: string]: number;
+            };
+            /** By Edition */
+            by_edition: {
+                [key: string]: number;
+            };
+            /** By Country */
+            by_country: {
+                [key: string]: number;
+            };
+            /** Unmanaged */
+            unmanaged: number;
+            /** Usage Hot Spots */
+            usage_hot_spots: components["schemas"]["HotSpot"][];
+            /** Upcoming Renewals */
+            upcoming_renewals: components["schemas"]["RenewalRow"][];
+            /** Failed Jobs */
+            failed_jobs: components["schemas"]["FailedJobsRow"][];
+            /** Pending Requests */
+            pending_requests: number;
+            /** Draft Invoices */
+            draft_invoices: number;
+            /** Mode */
+            mode: string;
+        };
+        /** DecideIn */
+        DecideIn: {
+            /** Approve */
+            approve: boolean;
+        };
+        /** DecideOut */
+        DecideOut: {
+            /** Status */
+            status: string;
+            invoice: components["schemas"]["PlatformInvoiceOut"] | null;
+        };
         /** DecisionIn */
         DecisionIn: {
             /** Approve */
             approve: boolean;
             /** Note */
             note?: string | null;
+        };
+        /** DeleteIn */
+        DeleteIn: {
+            /**
+             * Confirm
+             * @description The business's code, typed
+             */
+            confirm: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Early
+             * @description Before the retention period ends (for example at the business's request)
+             * @default false
+             */
+            early: boolean;
+        };
+        /** DeletionOut */
+        DeletionOut: {
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Requested By */
+            requested_by: string;
+            /**
+             * Execute After
+             * Format: date-time
+             */
+            execute_after: string;
+            /** Reason */
+            reason: string;
         };
         /** DeliverIn */
         DeliverIn: {
@@ -10222,6 +14300,123 @@ export interface components {
             order_line_id: string;
             /** Quantity */
             quantity: number | string;
+        };
+        /** DeliveryDetailOut */
+        DeliveryDetailOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Endpoint Id
+             * Format: uuid
+             */
+            endpoint_id: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Type */
+            event_type: string;
+            /** Status */
+            status: string;
+            /** Attempts */
+            attempts: number;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Last Attempt At */
+            last_attempt_at: string | null;
+            /** Next Attempt At */
+            next_attempt_at: string | null;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Last Status Code */
+            last_status_code: number | null;
+            /** Last Duration Ms */
+            last_duration_ms: number | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Is Test */
+            is_test: boolean;
+            /** Body Bytes */
+            body_bytes: number;
+            /**
+             * Has Body
+             * @description False once the content is no longer kept (it cannot be sent again)
+             */
+            has_body: boolean;
+            /** Aggregate Type */
+            aggregate_type: string | null;
+            /** Aggregate Id */
+            aggregate_id: string | null;
+            /** Body Sha256 */
+            body_sha256: string;
+            /**
+             * Body Preview
+             * @description The first bytes of what was sent
+             */
+            body_preview: string;
+            /** Attempt Log */
+            attempt_log: components["schemas"]["AttemptOut"][];
+        };
+        /** DeliveryOut */
+        DeliveryOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Endpoint Id
+             * Format: uuid
+             */
+            endpoint_id: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Type */
+            event_type: string;
+            /** Status */
+            status: string;
+            /** Attempts */
+            attempts: number;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Last Attempt At */
+            last_attempt_at: string | null;
+            /** Next Attempt At */
+            next_attempt_at: string | null;
+            /** Delivered At */
+            delivered_at: string | null;
+            /** Last Status Code */
+            last_status_code: number | null;
+            /** Last Duration Ms */
+            last_duration_ms: number | null;
+            /** Last Error */
+            last_error: string | null;
+            /** Is Test */
+            is_test: boolean;
+            /** Body Bytes */
+            body_bytes: number;
+            /**
+             * Has Body
+             * @description False once the content is no longer kept (it cannot be sent again)
+             */
+            has_body: boolean;
         };
         /** DepartmentIn */
         DepartmentIn: {
@@ -10344,6 +14539,15 @@ export interface components {
              */
             status: "active" | "blocked";
         };
+        /** DeviceUpdateIn */
+        DeviceUpdateIn: {
+            /**
+             * Location Id
+             * Format: uuid
+             * @description The store this device's sales take stock from
+             */
+            location_id: string;
+        };
         /** DisconnectIn */
         DisconnectIn: {
             /**
@@ -10369,9 +14573,9 @@ export interface components {
         DoNotContactIn: {
             /**
              * Channel
-             * @description Default: every channel
+             * @description A channel the business has. Default: every channel
              */
-            channel?: ("email" | "sms") | null;
+            channel?: string | null;
             /** Reason */
             reason?: string | null;
         };
@@ -10528,6 +14732,44 @@ export interface components {
             notes?: string | null;
             /** Valid Until */
             valid_until?: string | null;
+        };
+        /** EditionOut */
+        EditionOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Pitch */
+            pitch: string;
+            /**
+             * Units
+             * @description Units this edition switches on (what they require comes along)
+             */
+            units: string[];
+            /**
+             * Plugin Categories
+             * @description Plugin categories the Apps screen recommends
+             */
+            plugin_categories: string[];
+            /**
+             * Menu Groups
+             * @description Sidebar sections in this order
+             */
+            menu_groups: string[];
+            /**
+             * Landing
+             * @description Page opened after signing in; empty means Home
+             */
+            landing: string;
+            /** Checklist */
+            checklist: components["schemas"]["StepOut"][];
+            /** Sample Data */
+            sample_data: string[];
+        };
+        /** EmailIn */
+        EmailIn: {
+            /** Email */
+            email: string;
         };
         /** EmployeeIn */
         EmployeeIn: {
@@ -10802,6 +15044,29 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** ErasedOut */
+        ErasedOut: {
+            /** Invoices Anonymised */
+            invoices_anonymised: number;
+            /** Registrations Deleted */
+            registrations_deleted: number;
+        };
+        /** EventOut */
+        EventOut: {
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Kind */
+            kind: string;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            } | null;
+            /** By Name */
+            by_name: string | null;
+        };
         /** ExceptionApprovalIn */
         ExceptionApprovalIn: {
             /**
@@ -10997,6 +15262,11 @@ export interface components {
              */
             note: string;
         };
+        /** ExtendTrialIn */
+        ExtendTrialIn: {
+            /** Days */
+            days: number;
+        };
         /** ExternalOut */
         ExternalOut: {
             /**
@@ -11033,6 +15303,32 @@ export interface components {
             /** Match Status */
             match_status: string;
         };
+        /** ExtraPlugin */
+        ExtraPlugin: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Version */
+            version: string;
+            /** Checksum */
+            checksum: string;
+            /** Manifest Checksum Ok */
+            manifest_checksum_ok: boolean;
+            /** On Allow List */
+            on_allow_list: boolean;
+            /** Pinned */
+            pinned: boolean;
+        };
+        /** FailedJobsRow */
+        FailedJobsRow: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Failed Jobs */
+            failed_jobs: number;
+        };
         /** FieldGuessOut */
         FieldGuessOut: {
             /** Name */
@@ -11047,6 +15343,16 @@ export interface components {
             examples: string[];
             /** Simple */
             simple: boolean;
+        };
+        /** FigureMetaOut */
+        FigureMetaOut: {
+            /** Label */
+            label: string;
+            /**
+             * Kind
+             * @description money, count, percent, days, date, yesno, number or text: how to show the value
+             */
+            kind: string;
         };
         /** FigureOut */
         FigureOut: {
@@ -11102,6 +15408,13 @@ export interface components {
             example: string;
             /** Aliases */
             aliases: string[];
+        };
+        /** FileOut */
+        FileOut: {
+            /** Filename */
+            filename: string;
+            /** Content */
+            content: string;
         };
         /** FileSettingsIn */
         FileSettingsIn: {
@@ -11203,14 +15516,45 @@ export interface components {
             last_seen_at: string;
             /** Resolved At */
             resolved_at: string | null;
-            /** Records */
-            records: components["schemas"]["RecordOut"][];
-            /** Figures */
-            figures: {
+            /**
+             * Snoozed Until
+             * @description Put aside until then (null: not put aside)
+             */
+            snoozed_until?: string | null;
+            /**
+             * Figures
+             * @description The figures behind the finding (names are in GET /intel/plain)
+             */
+            figures?: {
                 [key: string]: string;
             };
+            /**
+             * Check Title
+             * @description The check's plain title (the code is for support)
+             */
+            check_title?: string | null;
+            /**
+             * Value Kind
+             * @description What `value` and `expected_value` measure, so a screen can format them
+             * @default number
+             * @enum {string}
+             */
+            value_kind: "money" | "percent" | "count" | "days" | "number";
+            /** Records */
+            records: components["schemas"]["RecordOut"][];
             /** Events */
             events: components["schemas"]["FindingEventOut"][];
+            /**
+             * Owner Name
+             * @description Who the finding is given to
+             */
+            owner_name?: string | null;
+            /**
+             * Source
+             * @description Where the data behind this finding lives: `connected` (the system the business keeps) or `ziira`.
+             * @enum {string}
+             */
+            readonly source: "connected" | "ziira";
             /**
              * Explanation Ai Label
              * @description "AI-written" whenever `explanation_ai` is present: show it next to that text, always.
@@ -11239,6 +15583,49 @@ export interface components {
             channel: string | null;
             /** Note */
             note: string | null;
+        };
+        /** FindingGroupOut */
+        FindingGroupOut: {
+            /**
+             * Key
+             * @description Same kind of thing, same branch, first noticed the same day
+             */
+            key: string;
+            /** Check Code */
+            check_code: string | null;
+            /** Area */
+            area: string | null;
+            /** Company Id */
+            company_id: string | null;
+            /** Branch Id */
+            branch_id: string | null;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Count */
+            count: number;
+            /**
+             * Severity
+             * @description The most serious of the members
+             */
+            severity: string;
+            /**
+             * Amount
+             * @description Money involved, all members together
+             */
+            amount: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             */
+            last_seen_at: string;
+            /**
+             * Members
+             * @description The findings in the group, most serious first (at most 25)
+             */
+            members: components["schemas"]["FindingOut"][];
         };
         /** FindingOut */
         FindingOut: {
@@ -11301,6 +15688,24 @@ export interface components {
             /** Resolved At */
             resolved_at: string | null;
             /**
+             * Snoozed Until
+             * @description Put aside until then (null: not put aside)
+             */
+            snoozed_until?: string | null;
+            /**
+             * Figures
+             * @description The figures behind the finding (names are in GET /intel/plain)
+             */
+            figures?: {
+                [key: string]: string;
+            };
+            /**
+             * Source
+             * @description Where the data behind this finding lives: `connected` (the system the business keeps) or `ziira`.
+             * @enum {string}
+             */
+            readonly source: "connected" | "ziira";
+            /**
              * Explanation Ai Label
              * @description "AI-written" whenever `explanation_ai` is present: show it next to that text, always.
              */
@@ -11324,6 +15729,12 @@ export interface components {
             };
             /** Amount At Stake */
             amount_at_stake: string;
+            /**
+             * Snoozed
+             * @description Open findings put aside for now (not counted in `open`)
+             * @default 0
+             */
+            snoozed: number;
         };
         /** ForgotIn */
         ForgotIn: {
@@ -11342,6 +15753,25 @@ export interface components {
              * @description Development only: the link's token (no email is read)
              */
             dev_token?: string | null;
+        };
+        /** FormFieldOut */
+        FormFieldOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Secret */
+            secret: boolean;
+            /** Required */
+            required: boolean;
+            /** Kind */
+            kind: string;
+            /** Options */
+            options: string[];
+            /** Default */
+            default: string | null;
+            /** Help */
+            help: string;
         };
         /** FoundOut */
         FoundOut: {
@@ -11363,6 +15793,90 @@ export interface components {
             match: "exact" | "possible";
             /** Company Id */
             company_id: string | null;
+        };
+        /** GatewayFieldOut */
+        GatewayFieldOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Secret */
+            secret: boolean;
+            /** Required */
+            required: boolean;
+            /** Help */
+            help: string;
+            /**
+             * Value
+             * @description Null for a secret: those are never shown
+             */
+            value: string | null;
+            /** Is Set */
+            is_set: boolean;
+        };
+        /** GatewayIn */
+        GatewayIn: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Config */
+            config?: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Secrets
+             * @description Write-only; an empty value keeps the old one
+             */
+            secrets?: {
+                [key: string]: string;
+            } | null;
+            /** Clear Secrets */
+            clear_secrets?: string[] | null;
+            /** Default For */
+            default_for?: string[] | null;
+        };
+        /** GatewayOut */
+        GatewayOut: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Pay Label */
+            pay_label: string;
+            /** Description */
+            description: string;
+            /** Flow */
+            flow: string;
+            /** Methods */
+            methods: string[];
+            /** Currencies */
+            currencies: string[];
+            /** Countries */
+            countries: string[];
+            /** Development Only */
+            development_only: boolean;
+            /** Fields */
+            fields: components["schemas"]["GatewayFieldOut"][];
+            /** Enabled */
+            enabled: boolean;
+            /** Configured */
+            configured: boolean;
+            /** Default For */
+            default_for: string[];
+            /** Webhook Url */
+            webhook_url: string | null;
+            /** Webhook Problem */
+            webhook_problem: string | null;
+            /** Updated At */
+            updated_at: string | null;
+            /** Updated By */
+            updated_by: string | null;
+        };
+        /** GatewayTestOut */
+        GatewayTestOut: {
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
         };
         /** GeneralLedgerOut */
         GeneralLedgerOut: {
@@ -11434,6 +15948,17 @@ export interface components {
             company_id: string | null;
             /** Branch Id */
             branch_id: string | null;
+        };
+        /** GroupedFindingsOut */
+        GroupedFindingsOut: {
+            /** Total Groups */
+            total_groups: number;
+            /** Total Findings */
+            total_findings: number;
+            /** Urgent Groups */
+            urgent_groups: number;
+            /** Groups */
+            groups: components["schemas"]["FindingGroupOut"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -11577,6 +16102,24 @@ export interface components {
              */
             created_at: string;
         };
+        /** HideIn */
+        HideIn: {
+            /** Dismissed */
+            dismissed: boolean;
+        };
+        /** HotSpot */
+        HotSpot: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Kind */
+            kind: string;
+            /** Used */
+            used: number;
+            /** Limit */
+            limit: number;
+        };
         /** IdOut */
         IdOut: {
             /**
@@ -11584,6 +16127,56 @@ export interface components {
              * Format: uuid
              */
             id: string;
+        };
+        /** IgnoreIn */
+        IgnoreIn: {
+            /**
+             * Scope
+             * @enum {string}
+             */
+            scope: "branch" | "person" | "everywhere";
+            /**
+             * Days
+             * @description Days the rule lasts; null: always
+             * @default 30
+             */
+            days: number | null;
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Tune
+             * @description Also raise the check's limit a little (only checks that allow it)
+             * @default false
+             */
+            tune: boolean;
+        };
+        /** IgnoreOptionsOut */
+        IgnoreOptionsOut: {
+            branch: components["schemas"]["NamedOut"] | null;
+            subject: components["schemas"]["SubjectOut"] | null;
+            /**
+             * Tunable
+             * @description The check allows its limit to be raised a little when something is called normal
+             */
+            tunable: boolean;
+        };
+        /** IgnoreOut */
+        IgnoreOut: {
+            /**
+             * Rule Id
+             * Format: uuid
+             */
+            rule_id: string;
+            /**
+             * Closed
+             * @description Other open findings the rule closed
+             */
+            closed: number;
+            /** Tuned */
+            tuned?: {
+                [key: string]: string;
+            } | null;
+            finding: components["schemas"]["FindingDetailOut"];
         };
         /** IntentIn */
         IntentIn: {
@@ -11633,6 +16226,85 @@ export interface components {
             expires_at: string | null;
             /** Receipt */
             receipt?: string | null;
+        };
+        /** InvoiceDetail */
+        InvoiceDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string | null;
+            /** Tenant Id */
+            tenant_id: string | null;
+            /** Licence Id */
+            licence_id: string | null;
+            /** Tenant Code */
+            tenant_code?: string | null;
+            /** Tenant Name */
+            tenant_name?: string | null;
+            /** Bill To */
+            bill_to: {
+                [key: string]: unknown;
+            };
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Currency */
+            currency: string;
+            /** Lines */
+            lines: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Lines */
+            tax_lines: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+            /** Subtotal */
+            subtotal: string;
+            /** Discount Total */
+            discount_total: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Amount Paid */
+            amount_paid: string;
+            /** Balance */
+            balance: string;
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Issue Date */
+            issue_date: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Notes */
+            notes: string;
+            /** Vendor */
+            vendor: {
+                [key: string]: unknown;
+            };
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Issued At */
+            issued_at: string | null;
+            /** Paid At */
+            paid_at: string | null;
+            /** Voided At */
+            voided_at: string | null;
+            /** Void Reason */
+            void_reason: string | null;
+            /** Payments */
+            payments: components["schemas"]["PlatformPaymentOut"][];
         };
         /** InvoiceIn */
         InvoiceIn: {
@@ -11774,6 +16446,17 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["InvoiceLineOut"][];
         };
+        /** InvoicePatch */
+        InvoicePatch: {
+            /** Lines */
+            lines?: components["schemas"]["LineIn"][] | null;
+            /** Notes */
+            notes?: string | null;
+            /** Due Date */
+            due_date?: string | null;
+            /** Tax Inclusive */
+            tax_inclusive?: boolean | null;
+        };
         /** InvoiceReturnIn */
         InvoiceReturnIn: {
             /** Lines */
@@ -11874,6 +16557,49 @@ export interface components {
             /** Columns */
             columns: components["schemas"]["ColumnOut"][];
         };
+        /** KindPlanOut */
+        KindPlanOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "products" | "customers" | "suppliers" | "opening_stock" | "customer_balances" | "supplier_balances";
+            /** Title */
+            title: string;
+            /** Selected */
+            selected: boolean;
+            /**
+             * Available
+             * @description False when the unit that keeps this kind of record is switched off
+             */
+            available: boolean;
+            /**
+             * Allowed
+             * @description False when the person may not create these records
+             */
+            allowed: boolean;
+            /**
+             * Needs
+             * @description Units to switch on first (names)
+             */
+            needs: string[];
+            /** Candidates */
+            candidates: number;
+            /** Create */
+            create: number;
+            /** Exists */
+            exists: number;
+            /** Skipped */
+            skipped: number;
+            /** Reasons */
+            reasons: components["schemas"]["MoveReasonOut"][];
+            /** Sample */
+            sample: {
+                [key: string]: string;
+            }[];
+            /** Warnings */
+            warnings: string[];
+        };
         /** LabelAmountOut */
         LabelAmountOut: {
             /** Label */
@@ -11909,6 +16635,159 @@ export interface components {
             owner_user_id?: string | null;
             /** Customer Kind */
             customer_kind?: ("individual" | "business") | null;
+        };
+        /** LeadIntelCheckOut */
+        LeadIntelCheckOut: {
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+        };
+        /** LeadIntelCodeIn */
+        LeadIntelCodeIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Code */
+            code: string;
+        };
+        /** LeadIntelCompanyIn */
+        LeadIntelCompanyIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+        };
+        /** LeadIntelConnectIn */
+        LeadIntelConnectIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Country Code
+             * @description Calling code digits, for example 44
+             */
+            country_code: string;
+            /**
+             * Phone Number
+             * @description The number without the country code
+             */
+            phone_number: string;
+            /**
+             * Business Name
+             * @description Your business name, shown to Meta
+             */
+            business_name: string;
+            /**
+             * Display Name
+             * @description The name customers see on WhatsApp; Meta reviews it and it cannot be changed here
+             */
+            display_name: string;
+            /** About */
+            about?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Address */
+            address?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Websites */
+            websites?: string[];
+            /** Profile Image Url */
+            profile_image_url?: string | null;
+        };
+        /** LeadIntelExistingOut */
+        LeadIntelExistingOut: {
+            /** Connected */
+            connected: boolean;
+            /** Claimable */
+            claimable: boolean;
+            /** Reason */
+            reason: string | null;
+        };
+        /** LeadIntelInboundOut */
+        LeadIntelInboundOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Created At */
+            created_at: string;
+            /**
+             * Sender
+             * @description Masked
+             */
+            sender: string;
+            /** Kind */
+            kind: string;
+            /** Body */
+            body: string | null;
+            /** Button Id */
+            button_id: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Read */
+            read: boolean;
+        };
+        /** LeadIntelKeyIn */
+        LeadIntelKeyIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Platform Key
+             * @description Stored encrypted; never shown again
+             */
+            platform_key: string;
+        };
+        /** LeadIntelNumberIn */
+        LeadIntelNumberIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * Country Code
+             * @description Calling code digits, for example 44
+             */
+            country_code: string;
+            /**
+             * Phone Number
+             * @description The number without the country code
+             */
+            phone_number: string;
+        };
+        /** LeadIntelStateOut */
+        LeadIntelStateOut: {
+            /** Key Saved */
+            key_saved: boolean;
+            whatsapp: components["schemas"]["LeadIntelWhatsAppState"] | null;
+            /** Warning */
+            warning?: string | null;
+            /** Sent To */
+            sent_to?: string | null;
+            /** Expires At */
+            expires_at?: string | null;
+        };
+        /** LeadIntelWhatsAppState */
+        LeadIntelWhatsAppState: {
+            /** Status */
+            status: string;
+            /** Display Phone */
+            display_phone: string | null;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
         };
         /** LeadOut */
         LeadOut: {
@@ -12119,6 +16998,228 @@ export interface components {
             credit: string;
             /** Balance */
             balance: string;
+        };
+        /** LicenceFileIn */
+        LicenceFileIn: {
+            /**
+             * File
+             * @description The text of the licence file
+             */
+            file: string;
+        };
+        /** LicenceInfo */
+        LicenceInfo: {
+            /** Mode */
+            mode: string;
+            /** Instance Id */
+            instance_id: string;
+            /** Installed */
+            installed: boolean;
+            /** Required */
+            required: boolean;
+            /** Status */
+            status: string;
+            /** Access */
+            access: string;
+            /** Message */
+            message: string;
+            /** Customer */
+            customer?: string | null;
+            /** Licence No */
+            licence_no?: string | null;
+            /** Issued At */
+            issued_at?: string | null;
+            /** Valid Until */
+            valid_until?: string | null;
+            /** Update Until */
+            update_until?: string | null;
+            /** Days Left */
+            days_left?: number | null;
+            /** Grace Ends */
+            grace_ends?: string | null;
+            /**
+             * Renewal Due
+             * @default false
+             */
+            renewal_due: boolean;
+            /**
+             * Updates Ended
+             * @default false
+             */
+            updates_ended: boolean;
+            /** Installed At */
+            installed_at?: string | null;
+            /** Entitlements */
+            entitlements?: {
+                [key: string]: unknown;
+            } | null;
+            /** Usage */
+            usage?: {
+                [key: string]: components["schemas"]["UsageLine"];
+            } | null;
+        };
+        /** LicenceIssueIn */
+        LicenceIssueIn: {
+            /** Customer */
+            customer: string;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Plan Code */
+            plan_code?: string | null;
+            /** Edition */
+            edition?: string | null;
+            /** Units */
+            units?: string[];
+            /** Max Users */
+            max_users?: number | null;
+            /** Max Branches */
+            max_branches?: number | null;
+            /** Max Companies */
+            max_companies?: number | null;
+            /**
+             * Valid Until
+             * @description Empty: perpetual
+             */
+            valid_until?: string | null;
+            /**
+             * Update Until
+             * @description Empty: updates are not limited by the licence
+             */
+            update_until?: string | null;
+            /**
+             * Grace Days
+             * @default 30
+             */
+            grace_days: number;
+            /** Instance Id */
+            instance_id?: string | null;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+        };
+        /** LicenceIssued */
+        LicenceIssued: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Licence No */
+            licence_no: string;
+            /** Customer */
+            customer: string;
+            /** Contact Email */
+            contact_email: string | null;
+            /** Plan Code */
+            plan_code: string | null;
+            /** Entitlements */
+            entitlements: {
+                [key: string]: unknown;
+            };
+            /**
+             * Issued At
+             * Format: date-time
+             */
+            issued_at: string;
+            /** Valid Until */
+            valid_until: string | null;
+            /** Update Until */
+            update_until: string | null;
+            /** Grace Days */
+            grace_days: number;
+            /** Instance Id */
+            instance_id: string | null;
+            /** Status */
+            status: string;
+            /** Revoked At */
+            revoked_at: string | null;
+            /** Revoked Reason */
+            revoked_reason: string | null;
+            /** Notes */
+            notes: string;
+            /** Issued By */
+            issued_by: string | null;
+            /**
+             * Token
+             * @description The licence file: give it to the customer
+             */
+            token: string;
+        };
+        /** LicenceOut */
+        LicenceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Licence No */
+            licence_no: string;
+            /** Customer */
+            customer: string;
+            /** Contact Email */
+            contact_email: string | null;
+            /** Plan Code */
+            plan_code: string | null;
+            /** Entitlements */
+            entitlements: {
+                [key: string]: unknown;
+            };
+            /**
+             * Issued At
+             * Format: date-time
+             */
+            issued_at: string;
+            /** Valid Until */
+            valid_until: string | null;
+            /** Update Until */
+            update_until: string | null;
+            /** Grace Days */
+            grace_days: number;
+            /** Instance Id */
+            instance_id: string | null;
+            /** Status */
+            status: string;
+            /** Revoked At */
+            revoked_at: string | null;
+            /** Revoked Reason */
+            revoked_reason: string | null;
+            /** Notes */
+            notes: string;
+            /** Issued By */
+            issued_by: string | null;
+        };
+        /** LimitsOut */
+        LimitsOut: {
+            /** Users */
+            users: number | null;
+            /** Branches */
+            branches: number | null;
+            /** Companies */
+            companies: number | null;
+        };
+        /** LineIn */
+        LineIn: {
+            /** Description */
+            description: string;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number | string;
+            /**
+             * Unit Amount
+             * @description Negative for a discount
+             */
+            unit_amount: number | string;
+        };
+        /** LocationChoiceOut */
+        LocationChoiceOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
         };
         /** LocationIn */
         LocationIn: {
@@ -12434,6 +17535,147 @@ export interface components {
             /** Code */
             code: string;
         };
+        /** MoveIn */
+        MoveIn: {
+            /**
+             * Kinds
+             * @description What to bring over
+             */
+            kinds: ("products" | "customers" | "suppliers" | "opening_stock" | "customer_balances" | "supplier_balances")[];
+            /**
+             * As Of
+             * Format: date
+             * @description The go-live date: stock and balances are as at this day
+             */
+            as_of: string;
+            /**
+             * Unit
+             * @description Code of the unit of measure new products get
+             */
+            unit?: string | null;
+            /**
+             * Tax Code
+             * @description Code of the tax class new products get
+             */
+            tax_code?: string | null;
+            /**
+             * Locations
+             * @description Ziira branch -> stock location code
+             */
+            locations?: {
+                [key: string]: string;
+            };
+        };
+        /** MoveKindOut */
+        MoveKindOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "products" | "customers" | "suppliers" | "opening_stock" | "customer_balances" | "supplier_balances";
+            /** Title */
+            title: string;
+            /** Available */
+            available: boolean;
+            /** Allowed */
+            allowed: boolean;
+            /** Needs */
+            needs: string[];
+        };
+        /**
+         * MoveOptionsOut
+         * @description What the first step of the wizard needs: which kinds can be brought, what the other system holds, and the
+         *     defaults to choose.
+         */
+        MoveOptionsOut: {
+            /**
+             * Connection Id
+             * Format: uuid
+             */
+            connection_id: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Kinds */
+            kinds: components["schemas"]["MoveKindOut"][];
+            /** Source Counts */
+            source_counts: {
+                [key: string]: number;
+            };
+            /** Mapped Branches */
+            mapped_branches: components["schemas"]["BranchStockOut"][];
+            /** Unmapped Branches */
+            unmapped_branches: number;
+            /** Running Move Id */
+            running_move_id: string | null;
+            /** Last Move Id */
+            last_move_id: string | null;
+        };
+        /** MoveOut */
+        MoveOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Connection Id
+             * Format: uuid
+             */
+            connection_id: string;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "running" | "done";
+            /** Needs Attention */
+            needs_attention: boolean;
+            /** Batches */
+            batches: components["schemas"]["BatchStateOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+        };
+        /** MoveReasonOut */
+        MoveReasonOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "exists" | "skipped";
+            /** Reason */
+            reason: string;
+            /** Count */
+            count: number;
+            /** Examples */
+            examples: string[];
+        };
+        /** MoveSuggestionOut */
+        MoveSuggestionOut: {
+            /**
+             * Suggest
+             * @description True when data was read from a connected system and Core units that can take it are switched on, and nothing has been moved yet
+             */
+            suggest: boolean;
+            /** Connection Id */
+            connection_id: string | null;
+        };
         /** MovementOut */
         MovementOut: {
             /**
@@ -12494,10 +17736,200 @@ export interface components {
              */
             created_at: string;
         };
+        /** MrrRow */
+        MrrRow: {
+            /** Currency */
+            currency: string;
+            /** Mrr */
+            mrr: string;
+            /** Arr */
+            arr: string;
+            /** Subscribers */
+            subscribers: number;
+        };
+        /** MyEditionOut */
+        MyEditionOut: {
+            edition: components["schemas"]["EditionOut"];
+            /**
+             * Done
+             * @description Ids of finished first steps
+             */
+            done: string[];
+            /**
+             * Dismissed
+             * @description The owner hid the checklist
+             */
+            dismissed: boolean;
+        };
+        /** MyInvoice */
+        MyInvoice: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string | null;
+            /** Status */
+            status: string;
+            /** Kind */
+            kind: string;
+            /** Currency */
+            currency: string;
+            /** Total */
+            total: string;
+            /** Amount Paid */
+            amount_paid: string;
+            /** Balance */
+            balance: string;
+            /** Issue Date */
+            issue_date: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Lines */
+            lines: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Lines */
+            tax_lines: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Total */
+            tax_total: string;
+            /** Discount Total */
+            discount_total: string;
+            /** Subtotal */
+            subtotal: string;
+        };
+        /** MyPlan */
+        MyPlan: {
+            /**
+             * Mode
+             * @description saas or selfhosted
+             */
+            mode: string;
+            /**
+             * Managed
+             * @description False: this business has no subscription (no limits, no billing)
+             */
+            managed: boolean;
+            /** Status */
+            status: string;
+            /**
+             * Access
+             * @description full, warning, billing_only or read_only
+             */
+            access: string;
+            /** Message */
+            message: string;
+            /** Plan Code */
+            plan_code: string | null;
+            /** Plan Name */
+            plan_name: string | null;
+            /** Edition */
+            edition: string | null;
+            /** Interval */
+            interval: string | null;
+            /** Currency */
+            currency: string | null;
+            /** Unit Amount */
+            unit_amount: string | null;
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Trial End */
+            trial_end: string | null;
+            /** Cancel At Period End */
+            cancel_at_period_end: boolean;
+            /** Is Comp */
+            is_comp: boolean;
+            /** Coupon Code */
+            coupon_code: string | null;
+            pending_change: components["schemas"]["PendingChange"] | null;
+            /** Usage */
+            usage: {
+                [key: string]: components["schemas"]["UsageLine"];
+            };
+            /**
+             * Units In Plan
+             * @description Null: every unit
+             */
+            units_in_plan: string[] | null;
+            /**
+             * Units Over Plan
+             * @description Switched on but not in the plan (kept; cannot be switched on again)
+             */
+            units_over_plan: string[];
+            /** Payment Instructions */
+            payment_instructions: string;
+            request: components["schemas"]["MyRequest"] | null;
+            /** Owed */
+            owed: {
+                [key: string]: string;
+            };
+            /** Can Manage Billing */
+            can_manage_billing: boolean;
+        };
+        /** MyRequest */
+        MyRequest: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Plan Code */
+            plan_code: string;
+            /** Plan Name */
+            plan_name: string;
+            /** Interval */
+            interval: string;
+            /** Currency */
+            currency: string;
+            /** Status */
+            status: string;
+            /** Invoice Id */
+            invoice_id: string | null;
+            /** Note */
+            note: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** MyStatus */
+        MyStatus: {
+            /** @description Shown to owners only; null when all is well */
+            banner: components["schemas"]["Banner"] | null;
+        };
+        /** NamedOut */
+        NamedOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
         /** NoteIn */
         NoteIn: {
             /** Note */
             note?: string | null;
+        };
+        /** NotesIn */
+        NotesIn: {
+            /** Notes */
+            notes?: string | null;
+            /** Tags */
+            tags?: string[] | null;
         };
         /** NotificationOut */
         NotificationOut: {
@@ -12536,6 +17968,16 @@ export interface components {
             created_at: string;
             /** Sent At */
             sent_at: string | null;
+        };
+        /** NumberIn */
+        NumberIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Phone */
+            phone: string;
         };
         /** OAuthStartIn */
         OAuthStartIn: {
@@ -12679,12 +18121,275 @@ export interface components {
             /** Lines */
             lines: components["schemas"]["OpeningLineIn"][];
         };
+        /** OperatorAttempt */
+        OperatorAttempt: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reference */
+            reference: string;
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /**
+             * Tenant Id
+             * Format: uuid
+             */
+            tenant_id: string;
+            /** Tenant Code */
+            tenant_code: string;
+            /** Tenant Name */
+            tenant_name: string;
+            /** Provider */
+            provider: string;
+            /** Provider Label */
+            provider_label: string;
+            /** Status */
+            status: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Payer Phone Last4 */
+            payer_phone_last4: string | null;
+            /** Provider Transaction Id */
+            provider_transaction_id: string | null;
+            /** Checkout Request Id */
+            checkout_request_id: string | null;
+            /** Payment Reference */
+            payment_reference: string | null;
+            /** Result Code */
+            result_code: string | null;
+            /** Result Desc */
+            result_desc: string | null;
+            /** Created By */
+            created_by: string | null;
+            /** Completed By */
+            completed_by: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Last Checked At */
+            last_checked_at: string | null;
+        };
+        /** OperatorAttemptDetail */
+        OperatorAttemptDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Reference */
+            reference: string;
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /**
+             * Tenant Id
+             * Format: uuid
+             */
+            tenant_id: string;
+            /** Tenant Code */
+            tenant_code: string;
+            /** Tenant Name */
+            tenant_name: string;
+            /** Provider */
+            provider: string;
+            /** Provider Label */
+            provider_label: string;
+            /** Status */
+            status: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Payer Phone Last4 */
+            payer_phone_last4: string | null;
+            /** Provider Transaction Id */
+            provider_transaction_id: string | null;
+            /** Checkout Request Id */
+            checkout_request_id: string | null;
+            /** Payment Reference */
+            payment_reference: string | null;
+            /** Result Code */
+            result_code: string | null;
+            /** Result Desc */
+            result_desc: string | null;
+            /** Created By */
+            created_by: string | null;
+            /** Completed By */
+            completed_by: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Last Checked At */
+            last_checked_at: string | null;
+            /** Timeline */
+            timeline: components["schemas"]["TimelineLine"][];
+        };
+        /** OperatorBrief */
+        OperatorBrief: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Status */
+            status: string;
+            /** Role */
+            role: string;
+        };
+        /** OperatorCreateIn */
+        OperatorCreateIn: {
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /**
+             * Password
+             * @description Leave out to get a random temporary password; either way the person must choose their own at the first sign-in
+             */
+            password?: string | null;
+            /**
+             * Role
+             * @default readonly
+             * @enum {string}
+             */
+            role: "superadmin" | "billing" | "support" | "content" | "readonly";
+        };
+        /** OperatorCreatedOut */
+        OperatorCreatedOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Temporary Password */
+            temporary_password?: string | null;
+            /** Mfa Secret */
+            mfa_secret?: string | null;
+            /** Otpauth Uri */
+            otpauth_uri?: string | null;
+        };
+        /** OperatorMe */
+        OperatorMe: {
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /**
+             * Mfa Verified At
+             * Format: date-time
+             * @description When the operator last confirmed their identity (signing in counts)
+             */
+            mfa_verified_at: string;
+            /**
+             * Step Up Needed
+             * @description True when a change would ask to confirm again now
+             */
+            step_up_needed: boolean;
+            /** Mfa Max Age Minutes */
+            mfa_max_age_minutes: number;
+            /**
+             * Mfa Mode
+             * @description off: password only (a change asks for the password again); totp: a code
+             */
+            mfa_mode: string;
+            /**
+             * Mfa Off In Production
+             * @description True in production with no second factor: show a warning
+             */
+            mfa_off_in_production: boolean;
+            /** Must Change Password */
+            must_change_password: boolean;
+            /** Role */
+            role: string;
+            /** Permissions */
+            permissions: string[];
+        };
         /** OperatorMfaIn */
         OperatorMfaIn: {
             /** Challenge */
             challenge: string;
             /** Code */
             code: string;
+        };
+        /** OperatorPatch */
+        OperatorPatch: {
+            /** Role */
+            role?: ("superadmin" | "billing" | "support" | "content" | "readonly") | null;
+            /** Status */
+            status?: ("active" | "disabled") | null;
+        };
+        /** OperatorRow */
+        OperatorRow: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Email */
+            email: string;
+            /** Status */
+            status: string;
+            /** Role */
+            role: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Last Sign In At */
+            last_sign_in_at: string | null;
+            /** Mfa Enrolled */
+            mfa_enrolled: boolean;
+            /** Must Change Password */
+            must_change_password: boolean;
+            /** Open Sessions */
+            open_sessions: number;
+        };
+        /** OperatorSecretOut */
+        OperatorSecretOut: {
+            /** Id */
+            id?: string | null;
+            /** Mfa Secret */
+            mfa_secret: string;
+            /** Otpauth Uri */
+            otpauth_uri: string;
         };
         /** OperatorSessionOut */
         OperatorSessionOut: {
@@ -12733,7 +18438,7 @@ export interface components {
             /** Recipient */
             recipient: string;
             /** Channel */
-            channel?: ("email" | "sms") | null;
+            channel?: string | null;
             /** Reason */
             reason?: string | null;
         };
@@ -12755,6 +18460,11 @@ export interface components {
             channel: string | null;
             /** Reason */
             reason: string | null;
+        };
+        /** OptionalReasonIn */
+        OptionalReasonIn: {
+            /** Reason */
+            reason?: string | null;
         };
         /** OptionsOut */
         OptionsOut: {
@@ -12905,6 +18615,42 @@ export interface components {
             /** Deliver To Location Id */
             deliver_to_location_id?: string | null;
         };
+        /** OverlapChoiceIn */
+        OverlapChoiceIn: {
+            /**
+             * Choice
+             * @description keep_both, or null to ask again
+             */
+            choice: "keep_both" | null;
+        };
+        /** OverlapConnectionOut */
+        OverlapConnectionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /** Kept Both */
+            kept_both: boolean;
+        };
+        /** OverlapOut */
+        OverlapOut: {
+            /**
+             * Overlapping
+             * @description True when something is covered twice and the business has not chosen yet
+             */
+            overlapping: boolean;
+            /** Days */
+            days: number;
+            /** Areas */
+            areas: components["schemas"]["AreaOverlapOut"][];
+            /** Connections */
+            connections: components["schemas"]["OverlapConnectionOut"][];
+        };
         /** OverviewOut */
         OverviewOut: {
             /**
@@ -12933,6 +18679,31 @@ export interface components {
             };
             /** Top Findings */
             top_findings: components["schemas"]["TopFindingOut"][];
+        };
+        /** OwedRow */
+        OwedRow: {
+            /** Currency */
+            currency: string;
+            /** Invoices */
+            invoices: number;
+            /** Owed */
+            owed: string;
+        };
+        /** OwnerOut */
+        OwnerOut: {
+            /** Name */
+            name: string;
+            /** Email */
+            email: string | null;
+            /** Phone */
+            phone: string | null;
+        };
+        /** PasswordChangeIn */
+        PasswordChangeIn: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
         };
         /** PasswordCheckIn */
         PasswordCheckIn: {
@@ -13046,6 +18817,46 @@ export interface components {
             /** Description */
             description: string | null;
         };
+        /** PayOption */
+        PayOption: {
+            /** Provider */
+            provider: string;
+            /** Label */
+            label: string;
+            /**
+             * Flow
+             * @description prompt (a prompt on the payer's phone) or redirect (the provider's page)
+             */
+            flow: string;
+            /** Methods */
+            methods: string[];
+            /** Payer Fields */
+            payer_fields: components["schemas"]["PayerFieldOut"][];
+            /** Preferred */
+            preferred: boolean;
+        };
+        /** PayOptions */
+        PayOptions: {
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Currency */
+            currency: string;
+            /** Options */
+            options: components["schemas"]["PayOption"][];
+            /**
+             * Hints
+             * @description Plain reasons a payment method was left out (for example the currency)
+             */
+            hints: string[];
+            /**
+             * Payment Instructions
+             * @description How to pay by hand when no option fits
+             */
+            payment_instructions: string;
+        };
         /** PayablesOut */
         PayablesOut: {
             /**
@@ -13063,6 +18874,65 @@ export interface components {
             suppliers: {
                 [key: string]: unknown;
             }[];
+        };
+        /** PayerFieldOut */
+        PayerFieldOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Kind */
+            kind: string;
+            /** Help */
+            help: string;
+            /** Required */
+            required: boolean;
+        };
+        /** PaymentAttemptOut */
+        PaymentAttemptOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Provider */
+            provider: string;
+            /** Provider Label */
+            provider_label: string;
+            /** Flow */
+            flow: string;
+            /** Status */
+            status: string;
+            /** Open */
+            open: boolean;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Redirect Url */
+            redirect_url: string | null;
+            /** Payment Reference */
+            payment_reference: string | null;
+            /** Result Desc */
+            result_desc: string | null;
+            /** Payer Phone Last4 */
+            payer_phone_last4: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Completed At */
+            completed_at: string | null;
+            /** Seconds Open */
+            seconds_open: number;
         };
         /** PaymentIn */
         PaymentIn: {
@@ -13092,7 +18962,7 @@ export interface components {
             business_date?: string | null;
             /**
              * External Ref
-             * @description M-Pesa code, card or bank reference
+             * @description Mobile-money code, card or bank reference
              */
             external_ref?: string | null;
             /** Phone */
@@ -13291,6 +19161,17 @@ export interface components {
             /** Pay Method */
             pay_method: string | null;
         };
+        /** PendingChange */
+        PendingChange: {
+            /** Plan Code */
+            plan_code: string;
+            /** Plan Name */
+            plan_name: string;
+            /** Interval */
+            interval: string | null;
+            /** Currency */
+            currency: string | null;
+        };
         /** PeriodOpenIn */
         PeriodOpenIn: {
             /**
@@ -13350,6 +19231,691 @@ export interface components {
             unit_name: string;
             /** Description */
             description: string;
+        };
+        /** PhoneCodeIn */
+        PhoneCodeIn: {
+            /** Code */
+            code: string;
+        };
+        /** PlainCheckOut */
+        PlainCheckOut: {
+            /**
+             * Title
+             * @description What was noticed, as a short headline
+             */
+            title: string;
+            /**
+             * Why
+             * @description Why it matters, one sentence
+             */
+            why: string;
+            /**
+             * Todo
+             * @description The first practical step
+             */
+            todo: string;
+            /** Topic */
+            topic: string;
+            /**
+             * Sentence
+             * @description The check's limits as a sentence with {limit_name} placeholders
+             */
+            sentence?: string | null;
+            /**
+             * Units
+             * @description Placeholder name -> money, days, hours, percent, count, number, text
+             */
+            units?: {
+                [key: string]: string;
+            };
+            /**
+             * Fallback
+             * @description True when no plain text was written for this check (its own title is used)
+             * @default false
+             */
+            fallback: boolean;
+        };
+        /** PlainOut */
+        PlainOut: {
+            /** Topics */
+            topics: components["schemas"]["TopicTextOut"][];
+            /** Checks */
+            checks: {
+                [key: string]: components["schemas"]["PlainCheckOut"];
+            };
+            /** Figures */
+            figures: {
+                [key: string]: components["schemas"]["FigureMetaOut"];
+            };
+            /** Params */
+            params: {
+                [key: string]: string;
+            };
+        };
+        /** PlanDetail */
+        PlanDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Edition */
+            edition: string | null;
+            /** Units */
+            units: string[];
+            /** Addon Units */
+            addon_units: string[];
+            /** Max Users */
+            max_users: number | null;
+            /** Max Branches */
+            max_branches: number | null;
+            /** Max Companies */
+            max_companies: number | null;
+            /** Limits */
+            limits: {
+                [key: string]: unknown;
+            };
+            /** Highlights */
+            highlights: string[];
+            /** Trial Days */
+            trial_days: number;
+            /** Intervals */
+            intervals: string[];
+            /** Sort Order */
+            sort_order: number;
+            /** Is Public */
+            is_public: boolean;
+            /** Status */
+            status: string;
+            /**
+             * Subscribers
+             * @default 0
+             */
+            subscribers: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Units Included */
+            units_included: string[];
+            /** Prices */
+            prices: components["schemas"]["PlatformPriceOut"][];
+            /** Current Prices */
+            current_prices: components["schemas"]["PlatformPriceOut"][];
+        };
+        /** PlanIn */
+        PlanIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Edition */
+            edition?: string | null;
+            /** Units */
+            units?: string[];
+            /** Addon Units */
+            addon_units?: string[];
+            /** Max Users */
+            max_users?: number | null;
+            /** Max Branches */
+            max_branches?: number | null;
+            /** Max Companies */
+            max_companies?: number | null;
+            /** Limits */
+            limits?: {
+                [key: string]: number | null;
+            };
+            /** Highlights */
+            highlights?: string[];
+            /**
+             * Trial Days
+             * @default 0
+             */
+            trial_days: number;
+            /**
+             * Intervals
+             * @default [
+             *       "month",
+             *       "year"
+             *     ]
+             */
+            intervals: ("month" | "year" | "one_time")[];
+            /**
+             * Sort Order
+             * @default 100
+             */
+            sort_order: number;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+        };
+        /** PlanOut */
+        PlanOut: {
+            /**
+             * Connection Id
+             * Format: uuid
+             */
+            connection_id: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /** Kinds */
+            kinds: components["schemas"]["KindPlanOut"][];
+            /** Branches */
+            branches: components["schemas"]["BranchLineOut"][];
+            /**
+             * Users
+             * @description Users of the other system: they are not brought over; invite them under Users
+             */
+            users: number;
+        };
+        /** PlanPatch */
+        PlanPatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Edition */
+            edition?: string | null;
+            /** Units */
+            units?: string[] | null;
+            /** Addon Units */
+            addon_units?: string[] | null;
+            /** Max Users */
+            max_users?: number | null;
+            /** Max Branches */
+            max_branches?: number | null;
+            /** Max Companies */
+            max_companies?: number | null;
+            /** Limits */
+            limits?: {
+                [key: string]: number | null;
+            } | null;
+            /** Highlights */
+            highlights?: string[] | null;
+            /** Trial Days */
+            trial_days?: number | null;
+            /** Intervals */
+            intervals?: ("month" | "year" | "one_time")[] | null;
+            /** Sort Order */
+            sort_order?: number | null;
+            /** Is Public */
+            is_public?: boolean | null;
+            /** Status */
+            status?: ("active" | "retired") | null;
+        };
+        /** PlatformCancelIn */
+        PlatformCancelIn: {
+            /**
+             * At Period End
+             * @default true
+             */
+            at_period_end: boolean;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** PlatformHealth */
+        PlatformHealth: {
+            /** Ready */
+            ready: boolean;
+            /** Problems */
+            problems: string[];
+            /** Master Migrations Pending */
+            master_migrations_pending: string[];
+            /** Businesses Total */
+            businesses_total: number;
+            /** Businesses Behind */
+            businesses_behind: components["schemas"]["BehindBusiness"][];
+            /** Businesses Unreadable */
+            businesses_unreadable: components["schemas"]["UnreadableBusiness"][];
+            backups: components["schemas"]["BackupStatus"];
+            /** @description Null when the platform figures could not be collected */
+            queues: components["schemas"]["QueueStatus"] | null;
+            registrations: components["schemas"]["RegistrationStatus"];
+            plugins: components["schemas"]["PluginStatus"];
+        };
+        /** PlatformInvoiceIn */
+        PlatformInvoiceIn: {
+            /** Tenant Code */
+            tenant_code?: string | null;
+            /** Licence Id */
+            licence_id?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Lines */
+            lines: components["schemas"]["LineIn"][];
+            /**
+             * Tax Inclusive
+             * @default false
+             */
+            tax_inclusive: boolean;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Due Date */
+            due_date?: string | null;
+            /**
+             * Issue
+             * @default false
+             */
+            issue: boolean;
+        };
+        /** PlatformInvoiceOut */
+        PlatformInvoiceOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string | null;
+            /** Tenant Id */
+            tenant_id: string | null;
+            /** Licence Id */
+            licence_id: string | null;
+            /** Tenant Code */
+            tenant_code?: string | null;
+            /** Tenant Name */
+            tenant_name?: string | null;
+            /** Bill To */
+            bill_to: {
+                [key: string]: unknown;
+            };
+            /** Kind */
+            kind: string;
+            /** Status */
+            status: string;
+            /** Currency */
+            currency: string;
+            /** Lines */
+            lines: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Lines */
+            tax_lines: {
+                [key: string]: unknown;
+            }[];
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+            /** Subtotal */
+            subtotal: string;
+            /** Discount Total */
+            discount_total: string;
+            /** Tax Total */
+            tax_total: string;
+            /** Total */
+            total: string;
+            /** Amount Paid */
+            amount_paid: string;
+            /** Balance */
+            balance: string;
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Issue Date */
+            issue_date: string | null;
+            /** Due Date */
+            due_date: string | null;
+            /** Notes */
+            notes: string;
+            /** Vendor */
+            vendor: {
+                [key: string]: unknown;
+            };
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Issued At */
+            issued_at: string | null;
+            /** Paid At */
+            paid_at: string | null;
+            /** Voided At */
+            voided_at: string | null;
+            /** Void Reason */
+            void_reason: string | null;
+        };
+        /** PlatformPaymentIn */
+        PlatformPaymentIn: {
+            /** Method */
+            method: string;
+            /** Amount */
+            amount: number | string;
+            /**
+             * Reference
+             * @default
+             */
+            reference: string;
+            /** Paid On */
+            paid_on?: string | null;
+        };
+        /** PlatformPaymentOut */
+        PlatformPaymentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Invoice Id */
+            invoice_id?: string | null;
+            /** Invoice Number */
+            invoice_number?: string | null;
+            /** Method */
+            method: string;
+            /** Reference */
+            reference: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /** Recorded By */
+            recorded_by: string | null;
+            /** Reversed At */
+            reversed_at: string | null;
+        };
+        /** PlatformPlanOut */
+        PlatformPlanOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Edition */
+            edition: string | null;
+            /** Units */
+            units: string[];
+            /** Addon Units */
+            addon_units: string[];
+            /** Max Users */
+            max_users: number | null;
+            /** Max Branches */
+            max_branches: number | null;
+            /** Max Companies */
+            max_companies: number | null;
+            /** Limits */
+            limits: {
+                [key: string]: unknown;
+            };
+            /** Highlights */
+            highlights: string[];
+            /** Trial Days */
+            trial_days: number;
+            /** Intervals */
+            intervals: string[];
+            /** Sort Order */
+            sort_order: number;
+            /** Is Public */
+            is_public: boolean;
+            /** Status */
+            status: string;
+            /**
+             * Subscribers
+             * @default 0
+             */
+            subscribers: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** PlatformPriceIn */
+        PlatformPriceIn: {
+            /** Currency */
+            currency: string;
+            /**
+             * Interval
+             * @enum {string}
+             */
+            interval: "month" | "year" | "one_time";
+            /** Amount */
+            amount: number | string;
+            /**
+             * Tax Inclusive
+             * @default false
+             */
+            tax_inclusive: boolean;
+            /**
+             * Effective From
+             * @description Default: now. A future date schedules the change.
+             */
+            effective_from?: string | null;
+            /**
+             * Withdrawn
+             * @description Stop offering this currency and interval from the date
+             * @default false
+             */
+            withdrawn: boolean;
+        };
+        /** PlatformPriceOut */
+        PlatformPriceOut: {
+            /** Id */
+            id?: string | null;
+            /** Currency */
+            currency: string;
+            /** Interval */
+            interval: string;
+            /** Amount */
+            amount: string;
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+            /**
+             * Withdrawn
+             * @default false
+             */
+            withdrawn: boolean;
+            /**
+             * Effective From
+             * Format: date-time
+             */
+            effective_from: string;
+            /** Created By */
+            created_by?: string | null;
+        };
+        /** PlatformReasonIn */
+        PlatformReasonIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** PlatformRequestOut */
+        PlatformRequestOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Tenant Id
+             * Format: uuid
+             */
+            tenant_id: string;
+            /** Tenant Code */
+            tenant_code?: string | null;
+            /** Tenant Name */
+            tenant_name?: string | null;
+            /** Plan Code */
+            plan_code: string;
+            /** Plan Name */
+            plan_name: string;
+            /** Interval */
+            interval: string;
+            /** Currency */
+            currency: string;
+            /** Coupon Code */
+            coupon_code: string | null;
+            /** Note */
+            note: string;
+            /** Status */
+            status: string;
+            /** Invoice Id */
+            invoice_id: string | null;
+            /** Requested By */
+            requested_by: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decided At */
+            decided_at: string | null;
+            /** Decided By */
+            decided_by: string | null;
+        };
+        /** PlatformRoleOut */
+        PlatformRoleOut: {
+            /** Role */
+            role: string;
+            /** Permissions */
+            permissions: string[];
+        };
+        /** PlatformUnit */
+        PlatformUnit: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /**
+             * Kind
+             * @description kernel, module or plugin
+             */
+            kind: string;
+            /** Category */
+            category: string;
+            /**
+             * Source
+             * @description built in, or extra folder (a plugin loaded from ZIIRA_EXTRA_UNIT_PATHS)
+             */
+            source: string;
+            /** Description */
+            description: string;
+            /** Version On Disk */
+            version_on_disk: string;
+            /** Version Installed */
+            version_installed: string | null;
+            /** Installed At */
+            installed_at: string | null;
+            /**
+             * Status
+             * @description available | installed | needs_upgrade
+             */
+            status: string;
+            /** Requires */
+            requires: string[];
+            /**
+             * Required By
+             * @description Installed units that need this one
+             */
+            required_by: string[];
+            /** Businesses Enabled */
+            businesses_enabled: number;
+            /**
+             * Businesses Holding
+             * @description Businesses whose database has the unit's tables (enabled or not)
+             */
+            businesses_holding: number;
+            /**
+             * Businesses Behind
+             * @description Businesses missing some of the unit's migrations
+             */
+            businesses_behind: number;
+        };
+        /** PluginStatus */
+        PluginStatus: {
+            /** Folders */
+            folders: string[];
+            /** Production Allow List */
+            production_allow_list: boolean;
+            /** Loaded */
+            loaded: components["schemas"]["ExtraPlugin"][];
+            /** Refused */
+            refused: components["schemas"]["RefusedPlugin"][];
+        };
+        /** PreferencesIn */
+        PreferencesIn: {
+            /** Channels */
+            channels?: {
+                [key: string]: string;
+            } | null;
+            /** Quiet Enabled */
+            quiet_enabled?: boolean | null;
+            /** Quiet Start */
+            quiet_start?: string | null;
+            /** Quiet End */
+            quiet_end?: string | null;
+            /** Quiet Critical Ok */
+            quiet_critical_ok?: boolean | null;
+            /** Language */
+            language?: string | null;
+        };
+        /** PreferencesOut */
+        PreferencesOut: {
+            /**
+             * Channels
+             * @description Kind of message -> channel, 'app' or 'default'
+             */
+            channels: {
+                [key: string]: string;
+            };
+            /**
+             * Unavailable
+             * @description Kinds whose chosen channel the business does not have now (its plugin is off): messages for them go by the next channel until it is back
+             */
+            unavailable: string[];
+            /** Quiet Enabled */
+            quiet_enabled: boolean;
+            /** Quiet Start */
+            quiet_start: string;
+            /** Quiet End */
+            quiet_end: string;
+            /** Quiet Critical Ok */
+            quiet_critical_ok: boolean;
+            /** Language */
+            language: string;
+            /**
+             * Can Verify
+             * @description A channel that receives replies is available, so a number can be verified
+             */
+            can_verify: boolean;
+            /**
+             * Verified Number
+             * @description Masked
+             */
+            verified_number: string | null;
+            /** Number Verified */
+            number_verified: boolean;
+            /** Number Pending */
+            number_pending: boolean;
         };
         /** PreviewOut */
         PreviewOut: {
@@ -13743,6 +20309,126 @@ export interface components {
              */
             can_decide: boolean;
         };
+        /** ProviderOut */
+        ProviderOut: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Development Only */
+            development_only: boolean;
+            /** Supports Prompts */
+            supports_prompts: boolean;
+            /** Credential Fields */
+            credential_fields: components["schemas"]["FormFieldOut"][];
+            /** Config Fields */
+            config_fields: components["schemas"]["FormFieldOut"][];
+        };
+        /** ProvidersOut */
+        ProvidersOut: {
+            /** Providers */
+            providers: components["schemas"]["ProviderOut"][];
+            /** Statement Formats */
+            statement_formats: components["schemas"]["StatementFormatOut"][];
+        };
+        /** PublicAddon */
+        PublicAddon: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Kind */
+            kind: string;
+            /** Unit */
+            unit: string | null;
+            /** Quantity */
+            quantity: number;
+            /** Prices */
+            prices: components["schemas"]["PublicPrice"][];
+        };
+        /** PublicPlan */
+        PublicPlan: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Edition */
+            edition: string | null;
+            /** Highlights */
+            highlights: string[];
+            /** Limits */
+            limits: {
+                [key: string]: number | null;
+            };
+            /** Trial Days */
+            trial_days: number;
+            /** Prices */
+            prices: components["schemas"]["PublicPrice"][];
+        };
+        /** PublicPlans */
+        PublicPlans: {
+            /** Plans */
+            plans: components["schemas"]["PublicPlan"][];
+            /** Addons */
+            addons: components["schemas"]["PublicAddon"][];
+            /** Updated At */
+            updated_at: string;
+        };
+        /** PublicPrice */
+        PublicPrice: {
+            /** Currency */
+            currency: string;
+            /** Interval */
+            interval: string;
+            /** Amount */
+            amount: string;
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+        };
+        /** QueueStatus */
+        QueueStatus: {
+            /** Jobs Queued */
+            jobs_queued: number;
+            /** Jobs Due */
+            jobs_due: number;
+            /** Jobs Failed */
+            jobs_failed: number;
+            /** Outbox Pending */
+            outbox_pending: number;
+            /** Outbox Stuck */
+            outbox_stuck: number;
+            /** Notifications Queued */
+            notifications_queued: number;
+            /** Notifications Failed */
+            notifications_failed: number;
+            /** Intel Check Failures */
+            intel_check_failures: number;
+            /** Jobs Oldest Due Seconds */
+            jobs_oldest_due_seconds: number;
+            /** Outbox Lag Seconds */
+            outbox_lag_seconds: number;
+            /** Tenant Errors */
+            tenant_errors: number;
+            /**
+             * Collected At
+             * Format: date-time
+             */
+            collected_at: string;
+            /** Recurring */
+            recurring: components["schemas"]["RecurringTask"][];
+        };
+        /** QueuedOut */
+        QueuedOut: {
+            /**
+             * Delivery Id
+             * Format: uuid
+             */
+            delivery_id: string;
+        };
         /** QuotationIn */
         QuotationIn: {
             /**
@@ -13861,6 +20547,11 @@ export interface components {
              */
             reason_code_id?: string | null;
         };
+        /** ReceivedOut */
+        ReceivedOut: {
+            /** Handled */
+            handled: number;
+        };
         /** ReconLineOut */
         ReconLineOut: {
             /**
@@ -13899,7 +20590,7 @@ export interface components {
             /**
              * Account Id
              * Format: uuid
-             * @description A bank, M-Pesa or card account of the chart
+             * @description A bank, mobile money or card account of the chart
              */
             account_id: string;
             /**
@@ -14010,6 +20701,15 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** RecurringTask */
+        RecurringTask: {
+            /** Name */
+            name: string;
+            /** Oldest Run Age Seconds */
+            oldest_run_age_seconds: number;
+            /** Failing Businesses */
+            failing_businesses: number;
+        };
         /** RefreshIn */
         RefreshIn: {
             /** Refresh Token */
@@ -14043,6 +20743,13 @@ export interface components {
             refunded: string;
             /** Owed Back */
             owed_back: string;
+        };
+        /** RefusedPlugin */
+        RefusedPlugin: {
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
         };
         /** RegisterIn */
         RegisterIn: {
@@ -14086,12 +20793,45 @@ export interface components {
              */
             invite_code?: string | null;
             /**
-             * Mode
-             * @description core: run the business on Ziira; standalone: only watch the system it already has
-             * @default core
-             * @enum {string}
+             * Edition
+             * @description What the business needs (GET /api/v1/editions): retail, distribution, books, intelligence or full (the default)
              */
-            mode: "core" | "standalone";
+            edition?: string | null;
+            /**
+             * Mode
+             * @description Older spelling of edition: core is full, standalone is intelligence
+             */
+            mode?: ("core" | "standalone") | null;
+            /**
+             * Phone
+             * @description The owner's phone (optional)
+             */
+            phone?: string | null;
+            /**
+             * Owner Role
+             * @description owner, manager, accountant or other: onboarding hints only
+             */
+            owner_role?: string | null;
+            /**
+             * Business Size
+             * @description Branches: 1, 2-5, 6-20 or more (onboarding hints only)
+             */
+            business_size?: string | null;
+            /**
+             * Staff Size
+             * @description Staff: 1-5, 6-20, 21-50 or more (onboarding hints only)
+             */
+            staff_size?: string | null;
+            /**
+             * Business Type
+             * @description retail, wholesale, services or other (onboarding hints only)
+             */
+            business_type?: string | null;
+            /**
+             * Plan
+             * @description A public plan code from a website link; ignored when unknown
+             */
+            plan?: string | null;
         };
         /** RegisterOut */
         RegisterOut: {
@@ -14144,6 +20884,13 @@ export interface components {
             workspace: string;
             /** Business Name */
             business_name: string;
+        };
+        /** RegistrationStatus */
+        RegistrationStatus: {
+            /** Pending */
+            pending: number;
+            /** Expired */
+            expired: number;
         };
         /** RejectionOut */
         RejectionOut: {
@@ -14278,6 +21025,24 @@ export interface components {
              */
             confirm: string;
         };
+        /** RenewalRow */
+        RenewalRow: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Plan */
+            plan: string;
+            /**
+             * Period End
+             * Format: date-time
+             */
+            period_end: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+        };
         /** ReportOut */
         ReportOut: {
             batch: components["schemas"]["BatchOut"];
@@ -14408,6 +21173,15 @@ export interface components {
         RolePermissionsIn: {
             /** Permissions */
             permissions: string[];
+        };
+        /** RolesOut */
+        RolesOut: {
+            /** Roles */
+            roles: components["schemas"]["PlatformRoleOut"][];
+            /** Permissions */
+            permissions: {
+                [key: string]: string;
+            };
         };
         /** RowIssueOut */
         RowIssueOut: {
@@ -14638,7 +21412,7 @@ export interface components {
             amount: number | string;
             /**
              * External Ref
-             * @description M-Pesa code or card slip number
+             * @description Mobile-money code or card slip number
              */
             external_ref?: string | null;
             /** Payment Account Id */
@@ -14735,10 +21509,10 @@ export interface components {
         ScheduleIn: {
             /**
              * Channel
+             * @description in_app, or a channel the business has
              * @default in_app
-             * @enum {string}
              */
-            channel: "sms" | "email" | "in_app";
+            channel: string;
             /**
              * Send Time
              * Format: time
@@ -14777,9 +21551,9 @@ export interface components {
             kind: "daily" | "weekly";
             /**
              * Channel
-             * @enum {string}
+             * @description in_app, or a channel the business has
              */
-            channel: "sms" | "email" | "in_app";
+            channel: string;
             /**
              * Send Time
              * Format: time
@@ -14832,14 +21606,14 @@ export interface components {
         SendReminderIn: {
             /**
              * Channel
-             * @description Default: the company's
+             * @description A channel the business has. Default: the company's
              */
-            channel?: ("sms" | "email") | null;
+            channel?: string | null;
         };
         /** SendRemindersIn */
         SendRemindersIn: {
             /** Channel */
-            channel?: ("sms" | "email") | null;
+            channel?: string | null;
             /**
              * Min Days Overdue
              * @default 1
@@ -14916,6 +21690,22 @@ export interface components {
              * @default false
              */
             current: boolean;
+        };
+        /** SettingIn */
+        SettingIn: {
+            /** Value */
+            value: unknown;
+        };
+        /** SettingsOut */
+        SettingsOut: {
+            /** Values */
+            values: {
+                [key: string]: unknown;
+            };
+            /** Providers */
+            providers: string[];
+            /** Mode */
+            mode: string;
         };
         /** SettlementIn */
         SettlementIn: {
@@ -15018,6 +21808,489 @@ export interface components {
              */
             channel: "web" | "pos" | "api";
         };
+        /**
+         * SignInOut
+         * @description Either `challenge` (send it back with the code from the authenticator app) or, when the platform signs staff in
+         *     with a password alone, the finished session.
+         */
+        SignInOut: {
+            /**
+             * Challenge
+             * @description Send this back with the code from the authenticator app
+             */
+            challenge?: string | null;
+            /** Access Token */
+            access_token?: string | null;
+            /** Expires In */
+            expires_in?: number | null;
+            /**
+             * Must Change Password
+             * @description A temporary password: change it first
+             * @default false
+             */
+            must_change_password: boolean;
+        };
+        /** SiteAltIn */
+        SiteAltIn: {
+            /** Alt */
+            alt: string;
+        };
+        /** SiteAssetOut */
+        SiteAssetOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Asset Id
+             * @description The short name used in Markdown as asset:<id>
+             */
+            asset_id: string;
+            /** Name */
+            name: string;
+            /** Alt */
+            alt: string;
+            /** Content Type */
+            content_type: string;
+            /** Width */
+            width: number;
+            /** Height */
+            height: number;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Hash */
+            hash: string;
+            /** File */
+            file: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** SiteAvailability */
+        SiteAvailability: {
+            /**
+             * Available
+             * @description False in a self-hosted deployment: there is no marketing site to manage
+             */
+            available: boolean;
+            /**
+             * Can Edit
+             * @description The signed-in operator holds platform.content
+             */
+            can_edit: boolean;
+            /** Hook Configured */
+            hook_configured: boolean;
+        };
+        /** SiteDiffOut */
+        SiteDiffOut: {
+            /** Older */
+            older: number;
+            /** Newer */
+            newer: number;
+            /** Diff */
+            diff: string;
+            /** Added */
+            added: number;
+            /** Removed */
+            removed: number;
+        };
+        /** SiteHookState */
+        SiteHookState: {
+            /** Id */
+            id: number;
+            /** Hook Status */
+            hook_status: string;
+            /** Hook Attempts */
+            hook_attempts: number;
+            /** Hook Next At */
+            hook_next_at: string | null;
+            /** Hook Result */
+            hook_result: string | null;
+        };
+        /** SiteIssue */
+        SiteIssue: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Where */
+            where: string;
+        };
+        /** SitePageIn */
+        SitePageIn: {
+            /** Slug */
+            slug: string;
+            /** Locale */
+            locale: string;
+            /**
+             * Kind
+             * @description legal | content
+             */
+            kind: string;
+            /** Title */
+            title: string;
+            /**
+             * Body Md
+             * @default
+             */
+            body_md: string;
+            /** Seo Title */
+            seo_title?: string | null;
+            /** Seo Description */
+            seo_description?: string | null;
+        };
+        /** SitePageOut */
+        SitePageOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Locale */
+            locale: string;
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Seo Title */
+            seo_title: string | null;
+            /** Seo Description */
+            seo_description: string | null;
+            /**
+             * Status
+             * @description draft | published (goes live with the next site publish)
+             */
+            status: string;
+            /**
+             * State
+             * @description draft | new | live | changed | unpublish_pending
+             * @default draft
+             */
+            state: string;
+            /** Version */
+            version: number;
+            /**
+             * Body Length
+             * @default 0
+             */
+            body_length: number;
+            /** Updated By */
+            updated_by: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Body Md
+             * @default
+             */
+            body_md: string;
+        };
+        /** SitePageSummary */
+        SitePageSummary: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Locale */
+            locale: string;
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+            /** Seo Title */
+            seo_title: string | null;
+            /** Seo Description */
+            seo_description: string | null;
+            /**
+             * Status
+             * @description draft | published (goes live with the next site publish)
+             */
+            status: string;
+            /**
+             * State
+             * @description draft | new | live | changed | unpublish_pending
+             * @default draft
+             */
+            state: string;
+            /** Version */
+            version: number;
+            /**
+             * Body Length
+             * @default 0
+             */
+            body_length: number;
+            /** Updated By */
+            updated_by: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** SitePageUpdate */
+        SitePageUpdate: {
+            /**
+             * Expected Version
+             * @description The version the editor loaded; a newer one is not overwritten
+             */
+            expected_version: number;
+            /** Title */
+            title: string;
+            /**
+             * Body Md
+             * @default
+             */
+            body_md: string;
+            /** Seo Title */
+            seo_title?: string | null;
+            /** Seo Description */
+            seo_description?: string | null;
+            /** Note */
+            note?: string | null;
+        };
+        /** SitePendingChange */
+        SitePendingChange: {
+            /** Area */
+            area: string;
+            /** Ref */
+            ref: string;
+            /** Change */
+            change: string;
+        };
+        /** SitePlansPreview */
+        SitePlansPreview: {
+            /** Plans */
+            plans: {
+                [key: string]: unknown;
+            }[];
+            /** Addons */
+            addons: {
+                [key: string]: unknown;
+            }[];
+            /** Updated At */
+            updated_at: string | null;
+        };
+        /** SitePreviewIn */
+        SitePreviewIn: {
+            /** Markdown */
+            markdown: string;
+        };
+        /** SitePreviewOut */
+        SitePreviewOut: {
+            /** Html */
+            html: string;
+        };
+        /** SitePublicationInfo */
+        SitePublicationInfo: {
+            /** Id */
+            id: number;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Published By */
+            published_by: string;
+            /** Note */
+            note: string | null;
+            /** Version Hash */
+            version_hash: string;
+        };
+        /** SitePublishIn */
+        SitePublishIn: {
+            /** Note */
+            note?: string | null;
+        };
+        /** SitePublishLine */
+        SitePublishLine: {
+            /** Id */
+            id: number;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Published By */
+            published_by: string;
+            /** Note */
+            note: string | null;
+            /** Version Hash */
+            version_hash: string;
+            /** Pages */
+            pages: number;
+            /**
+             * Hook Status
+             * @description skipped | pending | ok | failed
+             */
+            hook_status: string;
+            /** Hook Attempts */
+            hook_attempts: number;
+            /** Hook Next At */
+            hook_next_at: string | null;
+            /** Hook Result */
+            hook_result: string | null;
+        };
+        /** SitePublishOut */
+        SitePublishOut: {
+            /** Id */
+            id: number;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Published By */
+            published_by: string;
+            /** Note */
+            note: string | null;
+            /** Version Hash */
+            version_hash: string;
+            /** Hook Status */
+            hook_status: string;
+            /** Pages */
+            pages: number;
+            /** Warnings */
+            warnings: components["schemas"]["SiteIssue"][];
+        };
+        /** SitePublishStatus */
+        SitePublishStatus: {
+            live: components["schemas"]["SitePublicationInfo"] | null;
+            /** Pending */
+            pending: components["schemas"]["SitePendingChange"][];
+            /** Hook Configured */
+            hook_configured: boolean;
+        };
+        /** SiteReport */
+        SiteReport: {
+            /** Ok */
+            ok: boolean;
+            /** Errors */
+            errors: components["schemas"]["SiteIssue"][];
+            /** Warnings */
+            warnings: components["schemas"]["SiteIssue"][];
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+        };
+        /** SiteSettingField */
+        SiteSettingField: {
+            /** Key */
+            key: string;
+            /** Group */
+            group: string;
+            /** Kind */
+            kind: string;
+            /** Required */
+            required: boolean;
+            /** Max Len */
+            max_len: number;
+            /** Localised */
+            localised: boolean;
+        };
+        /** SiteSettingsIn */
+        SiteSettingsIn: {
+            /**
+             * Values
+             * @description Key to new value; null or empty clears a setting
+             */
+            values: {
+                [key: string]: unknown;
+            };
+        };
+        /** SiteSettingsOut */
+        SiteSettingsOut: {
+            /** Fields */
+            fields: components["schemas"]["SiteSettingField"][];
+            /**
+             * Values
+             * @description The working values; a localised one is {language: text}
+             */
+            values: {
+                [key: string]: unknown;
+            };
+            /**
+             * Changed
+             * @description Keys changed by this call
+             * @default []
+             */
+            changed: string[];
+        };
+        /** SiteStarter */
+        SiteStarter: {
+            /** Slug */
+            slug: string;
+            /** Locale */
+            locale: string;
+            /** Title */
+            title: string;
+            /** Body Md */
+            body_md: string;
+        };
+        /** SiteVersionOut */
+        SiteVersionOut: {
+            /** Version */
+            version: number;
+            /** Title */
+            title: string;
+            /** Body Md */
+            body_md: string;
+            /** Seo Title */
+            seo_title: string | null;
+            /** Seo Description */
+            seo_description: string | null;
+            /** Status */
+            status: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string | null;
+        };
+        /** SiteVersionSummary */
+        SiteVersionSummary: {
+            /** Version */
+            version: number;
+            /** Title */
+            title: string;
+            /** Status */
+            status: string;
+            /** Note */
+            note: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string | null;
+            /** Body Length */
+            body_length: number;
+        };
         /** SnapshotOut */
         SnapshotOut: {
             /**
@@ -15042,6 +22315,15 @@ export interface components {
             /** Has More */
             has_more: boolean;
         };
+        /** SnoozeIn */
+        SnoozeIn: {
+            /**
+             * Days
+             * @description Days to put it aside; null brings it back now
+             * @default 3
+             */
+            days: number | null;
+        };
         /** SourceIn */
         SourceIn: {
             /** Name */
@@ -15056,6 +22338,47 @@ export interface components {
              * Format: uuid
              */
             id: string;
+        };
+        /** StartPaymentIn */
+        StartPaymentIn: {
+            /**
+             * Invoice Id
+             * Format: uuid
+             */
+            invoice_id: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Payer
+             * @description What the method asks for: a phone, an email
+             */
+            payer?: {
+                [key: string]: string;
+            };
+        };
+        /** StartSubscriptionIn */
+        StartSubscriptionIn: {
+            /** Plan Code */
+            plan_code: string;
+            /**
+             * Mode
+             * @default trial
+             * @enum {string}
+             */
+            mode: "trial" | "active" | "comp";
+            /** Currency */
+            currency?: string | null;
+            /** Interval */
+            interval?: ("month" | "year" | "one_time") | null;
+            /** Comp Until */
+            comp_until?: string | null;
+        };
+        /** StatementFormatOut */
+        StatementFormatOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
         };
         /** StatementGapOut */
         StatementGapOut: {
@@ -15201,6 +22524,279 @@ export interface components {
             duplicates: number;
             /** Skipped */
             skipped: string[];
+        };
+        /** StatusIn */
+        StatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "disabled";
+        };
+        /** StepIn */
+        StepIn: {
+            /**
+             * Done
+             * @default true
+             */
+            done: boolean;
+        };
+        /** StepOut */
+        StepOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Hint */
+            hint: string;
+            /**
+             * To
+             * @description The page that does the step
+             */
+            to: string;
+            /**
+             * Unit
+             * @description The step shows only while this unit is on (empty: always)
+             */
+            unit: string;
+        };
+        /** SubjectOut */
+        SubjectOut: {
+            /** Type */
+            type: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Label */
+            label: string;
+        };
+        /** SubscribeOut */
+        SubscribeOut: {
+            /**
+             * Waiting For Vendor
+             * @description True: nothing is due now, so the vendor applies the change
+             */
+            waiting_for_vendor: boolean;
+            invoice: components["schemas"]["MyInvoice"] | null;
+        };
+        /** SubscriberDetail */
+        SubscriberDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Tenant Status */
+            tenant_status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Edition */
+            edition: string | null;
+            /** Country */
+            country: string | null;
+            /** Status */
+            status: string;
+            /** Plan Code */
+            plan_code: string | null;
+            /** Plan Name */
+            plan_name: string | null;
+            /** Interval */
+            interval: string | null;
+            /** Currency */
+            currency: string | null;
+            /** Unit Amount */
+            unit_amount: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Trial End */
+            trial_end: string | null;
+            /** Cancel At Period End */
+            cancel_at_period_end: boolean;
+            /** Is Comp */
+            is_comp: boolean;
+            /** Tags */
+            tags: string[];
+            /** Users */
+            users: number;
+            /** Max Users */
+            max_users: number | null;
+            /** Branches */
+            branches: number;
+            /** Max Branches */
+            max_branches: number | null;
+            /** Last Activity */
+            last_activity: string | null;
+            /** Outstanding */
+            outstanding: {
+                [key: string]: string;
+            };
+            /** Owners */
+            owners: components["schemas"]["OwnerOut"][];
+            subscription: components["schemas"]["SubscriptionOut"] | null;
+            /** Timeline */
+            timeline: components["schemas"]["EventOut"][];
+            /** Invoices */
+            invoices: components["schemas"]["PlatformInvoiceOut"][];
+            /** Payments */
+            payments: components["schemas"]["PlatformPaymentOut"][];
+            /** Requests */
+            requests: components["schemas"]["PlatformRequestOut"][];
+            usage: components["schemas"]["UsageOut"];
+            limits: components["schemas"]["LimitsOut"];
+            /** Units */
+            units: {
+                [key: string]: unknown;
+            }[];
+            /** Grants */
+            grants: {
+                [key: string]: unknown;
+            }[];
+            /** Sessions */
+            sessions: {
+                [key: string]: unknown;
+            }[];
+            /** Audit Trail */
+            audit_trail: components["schemas"]["TrailLine"][];
+            deletion: components["schemas"]["DeletionOut"] | null;
+            /** Access */
+            access: string;
+            /** Message */
+            message: string;
+        };
+        /** SubscriberList */
+        SubscriberList: {
+            /** Total */
+            total: number;
+            /** Items */
+            items: components["schemas"]["SubscriberRow"][];
+        };
+        /** SubscriberRow */
+        SubscriberRow: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Tenant Status */
+            tenant_status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Edition */
+            edition: string | null;
+            /** Country */
+            country: string | null;
+            /** Status */
+            status: string;
+            /** Plan Code */
+            plan_code: string | null;
+            /** Plan Name */
+            plan_name: string | null;
+            /** Interval */
+            interval: string | null;
+            /** Currency */
+            currency: string | null;
+            /** Unit Amount */
+            unit_amount: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Trial End */
+            trial_end: string | null;
+            /** Cancel At Period End */
+            cancel_at_period_end: boolean;
+            /** Is Comp */
+            is_comp: boolean;
+            /** Tags */
+            tags: string[];
+            /** Users */
+            users: number;
+            /** Max Users */
+            max_users: number | null;
+            /** Branches */
+            branches: number;
+            /** Max Branches */
+            max_branches: number | null;
+            /** Last Activity */
+            last_activity: string | null;
+            /** Outstanding */
+            outstanding: {
+                [key: string]: string;
+            };
+        };
+        /** SubscriptionOut */
+        SubscriptionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Plan Code */
+            plan_code: string;
+            /** Plan Name */
+            plan_name: string;
+            /** Status */
+            status: string;
+            /** Interval */
+            interval: string;
+            /** Currency */
+            currency: string;
+            /** Unit Amount */
+            unit_amount: string;
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+            /** Entitlements */
+            entitlements: {
+                [key: string]: unknown;
+            };
+            /** Period Start */
+            period_start: string | null;
+            /** Period End */
+            period_end: string | null;
+            /** Trial End */
+            trial_end: string | null;
+            /** Cancel At Period End */
+            cancel_at_period_end: boolean;
+            /** Coupon Periods Left */
+            coupon_periods_left: number | null;
+            /** Pending Plan Id */
+            pending_plan_id: string | null;
+            /** Pending Interval */
+            pending_interval: string | null;
+            /** Is Comp */
+            is_comp: boolean;
+            /** Notes */
+            notes: string;
+            /** Tags */
+            tags: string[];
+            /** Status Reason */
+            status_reason: string | null;
+            /**
+             * Status Changed At
+             * Format: date-time
+             */
+            status_changed_at: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** SuggestIn */
         SuggestIn: {
@@ -15434,6 +23030,52 @@ export interface components {
              */
             expires_at: string;
         };
+        /** SuppressionOut */
+        SuppressionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By Name */
+            created_by_name: string | null;
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+            /** Check Code */
+            check_code: string;
+            /** Branch Id */
+            branch_id: string | null;
+            /** Entity Type */
+            entity_type: string | null;
+            /** Scope Label */
+            scope_label: string;
+            /** Until Date */
+            until_date: string | null;
+            /** Reason */
+            reason: string | null;
+        };
+        /** SwitchIn */
+        SwitchIn: {
+            /** Edition */
+            edition: string;
+        };
+        /** SwitchOut */
+        SwitchOut: {
+            /**
+             * Enabled
+             * @description Units newly switched on; nothing is ever switched off or deleted
+             */
+            enabled: string[];
+            mine: components["schemas"]["MyEditionOut"];
+        };
         /** SyncIn */
         SyncIn: {
             /**
@@ -15541,6 +23183,60 @@ export interface components {
              */
             id: string;
         };
+        /** TemplateOut */
+        TemplateOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Channel */
+            channel: string;
+            /** Code */
+            code: string;
+            /** Language */
+            language: string;
+            /** Category */
+            category: string;
+            /** Body */
+            body: string;
+            /** Variables */
+            variables: string[];
+            /** Buttons */
+            buttons: string[][];
+            /** Status */
+            status: string;
+            /** Provider Template Id */
+            provider_template_id: string | null;
+            /** Rejection Reason */
+            rejection_reason: string | null;
+            /** Submitted At */
+            submitted_at: string | null;
+            /** Decided At */
+            decided_at: string | null;
+        };
+        /** TemplateRunIn */
+        TemplateRunIn: {
+            /**
+             * Company Id
+             * Format: uuid
+             */
+            company_id: string;
+        };
+        /** TemplateRunOut */
+        TemplateRunOut: {
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Templates */
+            templates: components["schemas"]["TemplateOut"][];
+        };
+        /** TemporaryPasswordOut */
+        TemporaryPasswordOut: {
+            /** Temporary Password */
+            temporary_password: string;
+        };
         /** TerminateIn */
         TerminateIn: {
             /**
@@ -15602,9 +23298,9 @@ export interface components {
             company_id: string;
             /**
              * Channel
-             * @enum {string}
+             * @description A channel the business has
              */
-            channel: "email" | "sms";
+            channel: string;
             /** Recipient */
             recipient: string;
         };
@@ -15802,6 +23498,20 @@ export interface components {
              */
             held_expired: number;
         };
+        /** TimelineLine */
+        TimelineLine: {
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Kind */
+            kind: string;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** TokensOut */
         TokensOut: {
             /** Access Token */
@@ -15854,6 +23564,49 @@ export interface components {
             amount: string | null;
             /** Reason */
             reason?: string | null;
+            /**
+             * Source
+             * @default ziira
+             */
+            source: string;
+        };
+        /** TopicStateOut */
+        TopicStateOut: {
+            /** Key */
+            key: string;
+            /** Checks */
+            checks: number;
+            /** Enabled */
+            enabled: number;
+        };
+        /** TopicTextOut */
+        TopicTextOut: {
+            /** Key */
+            key: string;
+            /** Title */
+            title: string;
+            /** Lead */
+            lead: string;
+        };
+        /** TopicsIn */
+        TopicsIn: {
+            /**
+             * Topics
+             * @description Topic -> on or off: every check of the topic is switched
+             */
+            topics: {
+                [key: string]: boolean;
+            };
+        };
+        /** TopicsOut */
+        TopicsOut: {
+            /**
+             * Configured
+             * @description False until the business has chosen what to watch (Quick start)
+             */
+            configured: boolean;
+            /** Topics */
+            topics: components["schemas"]["TopicStateOut"][];
         };
         /** TotalOut */
         TotalOut: {
@@ -15873,6 +23626,30 @@ export interface components {
             matches: boolean;
             /** Money */
             money: boolean;
+        };
+        /** TrailLine */
+        TrailLine: {
+            /** Id */
+            id: number;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Operator Name */
+            operator_name: string;
+            /** Action */
+            action: string;
+            /** Target */
+            target: string | null;
+            /** Outcome */
+            outcome: string;
+            /** Reason */
+            reason: string | null;
+            /** Detail */
+            detail: {
+                [key: string]: unknown;
+            } | null;
         };
         /** TransferIn */
         TransferIn: {
@@ -16043,6 +23820,41 @@ export interface components {
             /** Balanced */
             balanced: boolean;
         };
+        /** TrialOut */
+        TrialOut: {
+            /** Plan Code */
+            plan_code: string;
+            /** Plan Name */
+            plan_name: string;
+            /** Trial Days */
+            trial_days: number;
+        };
+        /** TrialStats */
+        TrialStats: {
+            /** In Progress */
+            in_progress: number;
+            /** Ending Soon */
+            ending_soon: number;
+            /** Converted */
+            converted: number;
+            /** Lapsed */
+            lapsed: number;
+            /** Conversion Percent */
+            conversion_percent: number | null;
+        };
+        /** UndoIn */
+        UndoIn: {
+            /** Reason */
+            reason: string;
+        };
+        /** UninstallIn */
+        UninstallIn: {
+            /**
+             * Confirm
+             * @description The unit's name, typed to confirm
+             */
+            confirm: string;
+        };
         /** UnitCard */
         UnitCard: {
             /** Name */
@@ -16051,6 +23863,16 @@ export interface components {
             title: string;
             /** Description */
             description: string;
+            /**
+             * Category
+             * @description How the screen groups it (sales, stock, payments, tax, ...); empty if none
+             */
+            category: string;
+            /**
+             * Countries
+             * @description Plugins: countries it is meant for; empty means worldwide
+             */
+            countries: string[];
             /**
              * Kind
              * @description module or plugin
@@ -16086,6 +23908,17 @@ export interface components {
             will_also_enable: string[];
             /** Can Enable */
             can_enable: boolean;
+            /**
+             * In Plan
+             * @description False: the business's plan (or licence) does not include it
+             * @default true
+             */
+            in_plan: boolean;
+            /**
+             * Why Not Enable
+             * @description Why it cannot be switched on (for example: the plan)
+             */
+            why_not_enable?: string | null;
             /** Can Disable */
             can_disable: boolean;
             /** Why Not Disable */
@@ -16103,6 +23936,113 @@ export interface components {
              */
             enabled: string[];
             unit: components["schemas"]["UnitCard"];
+        };
+        /** UnitHolder */
+        UnitHolder: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Enabled */
+            enabled: boolean;
+        };
+        /** UnitInstallItem */
+        UnitInstallItem: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Kind */
+            kind: string;
+            /** Version */
+            version: string;
+        };
+        /** UnitMigrations */
+        UnitMigrations: {
+            /** Code */
+            code: string;
+            /** Migrations */
+            migrations: string[];
+        };
+        /** UnitPlan */
+        UnitPlan: {
+            /** Action */
+            action: string;
+            /** Unit */
+            unit: string;
+            /** Title */
+            title: string;
+            /** Will Install */
+            will_install: components["schemas"]["UnitInstallItem"][];
+            /** Upgrades */
+            upgrades: components["schemas"]["UnitUpgrade"][];
+            /** Holders */
+            holders: components["schemas"]["UnitHolder"][];
+            /** Dependants */
+            dependants: string[];
+            /**
+             * Blocked
+             * @description Why it cannot be done now; empty when it can
+             */
+            blocked: string[];
+        };
+        /** UnitResult */
+        UnitResult: {
+            /**
+             * Installed
+             * @default []
+             */
+            installed: string[];
+            /**
+             * Upgraded
+             * @default []
+             */
+            upgraded: {
+                [key: string]: unknown;
+            }[];
+            /** Uninstalled */
+            uninstalled?: string | null;
+        };
+        /** UnitSwitchIn */
+        UnitSwitchIn: {
+            /**
+             * Reason
+             * @description Why; written to the business's own audit log
+             */
+            reason: string;
+        };
+        /** UnitSwitchOut */
+        UnitSwitchOut: {
+            /** Business */
+            business: string;
+            /** Unit */
+            unit: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Also Enabled */
+            also_enabled: string[];
+        };
+        /** UnitUpgrade */
+        UnitUpgrade: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** From Version */
+            from_version: string;
+            /** To Version */
+            to_version: string;
+            /** Businesses */
+            businesses: components["schemas"]["UnitMigrations"][];
+        };
+        /** UnreadableBusiness */
+        UnreadableBusiness: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Error */
+            error: string | null;
         };
         /** UomIn */
         UomIn: {
@@ -16123,6 +24063,32 @@ export interface components {
              */
             id: string;
         };
+        /** UpgradeBusinessesIn */
+        UpgradeBusinessesIn: {
+            /**
+             * Codes
+             * @description Businesses to upgrade; empty: every one that is behind
+             */
+            codes?: string[] | null;
+        };
+        /** UpgradeResult */
+        UpgradeResult: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Ok */
+            ok: boolean;
+            /**
+             * Applied
+             * @description Migration files applied, by unit
+             */
+            applied: {
+                [key: string]: string[];
+            };
+            /** Error */
+            error: string | null;
+        };
         /** UploadIn */
         UploadIn: {
             /** Ops */
@@ -16137,6 +24103,29 @@ export interface components {
              * Format: date-time
              */
             server_time: string;
+        };
+        /** UsageLine */
+        UsageLine: {
+            /** Used */
+            used: number;
+            /**
+             * Limit
+             * @description Null: no limit
+             */
+            limit: number | null;
+        };
+        /** UsageOut */
+        UsageOut: {
+            /** Users */
+            users: number;
+            /** Branches */
+            branches: number;
+            /** Companies */
+            companies: number;
+            /** Storage Bytes */
+            storage_bytes: number;
+            /** Failed Jobs */
+            failed_jobs: number;
         };
         /** UserIn */
         UserIn: {
@@ -16232,6 +24221,97 @@ export interface components {
             reason_code_id: string;
             /** Note */
             note?: string | null;
+        };
+        /** WebhookCreatedOut */
+        WebhookCreatedOut: {
+            endpoint: components["schemas"]["WebhookOut"];
+            /**
+             * Secret
+             * @description The signing secret; shown only once
+             */
+            secret: string;
+        };
+        /** WebhookEventOut */
+        WebhookEventOut: {
+            /** Type */
+            type: string;
+            /** Unit */
+            unit: string;
+            /** Description */
+            description: string;
+            /**
+             * Fields
+             * @description The only payload fields sent for this event
+             */
+            fields: string[];
+        };
+        /** WebhookIn */
+        WebhookIn: {
+            /** Name */
+            name: string;
+            /**
+             * Url
+             * @description https:// address that receives the events
+             */
+            url: string;
+            /** Event Types */
+            event_types: string[];
+        };
+        /** WebhookOut */
+        WebhookOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Url */
+            url: string;
+            /** Event Types */
+            event_types: string[];
+            /**
+             * Secret Hint
+             * @description Last four characters of the signing secret
+             */
+            secret_hint: string;
+            /** Status */
+            status: string;
+            /** Disabled Reason */
+            disabled_reason: string | null;
+            /** Consecutive Failures */
+            consecutive_failures: number;
+            /** Last Success At */
+            last_success_at: string | null;
+            /** Last Failure At */
+            last_failure_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** WebhookPatch */
+        WebhookPatch: {
+            /** Name */
+            name?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Event Types */
+            event_types?: string[] | null;
+            /**
+             * Status
+             * @description 'paused' stops sending; 'active' resumes (and re-enables a disabled endpoint)
+             */
+            status?: ("active" | "paused") | null;
+        };
+        /** WebhookSecretOut */
+        WebhookSecretOut: {
+            /**
+             * Secret
+             * @description The new signing secret; shown only once
+             */
+            secret: string;
         };
         /** WidgetIn */
         WidgetIn: {
@@ -16798,13 +24878,12 @@ export interface components {
             environment: "sandbox" | "production";
             /**
              * Provider
-             * @description A registered payment provider; 'fake' is for development only
-             * @default daraja
+             * @description A provider switched on for the business (GET /providers); empty: 'manual', no integration
              */
-            provider: string;
+            provider?: string | null;
             /**
              * Provider Config
-             * @description Provider settings, e.g. {'till_type': 'till'} for Daraja
+             * @description The provider's own settings (its config_fields), e.g. a till type
              */
             provider_config?: {
                 [key: string]: string;
@@ -16857,9 +24936,9 @@ export interface components {
         ziira__modules__payments__api__schemas__StatementIn: {
             /**
              * Format
-             * @enum {string}
+             * @description 'bank', or a format from GET /providers
              */
-            format: "mpesa" | "bank";
+            format: string;
             /**
              * Content
              * @description The statement as CSV text
@@ -17201,7 +25280,7 @@ export interface components {
             payment_account_id?: string | null;
             /**
              * External Ref
-             * @description M-Pesa code, bank ref, cheque no.
+             * @description Mobile-money code, bank ref, cheque no.
              */
             external_ref?: string | null;
             /** Received On */
@@ -18079,6 +26158,38 @@ export interface operations {
             };
         };
     };
+    register_trial_api_v1_register_trial_get: {
+        parameters: {
+            query?: {
+                edition?: string | null;
+                plan?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrialOut"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     register_verify_api_v1_register_verify_post: {
         parameters: {
             query?: never;
@@ -18898,118 +27009,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PermissionOut"][];
                 };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_api_keys_api_v1_api_keys_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Bearer <access token> */
-                authorization?: string | null;
-                /** @description API key for server-to-server integrations */
-                "x-api-key"?: string | null;
-                /** @description Development only: act as this tenant */
-                "x-tenant-id"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiKeyOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_api_key_api_v1_api_keys_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Bearer <access token> */
-                authorization?: string | null;
-                /** @description API key for server-to-server integrations */
-                "x-api-key"?: string | null;
-                /** @description Development only: act as this tenant */
-                "x-tenant-id"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ApiKeyIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiKeyCreatedOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    revoke_api_key_api_v1_api_keys__key_id__delete: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Bearer <access token> */
-                authorization?: string | null;
-                /** @description API key for server-to-server integrations */
-                "x-api-key"?: string | null;
-                /** @description Development only: act as this tenant */
-                "x-tenant-id"?: string | null;
-            };
-            path: {
-                key_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -20012,6 +28011,44 @@ export interface operations {
             };
         };
     };
+    get_available_channels_api_v1_notifications_channels_available_get: {
+        parameters: {
+            query?: {
+                company_id?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailableChannel"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_channels_api_v1_notifications_channels_get: {
         parameters: {
             query: {
@@ -20062,7 +28099,7 @@ export interface operations {
                 "x-tenant-id"?: string | null;
             };
             path: {
-                channel: "email" | "sms";
+                channel: string;
             };
             cookie?: never;
         };
@@ -20106,7 +28143,7 @@ export interface operations {
                 "x-tenant-id"?: string | null;
             };
             path: {
-                channel: "email" | "sms";
+                channel: string;
             };
             cookie?: never;
         };
@@ -20174,7 +28211,7 @@ export interface operations {
         parameters: {
             query: {
                 company_id: string;
-                channel?: ("email" | "sms") | null;
+                channel?: string | null;
                 status?: string | null;
                 ref_type?: string | null;
                 ref_id?: string | null;
@@ -20320,6 +28357,316 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_preferences_api_v1_notifications_me_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_my_preferences_api_v1_notifications_me_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_my_number_api_v1_notifications_me_verified_number_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NumberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_my_number_api_v1_notifications_me_verified_number_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_my_number_verify_api_v1_notifications_me_verified_number_verify_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhoneCodeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_templates_api_v1_notifications_templates_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_templates_submit_api_v1_notifications_templates_submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateRunIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_templates_sync_api_v1_notifications_templates_sync_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TemplateRunIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemplateRunOut"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -20828,7 +29175,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChallengeOut"];
+                    "application/json": components["schemas"]["SignInOut"];
                 };
             };
             /** @description Validation Error */
@@ -20875,7 +29222,69 @@ export interface operations {
             };
         };
     };
+    change_password_api_v1_operator_password_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChangeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     sign_out_api_v1_operator_sign_out_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sign_out_all_api_v1_operator_sign_out_all_post: {
         parameters: {
             query?: never;
             header?: {
@@ -21022,6 +29431,4418 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_api_v1_operator_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorMe"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_api_v1_operator_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    units_api_v1_operator_units_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformUnit"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unit_plan_api_v1_operator_units__name__plan_get: {
+        parameters: {
+            query: {
+                action: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    install_api_v1_operator_units__name__install_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upgrade_api_v1_operator_units__name__upgrade_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    uninstall_api_v1_operator_units__name__uninstall_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UninstallIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    businesses_overview_api_v1_operator_businesses_overview_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    business_api_v1_operator_businesses__code__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enable_unit_api_v1_operator_businesses__code__units__unit__enable_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+                unit: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnitSwitchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitSwitchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_unit_api_v1_operator_businesses__code__units__unit__disable_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+                unit: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnitSwitchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitSwitchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upgrade_businesses_api_v1_operator_businesses_upgrade_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpgradeBusinessesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpgradeResult"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    health_api_v1_operator_health_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformHealth"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    operator_list_api_v1_operator_operators_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_operator_api_v1_operator_operators_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OperatorCreateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorCreatedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    actions_api_v1_operator_actions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionLine"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dashboard_api_v1_operator_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    roles_api_v1_operator_roles_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RolesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    platform_settings_api_v1_operator_platform_settings_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_setting_api_v1_operator_platform_settings__key__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_plans_api_v1_operator_plans_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformPlanOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_plan_api_v1_operator_plans_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plan_api_v1_operator_plans__code__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_plan_api_v1_operator_plans__code__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_plan_price_api_v1_operator_plans__code__prices_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_plan_price_api_v1_operator_plans__code__prices__price_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+                price_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_addons_api_v1_operator_addons_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_addon_api_v1_operator_addons_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_addon_api_v1_operator_addons__code__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddonPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_addon_price_api_v1_operator_addons__code__prices_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPriceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_addon_price_api_v1_operator_addons__code__prices__price_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+                price_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_coupons_api_v1_operator_coupons_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CouponOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_coupon_api_v1_operator_coupons_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CouponOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    coupon_status_api_v1_operator_coupons__code__status_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CouponOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_subscribers_api_v1_operator_subscribers_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+                status?: string | null;
+                plan?: string | null;
+                edition?: string | null;
+                country?: string | null;
+                /** @description trial_ending, past_due, churned or unmanaged */
+                flag?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    subscriber_api_v1_operator_subscribers__code__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_subscription_api_v1_operator_subscribers__code__subscription_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartSubscriptionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_plan_api_v1_operator_subscribers__code__plan_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePlanIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extend_trial_api_v1_operator_subscribers__code__trial_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtendTrialIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    comp_api_v1_operator_subscribers__code__comp_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_coupon_api_v1_operator_subscribers__code__coupon_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponApplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_plan_api_v1_operator_subscribers__code__sync_plan_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suspend_api_v1_operator_subscribers__code__suspend_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reactivate_api_v1_operator_subscribers__code__reactivate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OptionalReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_operator_subscribers__code__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformCancelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    uncancel_api_v1_operator_subscribers__code__uncancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    notes_api_v1_operator_subscribers__code__notes_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_subscriber_api_v1_operator_subscribers__code__export_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_delete_api_v1_operator_subscribers__code__delete_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_delete_api_v1_operator_subscribers__code__delete_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    find_contact_api_v1_operator_privacy_contact_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactFound"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    erase_contact_api_v1_operator_privacy_contact_erase_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErasedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_invoices_api_v1_operator_invoices_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                tenant_code?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformInvoiceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_invoice_api_v1_operator_invoices_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformInvoiceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformInvoiceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_invoice_api_v1_operator_invoices__invoice_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_invoice_api_v1_operator_invoices__invoice_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvoicePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invoice_page_api_v1_operator_invoices__invoice_id__html_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_invoice_api_v1_operator_invoices__invoice_id__issue_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    void_invoice_api_v1_operator_invoices__invoice_id__void_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_payment_api_v1_operator_invoices__invoice_id__payments_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformPaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reverse_payment_api_v1_operator_payments__payment_id__reverse_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvoiceDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    plan_requests_api_v1_operator_plan_requests_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlatformRequestOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_request_api_v1_operator_plan_requests__request_id__decide_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecideOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_billing_api_v1_operator_billing_run_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_licences_api_v1_operator_licences_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    issue_licence_api_v1_operator_licences_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenceIssueIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenceIssued"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    licence_file_api_v1_operator_licences__licence_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                licence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_licence_api_v1_operator_licences__licence_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                licence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revocation_file_api_v1_operator_licence_revocations_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_operator_api_v1_operator_operators__operator_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                operator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OperatorPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorBrief"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_operator_password_api_v1_operator_operators__operator_id__reset_password_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                operator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TemporaryPasswordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_operator_mfa_api_v1_operator_operators__operator_id__reset_mfa_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                operator_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorSecretOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_plans_api_v1_public_plans_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicPlans"];
+                };
+            };
+        };
+    };
+    my_plan_api_v1_billing_plan_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_status_api_v1_billing_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_invoices_api_v1_billing_invoices_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyInvoice"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_invoice_api_v1_billing_invoices__invoice_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyInvoice"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_invoice_page_api_v1_billing_invoices__invoice_id__html_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_change_api_v1_billing_change_request_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    withdraw_request_api_v1_billing_change_request__request_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_billing_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_api_v1_billing_resume_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_licence_api_v1_billing_licence_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenceInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    install_licence_api_v1_billing_licence_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenceFileIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LicenceInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pay_options_api_v1_billing_pay_options_get: {
+        parameters: {
+            query: {
+                invoice_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayOptions"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    subscribe_api_v1_billing_subscribe_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscribeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_payments_api_v1_billing_payments_get: {
+        parameters: {
+            query?: {
+                invoice_id?: string | null;
+                limit?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_payment_api_v1_billing_payments_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartPaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    payment_status_api_v1_billing_payments__attempt_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_payment_api_v1_billing_payments__attempt_id__check_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentAttemptOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    provider_webhook_api_v1_billing_webhooks__provider__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_gateways_api_v1_operator_payment_gateways_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatewayOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_gateway_api_v1_operator_payment_gateways__name__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GatewayIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatewayOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_gateway_api_v1_operator_payment_gateways__name__test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GatewayTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_attempts_api_v1_operator_payment_attempts_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                tenant?: string | null;
+                invoice?: string | null;
+                since?: string | null;
+                until?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorAttempt"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_attempt_api_v1_operator_payment_attempts__attempt_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorAttemptDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recheck_api_v1_operator_payment_attempts__attempt_id__recheck_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorAttemptDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_paid_api_v1_operator_payment_attempts__attempt_id__mark_paid_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                attempt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttemptReasonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorAttemptDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    invoice_attempts_api_v1_operator_invoices__invoice_id__payment_attempts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperatorAttempt"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    availability_api_v1_operator_site_availability_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteAvailability"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_settings_api_v1_operator_site_settings_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    write_settings_api_v1_operator_site_settings_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteSettingsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteSettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pages_api_v1_operator_site_pages_get: {
+        parameters: {
+            query?: {
+                locale?: string | null;
+                kind?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_page_api_v1_operator_site_pages_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SitePageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    starters_api_v1_operator_site_pages_starters_get: {
+        parameters: {
+            query: {
+                locale: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteStarter"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    page_api_v1_operator_site_pages__page_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_page_api_v1_operator_site_pages__page_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SitePageUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_page_api_v1_operator_site_pages__page_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_published_api_v1_operator_site_pages__page_id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_draft_api_v1_operator_site_pages__page_id__unpublish_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    versions_api_v1_operator_site_pages__page_id__versions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteVersionSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    version_api_v1_operator_site_pages__page_id__versions__version__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    diff_api_v1_operator_site_pages__page_id__diff_get: {
+        parameters: {
+            query: {
+                older: number;
+                newer: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteDiffOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_api_v1_operator_site_pages__page_id__versions__version__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                page_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_v1_operator_site_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SitePreviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assets_api_v1_operator_site_assets_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteAssetOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_asset_api_v1_operator_site_assets_post: {
+        parameters: {
+            query?: {
+                name?: string;
+                alt?: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteAssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    asset_file_api_v1_operator_site_assets__asset_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_asset_api_v1_operator_site_assets__asset_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteAltIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteAssetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_asset_api_v1_operator_site_assets__asset_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                asset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    validate_api_v1_operator_site_validate_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_v1_operator_site_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePublishStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_api_v1_operator_site_publish_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SitePublishIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePublishOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publishes_api_v1_operator_site_publishes_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePublishLine"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_hook_api_v1_operator_site_publishes__publish_id__retry_hook_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                publish_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteHookState"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    plans_preview_api_v1_operator_site_plans_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SitePlansPreview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_site_api_v1_public_site_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    public_asset_api_v1_public_site_assets__name__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
             };
             /** @description Validation Error */
             422: {
@@ -21426,6 +34247,780 @@ export interface operations {
             };
         };
     };
+    list_editions_api_v1_editions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditionOut"][];
+                };
+            };
+        };
+    };
+    my_edition_api_v1_edition_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    switch_edition_api_v1_edition_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SwitchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwitchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_step_api_v1_edition_steps__step__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                step: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hide_checklist_api_v1_edition_checklist_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HideIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyEditionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_countries_api_v1_countries_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountryOut"][];
+                };
+            };
+        };
+    };
+    list_api_keys_api_v1_api_keys_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_key_api_v1_api_keys_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiKeyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyCreatedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rotate_api_key_api_v1_api_keys__key_id__rotate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                key_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiKeyRotateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeyCreatedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_api_key_api_v1_api_keys__key_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                key_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    webhook_events_api_v1_webhooks_events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookEventOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_webhooks_api_v1_webhooks_endpoints_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_webhook_api_v1_webhooks_endpoints_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookCreatedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_webhook_api_v1_webhooks_endpoints__endpoint_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_webhook_api_v1_webhooks_endpoints__endpoint_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_webhook_api_v1_webhooks_endpoints__endpoint_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rotate_webhook_secret_api_v1_webhooks_endpoints__endpoint_id__secret_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookSecretOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ping_webhook_api_v1_webhooks_endpoints__endpoint_id__ping_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueuedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_webhook_deliveries_api_v1_webhooks_endpoints__endpoint_id__deliveries_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_webhook_delivery_api_v1_webhooks_deliveries__delivery_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                delivery_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeliveryDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    redeliver_webhook_api_v1_webhooks_deliveries__delivery_id__redeliver_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                delivery_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueuedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_overview_api_v1_command_overview_get: {
         parameters: {
             query?: {
@@ -21771,7 +35366,7 @@ export interface operations {
         parameters: {
             query?: {
                 kind?: "daily" | "weekly";
-                channel?: "sms" | "email" | "in_app";
+                channel?: string;
                 company_id?: string | null;
             };
             header?: {
@@ -21912,6 +35507,364 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OAuthStartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_move_options_api_v1_connect_connections__connection_id__move_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveOptionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_move_preview_api_v1_connect_connections__connection_id__move_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_move_api_v1_connect_connections__connection_id__move_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_moves_api_v1_connect_connections__connection_id__moves_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_one_move_api_v1_connect_moves__move_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                move_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_undo_api_v1_connect_moves__move_id__undo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                move_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndoIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_suggestion_api_v1_connect_move_suggestion_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoveSuggestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_overlap_api_v1_connect_overlap_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverlapOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_overlap_choice_api_v1_connect_connections__connection_id__overlap_choice_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OverlapChoiceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverlapOut"];
                 };
             };
             /** @description Validation Error */
@@ -26549,6 +40502,11 @@ export interface operations {
                 check_code?: string | null;
                 assigned_to_me?: boolean;
                 search?: string | null;
+                /** @description connected: read from the system the business keeps */
+                source?: ("connected" | "ziira") | null;
+                snoozed?: "hide" | "only" | "include";
+                /** @description open: waiting for me; waiting: someone is on it or put aside; done */
+                view?: ("open" | "waiting" | "done") | null;
                 limit?: number;
                 offset?: number;
             };
@@ -26608,6 +40566,399 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FindingsSummaryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_grouped_api_v1_intel_findings_grouped_get: {
+        parameters: {
+            query?: {
+                view?: "open" | "waiting" | "done";
+                severity?: ("info" | "low" | "medium" | "high" | "critical")[] | null;
+                area?: string | null;
+                company_id?: string | null;
+                branch_id?: string | null;
+                check_code?: string | null;
+                search?: string | null;
+                assigned_to_me?: boolean;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupedFindingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_plain_api_v1_intel_plain_get: {
+        parameters: {
+            query?: {
+                lang?: "en" | "sw";
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlainOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_topics_api_v1_intel_topics_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_topics_api_v1_intel_topics_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TopicsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TopicsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ignore_rules_api_v1_intel_ignore_rules_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuppressionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_ignore_rule_api_v1_intel_ignore_rules__rule_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                rule_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_related_api_v1_intel_findings__finding_id__related_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ignore_options_api_v1_intel_findings__finding_id__ignore_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IgnoreOptionsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_snooze_api_v1_intel_findings__finding_id__snooze_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SnoozeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FindingDetailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_ignore_api_v1_intel_findings__finding_id__ignore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                finding_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IgnoreIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IgnoreOut"];
                 };
             };
             /** @description Validation Error */
@@ -27010,6 +41361,44 @@ export interface operations {
                 "application/json": components["schemas"]["CheckUpdateIn"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reset_check_api_v1_intel_checks__code__reset_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -27991,6 +42380,42 @@ export interface operations {
             };
         };
     };
+    get_providers_api_v1_payments_providers_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProvidersOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_accounts_api_v1_payments_accounts_get: {
         parameters: {
             query?: {
@@ -28170,7 +42595,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CredentialsIn"];
+                "application/json": {
+                    [key: string]: string;
+                };
             };
         };
         responses: {
@@ -31541,6 +45968,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeviceKeyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_device_api_v1_pos_devices__device_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                device_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceUpdateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeviceOut"];
                 };
             };
             /** @description Validation Error */
@@ -36553,6 +51022,444 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_state_api_v1_plugins_leadsintel_state_get: {
+        parameters: {
+            query: {
+                company_id: string;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_key_api_v1_plugins_leadsintel_key_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelKeyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_check_api_v1_plugins_leadsintel_check_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelCompanyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelCheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_connect_api_v1_plugins_leadsintel_whatsapp_connect_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelConnectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_refresh_api_v1_plugins_leadsintel_whatsapp_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelCompanyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_cancel_api_v1_plugins_leadsintel_whatsapp_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelCompanyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_disconnect_api_v1_plugins_leadsintel_whatsapp_disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelCompanyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_existing_api_v1_plugins_leadsintel_whatsapp_existing_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelNumberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelExistingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_claim_api_v1_plugins_leadsintel_whatsapp_claim_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelNumberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_claim_verify_api_v1_plugins_leadsintel_whatsapp_claim_verify_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadIntelCodeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelStateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_inbox_api_v1_plugins_leadsintel_inbox_get: {
+        parameters: {
+            query: {
+                company_id: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadIntelInboundOut"][];
                 };
             };
             /** @description Validation Error */

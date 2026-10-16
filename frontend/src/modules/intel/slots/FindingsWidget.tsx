@@ -29,7 +29,7 @@ export default function FindingsWidget() {
         {top.data.map((f) => (
           <li key={f.id}>
             <Link to={`/findings/${f.id}`} className="flex items-start gap-2 text-sm hover:underline">
-              <SeverityBadge severity={f.severity} /><span className="min-w-0 flex-1 truncate">{f.summary}</span>
+              <SeverityBadge severity={f.severity} /><span className="min-w-0 flex-1 truncate">{f.summary}</span>{f.source === "connected" && <span className="shrink-0 text-xs text-muted">{t("source.connectedShort")}</span>}
             </Link>
           </li>
         ))}

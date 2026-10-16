@@ -6,7 +6,6 @@ import { api, Button, DataTable, formatDate, PageHeader, Pager, Select, unwrap, 
 
 import { useBranches, useMoney } from "../hooks";
 import { DocStatus } from "./DocStatus";
-import { DocsTabs } from "./DocsTabs";
 import { CustomerName, CustomerPicker } from "./hooks";
 
 const STATUSES = {
@@ -31,9 +30,8 @@ export function DocListPage({ kind }: { kind: "quotation" | "order" }) {
 
   return (
     <>
-      <PageHeader title={t("docs.title")} description={t(`docs.hint.${kind}`)}
+      <PageHeader title={t(kind === "quotation" ? "docs.tabs.quotesOrders" : "docs.tabs.orders")} description={t(`docs.hint.${kind}`)}
         actions={canManage && <Link to={`${base}/new`}><Button><Plus className="h-4 w-4" />{t(`docs.new.${kind}`)}</Button></Link>} />
-      <DocsTabs />
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()}
         rowKey={(d) => d.id} rowHref={(d) => `${base}/${d.id}`}

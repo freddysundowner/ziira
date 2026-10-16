@@ -31,6 +31,7 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    check_channel,
     check_company,
     company_setting,
     current_context,
@@ -90,7 +91,8 @@ def get_overview(company_id: UUID | None = None, day: date | None = None,
         refreshed_at=o.refreshed_at, open_findings=o.open_findings, findings_by_severity=o.findings_by_severity,
         top_findings=[TopFindingOut(id=t.id, severity=t.severity, area=t.area, summary=t.summary,
                                     recommended_action=t.recommended_action, status=t.status, branch_id=t.branch_id,
-                                    amount=t.amount, reason=t.reason) for t in o.top_findings])
+                                    amount=t.amount, reason=t.reason, source=t.source)
+                      for t in o.top_findings])
 
 
 @router.post("/pulse/refresh", status_code=NO_CONTENT, dependencies=MANAGE)
@@ -121,6 +123,8 @@ def put_my_schedule(kind: Kind, body: ScheduleIn, session: Session = DB_SESSION)
         raise ValidationFailed("A weekly brief needs a weekday")
     if body.channel == "sms" and not person.phone:
         raise ValidationFailed("Add a phone number to your profile to get briefs by SMS")
+    if body.channel != "in_app":
+        check_channel(session, body.channel)
     if body.channel == "email" and not person.email:
         raise ValidationFailed("Add an email address to your profile to get briefs by email")
     row = repo.save_schedule(session, person.user_id, kind, body.channel, body.send_time,
@@ -172,6 +176,8 @@ def post_send_now(kind: Kind = "daily", channel: Channel = "in_app", company_id:
                   session: Session = DB_SESSION) -> object:
     """Compose your brief and send it now, by the channel chosen (once per day and kind)."""
     person = _me(session)
+    if channel != "in_app":
+        check_channel(session, channel)
     cid = _company(session, company_id)
     today = _today(session, cid)
     brief, data = briefs.build(session, person, cid, kind, today)

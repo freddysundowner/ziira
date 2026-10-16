@@ -9,7 +9,6 @@ import {
 
 import { useBranches, useMoney } from "../hooks";
 import { DocStatus } from "./DocStatus";
-import { DocsTabs } from "./DocsTabs";
 import { CustomerName, CustomerPicker } from "./hooks";
 import { isPositive, receiptActions } from "./lib";
 import { ReasonDialog } from "./ReasonDialog";
@@ -30,9 +29,8 @@ export default function RefundsPage() {
 
   return (
     <>
-      <PageHeader title={t("docs.title")} description={t("docs.hint.refund")}
+      <PageHeader title={t("docs.tabs.refunds")} description={t("docs.hint.refund")}
         actions={canReceive && <Button onClick={() => setCreating(true)}><Plus className="h-4 w-4" />{t("docs.newRefund")}</Button>} />
-      <DocsTabs />
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()}
         rowKey={(r) => r.id} rowHref={(r) => `/pos/refunds?open=${r.id}`}

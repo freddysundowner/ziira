@@ -27,7 +27,7 @@ export default function AdjustmentsPage() {
 
   return (
     <>
-      <PageHeader title={t("adjustments")} description={t("adjustmentsHint")} actions={newButton} />
+      <PageHeader title={t("stockActions")} description={t("adjustmentsHint")} actions={newButton} />
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()} rowKey={(a) => a.id}
         rowHref={(a) => `/stock/adjustments/${a.id}`}

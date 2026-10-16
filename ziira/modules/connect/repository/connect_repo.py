@@ -12,7 +12,7 @@ from ziira.sdk import Session
 
 CONNECTION_COLUMNS = ("id, company_id, kind, name, status, config, credential_id, auto_create_branches, "
                       "sync_every_minutes, last_sync_at, last_success_at, next_sync_at, failures, last_error, "
-                      "disconnected_at, created_at, created_by")
+                      "disconnected_at, created_at, created_by, overlap_choice")
 ENTITY_TABLES = {
     "branches": "src_branch", "parties": "src_party", "products": "src_product", "users": "src_user",
     "sales": "src_sale", "payments": "src_payment", "stock_movements": "src_stock_movement",

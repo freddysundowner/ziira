@@ -16,6 +16,7 @@ from ziira.kernel import audit, directory
 from ziira.kernel.auth import sign_out_user
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import Conflict, Forbidden, NotFound, ValidationFailed
+from ziira.kernel.platform import entitlements
 from ziira.kernel.security import hash_password
 
 SCOPES = ("tenant", "company", "branch", "own")
@@ -80,6 +81,7 @@ def create_user(s: Session, *, full_name: str, email: str | None = None, phone: 
                       {"e": email, "p": phone}).first()
     if taken:
         raise Conflict("A user with this email or phone already exists")
+    entitlements.check_limit(s, get_context().tenant_id, "users")       # 402 plan_limit_reached when over the plan
     row = s.execute(text(
         "insert into kernel.app_user (tenant_id, created_by, email, phone, full_name, password_hash, status) "
         "values (kernel.current_tenant(), :by, :e, :p, :n, :h, :st) "
@@ -125,6 +127,8 @@ def set_user_active(s: Session, user_id: UUID, active: bool) -> User:
     if not active and user_id == get_context().user_id:
         raise ValidationFailed("You cannot disable yourself")
     status = "active" if active else "disabled"
+    if active and user.status == "disabled":
+        entitlements.check_limit(s, get_context().tenant_id, "users")
     s.execute(text("update kernel.app_user set status = :st, updated_at = now(), updated_by = :by where id = :i"),
               {"st": status, "by": _actor(), "i": str(user_id)})
     if not active:

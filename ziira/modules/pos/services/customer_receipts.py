@@ -1,9 +1,9 @@
 """Use cases: a customer pays what they owe - or pays in advance.
 
 A receipt is one payment shared over the customer's unpaid invoices - the ones named, or the oldest first. The money is
-recorded through Payments (so M-Pesa and bank money can be matched like any other), the invoices are marked paid in part
-or in full, and Finance moves it from "accounts receivable" to cash, M-Pesa or the bank (`customer.paid`). A payment
-cannot be more than is owed unless the payer says to *hold the balance*: what is left over then stays on the
+recorded through Payments (so mobile-money and bank money can be matched like any other), the invoices are marked paid
+in part or in full, and Finance moves it from "accounts receivable" to cash, mobile money or the bank (`customer.paid`).
+A payment cannot be more than is owed unless the payer says to *hold the balance*: what is left over then stays on the
 customer's account as an advance (their account is in credit). An advance is applied to invoices later
 (`apply_credit`, which moves no money and makes no entry) or given back (`refund_advance`). If a payment is reversed (in
 Payments, or here), the invoices are owed again and Finance puts the books back.
@@ -335,7 +335,7 @@ def refund_advance(session: Session, receipt_id: UUID, *, amount: Decimal, metho
     if receipt.status != "posted":
         raise Conflict("This payment was reversed")
     if method not in ("cash", "mobile_money", "bank"):
-        raise ValidationFailed("A refund is paid in cash, M-Pesa or by bank")
+        raise ValidationFailed("A refund is paid in cash, mobile money or by bank")
     if amount <= 0 or amount != amount.quantize(Decimal("0.01")):
         raise ValidationFailed("A refund is more than zero with at most 2 decimal places")
     if amount > receipt.unallocated:

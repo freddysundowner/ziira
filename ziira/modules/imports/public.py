@@ -13,6 +13,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
 from ziira.modules.imports.domain import values
@@ -20,7 +21,11 @@ from ziira.sdk import Session, ZiiraError
 
 IMPORTS_IMPORTER = "imports.importer"
 
-__all__ = ["IMPORTS_IMPORTER", "FileCheck", "ImportColumn", "ImportOptions", "ImportRow", "Importer", "attempt"]
+__all__ = [
+    "IMPORTS_IMPORTER", "BatchSummary", "ExistingRecord", "FileCheck", "ImportColumn", "ImportOptions", "ImportRow",
+    "Importer", "RowCheck", "attempt", "available_importers", "batch_summary", "check_rows", "discard_staged",
+    "find_existing", "reverse_import", "stage_rows", "start_import", "validate_staged",
+]
 
 
 def attempt[T](errors: list[str], check: Callable[[], T]) -> T | None:
@@ -64,6 +69,15 @@ class FileCheck:
     problems: list[str] = field(default_factory=list)
     confirm: str | None = None
     notes: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class ExistingRecord:
+    """A record already in Ziira that is the same real-world thing as a row (same phone, same tax number...): the code
+    it has there (customer code, supplier code, SKU) and, in plain words, why we think so."""
+
+    code: str
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -153,6 +167,12 @@ class Importer(ABC):
         """A message when this record is already in Ziira (the row is then skipped, not an error); else None."""
         return None
 
+    def find_match(self, session: Session, company_id: UUID, row: ImportRow) -> ExistingRecord | None:
+        """The record already in Ziira that is the same real-world thing as this row, found by more than its code (same
+        phone or tax number), so a move from another system does not make a second copy. None when there is none or the
+        kind does not look. Reads only."""
+        return None
+
     def check_file(self, session: Session, company_id: UUID, rows: Sequence[ImportRow]) -> FileCheck:
         """Whole-file importers: problems with the rows taken together (they do not balance, an earlier import is in
         the way). Reads only. Run at the check and again just before the import."""
@@ -193,3 +213,117 @@ class Importer(ABC):
         """What the reconciliation report compares with the file's sums: by default `imported_totals`. An importer whose
         figures depend on the rows themselves (a trial balance read back account by account) overrides this."""
         return self.imported_totals(session, company_id, record_ids)
+
+
+# --------------------------------------------------------------------------- driving imports from another unit
+# A unit that holds data to bring into Ziira (Connectors moving a connected system's records) does not write the
+# target unit's tables: it stages rows here, has them checked by the owning unit's importer, and starts the import.
+# The permissions of the person are checked exactly as for an uploaded file.
+
+
+@dataclass(frozen=True)
+class RowCheck:
+    """The dry-run result for one row: valid (would be created), skipped (already in Ziira) or invalid."""
+
+    status: Literal["valid", "invalid", "skipped"]
+    messages: list[str]
+
+
+@dataclass(frozen=True)
+class BatchSummary:
+    """A batch as another unit may see it."""
+
+    id: UUID
+    company_id: UUID
+    kind: str
+    title: str
+    status: str
+    counts: dict[str, int]
+    reversible: bool
+    reversal_note: str
+    source_kind: str | None
+    source_id: UUID | None
+    revert_reason: str | None = None
+
+
+def available_importers(session: Session) -> dict[str, Importer]:
+    """The importers of the units switched on for this business, by kind."""
+    from ziira.modules.imports.services import batches
+
+    return {i.kind: i for i in batches.all_importers(session)}
+
+
+def _row(values: Mapping[str, str], as_of: date | None) -> ImportRow:
+    return ImportRow(values, ImportOptions(as_of=as_of))
+
+
+def check_rows(session: Session, kind: str, company_id: UUID, rows: Sequence[Mapping[str, str]], *,
+               as_of: date | None = None) -> list[RowCheck]:
+    """Dry run of rows (field name -> text) as the importer of `kind` would see them: values, duplicates inside the
+    rows, and records already in Ziira. Writes nothing; stores nothing."""
+    from ziira.modules.imports.services import batches
+
+    return batches.check_rows(session, kind, company_id, [_row(r, as_of) for r in rows])
+
+
+def find_existing(session: Session, kind: str, company_id: UUID, values: Mapping[str, str]) -> ExistingRecord | None:
+    """The record already in Ziira that a row is the same thing as (see `Importer.find_match`), or None."""
+    from ziira.modules.imports.services import batches
+
+    importer = batches.get_importer(session, kind)
+    return importer.find_match(session, company_id, _row(values, None))
+
+
+def stage_rows(session: Session, *, kind: str, company_id: UUID, rows: Sequence[Mapping[str, str]], name: str,
+               as_of: date | None = None, source: tuple[str, UUID] | None = None) -> UUID:
+    """Stage rows as a batch (the same as uploading a file whose columns are the importer's field names). `source`
+    tags the batch with what staged it. Nothing is imported until `validate_staged` and `start_import`."""
+    from ziira.modules.imports.services import batches
+
+    return batches.create_batch_from_rows(session, kind=kind, company_id=company_id, rows=rows, name=name,
+                                          as_of=as_of, source=source)
+
+
+def _summary(session: Session, batch_id: UUID) -> BatchSummary:
+    from ziira.modules.imports.services import batches
+
+    d = batches.get_batch(session, batch_id)
+    b = d.batch
+    return BatchSummary(b.id, b.company_id, b.kind, d.importer.title, b.status, d.counts, d.importer.reversible,
+                        d.importer.reversal_note, b.source_kind, b.source_id, b.revert_reason)
+
+
+def batch_summary(session: Session, batch_id: UUID) -> BatchSummary:
+    """Where a batch stands: its status and counts of rows by state."""
+    return _summary(session, batch_id)
+
+
+def validate_staged(session: Session, batch_id: UUID) -> BatchSummary:
+    """The batch's dry run (rows already in Ziira are skipped, not errors)."""
+    from ziira.modules.imports.services import batches
+
+    batches.validate_batch(session, batch_id)
+    return _summary(session, batch_id)
+
+
+def start_import(session: Session, batch_id: UUID) -> BatchSummary:
+    """Import the valid rows in the background (`ziira worker`). Asking twice changes nothing."""
+    from ziira.modules.imports.services import batches
+
+    batches.commit_batch(session, batch_id)
+    return _summary(session, batch_id)
+
+
+def discard_staged(session: Session, batch_id: UUID) -> None:
+    """Throw away a batch that was never imported."""
+    from ziira.modules.imports.services import batches
+
+    batches.discard_batch(session, batch_id)
+
+
+def reverse_import(session: Session, batch_id: UUID, reason: str) -> BatchSummary:
+    """Undo a finished import of a kind that can be undone (opening balances)."""
+    from ziira.modules.imports.services import batches
+
+    batches.reverse_batch(session, batch_id, reason=reason)
+    return _summary(session, batch_id)

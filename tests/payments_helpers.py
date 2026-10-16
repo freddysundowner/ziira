@@ -17,6 +17,7 @@ def make_payments_shop(client, registry, name: str, *, finance: bool = False):  
     "fake", credentials and a callback token set up) and a bank account. Extra users: `collector` (a cashier)."""
     shop = make_stock_shop(client, registry, name)
     registry.enable(shop["tenant_id"], "payments")
+    registry.enable(shop["tenant_id"], "mpesa")                     # the provider plugin (accounts below use "fake")
     if finance:
         registry.enable(shop["tenant_id"], "finance")
     owner, co = shop["owner"], str(shop["company_id"])
@@ -51,7 +52,7 @@ def c2b(ref: str, amount: str = "116.00", bill: str = "", phone: str = "25471234
 
 def eat_now() -> str:
     """Now as Daraja writes times (East Africa Time)."""
-    from ziira.modules.payments.domain.mpesa import daraja_timestamp
+    from ziira.plugins.mpesa.public import daraja_timestamp
 
     return daraja_timestamp()
 

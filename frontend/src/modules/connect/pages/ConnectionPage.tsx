@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import {
-  Alert, api, Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, DetailList, ErrorState, PageHeader, Skeleton, Tabs, toast, unwrap, useCan, useMutation, useQuery, useQueryClient, useTranslation,
+  Alert, api, Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, DetailList, ErrorState, PageHeader, Skeleton, Tabs, toast, unwrap, useCan, useMutation, useQuery, useQueryClient, useSession, useTranslation,
 } from "@/sdk";
 
 import { BranchMapping } from "../components/BranchMapping";
@@ -12,6 +12,7 @@ import { SettingsForm } from "../components/SettingsForm";
 import { StatusChip } from "../components/StatusChip";
 import { UploadFlow } from "../components/UploadFlow";
 import { isStale, oauthResult, sortEntities } from "../logic";
+import { hasCoreUnits } from "../moveLogic";
 
 type Tab = "overview" | "history" | "branches" | "upload" | "settings";
 
@@ -22,6 +23,7 @@ export default function ConnectionPage() {
   const { search } = useLocation();
   const queryClient = useQueryClient();
   const canManage = useCan("connect.manage");
+  const { enabledUnits } = useSession();
   const [tab, setTab] = useState<Tab>("overview");
   const [confirm, setConfirm] = useState(false);
   const [deleteData, setDeleteData] = useState(false);
@@ -65,7 +67,8 @@ export default function ConnectionPage() {
       <PageHeader title={c.name} description={c.kind_title} back={{ to: "/connect", label: t("title") }}
         actions={canManage && !disconnected && (
           <>
-            {!isFile && <Button loading={sync.isPending} onClick={() => sync.mutate(false)}>{t("overview.syncNow")}</Button>}
+            {hasCoreUnits(enabledUnits) && <Link to={`/connect/connections/${c.id}/move`}><Button>{t("move.button")}</Button></Link>}
+            {!isFile && <Button variant={hasCoreUnits(enabledUnits) ? "secondary" : "primary"} loading={sync.isPending} onClick={() => sync.mutate(false)}>{t("overview.syncNow")}</Button>}
             {c.status === "paused" ? <Button variant="secondary" loading={resume.isPending} onClick={() => resume.mutate()}>{t("overview.resume")}</Button>
               : <Button variant="secondary" loading={pause.isPending} onClick={() => pause.mutate()}>{t("overview.pause")}</Button>}
             <Button variant="danger" onClick={() => setConfirm(true)}>{t("disconnect.button")}</Button>

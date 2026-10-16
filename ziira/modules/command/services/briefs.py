@@ -18,8 +18,8 @@ from ziira.sdk import (
     Session,
     company_setting,
     flag_for_review,
+    notify_user,
     recipients_with_permission,
-    send_notification,
 )
 
 log = logging.getLogger("ziira.command")
@@ -72,21 +72,26 @@ def build(session: Session, person: Recipient, company_id: UUID, kind: str,
 
 def deliver(session: Session, person: Recipient, company_id: UUID, kind: str, today: date, channel: str,
             brief: Brief, data: dict[str, Any]) -> UUID | None:
-    """Store the brief and send it by the person's channel. Falls back to the app when there is no contact for it."""
+    """Store the brief and send it by the person's channel for briefs (their own choice in My account > Notifications,
+    else the schedule's). Falls back to the app when there is no contact for it."""
     via = "in_app"
-    address = person.phone if channel == "sms" else person.email if channel == "email" else None
     brief_id = repo.save_brief(session, person.user_id, company_id, kind, today, brief.subject, brief.body, data, via)
     if brief_id is None:
         return None
-    if address:
-        queued = send_notification(
-            session, company_id=company_id, channel=channel, recipient=address,
-            body=brief.short if channel == "sms" else brief.body,
-            subject=brief.subject if channel == "email" else None, ref_type="command.brief", ref_id=brief_id,
-            dedupe_key=f"brief:{person.user_id}:{company_id}:{kind}:{today}")
-        if queued:
-            session.execute(text("update command.brief set delivered_via = :v where id = :i"),
-                            {"v": channel, "i": str(brief_id)})
+    name, _ = company_info(session, company_id)
+    ways = [] if channel == "in_app" else [channel]       # a channel that is gone falls back; see notify_user
+    queued = notify_user(
+        session, company_id=company_id, user_id=person.user_id, kind="brief",
+        body=brief.body if channel in ("email", "in_app") else brief.short, subject=brief.subject,
+        default_channels=ways, template="daily_brief",
+        variables={"name": person.full_name, "business": name, "summary": brief.short},
+        ref_type="command.brief", ref_id=brief_id,
+        dedupe_key=f"brief:{person.user_id}:{company_id}:{kind}:{today}")
+    if queued:
+        sent_by = session.execute(text("select channel from kernel.notification where id = :i"),
+                                  {"i": str(queued)}).scalar_one()
+        session.execute(text("update command.brief set delivered_via = :v where id = :i"),
+                        {"v": sent_by, "i": str(brief_id)})
     return brief_id
 
 

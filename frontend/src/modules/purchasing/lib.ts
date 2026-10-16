@@ -74,3 +74,12 @@ export function addDays(day: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+/** The location goods arrive in by default: the order's own, else the first active store (a person may pick another). */
+export function receiveLocationId(
+  locations: readonly { id: string; kind: string; is_active: boolean }[] | undefined, preferred?: string | null,
+): string {
+  const active = (locations ?? []).filter((l) => l.is_active);
+  if (preferred && active.some((l) => l.id === preferred)) return preferred;
+  return (active.find((l) => l.kind === "store") ?? active[0])?.id ?? "";
+}

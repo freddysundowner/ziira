@@ -20,12 +20,13 @@ export default defineModule({
     { path: "/stock/locations", page: () => import("./pages/LocationsPage"), permission: "stock.view" },
   ],
   menu: [
-    { label: "inventory:stock", to: "/stock", permission: "stock.view", order: 20, group: "stock", icon: "stock" },
-    { label: "inventory:movements", to: "/stock/movements", permission: "stock.view", order: 21, group: "stock", icon: "ledger" },
-    { label: "inventory:adjustments", to: "/stock/adjustments", permission: "stock.view", order: 22, group: "stock", icon: "document" },
-    { label: "inventory:transfers", to: "/stock/transfers", permission: "stock.view", order: 23, group: "stock", icon: "suppliers" },
-    { label: "inventory:counts", to: "/stock/counts", permission: "stock.view", order: 24, group: "stock", icon: "purchases" },
-    { label: "inventory:locations", to: "/stock/locations", permission: "stock.view", order: 25, group: "stock", icon: "company" },
+    { label: "inventory:stock", tab: "inventory:stockLevels", to: "/stock", permission: "stock.view", order: 20, area: "stock", icon: "stock" },
+    { label: "inventory:movements", to: "/stock/movements", permission: "stock.view", order: 30, area: "stock", icon: "ledger" },
+    { label: "inventory:adjustments", tab: "inventory:stockActions", to: "/stock/adjustments", permission: "stock.view", order: 40, area: "stock", icon: "document" },
+    { label: "inventory:transfers", to: "/stock/transfers", permission: "stock.view", order: 41, area: "stock", under: "/stock/adjustments", icon: "suppliers" },
+    { label: "inventory:counts", to: "/stock/counts", permission: "stock.view", order: 42, area: "stock", under: "/stock/adjustments", icon: "purchases" },
+    { label: "inventory:openingStock", to: "/stock/opening", permission: "stock.adjust", order: 43, area: "stock", under: "/stock/adjustments", icon: "boxes" },
+    { label: "inventory:locations", to: "/stock/locations", permission: "stock.view", order: 91, area: "stock", setup: true, icon: "company" },
   ],
   slots: {
     "dashboard.widgets": [

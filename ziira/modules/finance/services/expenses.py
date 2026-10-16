@@ -1,11 +1,11 @@
-"""Use cases: expenses (a cost paid at once from cash, bank, M-Pesa or card, with a receipt reference).
+"""Use cases: expenses (a cost paid at once from cash, bank, mobile money or card, with a receipt reference).
 
     draft --submit--> pending_approval --approved--> posted --reverse--> reversed
       |                      '--rejected--> rejected
       '--submit (no approval rule applies)--> posted
 
-Posting is Dr the expense account and Dr VAT input, Cr cash / bank / M-Pesa / card. Costs bought on credit go through
-Purchasing's supplier bills, so what is owed to suppliers always equals what the supplier ledger says.
+Posting is Dr the expense account and Dr VAT input, Cr cash / bank / mobile money / card. Costs bought on credit go
+through Purchasing's supplier bills, so what is owed to suppliers always equals what the supplier ledger says.
 """
 
 from datetime import date

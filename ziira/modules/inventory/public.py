@@ -82,6 +82,28 @@ def location_scope(session: Session, location_id: UUID) -> tuple[UUID, UUID | No
     return location.company_id, location.branch_id
 
 
+@dataclass(frozen=True)
+class LocationView:
+    """A stock location as other units may see it."""
+
+    id: UUID
+    code: str
+    name: str
+    kind: str
+    branch_id: UUID | None
+
+
+def locations_for_branch(session: Session, company_id: UUID, branch_id: UUID) -> list[LocationView]:
+    """The active stores and warehouses of a branch, stores first (for choosing where stock is brought in)."""
+    from sqlalchemy import text
+
+    rows = session.execute(text(
+        "select id, code, name, kind, branch_id from inventory.location where company_id = :c and branch_id = :b "
+        "and is_active and kind in ('store', 'warehouse') order by kind, code"),
+        {"c": str(company_id), "b": str(branch_id)})
+    return [LocationView(r.id, r.code, r.name, r.kind, r.branch_id) for r in rows]
+
+
 def branch_stock_position(session: Session, company_id: UUID, branch_id: UUID, product_id: UUID, *,
                           sold_since: date) -> tuple[Decimal, Decimal]:
     """(quantity on hand in the branch's stores and warehouses, quantity sold there since `sold_since` net of returns),

@@ -13,8 +13,9 @@ test("J17 quotation to order to invoice to payment", async ({ page }) => {
 
   await signIn(page, s.owner);
 
-  // --- the menu has one entry for all the sales documents
-  await expect(page.getByRole("link", { name: "Sales documents" })).toBeVisible();
+  // --- Sell is a section of the menu that always lists the sales documents (quotations and orders share one entry, payments and refunds another)
+  const nav = page.getByRole("navigation", { name: "Main" });
+  for (const name of ["Quotes and orders", "Invoices", "Customer payments"]) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
 
   // --- a quotation for 3 anvils at the list price: 3 x 50 = 150
   await page.goto("/pos/quotations");
@@ -85,7 +86,7 @@ test("J17 quotation to order to invoice to payment", async ({ page }) => {
 
   // --- the manager's inbox of refused offline sales is reachable and, with nothing refused, says so
   await page.goto("/pos/sync/rejections");
-  await expect(page.getByRole("link", { name: "Offline rejections" })).toBeVisible();      // and it has its own menu entry
+  await expect(page.getByRole("navigation", { name: "Tills and devices" }).getByRole("link", { name: "Offline rejections" })).toBeVisible();      // a tab of Tills and devices
   await expect(page.getByRole("heading", { name: "Offline rejections" })).toBeVisible();
   await expect(page.getByText("No sale is waiting for attention.")).toBeVisible();
   await checkAccessibility(page, "offline rejections");

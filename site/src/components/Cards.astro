@@ -1,0 +1,16 @@
+---
+import type { Lang } from "../content/types";
+import type { Entry } from "../lib/registry";
+import { ui } from "../i18n/ui";
+interface Props { lang: Lang; items: Entry[]; cols?: "two" | "three" }
+const { lang, items, cols = "three" } = Astro.props;
+---
+<div class={`grid ${cols}`} style="margin-block: 1em 2em">
+  {items.map((e) => (
+    <a class="card card-link" href={e.path}>
+      <h3>{e.def.short ?? e.def.title}</h3>
+      <p>{e.def.description}</p>
+      <span class="more">{ui[lang].readMore} &rarr;</span>
+    </a>
+  ))}
+</div>

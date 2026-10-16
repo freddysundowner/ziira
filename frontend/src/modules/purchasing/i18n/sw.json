@@ -1,4 +1,5 @@
 {
+  "returnsCredits": "Marejesho na mikopo",
   "suppliers": "Wasambazaji",
   "requests": "Maombi ya ununuzi",
   "orders": "Oda za ununuzi",
@@ -448,5 +449,7 @@
   "payAcctName": "Jina la akaunti",
   "payAcctNameHint": "Unavyoiita, kwa mfano Akaunti kuu ya benki.",
   "payAcctNumber": "Namba ya akaunti (tarakimu za mwisho)",
-  "payAcctNumberHint": "Hiari. Tarakimu za mwisho tu ili itambulike. Namba kamili haihifadhiwi."
+  "payAcctNumberHint": "Hiari. Tarakimu za mwisho tu ili itambulike. Namba kamili haihifadhiwi.",
+  "noLocationYet": "Bado hakuna eneo la hisa la kupokelea bidhaa.",
+  "addLocationLink": "Ongeza bohari kwanza"
 }

@@ -39,6 +39,8 @@ class OverCreditLimit(IntelCheck):
     """A customer owes more than the credit limit they were given."""
 
     code = "crm.over_credit_limit"
+
+    value_kind = "money"
     title = "Customers over their credit limit"
     area = "customers"
     description = ("A customer whose unpaid invoices, less money they hold on account, are above their credit limit. "
@@ -81,6 +83,8 @@ class CreditIncreaseWaiting(IntelCheck):
     """A credit limit increase left waiting for approval."""
 
     code = "crm.credit_increase_waiting"
+
+    value_kind = "days"
     title = "Credit increases waiting for approval"
     area = "customers"
     description = "A request to raise a customer's credit limit that has waited for approval longer than the limit."
@@ -124,6 +128,8 @@ class OverdueFollowUps(IntelCheck):
     """Follow-ups on open leads that are days past due, one finding per person who owns them."""
 
     code = "crm.followups_overdue"
+
+    value_kind = "count"
     title = "Overdue lead follow-ups"
     area = "customers"
     description = "A salesperson with follow-ups on open leads that are overdue by more than the limit."
@@ -171,6 +177,8 @@ class DuplicateCustomers(IntelCheck):
     """Customers recently created with the same phone number or tax number as another customer."""
 
     code = "crm.duplicate_customers"
+
+    value_kind = "count"
     title = "Customers entered twice"
     area = "controls"
     description = ("A customer created recently with the same phone number or tax number as another customer, which "

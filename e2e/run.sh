@@ -18,6 +18,8 @@ set -a; [ -f .env ] && . ./.env; set +a
 ADMIN="${ZIIRA_TEST_ADMIN_URL:-postgresql+psycopg://ziira:ziira@localhost:${ZIIRA_DB_PORT:-5432}/postgres}"
 export ZIIRA_TEST_ADMIN_URL="$ADMIN"
 export ZIIRA_ENV=development ZIIRA_MFA_DEFAULT_POLICY=off
+# Platform staff sign in with email and password (the default); J19 runs that way
+export ZIIRA_OPERATOR_MFA=off
 export ZIIRA_MASTER_DATABASE_URL="${ADMIN%/*}/ziira_e2e_master"
 export ZIIRA_TENANT_SERVER_URL="$ADMIN"
 export ZIIRA_TEMPLATE_DATABASE=ziira_e2e_template ZIIRA_TENANT_DB_PREFIX=ziira_e2e_t_ ZIIRA_TENANT_ROLE_PREFIX=ze2e_
@@ -52,8 +54,15 @@ echo "==> Scratch databases"
 OPERATOR_PASSWORD="operator-pass-123"
 OPERATOR_OUT="$(ZIIRA_OPERATOR_PASSWORD="$OPERATOR_PASSWORD" .venv/bin/ziira operator create "E2E Operator" e2e-operator@ziira.test 2>&1)" || { echo "$OPERATOR_OUT"; exit 2; }
 export E2E_OPERATOR_EMAIL=e2e-operator@ziira.test E2E_OPERATOR_PASSWORD="$OPERATOR_PASSWORD"
-E2E_OPERATOR_SECRET="$(printf '%s\n' "$OPERATOR_OUT" | sed -n 's/^secret: //p')"
-export E2E_OPERATOR_SECRET
+
+# A throwaway plugin in an extra folder for the operator console journey (J19). Set after `install --all` so that it
+# starts out "available"; the API and worker load plugins from this folder.
+EXTRA_PLUGINS="$WORK/extra-plugins"
+mkdir -p "$EXTRA_PLUGINS/e2escratch/migrations"
+printf '[unit]\nname = "e2escratch"\ntitle = "E2E scratch plugin"\ndescription = "Used by the operator console journey only."\ncategory = "example"\nkind = "plugin"\nversion = "1.0.0"\nsdk = ">=1.0,<2.0"\n' >"$EXTRA_PLUGINS/e2escratch/manifest.toml"
+printf 'create schema if not exists plg_e2escratch;\ncreate table plg_e2escratch.note (id int);\n' >"$EXTRA_PLUGINS/e2escratch/migrations/0001_init.up.sql"
+printf 'drop schema if exists plg_e2escratch cascade;\n' >"$EXTRA_PLUGINS/e2escratch/migrations/0001_init.down.sql"
+export ZIIRA_EXTRA_UNIT_PATHS="$EXTRA_PLUGINS" E2E_EXTRA_PLUGINS="$EXTRA_PLUGINS"
 
 echo "==> Building the web app"
 [ -d frontend/node_modules ] || npm --prefix frontend ci

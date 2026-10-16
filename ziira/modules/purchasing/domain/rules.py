@@ -152,8 +152,8 @@ def mask_account(number: str) -> str:
 def check_account_number(method: str, number: str) -> str:
     value = re.sub(r"[\s-]", "", number)
     if method == "mobile_money":
-        if not re.fullmatch(r"(?:\+?254|0)?[17]\d{8}", value):
-            raise ValidationFailed("An M-Pesa number looks like 0712345678")
+        if not re.fullmatch(r"\+?\d{8,15}", value):
+            raise ValidationFailed("A mobile money number is 8 to 15 digits (start with + if it is international)")
         return value
     if not re.fullmatch(r"[A-Za-z0-9]{5,30}", value):
         raise ValidationFailed("A bank account number is 5-30 letters or digits")

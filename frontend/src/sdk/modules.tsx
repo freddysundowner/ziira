@@ -5,6 +5,7 @@ import { createContext, lazy, type ReactNode, Suspense, useContext, useMemo } fr
 
 import type { ModuleDefinition, SlotProps } from "./module";
 import { type Access, activeModules, type ActiveContribution, slotContributions } from "./registry";
+import { useNavFlags } from "./navFlags";
 import { useSession } from "./session";
 
 const ModulesContext = createContext<readonly ModuleDefinition[]>([]);
@@ -22,7 +23,8 @@ export function useActiveModules(): readonly ModuleDefinition[] {
 
 export function useAccess(): Access {
   const { enabledUnits, can } = useSession();
-  return useMemo(() => ({ enabledUnits, can }), [enabledUnits, can]);
+  const flags = useNavFlags();
+  return useMemo(() => ({ enabledUnits, can, flags }), [enabledUnits, can, flags]);
 }
 
 /** Contributions to a slot that this user may see, from active modules only. */

@@ -1,4 +1,4 @@
-"""The job queue: work to do later, or again after a failure (checking an M-Pesa payment, retrying a submission).
+"""The job queue: work to do later, or again after a failure (checking a mobile money payment, retrying a submission).
 
 `enqueue` adds a job in the caller's transaction (so it exists only if the caller's change committed). `run_due` runs
 the jobs that are due: each in its own savepoint, with the failed ones retried with growing delays (30 s, 1 min, 2 min,

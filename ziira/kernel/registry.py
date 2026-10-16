@@ -75,6 +75,7 @@ def discover() -> dict[str, Manifest]:
         for manifest_file in sorted((ZIIRA_ROOT / folder).glob("*/manifest.toml")):
             m = load_manifest(manifest_file, f"{pkg}.{manifest_file.parent.name}")
             found[m.name] = m
+    _discover_extra(found)
     for ep in metadata.entry_points(group=ENTRY_POINT_GROUP):
         package = ep.value
         module = __import__(package, fromlist=["__file__"])
@@ -85,23 +86,70 @@ def discover() -> dict[str, Manifest]:
 
 
 
-def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
+def _discover_extra(found: dict[str, Manifest]) -> None:
+    """Add the plugins in the extra folders (ZIIRA_EXTRA_UNIT_PATHS) that may load; log and skip the rest."""
+    import logging
+
+    from ziira.kernel import plugin_trust
+
+    roots = get_settings().extra_unit_path_list()
+    if not roots:
+        return
+    plugin_trust.extra_package(roots)
+    plugin_trust.refused.clear()
+    log = logging.getLogger("ziira.plugins")
+    for root in roots:
+        for manifest_file in sorted(Path(root).glob("*/manifest.toml")):
+            folder = manifest_file.parent.name
+            try:
+                m = load_manifest(manifest_file, f"{plugin_trust.EXTRA_PACKAGE}.{folder}")
+                if m.name != folder:
+                    problem: str | None = f"the folder is '{folder}' but the manifest names it '{m.name}'"
+                elif m.kind != "plugin":
+                    problem = "only plugins can be loaded from an extra folder"
+                elif m.name in found:
+                    problem = "a unit with that name already exists"
+                else:
+                    problem = plugin_trust.vet(m)
+            except (ValueError, KeyError) as exc:
+                m, problem = None, f"its manifest cannot be read: {exc}"
+            if problem is not None:
+                plugin_trust.refused[folder] = problem
+                log.error("Plugin '%s' in %s was not loaded: %s", folder, root, problem)
+                continue
+            assert m is not None
+            found[m.name] = m
+
+
+strict_by_default = False               # tests switch it on: a broken unit must never pass quietly there
+broken_units: dict[str, str] = {}      # unit name -> why its hooks, events or jobs could not be imported (this process)
+
+
+def load_event_handlers(units: dict[str, Manifest] | None = None, *, strict: bool | None = None) -> None:
     """Import every unit's hooks.py, events.py and jobs.py, registering its sockets (extension points,
     validation hooks) and what it plugs in (@provides, @validate, @subscribe, @subscribe_after).
 
     Must run in any process that publishes events or runs services: the API, the CLI and scripts.
     Import order does not matter: a registration waits until its socket is declared.
+
+    A unit whose files cannot be imported is **isolated**: the error is logged with the unit's name, remembered in
+    `broken_units` (`/readyz` reports it) and the unit is skipped, so one half-finished plugin cannot break unrelated
+    flows. With `strict` (the default in tests, and used by `ziira install` and `ziira verify`) the error is raised.
     """
     import importlib
     import importlib.util
+    import logging
 
-    from ziira.kernel import checks, privacy  # noqa: F401  (the kernel's own extension points and privacy task)
+    from ziira.kernel import checks, packs, privacy, webhooks  # noqa: F401  (the kernel's own sockets, tasks and jobs)
     from ziira.kernel.events import register_unit_package
+    from ziira.kernel.platform import gateways  # noqa: F401  (declares the payment gateway socket)
 
+    raising = strict_by_default if strict is None else strict
     found = units or discover()
     for m in found.values():
         if not m.core:
             register_unit_package(m.package, m.name)
+    webhooks.register_public_events(found)
     for m in found.values():
         if m.core:
             continue
@@ -111,8 +159,19 @@ def load_event_handlers(units: dict[str, Manifest] | None = None) -> None:
                 exists = importlib.util.find_spec(f"{m.package}.{part}") is not None
             except ModuleNotFoundError:          # the unit's package itself is not importable
                 exists = False
-            if exists:
+            if not exists:
+                continue
+            try:
                 importlib.import_module(f"{m.package}.{part}")
+            except Exception as exc:  # noqa: BLE001 - isolate the broken unit unless the caller wants it loud
+                if raising:
+                    raise
+                broken_units[m.name] = f"{part}.py: {type(exc).__name__}: {exc}"
+                logging.getLogger("ziira.units").error(
+                    "Unit '%s' could not be loaded (%s) and is skipped: %s", m.name, part, exc, exc_info=True)
+                break
+        else:
+            broken_units.pop(m.name, None)
 
 
 def check_socket_declarations(units: dict[str, Manifest], m: Manifest) -> None:
@@ -338,10 +397,32 @@ class Registry:
                     if unit_name in self.installed_in(tenant_id):
                         self._install_in_tenant(tenant_id, m)
                         self._grant_new_permissions_to_owner(tenant_id, m)
+                self._enable_where_used(m)
                 continue
             installed.add(unit_name)
             done.append(unit_name)
+            self._enable_where_used(m)
         return done
+
+    def _enable_where_used(self, m: Manifest) -> list[UUID]:
+        """The unit's upgrade step (`[upgrade] enable_if_sql`): switch it on in the tenant databases where its query
+        finds something and the unit was never there. Returns the tenants it was switched on for."""
+        if not m.upgrade_enable_sql:
+            return []
+        switched: list[UUID] = []
+        for tenant_id in self.tenant_ids():
+            present = self.installed_in(tenant_id)
+            if m.name in present or not all(r in present for r in m.requires):
+                continue
+            try:
+                with tenant_engine(tenant_id, admin=True).connect() as conn:
+                    used = conn.execute(text(m.upgrade_enable_sql)).first() is not None
+            except Exception:                       # the tables the query reads are not there: nothing to carry over
+                continue
+            if used:
+                self.enable(tenant_id, m.name)
+                switched.append(tenant_id)
+        return switched
 
     def _grant_new_permissions_to_owner(self, tenant_id: UUID, m: Manifest) -> None:
         """After an upgrade: the Owner gets any permission the new version added (the kernel's always; a unit's only
@@ -407,6 +488,30 @@ class Registry:
             register_unit(conn, m)
             grant_unit(conn, m, role)
 
+    def upgrade_tenant(self, tenant_id: UUID) -> dict[str, list[str]]:
+        """Apply every pending migration of the units this tenant's database has (the per-business half of
+        `install --all`). Returns the migration files applied, by unit; units with nothing pending are left out."""
+        present = self.installed_in(tenant_id)
+        applied: dict[str, list[str]] = {}
+        for unit_name in install_order(self.units, [n for n in self.units if n in present]):
+            m = self.units[unit_name]
+            before = self.applied_migrations(tenant_id).get(unit_name, set())
+            pending = [f.name for f in migration_files(m, "up") if f.name not in before]
+            self._install_in_tenant(tenant_id, m)
+            self._grant_new_permissions_to_owner(tenant_id, m)
+            if pending:
+                applied[unit_name] = pending
+        return applied
+
+    @staticmethod
+    def applied_migrations(tenant_id: UUID) -> dict[str, set[str]]:
+        """The migrations already applied in a tenant's database, by unit."""
+        found: dict[str, set[str]] = {}
+        with tenant_engine(tenant_id, admin=True).connect() as conn:
+            for row in conn.execute(text("select unit_name, migration from kernel.schema_migration")):
+                found.setdefault(row.unit_name, set()).add(row.migration)
+        return found
+
     def remove_from_tenant(self, tenant_id: UUID, name: str) -> None:
         """Drop a unit's tables from one tenant's database (its data is deleted).
 
@@ -447,6 +552,8 @@ class Registry:
             m = self.units[unit_name]
             if m.core:
                 continue
+            if m.platform_scope:
+                raise DependencyError(f"'{unit_name}' serves the platform itself: no business switches it on")
             if unit_name not in installed:
                 raise DependencyError(f"'{unit_name}' is not installed on this platform")
             if unit_name not in present:
@@ -462,6 +569,10 @@ class Registry:
                     {"t": str(tenant_id), "n": unit_name})
                 seed_unit_defaults(s, m)
             newly.append(unit_name)
+        if newly:
+            from ziira.kernel import packs
+
+            packs.after_enable(self, tenant_id, newly)
         return newly
 
     def disable(self, tenant_id: UUID, name: str) -> None:

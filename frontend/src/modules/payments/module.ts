@@ -13,11 +13,11 @@ export default defineModule({
     { path: "/payments/accounts", page: () => import("./pages/AccountsPage"), permission: "payments.view" },
   ],
   menu: [
-    { label: "payments:menu", to: "/payments", permission: "payments.view", order: 30, group: "money", icon: "payments" },
-    { label: "payments:requests", to: "/payments/requests", permission: "payments.view", order: 31, group: "money", icon: "cash" },
-    { label: "payments:reconciliation", to: "/payments/reconciliation", permission: "payments.view", order: 32, group: "money", icon: "ledger" },
-    { label: "payments:closes", to: "/payments/closes", permission: "payments.view", order: 33, group: "money", icon: "document" },
-    { label: "payments:accounts", to: "/payments/accounts", permission: "payments.view", order: 34, group: "money", icon: "settings" },
+    { label: "payments:menu", to: "/payments", permission: "payments.view", order: 10, area: "money", icon: "payments" },
+    { label: "payments:requests", to: "/payments/requests", permission: "payments.view", order: 11, area: "money", under: "/payments", icon: "cash" },
+    { label: "payments:reconciliation", to: "/payments/reconciliation", permission: "payments.view", order: 12, area: "money", under: "/payments", icon: "ledger" },
+    { label: "payments:closes", to: "/payments/closes", permission: "payments.view", order: 13, area: "money", under: "/payments", icon: "document" },
+    { label: "payments:accounts", to: "/payments/accounts", permission: "payments.view", order: 94, area: "money", setup: true, icon: "settings" },
   ],
   slots: {
     "dashboard.widgets": [

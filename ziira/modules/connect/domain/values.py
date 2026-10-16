@@ -25,7 +25,7 @@ _BOOLS = {"yes": True, "y": True, "true": True, "1": True, "x": True, "no": Fals
 
 def parse_decimal(text: str, decimal_separator: str = ".") -> Decimal:
     """A number as typed: `1234.50`, `1,234.50`, `1 234,50` (comma decimals), `(12.00)` or `12.00-` for minus 12,
-    `KES 1,200.00` and `1200 DR` (a currency word is ignored; DR means negative, CR positive)."""
+    `USD 1,200.00` and `1200 DR` (a currency word is ignored; DR means negative, CR positive)."""
     if decimal_separator not in DECIMAL_SEPARATORS:
         raise ValueError("The decimal separator must be '.' or ','")
     value = text.strip()

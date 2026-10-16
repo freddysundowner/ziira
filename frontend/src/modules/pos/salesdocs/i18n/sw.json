@@ -2,6 +2,8 @@
   "menu": "Hati za mauzo",
   "title": "Hati za mauzo",
   "tabs": {
+    "quotesOrders": "Nukuu na oda",
+    "customerPayments": "Malipo ya wateja",
     "quotations": "Nukuu za bei",
     "orders": "Oda za mauzo",
     "invoices": "Ankara",

@@ -15,7 +15,7 @@ export default function AllSchedules() {
         { header: t("person"), sortValue: (s) => s.user_name, cell: (s) => <span className="font-medium">{s.user_name ?? "—"}</span> },
         { header: t("which"), cell: (s) => t(`kind.${s.kind}`) },
         { header: t("sendTime"), cell: (s) => `${s.kind === "weekly" && s.weekday ? `${t(`weekdays.${s.weekday}`)} ` : ""}${toTimeInput(s.send_time)}` },
-        { header: t("channel"), hideBelow: "sm", cell: (s) => t(`channels.${s.channel}`) },
+        { header: t("channel"), hideBelow: "sm", cell: (s) => t(`channels.${s.channel}`, s.channel) },
         { header: t("status"), hideBelow: "sm", cell: (s) => <Badge tone={s.is_active ? "ok" : "neutral"}>{s.is_active ? t("active") : t("paused")}</Badge> },
       ]}
     />

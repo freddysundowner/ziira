@@ -1,5 +1,6 @@
-import { Ban, CheckCircle2, KeyRound, Plus } from "lucide-react";
+import { Ban, CheckCircle2, KeyRound, Plus, Store } from "lucide-react";
 import { type FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
   api, Alert, Button, ConfirmDialog, DataTable, Drawer, Field, formatDate, FormGrid, Input, Menu, Modal, PageHeader, Schemas, Select, StatusBadge, toast,
@@ -7,6 +8,7 @@ import {
 } from "@/sdk";
 
 import { useBranches, useDevices, useLocations } from "../hooks";
+import { defaultStoreId } from "../lib";
 
 type Device = Schemas["DeviceOut"];
 
@@ -21,6 +23,7 @@ export default function DevicesPage() {
   const [creating, setCreating] = useState(false);
   const [toggle, setToggle] = useState<Device | null>(null);
   const [rotate, setRotate] = useState<Device | null>(null);
+  const [storeOf, setStoreOf] = useState<Device | null>(null);
   const [shownKey, setShownKey] = useState<{ name: string; key: string } | null>(null);
   const locationName = (id: string | null) => (id ? locations.data?.find((l) => l.id === id)?.name ?? "—" : "—");
 
@@ -53,6 +56,7 @@ export default function DevicesPage() {
                 d.status === "active"
                   ? { label: t("blockDevice"), icon: <Ban className="h-4 w-4" />, danger: true, onSelect: () => setToggle(d) }
                   : { label: t("unblockDevice"), icon: <CheckCircle2 className="h-4 w-4" />, onSelect: () => setToggle(d) },
+                { label: t("changeStore"), icon: <Store className="h-4 w-4" />, onSelect: () => setStoreOf(d) },
                 { label: t("newKey"), icon: <KeyRound className="h-4 w-4" />, onSelect: () => setRotate(d) },
               ]} />
             ),
@@ -66,6 +70,7 @@ export default function DevicesPage() {
         confirmLabel={toggle?.status === "active" ? t("blockDevice") : t("unblockDevice")} onConfirm={() => toggle && setStatus.mutate(toggle)} />
       <ConfirmDialog open={Boolean(rotate)} onClose={() => setRotate(null)} busy={newKey.isPending} danger title={t("newKey")}
         message={t("newKeyAsk", { name: rotate?.name })} confirmLabel={t("newKey")} onConfirm={() => rotate && newKey.mutate(rotate)} />
+      <ChangeStore device={storeOf} onClose={() => setStoreOf(null)} />
       <KeyModal shown={shownKey} onClose={() => setShownKey(null)} />
     </>
   );
@@ -79,9 +84,13 @@ function NewDevice({ open, onClose, onCreated }: { open: boolean; onClose: () =>
   const branchId = f.values.branch_id || branches[0]?.id || "";
   const locations = useQuery({ enabled: open && Boolean(branchId), retry: false, queryKey: ["inventory-locations", branchId], queryFn: () => unwrap(api.GET("/api/v1/inventory/locations", { params: { query: { branch_id: branchId } } })) });
 
+  const stores = locations.data?.filter((l) => l.is_active);
+  const noStores = Boolean(stores) && stores?.length === 0;
+  const storeId = f.values.location_id || defaultStoreId(stores);
+
   const create = useMutation({
     meta: { silent: true },
-    mutationFn: () => unwrap(api.POST("/api/v1/pos/devices", { body: { branch_id: branchId, code: f.values.code.trim(), name: f.values.name.trim(), location_id: f.values.location_id || null } })),
+    mutationFn: () => unwrap(api.POST("/api/v1/pos/devices", { body: { branch_id: branchId, code: f.values.code.trim(), name: f.values.name.trim(), location_id: storeId || null } })),
     onSuccess: (d) => { void qc.invalidateQueries({ queryKey: ["pos-devices"] }); toast(t("deviceCreated", { name: d.name }), "ok"); f.reset(); onClose(); onCreated(d.name, d.key); },
     onError: (e) => { f.fail(e); toast((e as Error).message, "bad"); },
   });
@@ -89,7 +98,7 @@ function NewDevice({ open, onClose, onCreated }: { open: boolean; onClose: () =>
 
   return (
     <Drawer open={open} onClose={onClose} title={t("newDevice")}
-      footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="new-device" loading={create.isPending} disabled={!branchId}>{t("save")}</Button></>}>
+      footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="new-device" loading={create.isPending} disabled={!branchId || noStores}>{t("save")}</Button></>}>
       <form id="new-device" onSubmit={submit} className="space-y-4">
         <Field label={t("name")} required error={f.error("name")} hint={t("deviceNameHint")}><Input {...f.bind("name")} required autoFocus maxLength={100} /></Field>
         <FormGrid>
@@ -100,16 +109,42 @@ function NewDevice({ open, onClose, onCreated }: { open: boolean; onClose: () =>
             </Select>
           </Field>
         </FormGrid>
-        {locations.data && locations.data.length > 0 && (
-          <Field label={t("store")} hint={t("storeHint")} error={f.error("location_id")}>
-            <Select {...f.bind("location_id")}>
-              <option value="">{t("defaultStore")}</option>
-              {locations.data.filter((l) => l.is_active).map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+        {noStores && (
+          <Alert tone="warn">{t("noStoreYet")} <Link className="font-medium underline" to="/stock/locations">{t("addStoreLink")}</Link></Alert>
+        )}
+        {stores && stores.length > 0 && (
+          <Field label={t("store")} required hint={t("storeHint")} error={f.error("location_id")}>
+            <Select value={storeId} onChange={(e) => f.set("location_id", e.target.value)} required>
+              {stores.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </Select>
           </Field>
         )}
       </form>
     </Drawer>
+  );
+}
+
+/** Change the store a till's sales take stock from (the server refuses while a till is open on it). */
+function ChangeStore({ device, onClose }: { device: Device | null; onClose: () => void }) {
+  const { t } = useTranslation("pos");
+  const qc = useQueryClient();
+  const locations = useLocations(device?.branch_id, Boolean(device));
+  const stores = locations.data?.filter((l) => l.is_active);
+  const [picked, setPicked] = useState("");
+  const current = picked || device?.location_id || defaultStoreId(stores);
+  const save = useMutation({
+    mutationFn: () => unwrap(api.PATCH("/api/v1/pos/devices/{device_id}", { params: { path: { device_id: device?.id ?? "" } }, body: { location_id: current } })),
+    onSuccess: (d) => { void qc.invalidateQueries({ queryKey: ["pos-devices"] }); toast(t("storeChanged", { name: d.name }), "ok"); setPicked(""); onClose(); },
+  });
+  return (
+    <Modal open={Boolean(device)} onClose={onClose} title={t("changeStoreOf", { name: device?.name })} size="sm"
+      footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button loading={save.isPending} disabled={!current} onClick={() => save.mutate()}>{t("save")}</Button></>}>
+      <Field label={t("store")} hint={t("changeStoreHint")}>
+        <Select value={current} onChange={(e) => setPicked(e.target.value)}>
+          {(stores ?? []).map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+        </Select>
+      </Field>
+    </Modal>
   );
 }
 

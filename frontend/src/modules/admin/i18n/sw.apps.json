@@ -1,12 +1,7 @@
 {
  "apps": {
-  "title": "Programu na viongezi",
-  "menu": "Programu na viongezi",
+  "keywords": "viongezi addons add-ons programu plugins modules apps features extensions store marketplace",
   "hint": "Washa au zima sehemu za Ziira kwa biashara yako. Kuzima kunahifadhi data yako; kuondoa kunaifuta.",
-  "modules": "Moduli",
-  "modulesHint": "Sehemu kuu za biashara: kuuza, bidhaa, kununua, fedha na watu.",
-  "plugins": "Viongezi",
-  "pluginsHint": "Vitu vya ziada vinavyounganisha Ziira na huduma nyingine au kuongeza kazi ndogo.",
   "retry": "Jaribu tena",
   "loadFailed": "Orodha ya programu haikuweza kupakiwa.",
   "none": "Hakuna cha kuonyesha",
@@ -33,6 +28,28 @@
   "removeAsk": "Hii inafuta kabisa kila kitu ambacho {{name}} imehifadhi kwa biashara hii. Haiwezi kurudishwa. Ukiiwasha tena baadaye itaanza tupu.",
   "removeType": "Andika {{name}} ili kuthibitisha",
   "removed": "Data ya {{name}} imefutwa",
-  "cancel": "Ghairi"
+  "cancel": "Ghairi",
+  "plugin": "Plugin",
+  "edition": {
+   "title": "Toleo lako",
+   "change": "Badilisha toleo",
+   "changeHint": "Kuhamia toleo lingine huwasha vilivyomo. Hakuna kinachozimwa wala data inayofutwa.",
+   "whatIsOn": "Kilichowashwa kwenye biashara yangu",
+   "nothingOn": "Hakuna kilichowashwa bado.",
+   "switchTitle": "Hamia {{name}}?",
+   "switch": "Badilisha toleo",
+   "willAdd": "Hivi vitawashwa: {{names}}.",
+   "addsNothing": "Vyote vilivyomo tayari vimewashwa.",
+   "keeps": "Hakuna ulicho nacho kinachozimwa wala kufutwa. Ukitaka kuzima kitu baadaye, tumia kadi yake hapa chini.",
+   "switched": "Toleo limebadilishwa. Vilivyowashwa: {{names}}",
+   "switchedNothing": "Toleo limebadilishwa."
+  },
+  "recommended": {
+   "for": "Inapendekezwa kwa {{country}}",
+   "badge": "Inapendekezwa"
+  },
+  "search": "Tafuta viongezi",
+  "filterAll": "Vyote",
+  "noMatch": "Hakuna kipengele kinacholingana"
  }
 }

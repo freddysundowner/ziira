@@ -1,0 +1,96 @@
+# EXAMPLE payroll rule tables for Kenya. READ THIS BEFORE USE.
+#
+# * The figures are the ones the repository's own tests and notes use (the PAYE bands and personal relief, the NSSF-style
+#   6% pension up to a limit, the 2.75% health contribution with a minimum, the 1.5% housing levy). They were the rules
+#   we knew of at the time of writing and are NOT guaranteed to be current: Kenyan payroll law changes (Finance Acts,
+#   NSSF phase-in steps, health and housing levies).
+# * Every table is saved UNVERIFIED. A person other than the one who set the business up must check it against the
+#   official notice (KRA, NSSF, SHA, the housing levy notice) and verify it before a payroll run that used it can be
+#   approved. Replace anything that is out of date with a new table with a later `effective_from`.
+# * `effective_from` is a placeholder start date, not the date the law began.
+# * Whether each contribution reduces taxable pay is a legal question: confirm it with the business's accountant.
+#
+# Shape of a table: see ziira/modules/people/domain/rules.py. Money and rates are strings.
+
+[[table]]
+code = "NSSF"
+effective_from = "2025-01-01"
+source_reference = "EXAMPLE only, from the repository's test figures: check against the current NSSF notice (verify before use)"
+
+[table.definition]
+name = "NSSF pension"
+kind = "contribution"
+order = 10
+base = "gross"
+reduces_taxable = true
+[table.definition.employee]
+method = "rate"
+rate = "0.06"
+base_maximum = "72000"
+[table.definition.employer]
+method = "rate"
+rate = "0.06"
+base_maximum = "72000"
+
+[[table]]
+code = "SHIF"
+effective_from = "2025-01-01"
+source_reference = "EXAMPLE only, from the repository's test figures: check against the current SHA notice (verify before use)"
+
+[table.definition]
+name = "SHIF health contribution"
+kind = "contribution"
+order = 20
+base = "gross"
+reduces_taxable = true
+[table.definition.employee]
+method = "rate"
+rate = "0.0275"
+minimum = "300"
+
+[[table]]
+code = "AHL"
+effective_from = "2025-01-01"
+source_reference = "EXAMPLE only: check the current Affordable Housing Levy notice (verify before use)"
+
+[table.definition]
+name = "Affordable Housing Levy"
+kind = "levy"
+order = 25
+base = "gross"
+reduces_taxable = true
+[table.definition.employee]
+method = "rate"
+rate = "0.015"
+[table.definition.employer]
+method = "rate"
+rate = "0.015"
+
+[[table]]
+code = "PAYE"
+effective_from = "2025-01-01"
+source_reference = "EXAMPLE only, from the repository's test figures: check against KRA's current PAYE bands and relief (verify before use)"
+
+[table.definition]
+name = "PAYE income tax"
+kind = "tax"
+order = 30
+base = "taxable"
+applies_to = "resident"
+[table.definition.employee]
+method = "bands"
+credit = "2400"
+[[table.definition.employee.bands]]
+up_to = "24000"
+rate = "0.10"
+[[table.definition.employee.bands]]
+up_to = "32333"
+rate = "0.25"
+[[table.definition.employee.bands]]
+up_to = "500000"
+rate = "0.30"
+[[table.definition.employee.bands]]
+up_to = "800000"
+rate = "0.325"
+[[table.definition.employee.bands]]
+rate = "0.35"

@@ -1,0 +1,16 @@
+# Units of measure a new business starts with. The business edits, adds and removes them freely (Products > Units).
+[[uom]]
+code = "EACH"
+name = "Each"
+
+[[uom]]
+code = "KG"
+name = "Kilogram"
+
+[[uom]]
+code = "LITRE"
+name = "Litre"
+
+[[uom]]
+code = "BOX"
+name = "Box"

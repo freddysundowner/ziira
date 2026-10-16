@@ -11,8 +11,8 @@ export default defineModule({
     { path: "/products-setup", page: () => import("./pages/SetupPage"), permission: "products.view" },
   ],
   menu: [
-    { label: "products:menu", to: "/products", permission: "products.view", order: 10, group: "stock", icon: "products" },
-    { label: "products:setup", to: "/products-setup", permission: "products.view", order: 11, group: "stock", icon: "settings" },
+    { label: "products:menu", to: "/products", permission: "products.view", order: 10, area: "stock", icon: "products" },
+    { label: "products:setup", to: "/products-setup", permission: "products.view", order: 11, area: "stock", under: "/products", icon: "settings" },
   ],
   translations: { en, sw },
 });

@@ -31,6 +31,7 @@ export default function AttentionPanel({ overview }: { overview: Overview }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <Severity severity={f.severity} />
                     {f.area && <Badge>{t(`area.${f.area}`, humanise(f.area))}</Badge>}
+                    {f.source === "connected" && <Badge tone="info">{t("source.connected")}</Badge>}
                     {f.amount && <span className="tnum text-xs text-muted">{t("amountInvolved", { amount: money(f.amount, overview.currency) })}</span>}
                   </div>
                   <p className="mt-1 text-sm font-medium">{f.summary}</p>

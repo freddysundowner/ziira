@@ -70,10 +70,18 @@ def register(body: sc.RegisterIn, request: Request) -> object:
     started = registration.register(
         business_name=body.business_name, owner_name=body.owner_name, email=body.email, password=body.password,
         currency=body.currency, phone_country_code=body.phone_country_code, country=body.country,
-        tax_id=body.tax_id, timezone=body.timezone, mode=body.mode,
-        invite_code=body.invite_code, ip_address=auth.client_ip(request))
+        tax_id=body.tax_id, timezone=body.timezone, mode=body.mode, edition=body.edition,
+        invite_code=body.invite_code, ip_address=auth.client_ip(request), phone=body.phone,
+        owner_role=body.owner_role, business_size=body.business_size, staff_size=body.staff_size,
+        business_type=body.business_type, plan=body.plan)
     return sc.RegisterOut(message="Check your email for a link to finish creating your business.",
                           dev_token=started.dev_token)
+
+
+@router.get("/register/trial", response_model=sc.TrialOut | None, tags=["Registration"])
+def register_trial(edition: str | None = None, plan: str | None = None) -> object:
+    """The trial a new business would start on (null when there is none): for the sign-up form to tell the truth."""
+    return registration.trial_offer(edition, plan)
 
 
 @router.post("/register/verify", response_model=sc.RegisteredOut, tags=["Registration"])
@@ -167,7 +175,8 @@ def list_companies(ctx: RequestContext = Depends(signed_in_or_key), s: Session =
         if reach is not None and r.id not in reach:
             continue
         company = companies.setdefault(r.id, sc.CompanyOut(
-            id=r.id, name=r.name, currency=r.base_currency, country=r.country, branches=[]))
+            id=r.id, name=r.name, currency=r.base_currency, country=r.country,
+            timezone=str(company_settings.get_setting(s, r.id, "timezone")), branches=[]))
         if r.branch_id:
             company.branches.append(sc.BranchOut(id=r.branch_id, code=r.code, name=r.branch_name))
     return list(companies.values())
@@ -265,36 +274,6 @@ def list_permissions(s: Session = DB_SESSION) -> object:
     """Permissions of the kernel and of every installed unit."""
     return [sc.PermissionOut(**r._mapping) for r in s.execute(text(
         "select code, unit_name, description from kernel.permission order by unit_name, code"))]
-
-
-# --------------------------------------------------------------------------- API keys
-@router.get("/api-keys", response_model=list[sc.ApiKeyOut], tags=["Integrations"],
-            dependencies=[Depends(admin("api_keys.manage"))])
-def list_api_keys(s: Session = DB_SESSION) -> object:
-    return [sc.ApiKeyOut(**r._mapping) for r in s.execute(text(
-        "select id, name, scopes, created_at, expires_at, revoked_at from kernel.api_key order by created_at"))]
-
-
-@router.post("/api-keys", response_model=sc.ApiKeyCreatedOut, status_code=201, tags=["Integrations"],
-             dependencies=[Depends(admin("api_keys.manage"))])
-def create_api_key(body: sc.ApiKeyIn, ctx: RequestContext = Depends(request_context),
-                   s: Session = DB_SESSION) -> object:
-    """Create a key for a server-to-server integration. The key is shown only in this response."""
-    users.check_permissions_exist(s, body.scopes)
-    users.check_can_give(body.scopes)
-    key_id, key = auth.create_api_key(s, ctx.tenant_id, body.name, body.scopes, body.expires_at)
-    audit.record(s, "create", "kernel.api_key", key_id, {"name": body.name, "scopes": body.scopes})
-    return sc.ApiKeyCreatedOut(id=key_id, key=key)
-
-
-@router.delete("/api-keys/{key_id}", status_code=NO_CONTENT, tags=["Integrations"],
-               dependencies=[Depends(admin("api_keys.manage"))])
-def revoke_api_key(key_id: UUID, s: Session = DB_SESSION) -> Response:
-    if s.execute(text("update kernel.api_key set revoked_at = now() where id = :i and revoked_at is null "
-                      "returning id"), {"i": str(key_id)}).first() is None:
-        raise NotFound("API key not found")
-    audit.record(s, "revoke", "kernel.api_key", key_id)
-    return Response(status_code=NO_CONTENT)
 
 
 # --------------------------------------------------------------------------- numbering and reason codes

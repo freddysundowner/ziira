@@ -16,7 +16,13 @@
   "emptyHint": "Anza na bidhaa zako, kisha wateja, wasambazaji na hesabu ya mwanzo ya bidhaa.",
   "noKinds": "Hakuna kinachoweza kuingizwa hapa",
   "noKindsHint": "Mwombe mmiliki awashe Bidhaa, Wateja au sehemu nyingine ya Ziira, na akupe ruhusa ya kuunda data hiyo.",
-  "steps": { "label": "Hatua za uagizaji", "upload": "Faili", "columns": "Safu", "review": "Kukagua", "import": "Kuingiza" },
+  "steps": {
+    "label": "Hatua za uagizaji",
+    "upload": "Faili",
+    "columns": "Safu",
+    "review": "Kukagua",
+    "import": "Kuingiza"
+  },
   "upload": {
     "what": "Unaingiza nini?",
     "whatHint": "Ingiza bidhaa kabla ya hesabu ya mwanzo, kwa sababu bidhaa hulinganishwa kwa SKU yake.",
@@ -105,5 +111,54 @@
     "matches": "Vinalingana",
     "differs": "Tofauti ya {{amount}}",
     "reconciled": "Kila kilichoingizwa kinalingana na faili lako."
+  },
+  "guide": {
+    "link": "Mwongozo wa salio la kuanzia",
+    "title": "Kuhamishia biashara yako Ziira",
+    "hint": "Uingizaji kwa mpangilio unaofaa, ukionyesha kila hatua inahitaji nini na imefikia wapi.",
+    "before": "Kabla ya kuanza:",
+    "beforeHint": "weka vipimo na misimbo ya kodi, na ujaribu kila faili kabla ya kuiingiza kweli.",
+    "done": "Imekamilika",
+    "unavailable": "Haipatikani kwako",
+    "import": "Ingiza",
+    "open": "Fungua",
+    "steps": {
+      "setup": {
+        "title": "Vipimo na misimbo ya kodi",
+        "text": "Angalia vipimo na misimbo ya kodi inayotumiwa na bidhaa."
+      },
+      "accounts": {
+        "title": "Mpangilio wa akaunti",
+        "text": "Akaunti zako, ili vitabu vifunguliwe."
+      },
+      "products": {
+        "title": "Bidhaa",
+        "text": "Katalogi yako yenye SKU, vipimo na bei."
+      },
+      "customers": {
+        "title": "Wateja",
+        "text": "Unaowauzia, pamoja na mawasiliano yao."
+      },
+      "suppliers": {
+        "title": "Wasambazaji",
+        "text": "Unaowanunulia."
+      },
+      "opening_stock": {
+        "title": "Hisa ya kuanzia",
+        "text": "Kila bohari inashikilia nini leo, pamoja na gharama. Ingiza bidhaa kwanza."
+      },
+      "customer_balances": {
+        "title": "Salio la wateja",
+        "text": "Wateja wanadaiwa nini leo, ankara kwa ankara."
+      },
+      "supplier_balances": {
+        "title": "Salio la wasambazaji",
+        "text": "Unachodaiwa na wasambazaji leo, bili kwa bili."
+      },
+      "opening_trial_balance": {
+        "title": "Mizania ya kuanzia",
+        "text": "Salio la kila akaunti siku ya kuanza, kama hatua ya mwisho."
+      }
+    }
   }
 }

@@ -1,0 +1,15 @@
+[unit]
+name = "pack_ke"
+title = "Kenya country pack"
+description = "Kenya's VAT codes, a retail chart of accounts and example payroll tables, for you and your accountant to check."
+category = "country"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["products", "finance", "people"]
+countries = ["KE"]
+
+# Sockets of other units this plugin plugs into (code in hooks.py)
+[extends]
+implements = ["products.tax_code_seed", "finance.chart_template", "people.statutory_table_seed"]

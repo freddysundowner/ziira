@@ -6,6 +6,7 @@ import {
   toast, type Theme, unwrap, useFormState, useMutation, useQuery, useQueryClient, useSession, useTheme, useTranslation, type Schemas,
 } from "@/sdk";
 
+import NotificationSettingsCard from "./account/NotificationSettingsCard";
 import TwoStepCard from "./TwoStepCard";
 
 type SessionRow = Schemas["SessionOut"];
@@ -23,6 +24,7 @@ export default function AccountPage() {
             <DetailList items={[{ label: t("fullName"), value: me?.full_name }, { label: t("email"), value: me?.email }, { label: t("roles"), value: (me?.roles ?? []).map((r) => r.role_name).join(", ") || null }]} />
           </Card>
           <Preferences />
+          <NotificationSettingsCard />
           <PasswordCard />
           <TwoStepCard />
         </div>

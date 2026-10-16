@@ -1,0 +1,19 @@
+---
+// Every action Intelligence can suggest or take, rendered from the generated catalogue.
+import { catalog, checkAnchor } from "../lib/catalog";
+---
+<ul class="g-actions" data-actions={catalog.actions.length}>
+  {catalog.actions.map((a) => (
+    <li class="card action" id={`action-${a.type.replace(/[^a-z0-9]+/gi, "-")}`}>
+      <div class="top"><h4>{a.title}</h4><span class={`chip ${a.automatic ? "warn" : "info"}`}>{a.automatic ? "Can run by itself at level 4" : "Always needs a person"}</span></div>
+      <p class="kind">{a.kind}</p>
+      <p>{a.plain}</p>
+      <p class="ex"><span>Example</span> {a.example}</p>
+      <dl>
+        <div><dt>Offered for</dt><dd>{a.for_checks.map((f, k) => <>{k > 0 && ", "}<a href={`#${checkAnchor(f.code)}`}>{f.title}</a></>)}</dd></div>
+        <div><dt>Who approves</dt><dd>{a.who_approves}</dd></div>
+        <div><dt>Moves money?</dt><dd>No. Ziira never moves money.</dd></div>
+      </dl>
+    </li>
+  ))}
+</ul>

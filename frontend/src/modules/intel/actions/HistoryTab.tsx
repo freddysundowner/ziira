@@ -18,7 +18,7 @@ export default function HistoryTab() {
   return (
     <DataTable
       rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()} rowKey={(p) => p.id}
-      rowHref={(p) => `/findings/${p.finding_id}`}
+      rowHref={(p) => `/intelligence/things/${p.finding_id}`}
       toolbar={
         <Select aria-label={t("status.label")} className="w-auto" value={status} onChange={(e) => setStatus(e.target.value as "" | Status)}>
           <option value="">{t("actionsPage.allOutcomes")}</option>
@@ -30,7 +30,7 @@ export default function HistoryTab() {
         { header: t("actionsPage.what"), cell: (p) => (
           <div className="min-w-0">
             <p className="font-medium">{p.action_title}</p>
-            <Link to={`/findings/${p.finding_id}`} className="text-xs text-muted hover:underline">{p.finding_summary ?? t("noSummary")}</Link>
+            <Link to={`/intelligence/things/${p.finding_id}`} className="text-xs text-muted hover:underline">{p.finding_summary ?? t("noSummary")}</Link>
           </div>
         ) },
         { header: t("status.label"), cell: (p) => <ProposalStatusBadge status={p.status} /> },

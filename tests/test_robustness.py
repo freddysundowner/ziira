@@ -28,6 +28,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(s["tenant_id"], "catalog_stats")
     registry.enable(s["tenant_id"], "finance")
     registry.enable(s["tenant_id"], "payments")
+    registry.enable(s["tenant_id"], "mpesa")
     registry.enable(s["tenant_id"], "pos")
     registry.enable(s["tenant_id"], "purchasing")
     registry.enable(s["tenant_id"], "crm")
@@ -149,6 +150,10 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
             return {"name": f"Fuzz role {n}", "permissions": ["products.view"]}
         if path.endswith("/permissions"):
             return {"permissions": ["products.view"]}
+        if path.endswith("/api-keys") and method == "POST":
+            return {"name": f"Fuzz key {n}", "scopes": ["products.view"]}
+        if path.endswith("/webhooks/endpoints") and method == "POST":
+            return {"name": f"Fuzz hook {n}", "url": f"https://93.184.216.34/hook{n}", "event_types": ["sale.posted"]}
         if path.endswith("/opening-stock"):
             return {**body, "lines": [{"product_id": shop["cement"], "quantity": "1", "unit_cost": "1"}]}
         if path.endswith("/adjustments") and method == "POST":
@@ -194,6 +199,10 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
             return {"company_id": co, "recipient": f"07130000{n % 100:02d}"}
         if path.endswith("/apply-credit"):
             return {}
+        if path.endswith("/intel/topics") and method == "PUT":
+            return {"topics": {"cash": True}}
+        if path.endswith("/ignore") and "/intel/findings/" in path:
+            return {"scope": "everywhere", "days": 1}
         if path.endswith("/refund") and "/pos/" in path:
             return {"amount": "1", "method": "mobile_money", "reason": "Fuzz"}
         if path.endswith("/send-reminder") or path.endswith("/send-reminders"):
@@ -268,6 +277,8 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
         if path.endswith("/pos/devices") and method == "POST":
             return {"branch_id": str(shop["branch_id"]), "code": f"F{n}"[:8], "name": "Fuzz device",
                     "location_id": shop["main"]}
+        if "/pos/devices/" in path and method == "PATCH" and not path.endswith("/status"):
+            return {"location_id": shop["main"]}
         if path.endswith("/pos/tills") and method == "POST":
             return {"device_id": shop["pos_ids"]["device"], "opening_float": "0"}
         if path.endswith("/pos/sales") and method == "POST":

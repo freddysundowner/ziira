@@ -1,20 +1,21 @@
 """Kernel HTTP endpoints for messages to people outside the system: which channels a business has set up, the record of
 what was sent, and who asked not to be contacted. Needs 'settings.manage' for the company."""
 
-from typing import Any, Literal
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from pydantic import BaseModel, Field
 from sqlalchemy import text
 
+from ziira.kernel import channels as registry
 from ziira.kernel import credentials, notifications
 from ziira.kernel.context import RequestContext
 from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.sdk import DB_SESSION, Session, check_company, page_limit, page_offset, request_context
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["Notifications"])
-Channel = Literal["email", "sms"]
+Channel = Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]{1,39}$", description="A channel the business has")]
 MANAGE = "settings.manage"
 
 
@@ -93,6 +94,35 @@ COLUMNS = ("id, company_id, channel, recipient, subject, status, attempts, provi
            "created_at, sent_at")
 
 
+class AvailableChannel(BaseModel):
+    channel: str
+    label: str
+    providers: list[str]
+    configured: bool = Field(description="The business has set it up and it is ready to send")
+    supports_templates: bool
+    supports_buttons: bool
+    supports_inbound: bool
+    window_hours: int | None
+
+
+@router.get("/channels/available", response_model=list[AvailableChannel])
+def get_available_channels(company_id: UUID | None = None, ctx: RequestContext = Depends(request_context),
+                           session: Session = DB_SESSION) -> object:
+    """The channels this business can use: only those whose provider (plugin) is enabled for it. Every screen that
+    offers
+    a choice of channel builds it from this list. With `company_id`, says which are set up."""
+    from ziira.kernel import messaging
+
+    ready: set[str] = set()
+    if company_id is not None:
+        check_company(session, company_id)
+        ready = messaging.configured_channels(session, company_id)
+    return [AvailableChannel(channel=i.channel, label=i.label, providers=list(i.providers),
+                             configured=i.channel in ready, supports_templates=i.supports_templates,
+                             supports_buttons=i.supports_buttons, supports_inbound=i.supports_inbound,
+                             window_hours=i.window_hours) for i in registry.available(session)]
+
+
 @router.get("/channels", response_model=list[ChannelOut])
 def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session: Session = DB_SESSION
                  ) -> object:
@@ -101,8 +131,8 @@ def get_channels(company_id: UUID, ctx: RequestContext = Depends(staff), session
     check_company(session, company_id)
     rows = session.execute(text(
         "select id, provider as channel, config, label, status from kernel.integration_credential "
-        "where company_id = :c and provider in ('email', 'sms') order by provider, created_at desc"),
-        {"c": str(company_id)})
+        "where company_id = :c and provider = any(:ch) order by provider, created_at desc"),
+        {"c": str(company_id), "ch": registry.names(session)})
     return [ChannelOut(id=r.id, channel=r.channel, provider=(r.config or {}).get("provider"), label=r.label,
                        status=r.status) for r in rows]
 
@@ -113,6 +143,7 @@ def put_channel(channel: Channel, body: ChannelIn, ctx: RequestContext = Depends
     """Set up (or replace) how a business sends email or SMS. The old keys stop being used."""
     ctx.require(MANAGE, company_id=body.company_id)
     check_company(session, body.company_id)
+    registry.check(session, channel)
     for old in session.execute(text(ACTIVE), {"c": str(body.company_id), "ch": channel}):
         credentials.disable(session, old.id)
     config = {**body.config, "provider": body.provider}
@@ -140,6 +171,7 @@ def post_test(body: TestIn, ctx: RequestContext = Depends(staff), session: Sessi
     """Send a test message to check a channel works."""
     ctx.require(MANAGE, company_id=body.company_id)
     check_company(session, body.company_id)
+    registry.check(session, body.channel)
     notification_id = notifications.queue(
         session, company_id=body.company_id, channel=body.channel, recipient=body.recipient,
         body="This is a test message from Ziira. If you can read it, this channel works.",

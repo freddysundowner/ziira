@@ -13,6 +13,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy import text
 
 from ziira.modules.payments.public import cash_account_for_branch, cash_in_till_session, day_is_locked
 from ziira.modules.pos.domain import sales as rules
@@ -44,6 +45,16 @@ TILL_VARIANCE = "till_variance"
 def today(session: Session, company_id: UUID) -> date:
     """Today's trading date where the company is."""
     return company_today(session, company_id)
+
+
+def _user_name(session: Session, user_id: UUID) -> str:
+    name = session.execute(text("select full_name from kernel.app_user where id = :u"), {"u": str(user_id)}).scalar()
+    return str(name or "another cashier")
+
+
+def _device_name(session: Session, device_id: UUID) -> str:
+    device = pos_repo.get_device(session, device_id)
+    return f"{device.name} ({device.code})" if device else "another device"
 
 
 def business_day(session: Session, company_id: UUID, moment: datetime | None) -> date:
@@ -86,9 +97,10 @@ def list_tills(session: Session, *, branch_id: UUID | None = None, status: str |
 
 
 def open_till(session: Session, device_id: UUID, opening_float: Decimal, *, local_id: UUID | None = None,
-              opened_at: datetime | None = None) -> tuple[TillSession, bool]:
+              opened_at: datetime | None = None, resume: bool = False) -> tuple[TillSession, bool]:
     """Start the signed-in cashier's till session on a device. Returns (session, already_existed): a device that retries
-    with the same `local_id` gets the session it opened the first time. Needs 'till.manage' at the branch."""
+    with the same `local_id` gets the session it opened the first time, and with `resume` a cashier who already has a
+    till open on this device gets that one back (a fresh browser carries on). Needs 'till.manage' at the branch."""
     ctx = current_context()
     device = devices.get_device(session, device_id, for_selling=True)
     company_id = pos_repo.branch_company(session, device.branch_id)
@@ -114,10 +126,18 @@ def open_till(session: Session, device_id: UUID, opening_float: Decimal, *, loca
             raise ValidationFailed(f"The day {day} is already closed for this branch")
     pos_repo.lock_key(session, f"pos.till.open:{ctx.user_id}")
     pos_repo.lock_key(session, f"pos.till.open:{device.id}")
-    if pos_repo.open_till_of_device(session, device.id) is not None:
+    mine = pos_repo.open_till_of_user(session, ctx.user_id)
+    if mine is not None and mine.device_id == device.id:
+        if resume:
+            return mine, True        # the same person on the same device: carry on with the till already open
         raise Conflict("This device already has an open till: close it first")
-    if pos_repo.open_till_of_user(session, ctx.user_id) is not None:
-        raise Conflict("You already have an open till: close it first")
+    if mine is not None:
+        raise Conflict(f"You already have an open till on {_device_name(session, mine.device_id)}: "
+                       "continue it or close it first")
+    other = pos_repo.open_till_of_device(session, device.id)
+    if other is not None:
+        raise Conflict(f"This device already has an open till, opened by {_user_name(session, other.cashier_id)}: "
+                       "they need to close it first")
     till = TillSession(
         tenant_id=ctx.tenant_id, created_by=ctx.user_id, branch_id=device.branch_id, device_id=device.id,
         cash_account_id=cash_account_for_branch(session, company_id, device.branch_id), cashier_id=ctx.user_id,

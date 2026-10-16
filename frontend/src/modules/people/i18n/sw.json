@@ -1,5 +1,5 @@
 {
-  "menu": { "employees": "Wafanyakazi", "attendance": "Mahudhurio", "leave": "Likizo", "payroll": "Mishahara", "setup": "Mipangilio ya mishahara" },
+  "menu": { "attendanceLeave": "Mahudhurio na likizo", "employees": "Wafanyakazi", "attendance": "Mahudhurio", "leave": "Likizo", "payroll": "Mishahara", "setup": "Mipangilio ya mishahara" },
   "actions": "Hatua",
   "add": "Ongeza",
   "allBranches": "Matawi yote",

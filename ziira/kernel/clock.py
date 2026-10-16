@@ -5,6 +5,7 @@ setting is already read once per transaction and company (`company_settings._sto
 adds no query per call. Use these helpers wherever a record gets a date from the clock.
 """
 
+import re
 from datetime import UTC, date, datetime, tzinfo
 from functools import lru_cache
 from uuid import UUID
@@ -35,3 +36,24 @@ def company_date_of(session: Session, company_id: UUID, moment: datetime) -> dat
     if moment.tzinfo is None:
         moment = moment.replace(tzinfo=UTC)
     return moment.astimezone(company_zone(session, company_id)).date()
+
+
+_MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+_ISO_DAY = re.compile(r"(?<![\d-])(\d{4})-(\d{2})-(\d{2})(?![\d-])")
+
+
+def format_day(day: date) -> str:
+    """A date the way a person reads it in a message: '13 Oct 2026' (not the ISO form, which is for data)."""
+    return f"{day.day} {_MONTHS[day.month - 1]} {day.year}"
+
+
+def humanise_dates(text: str) -> str:
+    """Every ISO date (2026-10-13) in a sentence written for people, as '13 Oct 2026'. Anything that only looks like a
+    date (a month 13, a day 32) is left as it is."""
+    def one(found: re.Match[str]) -> str:
+        try:
+            return format_day(date(int(found.group(1)), int(found.group(2)), int(found.group(3))))
+        except ValueError:
+            return found.group(0)
+
+    return _ISO_DAY.sub(one, text)

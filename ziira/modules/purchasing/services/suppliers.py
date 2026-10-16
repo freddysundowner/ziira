@@ -112,7 +112,7 @@ def list_bank_accounts(session: Session, supplier_id: UUID) -> list[SupplierBank
 
 def propose_bank_account(session: Session, supplier_id: UUID, *, method: str, account_no: str,
                          bank_name: str | None = None, account_name: str | None = None) -> SupplierBankAccount:
-    """Propose new bank or M-Pesa details. They change nothing until confirmed and approved. Needs
+    """Propose new bank or mobile money details. They change nothing until confirmed and approved. Needs
     'supplier.bank_edit'."""
     supplier = repo.get_supplier(session, supplier_id, lock=True)
     if supplier is None or not access.can_see_company(supplier.company_id):
@@ -120,7 +120,7 @@ def propose_bank_account(session: Session, supplier_id: UUID, *, method: str, ac
     ctx = current_context()
     ctx.require(SUPPLIER_BANK_EDIT, company_id=supplier.company_id)
     if method not in ("bank", "mobile_money"):
-        raise ValidationFailed("Method must be 'bank' or 'mpesa'")
+        raise ValidationFailed("Method must be 'bank' or 'mobile_money'")
     number = rules.check_account_number(method, account_no)
     if method == "bank" and not (bank_name and bank_name.strip()):
         raise ValidationFailed("A bank account needs the bank's name")

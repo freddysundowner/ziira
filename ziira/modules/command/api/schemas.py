@@ -2,13 +2,13 @@
 
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 Kind = Literal["daily", "weekly"]
-Channel = Literal["sms", "email", "in_app"]
+Channel = Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]{1,39}$", description="in_app, or a channel the business has")]
 
 
 class FigureOut(BaseModel):
@@ -32,6 +32,7 @@ class TopFindingOut(BaseModel):
     branch_id: UUID | None
     amount: Decimal | None
     reason: str | None = None   # why the AI layer put it here, when it ranked it (show it as AI-written)
+    source: str = "ziira"       # "connected" (read from the system the business keeps) or "ziira"
 
 
 class OverviewOut(BaseModel):

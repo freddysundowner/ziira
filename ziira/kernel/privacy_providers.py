@@ -224,8 +224,94 @@ def redact_recipient(session: Session, company_id: UUID, recipient: str, body: s
                                                 "and created_at < now() - make_interval(days => :d)")
     result = session.execute(text(
         "update kernel.notification set recipient = :mask, "
-        "subject = case when subject is null then null else :body end, body = :body, redacted_at = now() "
+        "subject = case when subject is null then null else :body end, body = :body, payload = '{}', "
+        "redacted_at = now() "
         "where company_id = :c and recipient = :r and redacted_at is null" + older),
         {"mask": notifications.mask(recipient), "body": body, "c": str(company_id), "r": recipient,
          "d": older_than_days})
     return int(result.rowcount)  # type: ignore[attr-defined]
+
+
+# --------------------------------------------------------------------------- webhook deliveries
+@provides(PERSONAL_DATA)
+class WebhookDeliveryData(PersonalDataProvider):
+    """What outgoing webhooks sent while their content is still kept. Payloads carry ids and figures, not names, phone
+    numbers or emails (docs/webhooks.md), so this finds a person only where an id or code they gave appears in one."""
+
+    name = "kernel.webhooks"
+
+    def find(self, session: Session, company_id: UUID, subject: Subject) -> list[PersonalRecord]:
+        terms = [t for t in (subject.email, subject.identifier) if t]
+        if not terms:
+            return []
+        count = session.execute(text(
+            "select count(*) from kernel.webhook_delivery where body is not null and body ilike any(:p) "
+            "and body like :c"), {"p": [f"%{_like(t)}%" for t in terms], "c": f"%{company_id}%"}).scalar_one()
+        if not count:
+            return []
+        key = uuid.uuid5(uuid.NAMESPACE_URL, f"webhooks:{company_id}:{'|'.join(terms)}")
+        return [PersonalRecord(self.name, "webhook_deliveries", key, f"{count} webhook delivery(ies) mentioning it",
+                               "exact", company_id, ref="|".join(terms))]
+
+    def export(self, session: Session, record: PersonalRecord) -> dict[str, Any]:
+        rows = session.execute(text(
+            "select created_at, event_type, status, body_preview from kernel.webhook_delivery "
+            "where body is not null and body ilike any(:p) and body like :c order by created_at"),
+            {"p": [f"%{_like(t)}%" for t in record.ref.split("|")], "c": f"%{record.company_id}%"})
+        return {"deliveries": [{"at": r.created_at, "event": r.event_type, "status": r.status,
+                                "first_bytes": r.body_preview} for r in rows]}
+
+    def anonymise(self, session: Session, record: PersonalRecord, reason: str) -> Outcome:
+        count = session.execute(text(
+            "update kernel.webhook_delivery set body = null, body_preview = :b "
+            "where body is not null and body ilike any(:p) and body like :c"),
+            {"b": ERASED_BODY, "p": [f"%{_like(t)}%" for t in record.ref.split("|")],
+             "c": f"%{record.company_id}%"}).rowcount  # type: ignore[attr-defined]
+        return Outcome("anonymised", changed=[f"{count} webhook delivery(ies): content removed (they cannot be sent "
+                                              "again)"],
+                       kept=[Kept("the fact that a delivery happened (time, event type, result, the content's hash)",
+                                  "a log of what was sent to the business's own systems; it names nobody")])
+
+    def retention(self, session: Session, company_id: UUID) -> list[RetentionRule]:
+        return [RetentionRule("kernel", "webhooks", "The content of outgoing webhook deliveries (ids and figures)",
+                              "Needed to retry a failed delivery and to send it again on request",
+                              period="a few days, then only the hash and first bytes remain", at_end="mask")]
+
+
+# --------------------------------------------------------------------------- subscription payments (master database)
+@provides(PERSONAL_DATA)
+class PaymentPayerData(PersonalDataProvider):
+    """The payer details kept on the business's subscription payment attempts (the vendor's billing records): the last
+    four digits of the payer's phone number, a keyed hash of it, and the receipt email. The number is not kept."""
+
+    name = "kernel.payment_payers"
+
+    def find(self, session: Session, company_id: UUID, subject: Subject) -> list[PersonalRecord]:
+        from ziira.kernel.platform.payments import phone_hash
+
+        tenant_id = session.execute(text("select kernel.current_tenant()")).scalar_one()
+        hashes = [phone_hash(p) for p in {x for x in (subject.phone, subject.identifier) if x and x.isdigit()}]
+        with master_session() as master:
+            rows = master.execute(text(
+                "select id, provider, amount, currency, created_at from master.payment_attempt where tenant_id = :t "
+                "and ((payer_phone_hash = any(:h)) or (cast(:e as text) is not null and lower(payer_email) = :e))"),
+                {"t": str(tenant_id), "h": hashes, "e": subject.email}).all()
+        return [PersonalRecord(self.name, "payment_attempt", r.id,
+                               f"Payment attempt of {r.amount} {str(r.currency).strip()} on {r.created_at:%Y-%m-%d}",
+                               "exact", company_id) for r in rows]
+
+    def export(self, session: Session, record: PersonalRecord) -> dict[str, Any]:
+        with master_session() as master:
+            r = master.execute(text(
+                "select provider, amount, currency, status, payer_phone_last4, payer_email, payment_reference, "
+                "created_at from master.payment_attempt where id = :i"), {"i": str(record.record_id)}).first()
+        return dict(r._mapping) if r else {}
+
+    def anonymise(self, session: Session, record: PersonalRecord, reason: str) -> Outcome:
+        with master_session() as master:
+            master.execute(text(
+                "update master.payment_attempt set payer_phone_last4 = null, payer_phone_hash = null, "
+                "payer_email = null where id = :i"), {"i": str(record.record_id)})
+        return Outcome("anonymised", changed=["phone digits, phone hash and receipt email removed"],
+                       kept=[Kept("the payment record (amount, date, invoice, provider reference)",
+                                  "the vendor's billing and tax records must be kept")])

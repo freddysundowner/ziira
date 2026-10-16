@@ -34,7 +34,7 @@ def currency_of(session: Session, company_id: UUID) -> str:
 
 
 def money(currency: str, value: Decimal) -> str:
-    """'KES 1,250.00'-style text from the company's own currency code."""
+    """'USD 1,250.00'-style text from the company's own currency code."""
     return f"{currency} {value:,.2f}"
 
 
@@ -48,6 +48,8 @@ class ChangesBeforePayroll(IntelCheck):
     """The ghost-employee pattern: someone added, or pay or payment details changed, just before a run."""
 
     code = "people.changes_before_payroll"
+
+    value_kind = "money"
     title = "New people or pay changes just before payroll"
     area = "controls"
     description = ("An employee who was added, had their pay raised or changed, or had their bank or mobile money "
@@ -312,6 +314,8 @@ class PayJumpWithoutChange(IntelCheck):
     """Gross pay moved a lot since the previous run, and no pay change, pay item, absence or overtime explains it."""
 
     code = "people.pay_jump_unexplained"
+
+    value_kind = "money"
     title = "Pay changed with no recorded reason"
     area = "people"
     description = ("An employee's gross pay changed by more than the set percentage from the previous run, with no "
@@ -384,6 +388,8 @@ class LeaveWaiting(IntelCheck):
     """Leave requests left undecided for days."""
 
     code = "people.leave_waiting"
+
+    value_kind = "days"
     title = "Leave requests waiting too long"
     area = "people"
     description = "A leave request that has been waiting for a decision for more days than the limit."
@@ -423,6 +429,8 @@ class PayrollOverdue(IntelCheck):
     """A payroll run still not approved, or approved but not paid, days after its pay date."""
 
     code = "people.payroll_overdue"
+
+    value_kind = "days"
     title = "Payroll not finished after the pay date"
     area = "people"
     description = "A payroll run that is still unapproved, or approved but unpaid, several days after its pay date."

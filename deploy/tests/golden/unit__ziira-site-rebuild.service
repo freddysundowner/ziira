@@ -1,0 +1,41 @@
+[Unit]
+Description=Ziira website rebuild receiver
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ziira
+Group=ziira
+EnvironmentFile=/etc/ziira/site-rebuild.env
+WorkingDirectory=/var/lib/ziira
+ExecStart=/usr/bin/python3 -m installer.sitebuild serve
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0027
+ReadWritePaths=/var/lib/ziira /var/backups/ziira /var/www/ziira/site /var/lib/ziira/site-build /var/lib/ziira/nginx
+Environment=PYTHONPATH=/opt/ziira/current/deploy
+Environment=HOME=/var/lib/ziira
+
+[Install]
+WantedBy=multi-user.target

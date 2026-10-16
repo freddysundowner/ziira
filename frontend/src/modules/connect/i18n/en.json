@@ -65,9 +65,9 @@
   },
   "coverage": {
     "title": "What Ziira can check",
-    "subtitle": "Based on what is connected today",
+    "subtitle": "Based on the outside systems connected today",
     "summary": "of Ziira's checks can run",
-    "nothing": "Nothing is connected yet.",
+    "nothing": "No outside system has supplied data yet.",
     "reads": "Reading",
     "on": "Can run",
     "off": "Needs more data",
@@ -305,12 +305,12 @@
     "save": "Save"
   },
   "first": {
-    "title": "Connect your first system",
+    "title": "Connect your first outside system",
     "hint": "Ziira checks your business as soon as it can read your sales, payments or books. Connect your ERP, or upload a sales export or a statement."
   },
   "widget": {
-    "connected_one": "{{count}} system connected",
-    "connected_other": "{{count}} systems connected",
+    "connected_one": "{{count}} outside system connected",
+    "connected_other": "{{count}} outside systems connected",
     "broken_one": "{{count}} needs attention",
     "broken_other": "{{count}} need attention",
     "fine": "All reading well"

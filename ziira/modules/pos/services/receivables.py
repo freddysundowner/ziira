@@ -19,9 +19,13 @@ from ziira.sdk import (
     Session,
     ValidationFailed,
     audit_record,
+    channel_names,
+    check_channel,
     company_setting,
+    configured_channels,
     current_context,
     send_notification,
+    send_templated,
 )
 
 BUCKETS = ("not_due", "1_30", "31_60", "61_90", "over_90")
@@ -186,6 +190,27 @@ def _message(session: Session, invoice: Any, customer: Any, channel: str) -> tup
     return (f"Reminder: invoice {invoice.number} from {company}" if channel == "email" else None), body
 
 
+def _send_template(session: Session, invoice: Any, customer: Any, channel: str, phone: str, day: date,
+                   key: str) -> UUID | None:
+    """The reminder as a template on a conversational channel (the customer's name, the amount in the company currency,
+    the due date and the business name). Where the business has them set up, SMS to the same number and then email are
+    tried if the channel cannot be used (template not approved yet, window closed, refused). Nothing is sent to someone
+    who said STOP."""
+    row = session.execute(text("select name, base_currency from kernel.company where id = :c"),
+                          {"c": str(invoice.company_id)}).one()
+    configured = configured_channels(session, invoice.company_id)
+    fallbacks = [{"channel": "sms", "recipient": phone}] if "sms" in configured else []
+    if customer.email and "email" in configured:
+        fallbacks.append({"channel": "email", "recipient": customer.email})
+    template = "overdue_reminder" if (day - invoice.due_date).days > 0 else "payment_due"
+    return send_templated(
+        session, company_id=invoice.company_id, channel=channel, recipient=phone, template=template,
+        variables={"customer": customer.name, "invoice": invoice.number,
+                   "amount": f"{row.base_currency} {invoices.outstanding(invoice):,.2f}", "business": row.name,
+                   "due_date": str(invoice.due_date)},
+        fallbacks=fallbacks, ref_type="sales_invoice", ref_id=invoice.id, dedupe_key=key)
+
+
 def send_reminder(session: Session, invoice_id: UUID, *, channel: str | None = None) -> dict[str, Any]:
     """Message the customer about an unpaid invoice (the channel from the company setting unless given) and note that
     they were reminded. Not sent, and not noted, to someone who asked not to be contacted. One reminder a day per
@@ -197,23 +222,35 @@ def send_reminder(session: Session, invoice_id: UUID, *, channel: str | None = N
     if not (ctx.can(RECEIVABLES_MANAGE, company_id=invoice.company_id, branch_id=invoice.branch_id)
             or ctx.can(INVOICES_MANAGE, company_id=invoice.company_id, branch_id=invoice.branch_id)):
         ctx.require(RECEIVABLES_MANAGE, company_id=invoice.company_id, branch_id=invoice.branch_id)
+    asked = channel
     channel = channel or str(company_setting(session, invoice.company_id, "reminder_channel"))
-    if channel not in ("sms", "email"):
-        raise ValidationFailed("Say how to send it (sms or email), or set the company's reminder channel")
+    if channel == "off":
+        raise ValidationFailed("Say how to send it, or set the company's reminder channel")
     if invoice.status not in pos_repo.OPEN_INVOICE:
         raise ValidationFailed("Only an unpaid invoice needs a reminder")
     customer = find_customer(session, invoice.customer_id) if unit_enabled(session, "crm") else None
     if customer is None:
         raise ValidationFailed("Customer not found")
+    if channel not in ("sms", "email") and channel not in channel_names(session):
+        # A channel the business no longer has (its plugin is off). Asked for by name that is an error; named by the
+        # company's setting the customer is reached by the plain way instead, and the setting is kept for when it
+        # is back.
+        if asked:
+            check_channel(session, channel)
+        channel = "sms" if customer.phone else "email"
     recipient = customer.email if channel == "email" else customer.phone
     if not recipient:
         raise ValidationFailed(f"{customer.name} has no {'email address' if channel == 'email' else 'phone number'} "
                                "on record")
-    subject, body = _message(session, invoice, customer, channel)
     day = tills.today(session, invoice.company_id)
-    notification_id = send_notification(
-        session, company_id=invoice.company_id, channel=channel, recipient=recipient, body=body, subject=subject,
-        ref_type="sales_invoice", ref_id=invoice.id, dedupe_key=f"reminder:{invoice.id}:{day}:{channel}")
+    key = f"reminder:{invoice.id}:{day}:{channel}"
+    if channel not in ("sms", "email"):
+        notification_id = _send_template(session, invoice, customer, channel, recipient, day, key)
+    else:
+        subject, body = _message(session, invoice, customer, channel)
+        notification_id = send_notification(
+            session, company_id=invoice.company_id, channel=channel, recipient=recipient, body=body, subject=subject,
+            ref_type="sales_invoice", ref_id=invoice.id, dedupe_key=key)
     if notification_id is None:
         raise ValidationFailed("A reminder was already sent about this invoice today")
     state = session.execute(text("select status from kernel.notification where id = :i"),

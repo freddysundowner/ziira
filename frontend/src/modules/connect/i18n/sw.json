@@ -65,9 +65,9 @@
   },
   "coverage": {
     "title": "Ziira anaweza kukagua nini",
-    "subtitle": "Kulingana na kilichounganishwa leo",
+    "subtitle": "Kulingana na mifumo ya nje iliyounganishwa leo",
     "summary": "ya ukaguzi wa Ziira inaweza kufanya kazi",
-    "nothing": "Hakuna kilichounganishwa bado.",
+    "nothing": "Hakuna mfumo wa nje ambao umetoa data bado.",
     "reads": "Inasoma",
     "on": "Inaweza kufanya kazi",
     "off": "Inahitaji data zaidi",
@@ -305,12 +305,12 @@
     "save": "Hifadhi"
   },
   "first": {
-    "title": "Unganisha mfumo wako wa kwanza",
+    "title": "Unganisha mfumo wako wa kwanza wa nje",
     "hint": "Ziira hukagua biashara yako mara tu anaposoma mauzo, malipo au vitabu vyako. Unganisha ERP yako, au pakia ripoti ya mauzo au taarifa."
   },
   "widget": {
-    "connected_one": "Mfumo {{count}} umeunganishwa",
-    "connected_other": "Mifumo {{count}} imeunganishwa",
+    "connected_one": "Mfumo {{count}} wa nje umeunganishwa",
+    "connected_other": "Mifumo {{count}} ya nje imeunganishwa",
     "broken_one": "{{count}} inahitaji uangalizi",
     "broken_other": "{{count}} zinahitaji uangalizi",
     "fine": "Zote zinasoma vizuri"

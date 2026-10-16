@@ -113,8 +113,8 @@ def create_invoice_return(session: Session, invoice_id: UUID, *, lines: list[tup
                           reason_code_id: UUID, refund_method: str, note: str | None = None,
                           restock_location_id: UUID | None = None) -> ReturnView:
     """Take goods back from an invoice - the customer's credit note. `lines` are (invoice line, quantity). The refund
-    is a credit note (less owed) while the invoice is unpaid, and cash or M-Pesa once it is paid. Needs 'sales.refund'
-    at the invoice's branch and a reason from the 'sale_return' list."""
+    is a credit note (less owed) while the invoice is unpaid, and cash or mobile money once it is paid. Needs
+    'sales.refund' at the invoice's branch and a reason from the 'sale_return' list."""
     invoice = pos_repo.get_invoice(session, invoice_id, lock=True)
     if invoice is None or not invoices.can_see(invoice):
         raise NotFound("Invoice not found")
@@ -252,6 +252,6 @@ def _check_credit_refund(invoice: SalesInvoice | None, method: str, total: Decim
             raise ValidationFailed("A credit note is for a sale that was left on account")
         if total > invoices.outstanding(invoice):
             raise ValidationFailed(f"The customer owes {invoices.outstanding(invoice)} on this sale: a credit note "
-                                   "cannot be for more. Refund the rest in cash or M-Pesa once it is paid")
+                                   "cannot be for more. Refund the rest in cash or mobile money once it is paid")
     elif invoice is not None and method in ("cash", "mobile_money") and invoices.outstanding(invoice) > 0:
         raise ValidationFailed("This sale was left on account and is still owed: give a credit note instead")

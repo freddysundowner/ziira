@@ -1,12 +1,7 @@
 {
  "apps": {
-  "title": "Apps & plugins",
-  "menu": "Apps & plugins",
+  "keywords": "addons add-ons plugins modules apps features extensions store marketplace",
   "hint": "Switch parts of Ziira on or off for your business. Switching off keeps your data; removing deletes it.",
-  "modules": "Modules",
-  "modulesHint": "The main parts of the business: selling, stock, buying, money and people.",
-  "plugins": "Plugins",
-  "pluginsHint": "Extras that connect Ziira to other services or add small features.",
   "retry": "Try again",
   "loadFailed": "The list of apps could not be loaded.",
   "none": "Nothing to show",
@@ -33,6 +28,28 @@
   "removeAsk": "This permanently deletes everything {{name}} has stored for this business. It cannot be undone. If you switch it on again later it starts empty.",
   "removeType": "Type {{name}} to confirm",
   "removed": "Data of {{name}} removed",
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "plugin": "Plugin",
+  "edition": {
+   "title": "Your edition",
+   "change": "Change edition",
+   "changeHint": "Moving to another edition switches on what it includes. Nothing is switched off and no data is deleted.",
+   "whatIsOn": "What is on in my business",
+   "nothingOn": "Nothing is switched on yet.",
+   "switchTitle": "Move to {{name}}?",
+   "switch": "Switch edition",
+   "willAdd": "These will be switched on: {{names}}.",
+   "addsNothing": "Everything it includes is already on.",
+   "keeps": "Nothing you have is switched off or deleted. To switch something off later, use its card below.",
+   "switched": "Edition changed. Switched on: {{names}}",
+   "switchedNothing": "Edition changed."
+  },
+  "recommended": {
+   "for": "Recommended for {{country}}",
+   "badge": "Recommended"
+  },
+  "search": "Search add-ons",
+  "filterAll": "All",
+  "noMatch": "No feature matches"
  }
 }

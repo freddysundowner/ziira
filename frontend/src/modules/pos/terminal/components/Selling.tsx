@@ -2,7 +2,7 @@ import { Lock } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  api, Button, ConfirmDialog, cx, toast, unwrap, useCan, useMutation, useQueryClient, useSession, useTranslation, type Schemas,
+  api, Button, ConfirmDialog, cx, getDisplayTimeZone, toast, unwrap, useCan, useMutation, useQueryClient, useSession, useTranslation, type Schemas,
 } from "@/sdk";
 
 import type { BranchInfo } from "../branches";
@@ -136,7 +136,7 @@ export function Selling({ till, device, branch, cacheState }: {
   });
   const hold = useCallback(() => {
     if (lines.length === 0) return;
-    const time = new Intl.DateTimeFormat(undefined, { timeStyle: "short" }).format(new Date());
+    const time = new Intl.DateTimeFormat(undefined, { timeStyle: "short", timeZone: getDisplayTimeZone() }).format(new Date());
     holdSale(heldOf(state.customerName ? `${state.customerName} · ${time}` : time));
     clear();
     toast(t("terminal.hold.held"), "ok");

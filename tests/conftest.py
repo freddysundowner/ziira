@@ -18,10 +18,13 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 
+from ziira.kernel import registry as registry_module
+
 ADMIN_URL = make_url(os.environ.get(
     "ZIIRA_TEST_ADMIN_URL", "postgresql+psycopg://ziira:ziira@localhost:5432/postgres"))
 MASTER_DB, TEMPLATE_DB = "ziira_test_master", "ziira_test_template"
 TENANT_DB_PREFIX, TENANT_ROLE_PREFIX = "ziira_test_t_", "ztest_"
+registry_module.strict_by_default = True   # a unit that cannot be imported fails the tests instead of being skipped
 OWNER_PASSWORD = "owner-pass-123"   # test-only password for every tenant's owner
 # what make_tenant creates (a test may change it for a while); the time zone is a fixture value, never logic
 LOCALE = {"currency": "KES", "phone_country_code": "254", "timezone": "Africa/Nairobi"}
@@ -54,6 +57,7 @@ def _prepare_server() -> None:
         "ZIIRA_TEMPLATE_DATABASE": TEMPLATE_DB,
         "ZIIRA_TENANT_DB_PREFIX": TENANT_DB_PREFIX,
         "ZIIRA_TENANT_ROLE_PREFIX": TENANT_ROLE_PREFIX,
+        "ZIIRA_TEST_PLATFORM": "1",          # tells ziira.sdk.testing (plugin tests in this run) the platform is up
     })
 
 

@@ -106,7 +106,9 @@ def test_validation_of_codes_pins_numbers_and_accounts() -> None:
     assert rules.mask_account("0123 4567 8901") == "********8901"
     assert rules.check_account_number("bank", "0123-4567 89") == "0123456789"
     assert rules.check_account_number("mobile_money", "0712 345 678") == "0712345678"
-    for method, bad in (("bank", "12"), ("bank", "ab;c"), ("mobile_money", "12345"), ("mobile_money", "0212345678")):
+    assert rules.check_account_number("mobile_money", "+44 7911 123456") == "+447911123456"      # any country
+    for method, bad in (("bank", "12"), ("bank", "ab;c"), ("mobile_money", "12345"), ("mobile_money", "07123abc45"),
+                          ("mobile_money", "0712345678901234567")):
         with pytest.raises(ValidationFailed):
             rules.check_account_number(method, bad)
 

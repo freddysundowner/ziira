@@ -1,9 +1,10 @@
 """Public interface of the Connectors module: Intelligence on top of other systems ("standalone mode").
 
-A business that keeps its current system (Odoo, ERPNext, Zoho Books, QuickBooks, a POS, spreadsheets, bank and M-Pesa
-statements) connects it here. A **connector** reads that system and turns what it finds into the **canonical model**
-below (the same shapes whatever the source), which the connectors module stores read-only in its own `connect.src_*`
-tables. Intelligence's standalone checks read only those tables, so one set of checks serves every source. Nothing is
+A business that keeps its current system (Odoo, ERPNext, Zoho Books, QuickBooks, a POS, spreadsheets, bank and
+mobile-money statements) connects it here. A **connector** reads that system and turns what it finds into the
+**canonical model** below (the same shapes whatever the source), which the connectors module stores read-only in its
+own `connect.src_*` tables. Intelligence's standalone checks read only those tables, so one set of checks serves every
+source. Nothing is
 ever written back to the source system (read-only by default: the business can withdraw the key at any time).
 
 To add a connector: subclass `Connector`, set `kind`, `title`, `config_fields` and the entities it can read, decorate
@@ -18,17 +19,26 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Literal
+from uuid import UUID
 
 import httpx
 
+from ziira.sdk import Session
+
 CONNECTOR = "connect.connector"
 OCR_ENGINE = "connect.ocr_engine"
+CORE_COVERAGE = "connect.core_coverage"
+
+# The business areas a connected system and Ziira Core can both cover. A connected system supplies an area through the
+# entities it reads; a Core unit covers it by being switched on and in real use.
+OVERLAP_AREAS = ("sales", "receivables", "payables", "stock", "payments", "expenses", "journals")
 
 ENTITIES = ("branches", "parties", "products", "users", "sales", "payments", "stock_movements", "invoices",
             "expenses", "journal_entries")
 
 __all__ = [
-    "CONNECTOR", "OCR_ENGINE", "OcrEngine", "OcrWord", "ENTITIES", "Branch", "CanonicalBatch", "ConfigField",
+    "CONNECTOR", "CORE_COVERAGE", "OCR_ENGINE", "OVERLAP_AREAS", "AreaOverlap", "CoreCoverage", "OcrEngine", "OcrWord",
+    "Overlap", "coverage_overlap", "ENTITIES", "Branch", "CanonicalBatch", "ConfigField",
     "Connector", "ConnectorError",
     "ConnectionCheck", "Expense", "Invoice", "JournalEntry", "JournalLine", "Party", "Payment", "Product", "Sale",
     "SaleLine", "SalePayment", "StockMovement", "User",
@@ -125,7 +135,8 @@ class Sale:
 
 @dataclass(frozen=True)
 class Payment:
-    """Money in or out that the source (bank, M-Pesa statement, payment system, the ERP's payments) shows: evidence."""
+    """Money in or out that the source (bank or mobile-money statement, payment system, the ERP's payments) shows:
+    evidence."""
 
     ref: str
     occurred_at: datetime
@@ -310,3 +321,53 @@ class OcrEngine(ABC):
     @abstractmethod
     def read(self, image_png: bytes) -> list[OcrWord]:
         """The words of one page image, with positions. Raises `ConnectorError` if the engine fails."""
+
+
+# --------------------------------------------------------------------------- Core units that cover the same ground
+class CoreCoverage(ABC):
+    """Says which areas (`OVERLAP_AREAS`) a Core unit is really in use for, and where.
+
+    A unit that runs part of the business (sales, stock, receivables...) plugs one in with
+    `@provides(CORE_COVERAGE)` in its hooks.py, listing "connect.core_coverage" under `[extends] implements` and
+    "connect" under `optional`. It returns, for each area it covers, the branches with real activity since a date (a
+    posted sale, a stock movement that is not an opening balance); `None` stands for activity that names no branch.
+    Opening balances brought in by a move never count: they are not the business running on Ziira. Reads only.
+    """
+
+    @abstractmethod
+    def active(self, session: Session, company_id: UUID | None, since: date) -> dict[str, set[UUID | None]]:
+        """area -> branches (None: no branch named) with real Core activity from `since` on. `company_id` None: all."""
+
+
+@dataclass(frozen=True)
+class AreaOverlap:
+    """One area both a connected system and Core cover."""
+
+    area: str
+    branch_ids: frozenset[UUID | None]          # where Core is active (None: company-wide or no branch named)
+    connection_ids: tuple[UUID, ...]            # the active connections that supply this area
+
+
+@dataclass(frozen=True)
+class Overlap:
+    """Where a business is run twice: the areas that connected systems and Core units both cover."""
+
+    areas: tuple[AreaOverlap, ...]
+    days: int
+
+    def covers(self, area: str, branch_id: UUID | None) -> bool:
+        """Whether Core covers `area` at this branch (None: the company level, covered when Core is active anywhere)."""
+        return any(found.area == area and (branch_id is None or branch_id in found.branch_ids) for found in self.areas)
+
+    @property
+    def overlapping(self) -> bool:
+        return bool(self.areas)
+
+
+def coverage_overlap(session: Session, company_id: UUID | None = None, *, days: int = 14,
+                     honour_choice: bool = True) -> Overlap:
+    """Which areas Core now covers that an active connected system also supplies, and at which branches. With
+    `honour_choice` a connection the business chose to "keep both" for is left out (its standalone checks go on)."""
+    from ziira.modules.connect.services import overlap
+
+    return overlap.coverage_overlap(session, company_id, days=days, honour_choice=honour_choice)

@@ -5,13 +5,15 @@ for the Command Center."""
 from ziira.modules.command.public import COMMAND_PULSE_SOURCE
 from ziira.modules.connect import standalone_checks
 from ziira.modules.connect.ocr.tesseract import TesseractEngine
-from ziira.modules.connect.public import CONNECTOR, OCR_ENGINE, Connector, OcrEngine
+from ziira.modules.connect.public import CONNECTOR, CORE_COVERAGE, OCR_ENGINE, Connector, CoreCoverage, OcrEngine
 from ziira.modules.intel.public import INTEL_BASELINE_METRIC, INTEL_CHECK
 from ziira.sdk import define_extension_point, provides
 
 define_extension_point(CONNECTOR, Connector, "A reader for another system: turns its data into the canonical model")
 define_extension_point(OCR_ENGINE, OcrEngine,
                        "Reads the words out of a picture of a statement (default: Tesseract on this server)")
+define_extension_point(CORE_COVERAGE, CoreCoverage,
+                       "Says which areas a Core unit is in real use for, so the same ground is not checked twice")
 provides(OCR_ENGINE)(TesseractEngine)
 
 from ziira.modules.connect.connectors import file_kinds as _file_kinds  # noqa: E402, F401, I001 - file and statement kinds

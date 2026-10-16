@@ -77,3 +77,16 @@ def test_immutability_triggers_are_back_on(seeded):  # type: ignore[no-untyped-d
     assert off == []
     with pytest.raises(DBAPIError), seeded.db() as s:
         s.execute(text("update inventory.stock_movement set quantity = quantity + 1"))
+
+
+def test_the_seed_leaves_no_stray_connections(seeded):  # type: ignore[no-untyped-def]
+    """Connections are made by a person who connects a system; the demo data never invents (or leaves behind) one."""
+    from ziira.kernel.context import system_context
+    from ziira.kernel.db import tenant_session
+    from ziira.kernel.tenants import list_tenants
+
+    tenant = next(t for t in list_tenants() if t.code == "demo-seedtest")
+    system_context(tenant.id)
+    with tenant_session(tenant.id) as s:
+        if s.execute(text("select to_regclass('connect.connection')")).scalar() is not None:
+            assert s.execute(text("select count(*) from connect.connection")).scalar() == 0

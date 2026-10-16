@@ -1,0 +1,76 @@
+---
+// The searchable catalogue of checks, rendered from src/content/checks.catalog.json (generated from the real registry).
+// Without JavaScript every group is a plain list of accordions (<details>); the filter form is hidden until a tiny script shows it.
+import { catalog, totals, checkAnchor } from "../lib/catalog";
+const shown = (v: string | number | boolean): string => String(v).replace(/_/g, " ").replace(/,/g, ", ");
+---
+<div class="cat" id="catalogue" data-catalogue data-total={totals.checks}>
+  <form class="cat-tools" data-cat-tools hidden role="search" aria-label="Find a check">
+    <label>Search the checks<input type="search" data-cat-q placeholder="for example: discount, overdue, stock" autocomplete="off" /></label>
+    <label>Area
+      <select data-cat-g>
+        <option value="">All areas</option>
+        {catalog.groups.map((g) => <option value={g.key}>{g.title}</option>)}
+      </select>
+    </label>
+    <label>Where it runs
+      <select data-cat-s>
+        <option value="">Everywhere</option>
+        <option value="ziira">Inside Ziira</option>
+        <option value="connected">On a connected system</option>
+      </select>
+    </label>
+    <p class="cat-count" role="status" aria-live="polite">Showing <b data-cat-shown>{totals.checks}</b> of <b>{totals.checks}</b> checks</p>
+  </form>
+  {catalog.groups.map((g) => (
+    <section class="cat-group" data-cat-group={g.key} data-count={g.count} aria-labelledby={`cat-${g.key}`}>
+      <h3 id={`cat-${g.key}`}>{g.title} <span class="count">{g.count}</span></h3>
+      <p class="lead">{g.lead}</p>
+      <ul class="cat-list">
+        {catalog.checks.filter((c) => c.group === g.key).map((c) => (
+          <li class="check" data-source={c.source} data-group={c.group} data-text={`${c.title} ${c.plain} ${c.example} ${g.title}`.toLowerCase()}>
+            <details id={checkAnchor(c.code)}>
+              <summary>
+                <span class="ct">{c.title}</span>
+                <span class="badges">
+                  <span class={`chip ${c.source === "ziira" ? "ok" : "info"}`}>{c.source === "ziira" ? "Inside Ziira" : "Connected system"}</span>
+                  <span class="chip sev">Usually {c.severity_label.toLowerCase()}</span>
+                </span>
+              </summary>
+              <div class="cb">
+                <p>{c.plain}</p>
+                <p class="ex"><span>Example</span> {c.example}</p>
+                <dl>
+                  <div><dt>Reads</dt><dd>{c.source === "ziira" ? `Ziira: ${c.unit.toLowerCase()}` : c.needs}</dd></div>
+                  <div><dt>Ends</dt><dd>{c.closes_itself ? "Closes by itself when the problem clears" : "Stays open until a person deals with it"}</dd></div>
+                  {c.limits.length > 0 && <div class="lim"><dt>Limits you can change</dt><dd><ul>{c.limits.map((l) => <li>{l.label}: <b>{shown(l.default)}</b></li>)}</ul></dd></div>}
+                </dl>
+              </div>
+            </details>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+  <p class="cat-none" data-cat-none hidden>No check matches. Clear the search or choose another area.</p>
+</div>
+<script is:inline>
+(function () {
+  var root = document.querySelector("[data-catalogue]"); if (!root) return;
+  var tools = root.querySelector("[data-cat-tools]"); tools.hidden = false; tools.addEventListener("submit", function (e) { e.preventDefault(); });
+  var q = tools.querySelector("[data-cat-q]"), g = tools.querySelector("[data-cat-g]"), s = tools.querySelector("[data-cat-s]"), out = tools.querySelector("[data-cat-shown]");
+  var items = [].slice.call(root.querySelectorAll(".check")), groups = [].slice.call(root.querySelectorAll("[data-cat-group]")), none = root.querySelector("[data-cat-none]");
+  function run() {
+    var words = q.value.toLowerCase().split(/\s+/).filter(Boolean), n = 0;
+    items.forEach(function (li) {
+      var ok = (!g.value || li.dataset.group === g.value) && (!s.value || li.dataset.source === s.value) && words.every(function (w) { return li.dataset.text.indexOf(w) > -1; });
+      li.hidden = !ok; if (ok) n++;
+    });
+    groups.forEach(function (sec) { sec.hidden = !sec.querySelector(".check:not([hidden])"); });
+    out.textContent = n; none.hidden = n > 0;
+  }
+  ["input", "change"].forEach(function (e) { tools.addEventListener(e, run); });
+  function open() { var h = decodeURIComponent(location.hash.slice(1)); var el = h && document.getElementById(h); if (el && el.tagName === "DETAILS") { el.open = true; el.scrollIntoView(); } }
+  open(); addEventListener("hashchange", open);
+})();
+</script>

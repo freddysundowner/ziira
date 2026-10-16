@@ -1,4 +1,6 @@
 {
+  "stockActions": "Stock actions",
+  "stockLevels": "Stock levels",
   "stock": "Stock",
   "stockHint": "What you hold, where it is, and what is running low.",
   "movements": "Stock movements",
@@ -199,5 +201,7 @@
   "countPosted": "Count posted. Stock corrected.",
   "cancelCount": "Cancel count",
   "cancelCountAsk": "Abandon this count? Nothing will change in stock.",
-  "countCancelled": "Count cancelled."
+  "countCancelled": "Count cancelled.",
+  "noLocationYet": "There is no store or warehouse yet, so stock cannot be recorded.",
+  "addLocationLink": "Add a store first"
 }

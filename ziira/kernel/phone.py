@@ -14,10 +14,10 @@ CALLING_CODE = re.compile(r"^[1-9]\d{0,2}$")
 
 
 def check_calling_code(code: str) -> str:
-    """A country calling code: 1 to 3 digits, no plus or leading zero ('254', '44', '1')."""
+    """A country calling code: 1 to 3 digits, no plus or leading zero ('44', '1', '353')."""
     cleaned = code.strip().lstrip("+")
     if cleaned and not CALLING_CODE.match(cleaned):
-        raise ValidationFailed("A calling code is 1 to 3 digits, such as 44 or 254")
+        raise ValidationFailed("A calling code is 1 to 3 digits, such as 44 or 1")
     return cleaned
 
 

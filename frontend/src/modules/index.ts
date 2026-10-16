@@ -13,6 +13,7 @@ import crm from "./crm/module";
 import finance from "./finance/module";
 import imports from "./imports/module";
 import intel from "./intel/module";
+import leadsintel from "./leadsintel/module";
 import inventory from "./inventory/module";
 import messaging from "./messaging/module";
 import people from "./people/module";
@@ -21,5 +22,5 @@ import pos from "./pos/module";
 import purchasing from "./purchasing/module";
 
 export const allModules: readonly ModuleDefinition[] = [
-  admin, products, inventory, pos, crm, payments, purchasing, finance, people, messaging, catalogStats, command, intel, imports, connect,
+  admin, products, inventory, pos, crm, payments, purchasing, finance, people, messaging, leadsintel, catalogStats, command, intel, imports, connect,
 ];

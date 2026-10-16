@@ -16,7 +16,15 @@ from typing import Any, ClassVar
 
 import httpx
 
-from ziira.sdk import NotificationChannel, Outgoing, SendResult, ValidationFailed, is_production
+from ziira.sdk import (
+    NotificationChannel,
+    Outgoing,
+    SendResult,
+    TemplateSpec,
+    TemplateState,
+    ValidationFailed,
+    is_production,
+)
 
 TIMEOUT = httpx.Timeout(15.0, connect=5.0)
 
@@ -239,6 +247,7 @@ class _Fake(NotificationChannel):
     """For development and tests: records what it was asked to send and says yes (or what the test scripted)."""
 
     sent: ClassVar[list[Outgoing]]
+    development_only = True                   # never offered in production
     refuse_next: ClassVar[str | None] = None
     fail_next: ClassVar[int] = 0              # raise this many times, as if the gateway were down
 
@@ -263,3 +272,28 @@ class FakeEmail(_Fake):
 class FakeSms(_Fake):
     channel, name, sent = "sms", "fake", []                    # noqa: RUF012
 
+
+
+class FakeChat(_Fake):
+    """A chat channel for development and tests (conversation window, templates, reply buttons, replies): a submitted
+    template is 'submitted' until the provider 'decides' (`decisions[name]` = approved or rejected; approved by
+    default)."""
+
+    channel, name, sent = "chat", "fake", []                   # noqa: RUF012
+    channel_label = "Chat (test)"
+    supports_templates = True
+    supports_buttons = True
+    supports_inbound = True
+    window_hours = 24
+    submitted: ClassVar[list[TemplateSpec]] = []
+    decisions: ClassVar[dict[str, str]] = {}
+
+    def submit_template(self, spec: TemplateSpec, secret: dict[str, Any], config: dict[str, Any]) -> TemplateState:
+        type(self).submitted.append(spec)
+        return TemplateState("submitted", f"fake-{spec.name}-{spec.language}")
+
+    def template_state(self, spec: TemplateSpec, provider_template_id: str | None, secret: dict[str, Any],
+                       config: dict[str, Any]) -> TemplateState:
+        decision = type(self).decisions.get(spec.name, "approved")
+        return TemplateState(decision, provider_template_id, "Not allowed by the fake provider"
+                             if decision == "rejected" else "")

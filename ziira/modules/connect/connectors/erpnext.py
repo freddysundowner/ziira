@@ -95,7 +95,7 @@ class ErpNextConnector(Connector):
                     example="https://mybusiness.erpnext.com"),
         ConfigField("api_key", "API key", secret=True, help="From the read-only user's API Access section."),
         ConfigField("api_secret", "API secret", secret=True, help="Shown once when the key is generated."),
-        ConfigField("timezone", "Time zone of the ERPNext server", required=False, example="Africa/Nairobi",
+        ConfigField("timezone", "Time zone of the ERPNext server", required=False, example="Europe/London",
                     help="ERPNext sends times without a zone. Use the System Settings > Time Zone value there; "
                          "blank means UTC."),
     )

@@ -1,0 +1,9 @@
+[Unit]
+Description=Reload nginx when the website's redirect list changes
+
+[Path]
+PathChanged=/var/lib/ziira/nginx/site-redirects.conf
+Unit=ziira-nginx-reload.service
+
+[Install]
+WantedBy=multi-user.target

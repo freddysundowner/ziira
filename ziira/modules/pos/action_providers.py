@@ -42,9 +42,9 @@ class SendPaymentReminder(ActionProvider):
 
     type = "pos.send_payment_reminder"
     title = "Remind the customer to pay"
-    description = ("Sends the business's usual payment reminder (by SMS or email, as set in the company's reminder "
-                   "channel) about the customer's oldest overdue invoices. Customers who asked not to be contacted "
-                   "are not messaged.")
+    description = ("Sends the business's usual payment reminder (by SMS, email or a chat channel, as set in the "
+                   "company's reminder channel) about the customer's oldest overdue invoices. Customers who asked "
+                   "not to be contacted are not messaged.")
     check_codes = ("pos.customer_overdue",)
     needs_permission = "receivables.manage"
     auto_allowed = True
@@ -52,12 +52,12 @@ class SendPaymentReminder(ActionProvider):
         "customer_id": {"type": "uuid", "title": "Customer", "editable": False},
         "min_days_overdue": {"type": "integer", "title": "Chase invoices at least this many days overdue",
                              "minimum": "1", "maximum": "3650"},
-        "channel": {"type": "string", "title": "Send by", "enum": ["sms", "email"]}},
+        "channel": {"type": "string", "title": "Send by", "max_length": 40}},
         "required": ["customer_id", "min_days_overdue", "channel"]}
     rule_schema = {"properties": {
         "min_days_overdue": {"type": "integer", "title": "Only customers whose oldest invoice is at least this many "
                                                          "days overdue", "minimum": "1", "maximum": "3650"},
-        "channel": {"type": "string", "title": "Only when sending by", "enum": ["sms", "email"]}}}
+        "channel": {"type": "string", "title": "Only when sending by", "max_length": 40}}}
 
     def proposes(self, session: Session, finding: FindingInfo) -> list[Proposal]:
         customer_id = _customer_of(session, finding)
@@ -65,7 +65,7 @@ class SendPaymentReminder(ActionProvider):
             return []
         channel = str(company_setting(session, finding.company_id, "reminder_channel"))
         customer = find_customer(session, customer_id)
-        if channel not in ("sms", "email") or customer is None:
+        if channel == "off" or customer is None:
             return []                                           # the business has no way set up to remind
         if not (customer.email if channel == "email" else customer.phone):
             return []

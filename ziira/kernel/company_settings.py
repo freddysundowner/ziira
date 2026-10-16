@@ -9,6 +9,7 @@ Adding a setting: add a `Setting` to SETTINGS below with a parser that raises Va
 
 import json
 import logging
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
@@ -19,9 +20,13 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ziira.kernel import audit
+from ziira.kernel import channels as registry
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.kernel.phone import check_calling_code
+
+CHANNEL_NAME = re.compile(r"^[a-z][a-z0-9_]{1,39}$")
+CHANNEL_SETTINGS = ("reminder_channel", "intel_alert_channel")
 
 log = logging.getLogger("ziira.settings")
 
@@ -63,8 +68,8 @@ def _percent(value: Any) -> Decimal:
 
 
 def _reminder_channel(value: Any) -> str:
-    if value not in ("off", "sms", "email"):
-        raise ValidationFailed("Expected 'off', 'sms' or 'email'")
+    if value != "off" and not (isinstance(value, str) and CHANNEL_NAME.match(value)):
+        raise ValidationFailed("Expected 'off' or the name of a channel the business has")
     return str(value)
 
 
@@ -149,8 +154,8 @@ def _timezone(value: Any) -> str:
 
 
 def _alert_channel(value: Any) -> str:
-    if value not in ("off", "sms", "email"):
-        raise ValidationFailed("Expected 'off', 'sms' or 'email'")
+    if value != "off" and not (isinstance(value, str) and CHANNEL_NAME.match(value)):
+        raise ValidationFailed("Expected 'off' or the name of a channel the business has")
     return str(value)
 
 
@@ -290,6 +295,9 @@ def update_settings(session: Session, company_id: UUID, changes: dict[str, Any])
     stored = _stored(session, company_id)
     before = get_settings(session, company_id)
     parsed = {key: SETTINGS[key].parse(value) for key, value in changes.items()}
+    for key in CHANNEL_SETTINGS:
+        if key in parsed and parsed[key] != "off" and parsed[key] != before[key]:
+            registry.check(session, parsed[key])         # only a channel the business has (its plugin is on)
     if parsed.get("intel_action_level", 0) >= 3 and parsed["intel_action_level"] > before["intel_action_level"]:
         # Letting Intelligence prepare or carry out actions is the owner's decision, not any settings editor's.
         get_context().require("intel.automation", company_id=company_id)

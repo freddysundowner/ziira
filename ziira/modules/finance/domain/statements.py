@@ -113,7 +113,7 @@ class CashFlow:
 SOURCE_LABELS = {
     "sale": "Sales", "sale_return": "Sales returns", "customer_payment": "Customer payments",
     "customer_refund": "Customer refunds", "supplier_payment": "Supplier payments",
-    "supplier_refund": "Supplier refunds", "expense": "Expenses", "settlement": "M-Pesa settlements",
+    "supplier_refund": "Supplier refunds", "expense": "Expenses", "settlement": "Mobile money settlements",
     "cash_deposit": "Cash deposits", "till_variance": "Till differences", "manual": "Manual journals",
     "manual_journal": "Manual journals",
 }

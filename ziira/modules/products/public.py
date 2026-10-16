@@ -6,12 +6,16 @@ sockets Products offers (declared in hooks.py and in manifest.toml):
 - Validation hook PRODUCT_BEFORE_CREATE: runs before a product is saved, with a ProductDraft.
   Raise ValidationFailed to block it.
 - Extension point SKU_SUGGESTER: implement SkuSuggester to suggest SKUs for a new product name.
+- Extension point TAX_CODE_SEED: a country pack implements TaxCodeSeed to supply its tax codes (data), which are added
+  to a business that switches the pack on. Products has no tax codes of its own: the international pack supplies a
+  minimal set.
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from typing import ClassVar
 from uuid import UUID
 
 from ziira.modules.products.repository import products_repo
@@ -19,6 +23,7 @@ from ziira.sdk import Session, ValidationFailed
 
 PRODUCT_BEFORE_CREATE = "products.product.before_create"
 SKU_SUGGESTER = "products.sku_suggester"
+TAX_CODE_SEED = "products.tax_code_seed"
 
 
 @dataclass(frozen=True)
@@ -39,6 +44,41 @@ class SkuSuggester(ABC):
     @abstractmethod
     def suggest(self, session: Session, company_id: UUID, name: str) -> list[str]:
         """Return candidate SKUs for a product called `name` (may be empty)."""
+
+
+@dataclass(frozen=True)
+class TaxCodeRow:
+    """A tax code a country pack supplies. `vat_rate` is a percentage; `authority_code` is the tax authority's name."""
+
+    code: str
+    name: str
+    vat_rate: Decimal
+    authority_code: str | None = None
+
+
+def check_tax_codes(rows: list[TaxCodeRow]) -> None:
+    """For a pack's own tests: ValidationFailed on the first tax code Products would refuse, ValueError on a repeat."""
+    from ziira.modules.products.domain import rules
+
+    seen: set[str] = set()
+    for row in rows:
+        code = rules.check_tax_code(row.code)
+        rules.check_name(row.name)
+        rules.check_vat_rate(row.vat_rate)
+        rules.check_authority_code(row.authority_code)
+        if code in seen:
+            raise ValueError(f"{code} appears twice")
+        seen.add(code)
+
+
+class TaxCodeSeed(ABC):
+    """Contract for the TAX_CODE_SEED extension point. `countries` are ISO codes the data is for (empty: worldwide)."""
+
+    countries: ClassVar[tuple[str, ...]] = ()
+
+    @abstractmethod
+    def tax_codes(self) -> list[TaxCodeRow]:
+        """The codes to add (those the business already has are left alone)."""
 
 
 def product_name_exists(session: Session, company_id: UUID, name: str) -> bool:

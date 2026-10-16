@@ -91,6 +91,12 @@ def get_devices(branch_id: UUID | None = None, session: Session = DB_SESSION) ->
     return devices.list_devices(session, branch_id)
 
 
+@router.patch("/devices/{device_id}", response_model=sc.DeviceOut, dependencies=DEVICE_ADMIN)
+def patch_device(device_id: UUID, body: sc.DeviceUpdateIn, session: Session = DB_SESSION) -> object:
+    """Change the store a device sells from (not while a till is open on it)."""
+    return devices.set_location(session, device_id, body.location_id)
+
+
 @router.patch("/devices/{device_id}/status", response_model=sc.DeviceOut, dependencies=DEVICE_ADMIN)
 def patch_device_status(device_id: UUID, body: sc.DeviceStatusIn, session: Session = DB_SESSION) -> object:
     """Block a lost device or let it work again."""
@@ -108,7 +114,7 @@ def post_rotate_key(device_id: UUID, session: Session = DB_SESSION) -> object:
 @router.post("/tills", response_model=sc.TillOut, status_code=status.HTTP_201_CREATED, dependencies=TILL)
 def post_till(body: sc.TillOpenIn, response: Response, session: Session = DB_SESSION) -> object:
     """Open your till on a device with a cash float."""
-    till, existed = tills.open_till(session, body.device_id, body.opening_float, local_id=body.local_id)
+    till, existed = tills.open_till(session, body.device_id, body.opening_float, local_id=body.local_id, resume=True)
     if existed:
         response.status_code = status.HTTP_200_OK
     return till

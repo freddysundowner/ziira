@@ -2,6 +2,7 @@
 name = "products"
 title = "Products and Pricing"
 description = "Your product list, units of measure, tax codes and price lists."
+category = "stock"
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -13,12 +14,12 @@ api_prefix = "/api/v1/products"
 publishes = ["product.created", "price.changed"]
 subscribes = []
 # Sockets other units can plug into (contracts in public.py, declared in hooks.py)
-extension_points = ["products.sku_suggester"]
+extension_points = ["products.sku_suggester", "products.tax_code_seed"]
 validation_hooks = ["products.product.before_create"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["imports.importer"]
+implements = ["imports.importer", "kernel.country_seeder"]
 
 [permissions]
 "products.view" = "View products and prices"
@@ -33,3 +34,8 @@ implements = ["imports.importer"]
 "Storekeeper" = ["products.view"]
 "Sales Rep" = ["products.view"]
 "Accountant" = ["products.view"]
+
+# Events a business may subscribe to with an outgoing webhook (docs/webhooks.md): only these fields leave the system.
+[provides.public_events."product.created"]
+description = "A product was added to the catalogue"
+fields = ["company_id", "sku", "name"]

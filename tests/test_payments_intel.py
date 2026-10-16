@@ -171,6 +171,8 @@ def test_close_variance_beyond_the_limit(client, shop) -> None:  # type: ignore[
     assert "No explanation" in items["2026-10-02"]["summary"]
     assert items["2026-10-02"]["branch_id"] == str(shop["branch_id"])
     assert detail(client, shop, items["2026-10-01"])["records"][0]["id"] == str(big)
+    shown = detail(client, shop, items["2026-10-01"])
+    assert shown["check_title"] == "Daily close with a variance" and shown["value_kind"] == "money"   # for the Details card
     # an event: it stays when the data no longer shows it, and a higher limit only affects new runs
     sql(shop, "update payments.daily_close set variance = 0 where id = :i", i=str(big))
     run(shop, code)

@@ -9,6 +9,7 @@ entries, number series and events apply exactly as if the record had been typed 
 """
 
 import logging
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -20,7 +21,7 @@ from sqlalchemy.engine import Row
 
 from ziira.modules.imports.domain import files, mapping, values
 from ziira.modules.imports.permissions import IMPORTS_MANAGE
-from ziira.modules.imports.public import IMPORTS_IMPORTER, FileCheck, Importer, ImportOptions, ImportRow
+from ziira.modules.imports.public import IMPORTS_IMPORTER, FileCheck, Importer, ImportOptions, ImportRow, RowCheck
 from ziira.modules.imports.repository import imports_repo as repo
 from ziira.sdk import (
     Conflict,
@@ -167,6 +168,59 @@ def create_batch(session: Session, *, kind: str, company_id: UUID, filename: str
     audit_record(session, "upload", "imports.batch", batch_id,
                  {"kind": kind, "file": filename, "rows": len(parsed.rows)})
     return get_batch(session, batch_id)
+
+
+def create_batch_from_rows(session: Session, *, kind: str, company_id: UUID, rows: Sequence[Mapping[str, str]],
+                           name: str, as_of: date | None = None,
+                           source: tuple[str, UUID] | None = None) -> UUID:
+    """Stage rows another unit made (field name -> text) as a batch: the columns are the importer's own field names, so
+    the mapping is exact. Same checks and permissions as an uploaded file. Nothing is imported yet."""
+    importer = get_importer(session, kind)
+    check_company(session, company_id)
+    _authorise(importer, company_id)
+    if importer.needs_go_live and as_of is None:
+        raise ValidationFailed("Say the go-live date: the day the balances in this file are as at")
+    headers = [c.name for c in importer.columns]
+    batch_id = repo.add_batch(
+        session, company_id=company_id, kind=kind, filename=(name or kind).strip()[:200] or kind, delimiter=",",
+        headers=headers, mapping={h: h for h in headers},
+        options={"decimal_separator": ".", "date_format": "iso", **({"as_of": as_of.isoformat()} if as_of else {}),
+                 "tolerance": "0"},
+        warnings=[], created_by=current_context().user_id,
+        source_kind=source[0] if source else None, source_id=source[1] if source else None)
+    repo.add_rows(session, batch_id, [(n, [(row.get(h) or "").strip() for h in headers])
+                                      for n, row in enumerate(rows, start=2)])
+    audit_record(session, "stage", "imports.batch", batch_id,
+                 {"kind": kind, "rows": len(rows), "source": source[0] if source else None})
+    return batch_id
+
+
+def check_rows(session: Session, kind: str, company_id: UUID, rows: Sequence[ImportRow]) -> list[RowCheck]:
+    """The dry run for rows that are not staged: the same checks as `validate_batch`, nothing stored."""
+    importer = get_importer(session, kind)
+    check_company(session, company_id)
+    _authorise(importer, company_id)
+    first_seen: dict[str, int] = {}
+    results: list[RowCheck] = []
+    for number, row in enumerate(rows, start=1):
+        errors = _check_row(session, importer, company_id, row)
+        key = importer.key(row)
+        if key is not None:
+            if key in first_seen:
+                errors.append(f"Row {first_seen[key]} of this file has the same {key!r}")
+            else:
+                first_seen[key] = number
+        if errors:
+            results.append(RowCheck("invalid", errors))
+            continue
+        try:
+            with session.begin_nested():
+                found = importer.existing(session, company_id, row)
+        except Exception as error:   # noqa: BLE001 - one bad row must not stop the dry run
+            results.append(RowCheck("invalid", [_message(error)]))
+            continue
+        results.append(RowCheck("skipped", [found[:MESSAGE_LIMIT]]) if found else RowCheck("valid", []))
+    return results
 
 
 def _check_options(decimal_separator: str, date_format: str) -> None:

@@ -1,0 +1,11 @@
+alter table kernel.user_phone drop column if exists attempts;
+alter table kernel.user_phone drop column if exists code_expires_at;
+alter table kernel.user_phone drop column if exists code_hash;
+drop index if exists kernel.user_phone_ix1;
+drop index if exists kernel.user_phone_verified;
+drop table if exists kernel.contact_window;
+drop table if exists kernel.user_notification_pref;
+drop table if exists kernel.message_template;
+drop index if exists kernel.notification_ix3;
+alter table kernel.notification drop column if exists language;
+alter table kernel.notification drop column if exists kind;

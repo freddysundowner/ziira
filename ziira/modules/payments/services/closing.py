@@ -3,7 +3,7 @@
     open --submit--> submitted --(lock, at once if nothing needs approval)--> locked --reopen (approved)--> reopened
 
 1. All till sessions for the branch and date are closed (asked of POS when it is enabled).
-2. M-Pesa and card takings are compared with what the provider's transactions covered.
+2. Mobile money and card takings are compared with what the provider's transactions covered.
 3. The cash banked is recorded against the cash expected.
 4. Variances are listed, with the branch manager's explanation where there are any.
 5. The close is locked. Changing that day's payments afterwards needs a reopening (through the approval matrix).

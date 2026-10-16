@@ -1,0 +1,21 @@
+---
+/** The business's contact details as published in the platform: email, phones, WhatsApp, address and social links. Nothing when none are set. */
+import type { Lang } from "../content/types";
+import { siteConfig } from "../lib/siteConfig";
+
+interface Props { lang: Lang; skipEmail?: boolean }
+const { lang, skipEmail = false } = Astro.props;
+const c = siteConfig.contact;
+const words = { en: { whatsapp: "Chat on WhatsApp", sales: "Sales", support: "Support" } }[lang];
+const telHref = (n: string) => `tel:${n.replace(/[^+\d]/g, "")}`;
+const show = (!skipEmail && c.email) || c.salesEmail || c.phones.length > 0 || c.whatsappUrl || c.address;
+---
+{show && (
+  <ul class="contact-details">
+    {!skipEmail && c.email && <li>{words.support}: <strong>{c.email}</strong></li>}
+    {c.salesEmail && <li>{words.sales}: <strong>{c.salesEmail}</strong></li>}
+    {c.phones.map((n) => <li><a href={telHref(n)}>{n}</a></li>)}
+    {c.whatsappUrl && <li><a href={c.whatsappUrl} rel="noopener">{words.whatsapp}</a></li>}
+    {c.address && <li class="addr" style="white-space:pre-line">{c.address}</li>}
+  </ul>
+)}

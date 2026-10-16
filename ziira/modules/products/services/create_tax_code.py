@@ -1,4 +1,4 @@
-"""Use case: create a tax code (VAT class and eTIMS tax type)."""
+"""Use case: create a tax code (a tax class, with the tax authority's own code if there is one)."""
 
 from decimal import Decimal
 

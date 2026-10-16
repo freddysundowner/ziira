@@ -19,7 +19,7 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "bill_match_tolerance_percent", kind: "number" },
   ] },
   { id: "reminders", fields: [
-    { key: "reminder_channel", kind: "choice", choices: ["off", "sms", "email"] },
+    { key: "reminder_channel", kind: "choice", choices: ["off"] },
     { key: "reminder_min_days_overdue", kind: "integer" },
     { key: "reminder_repeat_days", kind: "integer" },
   ] },
@@ -27,7 +27,7 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "timezone", kind: "text" },
   ] },
   { id: "alerts", fields: [
-    { key: "intel_alert_channel", kind: "choice", choices: ["off", "sms", "email"] },
+    { key: "intel_alert_channel", kind: "choice", choices: ["off"] },
     { key: "intel_alert_min_severity", kind: "choice", choices: ["low", "medium", "high", "critical"] },
   ] },
   { id: "people", fields: [

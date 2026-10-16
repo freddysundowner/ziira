@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { removeConfirmed, splitByKind, titlesOf, unitState, type UnitCard } from "./lib";
+import { countryName, recommendedPlugins, removeConfirmed, titlesOf, unitState, visibleCards, wouldSwitchOn, type UnitCard } from "./lib";
 
 const card = (over: Partial<UnitCard>): UnitCard => ({
-  name: "x", title: "X", description: "", kind: "module", version: "1.0.0", requires: [], optional: [], dependants: [], installed: true, enabled: false,
-  has_data: false, will_also_enable: [], can_enable: true, can_disable: false, why_not_disable: null, can_remove: false, why_not_remove: null, ...over,
+  name: "x", title: "X", description: "", category: "", countries: [], kind: "module", version: "1.0.0", requires: [], optional: [], dependants: [], installed: true, enabled: false,
+  has_data: false, in_plan: true, will_also_enable: [], can_enable: true, can_disable: false, why_not_disable: null, can_remove: false, why_not_remove: null, ...over,
 });
 
 describe("unitState", () => {
@@ -15,12 +15,59 @@ describe("unitState", () => {
   });
 });
 
-describe("splitByKind", () => {
-  it("separates modules from plugins and keeps the order", () => {
-    const cards = [card({ name: "a" }), card({ name: "p", kind: "plugin" }), card({ name: "b" })];
-    const { modules, plugins } = splitByKind(cards);
-    expect(modules.map((c) => c.name)).toEqual(["a", "b"]);
-    expect(plugins.map((c) => c.name)).toEqual(["p"]);
+describe("visibleCards", () => {
+  const cards = [card({ name: "b", title: "Beta", enabled: true }), card({ name: "a", title: "Alpha" }), card({ name: "z", title: "Zed", installed: false }),
+    card({ name: "c", title: "Cash", enabled: true, description: "Takes payments" }), card({ name: "d", title: "Delta" })];
+  it("lists switched on first, then available, then not available yet, alphabetical inside each", () => {
+    expect(visibleCards(cards, "", "all").map((c) => c.name)).toEqual(["b", "c", "a", "d", "z"]);
+  });
+  it("filters by status (off includes those not offered yet) and by words in the title, name or description", () => {
+    expect(visibleCards(cards, "", "on").map((c) => c.name)).toEqual(["b", "c"]);
+    expect(visibleCards(cards, "", "off").map((c) => c.name)).toEqual(["a", "d", "z"]);
+    expect(visibleCards(cards, "  PAYMENTS take", "all").map((c) => c.name)).toEqual(["c"]);
+    expect(visibleCards(cards, "nothing like this", "all")).toEqual([]);
+  });
+});
+
+describe("recommendedPlugins", () => {
+  const plugins = [
+    card({ name: "world", kind: "plugin", category: "payments" }),
+    card({ name: "ke", kind: "plugin", category: "payments", countries: ["KE"] }),
+    card({ name: "on", kind: "plugin", category: "payments", enabled: true }),
+    card({ name: "later", kind: "plugin", category: "payments", installed: false }),
+    card({ name: "other", kind: "plugin", category: "ai" }),
+    card({ name: "mod", category: "payments" }),
+  ];
+  it("suggests worldwide plugins and those for the business's country, in the edition's categories", () => {
+    expect(recommendedPlugins(plugins, { plugin_categories: ["payments"] }, "ke").map((c) => c.name)).toEqual(["world", "ke"]);
+    expect(recommendedPlugins(plugins, { plugin_categories: ["payments"] }, "GB").map((c) => c.name)).toEqual(["world"]);
+    expect(recommendedPlugins(plugins, { plugin_categories: ["payments"] }, null).map((c) => c.name)).toEqual(["world"]);
+    expect(recommendedPlugins(plugins, undefined, "KE")).toEqual([]);
+  });
+
+  it("suggests the country pack that names the business's country, whatever the edition, and never the worldwide pack", () => {
+    const packs = [card({ name: "pack_ke", kind: "plugin", category: "country", countries: ["KE"] }), card({ name: "pack_international", kind: "plugin", category: "country" }),
+      card({ name: "pack_done", kind: "plugin", category: "country", countries: ["KE"], enabled: true })];
+    expect(recommendedPlugins(packs, undefined, "ke").map((c) => c.name)).toEqual(["pack_ke"]);
+    expect(recommendedPlugins(packs, { plugin_categories: [] }, "GB")).toEqual([]);
+    expect(recommendedPlugins(packs, undefined, null)).toEqual([]);
+  });
+});
+
+describe("countryName", () => {
+  it("names a country in the reader's language and falls back to the code", () => {
+    expect(countryName("ke", "en")).toBe("Kenya");
+    expect(countryName(null, "en")).toBe("");
+    expect(countryName("zz", "en")).toBeTruthy();
+  });
+});
+
+describe("wouldSwitchOn", () => {
+  const cards = [card({ name: "pos", requires: ["products", "inventory"] }), card({ name: "products" }), card({ name: "inventory", requires: ["products"] }),
+    card({ name: "crm", enabled: true }), card({ name: "finance" })];
+  it("lists the edition's units that are off, with what they need, once each", () => {
+    expect(wouldSwitchOn(cards, { units: ["pos", "crm", "finance", "ghost"] }).sort()).toEqual(["finance", "inventory", "pos", "products"]);
+    expect(wouldSwitchOn(cards, { units: ["crm"] })).toEqual([]);
   });
 });
 

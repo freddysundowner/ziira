@@ -1,0 +1,13 @@
+---
+import type { Lang } from "../content/types";
+import { ui } from "../i18n/ui";
+import { homeOf } from "../lib/registry";
+interface Props { lang: Lang; crumbs: { name: string; path: string }[] }
+const { lang, crumbs } = Astro.props;
+---
+<nav class="breadcrumbs" aria-label={ui[lang].breadcrumbs}>
+  <ol>
+    <li><a href={homeOf(lang)}>{ui[lang].home}</a></li>
+    {crumbs.map((c, i) => <li>{i === crumbs.length - 1 ? <span aria-current="page">{c.name}</span> : <a href={c.path}>{c.name}</a>}</li>)}
+  </ol>
+</nav>

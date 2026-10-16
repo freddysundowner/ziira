@@ -34,7 +34,7 @@ test("J14 the web app at phone width", async ({ page }) => {
   await expect(nav).toBeVisible();
   await expectNoSidewaysScroll(page, "menu open");
   await checkAccessibility(page, "phone menu");
-  await nav.getByRole("link", { name: "Products", exact: true }).click();
+  await nav.getByRole("link", { name: "Products", exact: true }).click();      // every section lists its pages in the drawer
   await expect(page).toHaveURL(/\/products$/);
   await expect(nav).toBeHidden();                       // choosing a page closes the drawer
 

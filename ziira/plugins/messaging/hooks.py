@@ -4,6 +4,7 @@ from ziira.plugins.messaging.providers import (
     AfricasTalkingSms,
     BlessedTextsSms,
     BrevoEmail,
+    FakeChat,
     FakeEmail,
     FakeSms,
     ResendEmail,
@@ -12,7 +13,8 @@ from ziira.plugins.messaging.providers import (
 )
 from ziira.sdk import provides
 
-PROVIDERS = (SmtpEmail, BrevoEmail, ResendEmail, SendGridEmail, BlessedTextsSms, AfricasTalkingSms, FakeEmail, FakeSms)
+PROVIDERS = (SmtpEmail, BrevoEmail, ResendEmail, SendGridEmail, BlessedTextsSms, AfricasTalkingSms, FakeEmail, FakeSms,
+             FakeChat)
 
 for provider in PROVIDERS:
     provides("kernel.notification_channel")(provider)

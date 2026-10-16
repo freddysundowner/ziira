@@ -545,7 +545,7 @@ amounts = st.integers(min_value=1, max_value=9_999_999).map(lambda cents: Dec(ce
 
 @pytest.fixture(scope="module")
 def prop(client, registry):  # type: ignore[no-untyped-def]
-    return new_shop(client, registry, "Property Co")
+    return new_shop(client, registry, "Opening Property Co")
 
 
 @settings(max_examples=12, deadline=None, suppress_health_check=[HealthCheck.function_scoped_fixture])

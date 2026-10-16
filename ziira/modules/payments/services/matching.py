@@ -29,7 +29,7 @@ from ziira.sdk import (
 )
 
 UNMATCHED_GRACE = timedelta(hours=2)          # a transaction nobody has claimed after this long needs a person
-NO_TRANSACTION_GRACE = timedelta(hours=24)    # a card/M-Pesa payment with no provider record after this long, too
+NO_TRANSACTION_GRACE = timedelta(hours=24)    # a card/mobile money payment with no provider record after this long, too
 
 
 @dataclass(frozen=True)

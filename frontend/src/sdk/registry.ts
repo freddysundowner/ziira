@@ -13,6 +13,8 @@ export interface Access {
   enabledUnits: ReadonlySet<string>;
   /** Permission check (from GET /api/v1/auth/me). */
   can: (permission: string) => boolean;
+  /** Navigation flags that are on (menu entries with `when` are listed only while theirs is). */
+  flags?: ReadonlySet<string>;
 }
 
 export function activeModules(all: readonly ModuleDefinition[], enabledUnits: ReadonlySet<string>) {
@@ -35,10 +37,15 @@ export function visibleRoutes(modules: readonly ModuleDefinition[], access: Acce
   return modules.flatMap((m) => m.routes ?? []).filter((r) => allowed(access, r.permission));
 }
 
-export function visibleMenu(modules: readonly ModuleDefinition[], access: Access): MenuItem[] {
+/** A menu entry together with the unit whose module declared it. */
+export interface NavItem extends MenuItem {
+  unit: string;
+}
+
+export function visibleMenu(modules: readonly ModuleDefinition[], access: Access): NavItem[] {
   return modules
-    .flatMap((m) => m.menu ?? [])
-    .filter((i) => allowed(access, i.permission))
+    .flatMap((m) => (m.menu ?? []).map((i) => ({ ...i, unit: m.unit })))
+    .filter((i) => allowed(access, i.permission) && (!i.when || access.flags?.has(i.when)))
     .sort((a, b) => (a.order ?? 100) - (b.order ?? 100));
 }
 

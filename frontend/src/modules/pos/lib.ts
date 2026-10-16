@@ -32,3 +32,9 @@ export function overReturned(quantities: Record<string, string>, sold: Record<st
 
 /** The first eight characters of an id, for when a name is not available. */
 export const shortId = (id: string): string => id.slice(0, 8);
+
+/** The store a new till should sell from: the only active store, else the first one (the person can change it). */
+export function defaultStoreId(locations: readonly { id: string; kind: string; is_active: boolean }[] | undefined): string {
+  const active = (locations ?? []).filter((l) => l.is_active);
+  return (active.find((l) => l.kind === "store") ?? active[0])?.id ?? "";
+}

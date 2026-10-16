@@ -78,6 +78,8 @@ class BatchOut(BaseModel):
     finished_at: datetime | None
     reverted_at: datetime | None
     revert_reason: str | None
+    source_kind: str | None = Field(default=None, description="What staged the rows when no file was uploaded")
+    source_id: UUID | None = None
 
 
 class MappingIn(BaseModel):

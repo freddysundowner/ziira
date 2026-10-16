@@ -1,0 +1,33 @@
+---
+// Search box. Without JavaScript the form opens the A to Z list; with it, results appear as you type from /help/search-index.json (built with the site).
+import { urlFor } from "../lib/registry";
+interface Props { id?: string }
+const { id = "help-q" } = Astro.props;
+const az = urlFor("help-a-z", "en");
+---
+<form class="help-search" action={az} method="get" role="search" data-index="/help/search-index.json">
+  <label for={id}>Search the guides</label>
+  <div class="row">
+    <input id={id} name="q" type="search" placeholder="For example: refund, payroll, M-Pesa" autocomplete="off" />
+    <button class="btn btn-primary" type="submit">Search</button>
+  </div>
+  <ul class="help-results" hidden aria-live="polite"></ul>
+</form>
+<script is:inline>
+  (function () {
+    var f = document.querySelector("form.help-search"); if (!f) return;
+    var input = f.querySelector("input"), out = f.querySelector(".help-results"), data = null, loading = false;
+    function render(q) {
+      q = q.trim().toLowerCase(); out.innerHTML = ""; if (!q || !data) { out.hidden = true; return; }
+      var words = q.split(/\s+/), hits = data.filter(function (g) { var t = (g.t + " " + g.k + " " + g.j).toLowerCase(); return words.every(function (w) { return t.indexOf(w) > -1; }); }).slice(0, 8);
+      if (!hits.length) { var li = document.createElement("li"); li.textContent = "No guide found. Try another word, or open the A to Z list."; out.appendChild(li); }
+      hits.forEach(function (g) { var li = document.createElement("li"), a = document.createElement("a"); a.href = g.u; a.textContent = g.t; var s = document.createElement("span"); s.textContent = g.j; li.appendChild(a); li.appendChild(s); out.appendChild(li); });
+      out.hidden = false;
+    }
+    input.addEventListener("input", function () {
+      if (!data && !loading) { loading = true; fetch(f.getAttribute("data-index")).then(function (r) { return r.json(); }).then(function (j) { data = j; render(input.value); }).catch(function () { loading = false; }); }
+      render(input.value);
+    });
+    f.addEventListener("submit", function (e) { if (data) { e.preventDefault(); var first = out.querySelector("a"); if (first) location.href = first.href; } });
+  })();
+</script>

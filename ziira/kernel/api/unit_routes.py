@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ziira.kernel import unit_admin
 from ziira.kernel.context import RequestContext
+from ziira.kernel.platform import entitlements
 from ziira.kernel.registry import Registry, discover
 from ziira.sdk import DB_SESSION, Session, request_context, require_permission
 
@@ -19,6 +20,8 @@ class UnitCard(BaseModel):
     name: str
     title: str
     description: str
+    category: str = Field(description="How the screen groups it (sales, stock, payments, tax, ...); empty if none")
+    countries: list[str] = Field(description="Plugins: countries it is meant for; empty means worldwide")
     kind: str = Field(description="module or plugin")
     version: str
     requires: list[str]
@@ -29,6 +32,8 @@ class UnitCard(BaseModel):
     has_data: bool = Field(description="The unit's tables exist in this business's database")
     will_also_enable: list[str] = Field(description="Units that switching this on will switch on too")
     can_enable: bool
+    in_plan: bool = Field(default=True, description="False: the business's plan (or licence) does not include it")
+    why_not_enable: str | None = Field(default=None, description="Why it cannot be switched on (for example: the plan)")
     can_disable: bool
     why_not_disable: str | None
     can_remove: bool
@@ -63,6 +68,8 @@ def unit_catalog(s: Session = DB_SESSION) -> object:
 def enable(name: str, ctx: RequestContext = Depends(request_context), s: Session = DB_SESSION) -> object:
     """Switch a unit on, together with the units it requires. Reports everything newly switched on."""
     reg = _registry()
+    if name in reg.units:
+        entitlements.check_unit(ctx.tenant_id, name, reg.units[name].title)      # 402 not_in_plan: upgrade
     newly = unit_admin.enable_unit(s, reg, ctx.tenant_id, name)
     return {"enabled": newly, "unit": _card(s, reg, name)}
 

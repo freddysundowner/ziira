@@ -8,6 +8,9 @@ security" and "Logging" rows of section 18. Application security controls themse
 Hosting is "a VPS": this document names no provider. Where a step needs something on the server (a reverse proxy,
 a scheduler, object storage), it says what, not whose.
 
+A one-command production installer (nginx, certificates, PostgreSQL role and databases, services, timers, update and
+rollback scripts, `ziira-doctor`) is in `deploy/`: see `docs/installation.md`.
+
 ## What is built and what you must set up
 
 | Area | Built into the code (tested) | The operator must do (not in the code, **not tested here**) |
@@ -521,17 +524,22 @@ Platform staff never use a business's own logins. They use **operators** and a b
 .venv/bin/ziira operator list
 .venv/bin/ziira operator disable sam@example.com               # also ends their sign-ins; open support sessions stop at once
 .venv/bin/ziira operator enable sam@example.com
-.venv/bin/ziira operator reset-mfa sam@example.com             # lost phone: a new secret, shown once
+.venv/bin/ziira operator reset-password sam@example.com        # forgotten password: a temporary one, shown once; changed at next sign-in
+.venv/bin/ziira operator reset-mfa sam@example.com             # ZIIRA_OPERATOR_MFA=totp only: lost phone, a new secret shown once
 ```
 
-`create` prints the authenticator secret and `otpauth://` address once: add it to an authenticator app before closing the terminal.
-Password rules are the same as for business users. Give each person their own operator; never share one.
+How operators sign in is `ZIIRA_OPERATOR_MFA` (`off`, the default: email and password; `totp`: also an authenticator code; the risk of
+`off` and its compensating controls are in `docs/security.md`, "Platform staff sign-in"). In `totp` mode `create` prints the authenticator
+secret and `otpauth://` address once: add it to an authenticator app before closing the terminal; in `off` mode it prints no secret.
+Operator passwords need 12 characters (not common, not the email). Give each person their own operator; never share one. Production with
+`off` needs `ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED=true` to start; `ZIIRA_OPERATOR_ALLOWED_NETWORKS`, `ZIIRA_OPERATOR_SESSION_HOURS`,
+`ZIIRA_OPERATOR_IDLE_MINUTES` and `ZIIRA_OPERATOR_SIGNIN_EMAILS` are in `.env.example`; apply the same address restriction at the proxy.
 
 ### Handling a support request
 
 1. The business owner gives access under Settings, Support access (a reason, read-only or full, a length). Ask for read-only first.
-2. Sign in: `POST /api/v1/operator/sign-in` {email, password} returns a challenge; `POST /api/v1/operator/mfa/verify` {challenge, code}
-   returns an operator token (30 minutes). `GET /api/v1/operator/businesses` lists codes and names, never data.
+2. Sign in: `POST /api/v1/operator/sign-in` {email, password} returns an operator token (8 hours, 30 minutes idle) or, in `totp` mode, a
+   challenge; `POST /api/v1/operator/mfa/verify` {challenge, code} then returns the token (30 minutes). `GET /api/v1/operator/businesses` lists codes and names, never data.
 3. `POST /api/v1/operator/businesses/<code>/support-session` returns a business access token (at most 60 minutes, never past the grant).
    403 means the business has not given access or it has ended: ask them. Use the token as any business token (Swagger UI works).
 4. Done: `POST /api/v1/operator/sessions/<id>/end`. `GET /api/v1/operator/sessions` lists your sessions.
@@ -545,6 +553,48 @@ Password rules are the same as for business users. Give each person their own op
 - The grant's creator is emailed when a session opens (needs an email channel set up for the business).
 - Alert on: sessions opened outside agreed hours, a business with many `refused` events, and any operator that is no longer staff
   but is still `active` (review `ziira operator list` monthly).
+
+## The operator console (web)
+
+`/operator` on the web app is the platform staff's console (design and limits: `docs/security.md`, "The operator console"). Sign in with
+an operator's email and password (and a code from the authenticator app in `totp` mode). Four areas:
+
+| Area | Use it to |
+| --- | --- |
+| Platform units | See every module and plugin on disk: installed or not, version on disk against installed, businesses using it. **Install**, **Upgrade** or **Uninstall** (the dialog first shows the plan: what gets installed, which businesses get which migrations, or what blocks an uninstall). Same effect as `ziira install <unit>` / `uninstall <unit>`. |
+| Businesses | Search; see edition, country, users, units on, last activity; open one to switch a unit on or off (with a reason the business can read) and to see its support grant and open staff sessions. |
+| Platform health | `/readyz` problems, platform migrations pending, **businesses behind on migrations** with "Upgrade N businesses" (one at a time with per-business results: the per-business half of `ziira install --all`), backup age, failed jobs and stuck events, recurring task ages, pending registrations, extra plugins (checksum, allow-list). |
+| Operators | Who the operators are (and in `totp` mode that their second factor is set up); add, disable, change role, reset a password; the trail of console changes. |
+
+Settings: `ZIIRA_BACKUP_DIR` (the folder `ziira backup --dir` writes to; unset: the backup card says "not reported"; the console only reads
+the `.json` manifests), `ZIIRA_OPERATOR_MFA_MAX_AGE_MINUTES` (default 10). The platform's migrations (`master_migrations/`) are applied by
+`ziira install --all` or the API on start as before; the console shows when some are pending.
+
+Runbook notes:
+
+- **After a deploy** the new code may have migrations the businesses lack: `/readyz` and the Health page list them. Run `ziira install --all`
+  (it does everything) or use "Upgrade N businesses" for the business databases only. A business that fails is reported with its error and
+  the others continue; fix the cause and run it again.
+- **Adding a plugin from an extra folder:** put it in `ZIIRA_EXTRA_UNIT_PATHS`, allow it (`ZIIRA_ALLOWED_PLUGINS=name=SHA256` in
+  production), restart the API and worker, then Install it in Platform units. Health shows its checksum and allow-list state; a refused
+  plugin is listed with the reason.
+- **The trail:** `select occurred_at, operator_name, action, target, outcome, reason from master.operator_action_log order by id desc limit 100;`
+  Refusals (`outcome = 'refused'`, including "password not confirmed recently") are recorded too; sign-ins are `auth.sign_in` lines. Review it with the support access log.
+- **Scale:** the units and business lists read every business database once per request (one short connection each); fine for hundreds of
+  businesses, to be cached or moved to a stored summary beyond that.
+- Not exercised against a real multi-hundred-business platform; the browser journey J19 (`make e2e`) covers the flows on a scratch stack.
+
+## Billing and licensing operations
+
+- The worker (`ziira worker`) runs the billing pass hourly in `saas` mode (renewal invoices, reminders, dunning, due
+  deletions). `ziira billing-run` runs it by hand. Nothing in it sends a message inside a web request.
+- First superadmin: `ziira operator create NAME EMAIL` (password from the prompt or `ZIIRA_OPERATOR_PASSWORD`). Others are made in the console (Operators).
+- After upgrading code: `ziira install --all` (new kernel permission `billing.manage`) and upgrade the businesses (Super Admin > Units, "Upgrade all")
+  so Owners receive it; the master migration `0012_platform_admin` applies on start-up.
+- Platform email (invoices, reminders) uses `ZIIRA_PLATFORM_EMAIL_PROVIDER`. Backups include the master database, which holds
+  plans, subscriptions, invoices and licences records (not the signing key).
+- Vendor deployment: set `ZIIRA_LICENCE_SIGNING_KEY_FILE` (file mode 0600, outside the repository). Self-hosted copies set
+  `ZIIRA_DEPLOYMENT_MODE=selfhosted` and `ZIIRA_LICENCE_PUBLIC_KEY`. See `docs/licensing.md`.
 
 ## Incident and breach response (skeleton)
 

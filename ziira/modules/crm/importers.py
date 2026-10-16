@@ -11,8 +11,8 @@ from ziira.modules.crm.domain import rules
 from ziira.modules.crm.permissions import CUSTOMERS_MANAGE
 from ziira.modules.crm.services import phones
 from ziira.modules.crm.services.customers import create_customer
-from ziira.modules.imports.public import ImportColumn, Importer, ImportRow, attempt
-from ziira.sdk import Session, ValidationFailed
+from ziira.modules.imports.public import ExistingRecord, ImportColumn, Importer, ImportRow, attempt
+from ziira.sdk import Session, ValidationFailed, ZiiraError
 
 
 class CustomerImporter(Importer):
@@ -71,6 +71,33 @@ class CustomerImporter(Importer):
             "select 1 from crm.customer where company_id = :c and lower(name) = lower(:n) "
             "and coalesce(phone, '') = :p"), {"c": str(company_id), "n": row.text("name"), "p": phone}).first()
         return f"A customer called {row.text('name')} with this phone already exists" if found else None
+
+    def find_match(self, session: Session, company_id: UUID, row: ImportRow) -> ExistingRecord | None:
+        """The customer already in Ziira with this code, tax number or phone (a move from another system)."""
+        checks: list[tuple[str, str, str | None]] = []
+        code = row.text("code").upper()
+        if code:
+            checks.append(("code = :v", "has the same customer code", code))
+        try:
+            tax = rules.clean_tax_id(row.text("tax_id"))
+        except ZiiraError:
+            tax = None
+        if tax:
+            checks.append(("upper(tax_id) = :v", "has the same tax number", tax))
+        try:
+            phone = phones.clean(session, company_id, row.text("phone"))
+        except ZiiraError:
+            phone = None
+        if phone:
+            checks.append(("phone = :v", "has the same phone number", phone))
+        for condition, why, value in checks:
+            found = session.execute(text(
+                f"select code, name from crm.customer where company_id = :c and {condition} "
+                "order by created_at limit 1"),
+                {"c": str(company_id), "v": value}).first()
+            if found:
+                return ExistingRecord(found.code, f"{found.name} ({found.code}) {why}")
+        return None
 
     def import_row(self, session: Session, company_id: UUID, row: ImportRow, local_id: UUID) -> UUID:
         errors: list[str] = []

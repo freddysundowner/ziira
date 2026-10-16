@@ -81,5 +81,6 @@
     "hint": "One per line. A code belongs to one product.",
     "save": "Save barcodes",
     "saved": "Barcodes saved"
-  }
+  },
+  "openSetup": "Open catalogue setup"
 }

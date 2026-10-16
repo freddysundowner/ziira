@@ -169,7 +169,7 @@ class OpenPayment:
 
 
 def open_payments(session: Session, account_id: UUID | None, limit: int = 2000) -> list[OpenPayment]:
-    """Money-in payments (card, M-Pesa, bank) that external transactions have not fully covered."""
+    """Money-in payments (card, mobile money, bank) that external transactions have not fully covered."""
     applied = (select(Match.payment_id, func.sum(Match.amount).label("m")).where(Match.status == "applied")
                .group_by(Match.payment_id).subquery())
     query = (select(Payment, Payment.amount - func.coalesce(applied.c.m, 0))

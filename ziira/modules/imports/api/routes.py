@@ -53,7 +53,8 @@ def _batch(detail: batches.BatchDetail) -> BatchOut:
         columns=_columns(detail.importer), counts=CountsOut(**detail.counts), total_rows=sum(detail.counts.values()),
         reversible=detail.importer.reversible, needs_go_live=detail.importer.needs_go_live,
         whole_file=detail.importer.whole_file, created_at=b.created_at, committed_at=b.committed_at,
-        finished_at=b.finished_at, reverted_at=b.reverted_at, revert_reason=b.revert_reason)
+        finished_at=b.finished_at, reverted_at=b.reverted_at, revert_reason=b.revert_reason,
+        source_kind=b.source_kind, source_id=b.source_id)
 
 
 async def upload_body(request: Request) -> bytes:

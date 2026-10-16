@@ -40,7 +40,8 @@ def supplied(session: Session, company_id: UUID) -> Supply:
     supply = Supply()
     rows = session.execute(text(
         "select c.connection_id, c.entity, c.data_through from connect.cursor c "
-        "join connect.connection k on k.id = c.connection_id where k.company_id = :c and k.status <> 'disconnected' "
+        "join connect.connection k on k.id = c.connection_id where k.company_id = :c "
+        "and k.status not in ('disconnected', 'paused') "
         "order by c.entity, c.connection_id"), {"c": str(company_id)})
     moments: dict[str, list[datetime | None]] = {}
     for r in rows:

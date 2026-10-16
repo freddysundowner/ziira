@@ -1,0 +1,11 @@
+[unit]
+name = "etims"
+title = "eTIMS (Kenya Revenue Authority)"
+description = "Send sales and credit notes to KRA's eTIMS. A skeleton: the contract and tables exist; submission is not built yet."
+category = "tax"
+kind = "plugin"
+version = "0.1.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["products", "pos", "purchasing"]
+countries = ["KE"]

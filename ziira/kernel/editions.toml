@@ -1,0 +1,89 @@
+# Editions: named bundles of units, menu layout and first steps. DATA, never code (and never per country).
+# A business picks one when it registers and may switch later (switching only switches units ON).
+# `ZIIRA_EDITIONS_FILE` can point to a file of the same shape that replaces this one.
+#
+# units          units switched on (what each requires comes along). `units_setting` instead names a setting that
+#                lists them (`full` = ZIIRA_REGISTRATION_UNITS, `intelligence` = ZIIRA_STANDALONE_UNITS).
+# plugin_categories   plugin categories the Apps page recommends (filtered to the business's country)
+# menu_groups    sidebar sections in this order (those not listed follow in the usual order)
+# landing        page opened right after signing in (when the person may open it; else Home)
+# checklist      first steps shown on Home: id, title, hint, `to` (page), `unit` (step shows only when it is on)
+# default_plan   plan code (Super Admin > Plans) a business of this edition starts its trial on; empty = ZIIRA_DEFAULT_PLAN_CODE
+# sample_data    kinds of sample data on offer ("" none): ids only, for screens that offer them
+
+[retail]
+title = "Retail / POS"
+pitch = "Sell at the till, keep stock right and take payments."
+units = ["products", "inventory", "payments", "pos", "crm", "imports", "intel", "command"]
+plugin_categories = ["payments", "messaging"]
+menu_groups = ["sell", "stock", "money", "admin"]
+landing = "/pos/terminal"
+sample_data = ["products"]
+checklist = [
+  { id = "products", title = "Add your first products", hint = "Type them in or bring a spreadsheet.", to = "/products", unit = "products" },
+  { id = "opening_stock", title = "Set your opening stock", hint = "Say what is on the shelves today.", to = "/stock/opening", unit = "inventory" },
+  { id = "till", title = "Open a till", hint = "Register a till and open a shift.", to = "/pos/tills", unit = "pos" },
+  { id = "sale", title = "Make a sale", hint = "Ring up your first sale.", to = "/pos/terminal", unit = "pos" },
+]
+
+[distribution]
+title = "Distribution"
+pitch = "Retail plus buying from suppliers, customer credit and your books."
+units = ["products", "inventory", "payments", "pos", "crm", "purchasing", "finance", "imports", "intel", "command"]
+plugin_categories = ["payments", "messaging", "tax"]
+menu_groups = ["sell", "buy", "stock", "money", "admin"]
+landing = "/pos/sales"
+sample_data = ["products"]
+checklist = [
+  { id = "products", title = "Add your products", hint = "Type them in or bring a spreadsheet.", to = "/products", unit = "products" },
+  { id = "suppliers", title = "Add your suppliers", hint = "Who you buy from.", to = "/suppliers", unit = "purchasing" },
+  { id = "opening_stock", title = "Set your opening stock", hint = "Say what is in the store today.", to = "/stock/opening", unit = "inventory" },
+  { id = "customers", title = "Add customers who buy on credit", hint = "Set their credit limits.", to = "/customers", unit = "crm" },
+  { id = "sale", title = "Make a sale", hint = "Ring up your first sale.", to = "/pos/terminal", unit = "pos" },
+]
+
+[books]
+title = "Books and accounts"
+pitch = "Keep your accounts, bills and customers in order."
+units = ["finance", "purchasing", "crm", "imports", "intel", "command"]
+plugin_categories = ["accounting", "tax", "messaging"]
+menu_groups = ["money", "buy", "sell", "admin"]
+landing = "/finance/reports"
+sample_data = []
+checklist = [
+  { id = "accounts", title = "Check your chart of accounts", hint = "Add or rename accounts to suit you.", to = "/finance/accounts", unit = "finance" },
+  { id = "opening_balances", title = "Enter your opening balances", hint = "Where the books stand today.", to = "/imports/opening-balances", unit = "imports" },
+  { id = "suppliers", title = "Add your suppliers", hint = "Who you owe.", to = "/suppliers", unit = "purchasing" },
+  { id = "customers", title = "Add your customers", hint = "Who owes you.", to = "/customers", unit = "crm" },
+  { id = "expense", title = "Record an expense", hint = "Enter your first expense.", to = "/finance/expenses", unit = "finance" },
+]
+
+[intelligence]
+title = "Intelligence only"
+pitch = "Keep the system you already use; Ziira watches it and tells you what looks wrong."
+units_setting = "standalone_units"
+plugin_categories = ["connector", "messaging", "intelligence"]
+menu_groups = ["admin"]
+landing = "/intelligence"
+sample_data = []
+checklist = [
+  { id = "connect", title = "Connect your system", hint = "Link the system you use now, or upload its reports.", to = "/connect/new", unit = "connect" },
+  { id = "alerts", title = "Choose how you hear from Ziira", hint = "Pick the owner's phone or email.", to = "/intelligence/alerts", unit = "intel" },
+  { id = "findings", title = "See the first things to look at", hint = "What Ziira noticed in your data.", to = "/intelligence/things", unit = "intel" },
+  { id = "move", title = "Ready to run on Ziira? Move your data", hint = "Bring products, customers, stock and balances over from the system you connected.", to = "/connect", unit = "connect" },
+]
+
+[full]
+title = "Everything"
+pitch = "Sales, stock, buying, accounts, people and Intelligence in one place."
+units_setting = "registration_units"
+plugin_categories = ["payments", "tax", "messaging"]
+menu_groups = ["sell", "stock", "buy", "money", "people", "admin"]
+landing = ""
+sample_data = ["products"]
+checklist = [
+  { id = "organisation", title = "Check your company and branches", hint = "Names, tax number, branches.", to = "/admin/organisation", unit = "" },
+  { id = "products", title = "Add your first products", hint = "Type them in or bring a spreadsheet.", to = "/products", unit = "products" },
+  { id = "users", title = "Invite your team", hint = "Give people the access they need.", to = "/admin/users", unit = "" },
+  { id = "sale", title = "Make a sale", hint = "Ring up your first sale.", to = "/pos/terminal", unit = "pos" },
+]

@@ -5,7 +5,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from uuid import UUID
 
-from ziira.sdk import Session, company_setting, recipients_with_permission, send_notification
+from ziira.modules.intel.services.alerts import business_name
+from ziira.sdk import Session, can_reach, company_setting, notify_user, recipients_with_permission
 
 
 @dataclass
@@ -23,17 +24,19 @@ def nudge_people(session: Session, *, company_id: UUID, branch_id: UUID | None, 
     twice on the same day queues nothing new."""
     channel = str(company_setting(session, company_id, "intel_alert_channel"))
     out = Nudged()
-    if channel not in ("sms", "email"):
+    if channel == "off":
         return out
+    business = business_name(session, company_id)
+    ways = [channel]
     for person in recipients_with_permission(session, permission):
         if not person.covers(permission, company_id, branch_id):
             continue
-        address = person.phone if channel == "sms" else person.email
-        if not address:
-            continue
-        queued = send_notification(
-            session, company_id=company_id, channel=channel, recipient=address, body=text[:480],
-            subject="A reminder from Ziira" if channel == "email" else None, ref_type="intel.finding",
-            ref_id=finding_id, dedupe_key=f"intel-nudge:{finding_id}:{permission}:{person.user_id}:{today}")
+        if not can_reach(session, company_id, person.user_id, "alerts", ways):
+            continue                                   # nobody to reach: neither told nor "already told"
+        queued = notify_user(
+            session, company_id=company_id, user_id=person.user_id, kind="alerts", body=text[:480],
+            subject="A reminder from Ziira", default_channels=ways, template="urgent_alert",
+            variables={"business": business, "summary": text[:300]}, ref_type="intel.finding", ref_id=finding_id,
+            dedupe_key=f"intel-nudge:{finding_id}:{permission}:{person.user_id}:{today}")
         (out.told if queued is not None else out.already).append(person.full_name)
     return out

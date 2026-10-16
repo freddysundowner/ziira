@@ -16,7 +16,13 @@
   "emptyHint": "Start with your products, then customers, suppliers and opening stock.",
   "noKinds": "Nothing can be imported here",
   "noKindsHint": "Ask the owner to switch on Products, Customers or another part of Ziira, and to give you permission to create that data.",
-  "steps": { "label": "Steps of an import", "upload": "File", "columns": "Columns", "review": "Check", "import": "Import" },
+  "steps": {
+    "label": "Steps of an import",
+    "upload": "File",
+    "columns": "Columns",
+    "review": "Check",
+    "import": "Import"
+  },
   "upload": {
     "what": "What are you importing?",
     "whatHint": "Import products before opening stock, because stock is matched to products by their SKU.",
@@ -105,5 +111,54 @@
     "matches": "Matches",
     "differs": "Differs by {{amount}}",
     "reconciled": "Everything imported adds up to your file."
+  },
+  "guide": {
+    "link": "Opening balances guide",
+    "title": "Moving your business onto Ziira",
+    "hint": "The imports in the order that works, with what each one needs and where it stands.",
+    "before": "Before you start:",
+    "beforeHint": "set up your units of measure and tax codes, and check each file with a trial run before you import it for real.",
+    "done": "Done",
+    "unavailable": "Not available to you",
+    "import": "Import",
+    "open": "Open",
+    "steps": {
+      "setup": {
+        "title": "Units and tax codes",
+        "text": "Check the units of measure and tax codes that products use."
+      },
+      "accounts": {
+        "title": "Chart of accounts",
+        "text": "Your accounts, so the books can be opened."
+      },
+      "products": {
+        "title": "Products",
+        "text": "Your catalogue with SKUs, units and prices."
+      },
+      "customers": {
+        "title": "Customers",
+        "text": "Who you sell to, with their contact details."
+      },
+      "suppliers": {
+        "title": "Suppliers",
+        "text": "Who you buy from."
+      },
+      "opening_stock": {
+        "title": "Opening stock",
+        "text": "What each store holds today, with its cost. Import products first."
+      },
+      "customer_balances": {
+        "title": "Customer balances",
+        "text": "What customers owe you today, invoice by invoice."
+      },
+      "supplier_balances": {
+        "title": "Supplier balances",
+        "text": "What you owe suppliers today, bill by bill."
+      },
+      "opening_trial_balance": {
+        "title": "Opening trial balance",
+        "text": "The balance of every account on your start date, as the last step."
+      }
+    }
   }
 }

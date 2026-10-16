@@ -1,10 +1,12 @@
 import {
-  api, Button, Card, Checkbox, EmptyState, ErrorState, Field, Input, NumberInput, Select, SkeletonRows, Switch, toast, unwrap, useCurrency,
-  useMutation, useQuery, useQueryClient, useTranslation, useUnsavedWarning,
+  api, channelOptions, Button, Card, Checkbox, EmptyState, ErrorState, Field, Input, NumberInput, Select, SkeletonRows, Switch, toast, unwrap, useCurrency,
+  useChannels, useMutation, useQuery, useQueryClient, useTranslation, useUnsavedWarning,
 } from "@/sdk";
 import { useEffect, useState } from "react";
 
 import { type FormValues, GROUPS, type SettingField, toForm, toPatch, WEEKDAYS } from "./model";
+
+const CHANNEL_FIELDS: string[] = ["reminder_channel", "intel_alert_channel"];
 
 export default function PoliciesTab({ companyId }: { companyId: string | undefined }) {
   const { t } = useTranslation("kernel");
@@ -15,6 +17,7 @@ export default function PoliciesTab({ companyId }: { companyId: string | undefin
     enabled: !!companyId, queryKey: key,
     queryFn: () => unwrap(api.GET("/api/v1/companies/{company_id}/settings", { params: { path: { company_id: companyId! } } })),
   });
+  const channels = useChannels(companyId);
   const [form, setForm] = useState<FormValues | null>(null);
   useEffect(() => { if (settings.data) setForm(toForm(settings.data)); }, [settings.data]);
 
@@ -39,6 +42,19 @@ export default function PoliciesTab({ companyId }: { companyId: string | undefin
     const value = form[f.key];
     const label = t(`set.${f.key}`);
     if (f.kind === "switch") return <Switch label={label} checked={value === "true"} onChange={(v) => set(f.key, String(v))} />;
+    if (f.kind === "choice" && CHANNEL_FIELDS.includes(f.key)) {
+      // The channels the business has now (a plugin that is off offers none); a stored value that is gone stays visible.
+      const options = channelOptions(channels.data ?? [], value, ["off"]);
+      const gone = options.find((o) => o.missing);
+      return (
+        <div className="space-y-1">
+          <Select value={value} onChange={(e) => set(f.key, e.target.value)}>
+            {options.map((o) => <option key={o.value} value={o.value}>{o.value === "off" ? t(`choice.${f.key}.off`) : o.missing ? t("channelGone", { channel: o.label }) : o.label}</option>)}
+          </Select>
+          {gone && <p className="text-xs text-warn">{t("channelGoneHint")}</p>}
+        </div>
+      );
+    }
     if (f.kind === "choice") {
       return <Select value={value} onChange={(e) => set(f.key, e.target.value)}>{f.choices!.map((c) => <option key={c} value={c}>{t(`choice.${f.key}.${c}`)}</option>)}</Select>;
     }

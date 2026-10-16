@@ -17,20 +17,25 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ziira.kernel import (
+    api_keys,
     approvals,
     audit,
+    channels,
     company_settings,
     credentials,
     exceptions_inbox,
     idempotency,
+    inbound,
+    messaging,
     notifications,
     numbering,
     reasons,
     support,
 )
-from ziira.kernel.auth import client_ip, context_from_access_token, context_from_api_key
+from ziira.kernel import templates as _message_templates  # noqa: F401 - registers the recurring template sync
+from ziira.kernel.auth import client_ip, context_from_access_token
 from ziira.kernel.checks import IntegrityCheck
-from ziira.kernel.clock import company_date_of, company_today
+from ziira.kernel.clock import company_date_of, company_today, format_day, humanise_dates
 from ziira.kernel.config import Settings, get_settings
 from ziira.kernel.context import Assignment, RequestContext, get_context, set_context, system_context
 from ziira.kernel.csvutil import safe, to_csv
@@ -54,11 +59,19 @@ from ziira.kernel.extensions import (
     run_validators,
     validate,
 )
+from ziira.kernel.inbound import INBOUND_COMMAND, InboundCommand, InboundMessage, InboundReply
 from ziira.kernel.jobs import enqueue, job, periodic, unbound_periodic
 from ziira.kernel.manifest import SDK_VERSION
-from ziira.kernel.notifications import NotificationChannel, Outgoing, SendResult
+from ziira.kernel.notifications import (
+    NotificationChannel,
+    Outgoing,
+    SendResult,
+    TemplateSpec,
+    TemplateState,
+)
 from ziira.kernel.numbers import Amount, Quantity, Rate, UnitCost, page_limit, page_offset
 from ziira.kernel.organisation import BranchUsageProvider
+from ziira.kernel.packs import COUNTRY_SEEDER, CountrySeeder, pack_providers, read_pack_data
 from ziira.kernel.personal_data import (
     PLACEHOLDER,
     Kept,
@@ -76,21 +89,43 @@ from ziira.kernel.personal_data import (
     sql_phone_matches,
 )
 from ziira.kernel.phone import check_calling_code, normalise_phone
+from ziira.kernel.platform import entitlements
+from ziira.kernel.platform.gateways import (
+    PAYMENT_GATEWAY,
+    AttemptInfo,
+    ConnectionTest,
+    GatewayContext,
+    GatewayError,
+    PayerField,
+    PaymentGateway,
+    PaymentState,
+    SettingField,
+    StartResult,
+    WebhookEvent,
+    classify_response,
+)
 from ziira.kernel.recipients import Recipient, recipients_with_permission
 from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
 __all__ = [
+    "PAYMENT_GATEWAY", "AttemptInfo", "ConnectionTest", "GatewayContext", "GatewayError", "PayerField",
+    "PaymentGateway", "PaymentState", "SettingField", "StartResult", "WebhookEvent", "classify_response",
     "safe", "to_csv",
+    "COUNTRY_SEEDER", "CountrySeeder", "pack_providers", "read_pack_data",
     "BranchUsageProvider", "PLACEHOLDER", "Kept", "Outcome", "PersonalDataProvider", "PersonalRecord", "RetentionRule",
     "Subject",
     "json_one", "json_rows", "like_pattern", "mask_text", "sql_digits", "sql_identifier", "sql_phone_matches",
     "check_calling_code", "normalise_phone",
+    "INBOUND_COMMAND", "InboundCommand", "InboundMessage", "InboundReply", "TemplateSpec", "TemplateState",
+    "can_reach", "channel_can", "channel_names", "check_channel", "configured_channels", "mask_contact",
+    "notification_language", "notify_user", "notify_user_templated",
+    "send_templated", "route_inbound", "record_delivery",
     "Amount", "Assignment", "Conflict", "Event", "Forbidden", "IntegrityCheck", "NotFound", "NotificationChannel",
     "Outgoing",
     "Quantity", "Rate", "Recipient", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized",
     "UnitCost",
     "ValidationFailed", "ZiiraError", "audit_record", "check_branch_open", "check_company", "check_reason",
-    "company_date_of", "company_setting", "company_today",
+    "company_date_of", "company_setting", "company_today", "format_day", "humanise_dates",
     "current_context", "DB_SESSION", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
     "encrypt_text", "enqueue", "flag_for_review", "hash_secret", "idempotency_key_header", "idempotent",
     "implementations", "is_production", "job", "money", "new_secret", "next_document_number", "opt_out_contact",
@@ -215,10 +250,107 @@ async def idempotency_key_header(
 def send_notification(session: Session, *, company_id: UUID, channel: str, recipient: str, body: str,
                       subject: str | None = None, ref_type: str | None = None, ref_id: UUID | None = None,
                       dedupe_key: str | None = None) -> UUID | None:
-    """Queue an email or SMS message to someone outside the system; it is sent in the background through the
-    business's channel. Returns its id (None if `dedupe_key` was already used). See kernel/notifications.py."""
+    """Queue a message on one channel to someone outside the system; it is sent in the background through the
+    business's provider for that channel. Returns its id (None if `dedupe_key` was already used). For a customer on a
+    chat channel, or a staff member with channel preferences, use `send_templated` / `notify_user`. See
+    kernel/notifications.py."""
     return notifications.queue(session, company_id=company_id, channel=channel, recipient=recipient, body=body,
                                subject=subject, ref_type=ref_type, ref_id=ref_id, dedupe_key=dedupe_key)
+
+
+def send_templated(session: Session, *, company_id: UUID, channel: str, recipient: str, template: str,
+                   variables: dict[str, str], language: str | None = None,
+                   fallbacks: list[dict[str, str]] | None = None, ref_type: str | None = None,
+                   ref_id: UUID | None = None, dedupe_key: str | None = None) -> UUID | None:
+    """Send a shipped message template (kernel/message_templates.json) to a customer or supplier. On a
+    conversational channel the
+    approved template is used when the 24-hour window is closed; `fallbacks` ({"channel", "recipient"}) are tried in
+    order when the channel cannot be used. See kernel/messaging.py."""
+    return messaging.send_templated(session, company_id=company_id, channel=channel, recipient=recipient,
+                                    template=template, variables=variables, language=language,
+                                    fallbacks=fallbacks or (), ref_type=ref_type, ref_id=ref_id,
+                                    dedupe_key=dedupe_key)
+
+
+def notify_user(session: Session, *, company_id: UUID, user_id: UUID, kind: str, body: str, subject: str | None = None,
+                default_channels: list[str] | None = None, template: str | None = None,
+                variables: dict[str, str] | None = None, ref_type: str | None = None, ref_id: UUID | None = None,
+                dedupe_key: str | None = None, critical: bool = False,
+                require_configured: bool = False, capability: str | None = None) -> UUID | None:
+    """Message a staff member about `kind` ("alerts", "brief", "approvals") by the channel they chose, falling back to
+    the next, deferred to the end of their quiet hours. `default_channels` apply when they chose nothing; with
+    `require_configured` channels the business has not set up are left out; `capability` ('buttons', 'inbound',
+    'templates')
+    picks the channels that can do it. Channels the business does not have are skipped, never an error. See
+    kernel/messaging.py."""
+    return messaging.notify_user(session, company_id=company_id, user_id=user_id, kind=kind, body=body,
+                                 subject=subject, default_channels=default_channels or (), template=template,
+                                 variables=variables, ref_type=ref_type, ref_id=ref_id, dedupe_key=dedupe_key,
+                                 critical=critical, require_configured=require_configured,
+                                 capability=capability)
+
+
+def notify_user_templated(session: Session, *, company_id: UUID, user_id: UUID, kind: str, template: str,
+                          variables: dict[str, str], default_channels: list[str] | None = None,
+                          button_suffix: str | None = None, ref_type: str | None = None, ref_id: UUID | None = None,
+                          dedupe_key: str | None = None, critical: bool = False,
+                          require_configured: bool = False, capability: str | None = None) -> UUID | None:
+    """`notify_user` with a shipped template's wording in the person's language (and its reply buttons, whose ids carry
+    `button_suffix` back in the reply)."""
+    return messaging.notify_user_templated(
+        session, company_id=company_id, user_id=user_id, kind=kind, template=template, variables=variables,
+        default_channels=default_channels or (), button_suffix=button_suffix, ref_type=ref_type, ref_id=ref_id,
+        dedupe_key=dedupe_key, critical=critical, require_configured=require_configured, capability=capability)
+
+
+def channel_names(session: Session) -> list[str]:
+    """The channels this business has: those whose provider (plugin) is enabled for it. Never a fixed list."""
+    return channels.names(session)
+
+
+def check_channel(session: Session, channel: str) -> str:
+    """The channel if the business has it, else a ValidationFailed that says so and lists the ones it has."""
+    return channels.check(session, channel)
+
+
+def channel_can(session: Session, channel: str, capability: str) -> bool:
+    """True if the business has the channel and its provider declares the capability: 'buttons', 'inbound' or
+    'templates'."""
+    found = channels.info(session, channel)
+    return found is not None and bool(getattr(found, f"supports_{capability}", False))
+
+
+def configured_channels(session: Session, company_id: UUID) -> set[str]:
+    """The channels the business has set up and that are ready to send."""
+    return messaging.configured_channels(session, company_id)
+
+
+def can_reach(session: Session, company_id: UUID, user_id: UUID, kind: str, default_channels: list[str]) -> bool:
+    """True if `notify_user` would have somewhere to send to for this person and kind."""
+    return bool(messaging.plan_for_user(session, company_id, user_id, kind, default_channels))
+
+
+def notification_language(session: Session, user_id: UUID) -> str:
+    """The language a person chose for messages ('en', 'sw')."""
+    return messaging.get_prefs(session, user_id).language
+
+
+def mask_contact(recipient: str) -> str:
+    """A phone number or email for screens and logs, most of it hidden."""
+    return notifications.mask(recipient)
+
+
+def route_inbound(session: Session, message: InboundMessage) -> str:
+    """A channel plugin hands a verified incoming message to the platform (STOP, replies from staff). See
+    kernel/inbound.py."""
+    return inbound.route(session, message)
+
+
+def record_delivery(session: Session, *, provider: str, provider_ref: str, status: str,
+                    error: str | None = None) -> bool:
+    """A channel provider reports what became of a message (delivered, read, failed)."""
+    return notifications.record_delivery(session, provider=provider, provider_ref=provider_ref, status=status,
+                                         error=error)
 
 
 def opt_out_contact(session: Session, *, company_id: UUID, recipient: str, channel: str | None = None,
@@ -302,7 +434,7 @@ async def request_context(
             raise Unauthorized("Use 'Authorization: Bearer <token>'")
         ctx = await run_in_threadpool(context_from_access_token, token.strip())
     elif x_api_key:
-        ctx = await run_in_threadpool(context_from_api_key, x_api_key.strip())
+        ctx = await run_in_threadpool(api_keys.authenticate, x_api_key.strip(), client_ip(request))
     elif settings.dev_tenant_header and (x_tenant_id or settings.dev_default_tenant):
         tenant_id = x_tenant_id or settings.dev_default_tenant
         assert tenant_id is not None
@@ -311,7 +443,9 @@ async def request_context(
         raise Unauthorized("Sign in first")
     ctx = replace(ctx, ip_address=client_ip(request))
     request.state.ziira_ctx = ctx              # for the export audit (kernel/export_audit.py), which runs outside
+    api_keys.enforce(ctx, request)             # an API key: read-only keys, and the public API only
     support.enforce(ctx, request.method, request.url.path)     # platform staff under a support grant: its limits
+    await run_in_threadpool(entitlements.enforce_access, ctx, request)    # suspended, cancelled or unlicensed: 402
     if ctx.mfa_setup_required and not request.url.path.startswith("/api/v1/auth/"):
         # The business requires a second factor of this person and it is not set up: nothing else works until it is.
         raise MfaSetupRequired("Set up two-step verification to continue")

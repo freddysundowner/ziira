@@ -1,0 +1,41 @@
+[Unit]
+Description=Ziira API
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ziira
+Group=ziira
+EnvironmentFile=/etc/ziira/ziira.env
+WorkingDirectory=/var/lib/ziira
+ExecStart=/opt/ziira/current/venv/bin/uvicorn ziira.kernel.app:app --host 127.0.0.1 --port 8000 --workers 3 --timeout-keep-alive 5 --timeout-graceful-shutdown 30 --proxy-headers --forwarded-allow-ips 127.0.0.1 --no-access-log --no-server-header
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=40
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0027
+ReadWritePaths=/var/lib/ziira /var/backups/ziira
+
+[Install]
+WantedBy=multi-user.target

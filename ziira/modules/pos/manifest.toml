@@ -2,11 +2,12 @@
 name = "pos"
 title = "Point of Sale and Sales"
 description = "Sell at the till or online: sales, returns, shifts, receipts and credit sales."
+category = "sales"
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = ["products", "inventory", "payments"]
-optional = ["crm", "finance", "intel", "command", "imports"]
+optional = ["crm", "finance", "intel", "command", "imports", "connect"]
 
 [provides]
 api_prefix = "/api/v1/pos"
@@ -16,7 +17,7 @@ extension_points = ["pos.receipt_extras"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "kernel.personal_data", "imports.importer", "intel.ask_tool"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "kernel.personal_data", "imports.importer", "intel.ask_tool", "connect.core_coverage"]
 
 [permissions]
 "sales.sell" = "Make sales"
@@ -60,3 +61,16 @@ CHANGE_ERROR = "Change given incorrectly"
 UNRECORDED_SALE = "Sale not recorded"
 UNRECORDED_PAYOUT = "Cash paid out and not recorded"
 UNKNOWN = "Not yet explained"
+
+# Events a business may subscribe to with an outgoing webhook (docs/webhooks.md): only these fields leave the system.
+[provides.public_events."sale.posted"]
+description = "A sale was completed (at a till, or a credit sale)"
+fields = ["company_id", "branch_id", "business_date", "number", "location_id", "net", "tax", "customer_id", "offline", "payments", "lines"]
+
+[provides.public_events."sale.returned"]
+description = "Goods from a sale were returned or the sale was voided"
+fields = ["company_id", "branch_id", "business_date", "number", "location_id", "net", "tax", "customer_id", "sale_id", "voided", "payments", "lines"]
+
+[provides.public_events."invoice.issued"]
+description = "An invoice was issued to a customer"
+fields = ["company_id", "branch_id", "number", "customer_id", "total", "due_date", "sale_id"]

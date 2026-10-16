@@ -2,6 +2,7 @@
 name = "crm"
 title = "CRM and Customers"
 description = "Customers, credit limits and balances, loyalty and customer follow-up."
+category = "customers"
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -29,3 +30,8 @@ implements = ["intel.check", "command.pulse_source", "imports.importer", "kernel
 "Sales Rep" = ["customers.view", "customers.manage", "leads.manage"]
 "Cashier" = ["customers.view"]
 "Accountant" = ["customers.view"]
+
+# Events a business may subscribe to with an outgoing webhook (docs/webhooks.md): only these fields leave the system.
+[provides.public_events."customer.created"]
+description = "A customer was added"
+fields = ["company_id", "code"]

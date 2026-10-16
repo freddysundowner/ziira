@@ -1,0 +1,48 @@
+{
+ "channelGone": "{{channel}} (not available)",
+ "channelGoneHint": "This channel is not available now, so messages go by the next one. The setting is kept and works again when it is back.",
+ "notif": {
+  "title": "Notifications",
+  "hint": "How and when Ziira messages you. The business's own settings apply to anything you leave on the default.",
+  "kind": {
+   "alerts": "Urgent alerts",
+   "brief": "Daily brief",
+   "approvals": "Suggestions to approve"
+  },
+  "kindHint": {
+   "alerts": "Serious findings and reminders for you.",
+   "brief": "Your daily and weekly summary.",
+   "approvals": "Things waiting for your decision. A chat channel lets you reply to approve."
+  },
+  "choice": {
+   "default": "Business default",
+   "app": "In the app only"
+  },
+  "language": "Language of messages",
+  "languageHint": "Used for the wording of messages sent to you.",
+  "quiet": "Quiet hours",
+  "quietHint": "Messages that arrive during quiet hours wait until they end. They are never dropped. Times are read in the company's time zone.",
+  "quietFrom": "Quiet from",
+  "quietTo": "Until",
+  "quietCritical": "Let critical alerts through",
+  "save": "Save",
+  "saved": "Notification settings saved.",
+  "phone": "Number you reply from",
+  "phoneHint": "With the country code, or the number as you dial it locally.",
+  "sendCode": "Send code",
+  "codeSent": "Code sent.",
+  "codeWaiting": "A code was sent to {{phone}}. It expires in 15 minutes.",
+  "code": "Code",
+  "verify": "Verify",
+  "verified": "Number verified.",
+  "verifiedBadge": "Verified",
+  "remove": "Remove number",
+  "removed": "Number removed.",
+  "startOver": "Use another number",
+  "removeAsk": "Remove this number? You will no longer be messaged on chat channels, and replies from it will be ignored.",
+  "numberTitle": "My verified number",
+  "numberHint": "To approve or reject by replying in a chat channel, prove the number is yours: a code is sent to it (by the first channel your business has set up that reaches it; by email last). A number nobody has verified is never messaged in chat and its replies are ignored."
+ },
+ "noChannels": "No channels are available",
+ "noChannelsHint": "Switch on a messaging plugin (Add-ons) to send messages."
+}

@@ -1,17 +1,19 @@
 [unit]
 name = "connect"
 title = "Connectors (Intelligence on other systems)"
+description = "Connect outside systems (your ERP, accounting or bank statements) so Ziira can check the business they run."
+category = "connector"
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = []
-optional = ["intel", "command", "imports"]
+optional = ["intel", "command", "imports", "crm", "purchasing", "inventory"]
 
 [provides]
 api_prefix = "/api/v1/connect"
 publishes = ["connect.synced"]
 subscribes = []
-extension_points = ["connect.connector", "connect.ocr_engine"]
+extension_points = ["connect.connector", "connect.ocr_engine", "connect.core_coverage"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]

@@ -1,8 +1,9 @@
 import { Plus } from "lucide-react";
 import { type FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
-  api, Badge, Button, Checkbox, DataTable, Drawer, Field, FormGrid, Input, NumberInput, Pager, PageHeader, Select, toast, unwrap, useCan, useCompany,
+  Alert, api, Badge, Button, Checkbox, DataTable, Drawer, Field, FormGrid, Input, NumberInput, Pager, PageHeader, Select, toast, unwrap, useCan, useCompany,
   useDebounced, useFormState, useMutation, usePagedList, useQuery, useQueryClient, useTranslation, humanise, StatusBadge,
 } from "@/sdk";
 
@@ -68,7 +69,7 @@ function NewProduct({ open, onClose }: { open: boolean; onClose: () => void }) {
     <Drawer open={open} onClose={onClose} title={t("new")}
       footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="new-product" loading={save.isPending} disabled={noSetup}>{t("save")}</Button></>}>
       <form id="new-product" onSubmit={submit} className="space-y-4">
-        {noSetup && <p className="rounded-lg bg-warn-soft px-3 py-2 text-sm text-warn">{t("needSetup")}</p>}
+        {noSetup && <Alert tone="warn">{t("needSetup")} <Link className="font-medium underline" to="/products-setup">{t("openSetup")}</Link></Alert>}
         <Field label={t("name")} required error={f.error("name")}><Input {...f.bind("name")} required autoFocus onChange={(e) => { f.set("name", e.target.value); setSuggestions(null); }} /></Field>
         <Field label={t("sku")} required error={f.error("sku")} hint={t("skuHint")}>
           <div className="flex items-start gap-2">

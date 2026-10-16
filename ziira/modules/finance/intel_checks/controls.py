@@ -20,6 +20,8 @@ class BackdatedEntries(IntelCheck):
     """Journal entries posted long after the date they carry."""
 
     code = "finance.backdated_entries"
+
+    value_kind = "days"
     title = "Entries posted long after their date"
     area = "books"
     description = "A journal entry was posted to the books many days after the date it carries."
@@ -68,6 +70,8 @@ class PeriodReopened(IntelCheck):
     """An accounting period that was closed has been opened again."""
 
     code = "finance.period_reopened"
+
+    value_kind = "count"
     title = "Closed month reopened"
     area = "books"
     description = "A month that had been closed was opened again, so its figures could change."
@@ -162,6 +166,8 @@ class LargeManualJournal(IntelCheck):
     """Manual journals above a value limit."""
 
     code = "finance.large_manual_journal"
+
+    value_kind = "money"
     title = "Large manual journal"
     area = "controls"
     description = "A manual journal was written for more than the limit the business set for hand-made entries."
@@ -189,6 +195,8 @@ class RoundManualJournal(IntelCheck):
     """Manual journals for round sums."""
 
     code = "finance.round_manual_journal"
+
+    value_kind = "money"
     title = "Round-number manual journal"
     area = "controls"
     description = "A manual journal was written for a perfectly round amount, which real transactions rarely are."

@@ -1,0 +1,16 @@
+[unit]
+name = "leadsintel"
+title = "WhatsApp through Lead Intel"
+description = "Send and receive WhatsApp messages through your Lead Intel account: alerts, briefs, reply-to-approve and customer reminders."
+category = "messaging"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+
+[provides]
+api_prefix = "/api/v1/plugins/leadsintel"
+
+# Sockets of other units this plugin plugs into (code in hooks.py)
+[extends]
+implements = ["kernel.notification_channel"]

@@ -55,8 +55,28 @@ class RegisterIn(BaseModel):
     tax_id: str | None = Field(default=None, max_length=40)
     invite_code: str | None = Field(default=None, max_length=40,
                                     description="Needed when registration is by invitation")
-    mode: Literal["core", "standalone"] = Field(
-        default="core", description="core: run the business on Ziira; standalone: only watch the system it already has")
+    edition: str | None = Field(default=None, max_length=30, examples=["retail"],
+                                description="What the business needs (GET /api/v1/editions): retail, distribution, "
+                                            "books, intelligence or full (the default)")
+    mode: Literal["core", "standalone"] | None = Field(
+        default=None, description="Older spelling of edition: core is full, standalone is intelligence")
+    phone: str | None = Field(default=None, max_length=30, description="The owner's phone (optional)")
+    owner_role: str | None = Field(default=None, max_length=20, examples=["owner"],
+                                   description="owner, manager, accountant or other: onboarding hints only")
+    business_size: str | None = Field(default=None, max_length=10, examples=["2-5"],
+                                      description="Branches: 1, 2-5, 6-20 or more (onboarding hints only)")
+    staff_size: str | None = Field(default=None, max_length=10, examples=["1-5"],
+                                   description="Staff: 1-5, 6-20, 21-50 or more (onboarding hints only)")
+    business_type: str | None = Field(default=None, max_length=20, examples=["retail"],
+                                      description="retail, wholesale, services or other (onboarding hints only)")
+    plan: str | None = Field(default=None, max_length=60, examples=["starter"],
+                             description="A public plan code from a website link; ignored when unknown")
+
+
+class TrialOut(BaseModel):
+    plan_code: str
+    plan_name: str
+    trial_days: int
 
 
 class RegisterOut(BaseModel):
@@ -134,6 +154,7 @@ class CompanyOut(Out):
     name: str
     currency: str
     country: str | None = None
+    timezone: str = Field("UTC", description="The company's time zone: every time shown to its people uses it")
     branches: list[BranchOut]
 
 
@@ -145,7 +166,7 @@ class CompanySettingsOut(Out):
     count_variance_threshold: Decimal
     late_posting: Literal["redirect", "reject"]
     bill_match_tolerance_percent: Decimal
-    reminder_channel: Literal["off", "sms", "email"]
+    reminder_channel: str
     reminder_min_days_overdue: int
     reminder_repeat_days: int
     phone_country_code: str
@@ -156,7 +177,7 @@ class CompanySettingsOut(Out):
     receipt_footer: str
     invoice_footer: str
     timezone: str
-    intel_alert_channel: Literal["off", "sms", "email"]
+    intel_alert_channel: str
     intel_alert_min_severity: Literal["low", "medium", "high", "critical"]
     intel_action_level: int
     privacy_response_days: int
@@ -175,7 +196,7 @@ class CompanySettingsIn(BaseModel):
     count_variance_threshold: Annotated[Amount, Field(ge=0)] | None = None
     late_posting: Literal["redirect", "reject"] | None = None
     bill_match_tolerance_percent: Annotated[Decimal, Field(ge=0, le=100, max_digits=5, decimal_places=2)] | None = None
-    reminder_channel: Literal["off", "sms", "email"] | None = None
+    reminder_channel: str | None = None
     reminder_min_days_overdue: Annotated[int, Field(ge=0, le=365)] | None = None
     reminder_repeat_days: Annotated[int, Field(ge=0, le=365)] | None = None
     phone_country_code: Annotated[str, Field(max_length=4, pattern=r"^\+?[0-9]{0,3}$")] | None = None
@@ -186,7 +207,7 @@ class CompanySettingsIn(BaseModel):
     receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
     invoice_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
     timezone: Annotated[str, Field(max_length=64)] | None = None
-    intel_alert_channel: Literal["off", "sms", "email"] | None = None
+    intel_alert_channel: str | None = None
     intel_alert_min_severity: Literal["low", "medium", "high", "critical"] | None = None
     intel_action_level: Annotated[int, Field(ge=1, le=4)] | None = None
     privacy_response_days: Annotated[int, Field(ge=1, le=365)] | None = None
@@ -255,26 +276,6 @@ class PermissionOut(Out):
     code: str
     unit_name: str
     description: str
-
-
-class ApiKeyIn(BaseModel):
-    name: str
-    scopes: list[str] = Field(description="Permission codes the key may use")
-    expires_at: datetime | None = None
-
-
-class ApiKeyCreatedOut(BaseModel):
-    id: UUID
-    key: str = Field(description="Shown only once; store it safely")
-
-
-class ApiKeyOut(Out):
-    id: UUID
-    name: str
-    scopes: list[str]
-    created_at: datetime
-    expires_at: datetime | None
-    revoked_at: datetime | None
 
 
 # --------------------------------------------------------------------------- settings

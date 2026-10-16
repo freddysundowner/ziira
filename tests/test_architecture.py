@@ -2,9 +2,12 @@
 
 1. Modules and plugins never import ziira.kernel (they use ziira.sdk).
 2. A unit may import another unit only through its public.py.
+3. No module or kernel code names a country, a currency, a tax authority or a vendor (rule 15): those are data a business
+   enters, or belong to a plugin (a country pack, a provider plugin).
 """
 
 import ast
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / "ziira"
@@ -73,3 +76,48 @@ def test_hooks_in_code_match_the_manifests() -> None:
         declared = {"extension_points": set(m.extension_points), "validation_hooks": set(m.validation_hooks),
                     "implements": set(m.implements), "validates": set(m.validates)}
         assert in_code[name] == declared, f"{name}: manifest says {declared}, code does {in_code[name]}"
+
+
+# ---------------------------------------------------------------------------------------------- no country in code
+COUNTRY_WORDS = re.compile(
+    r"\b(?:KES|Ksh|KRA|PAYE|NHIF|NSSF|SHIF)\b|(?i:\b(?:Daraja|Safaricom|M-Pesa|mpesa|eTIMS|Kenya\w*|Nairobi|Mombasa|Airtel)\b)"
+    r"|Africa/|(?<!=)\b254\b(?!\))|\b254\d{2,}")
+
+# file relative to ziira/ -> (words allowed there, why it could not move). Aim: empty. Each entry is a known leftover.
+ALLOWED: dict[str, tuple[tuple[str, ...], str]] = {
+    "modules/connect/connectors/_http.py": (
+        ("mpesa", "m-pesa", "airtel"),
+        "words that tell a mobile-money payment method from a bank one in a customer's ERP export (source aliases)"),
+    "modules/connect/connectors/files.py": (
+        ("mpesa", "m-pesa", "airtel"),
+        "words that tell a mobile-money column or sheet from a bank one in an uploaded export (source aliases)"),
+    "modules/connect/connectors/csv_exports.py": (
+        ("mpesa",), "a column-heading alias ('mpesa code') in a customer's CSV export (source alias)"),
+}
+
+
+def _scanned_files() -> list[Path]:
+    files = []
+    for area in ("modules", "kernel"):
+        for f in (ROOT / area).rglob("*"):
+            parts = f.relative_to(ROOT).parts
+            if (f.is_file() and f.suffix in (".py", ".toml") and "__pycache__" not in parts
+                    and not {"tests", "data", "migrations", "master_migrations"} & set(parts)):
+                files.append(f)
+    return files
+
+
+def test_modules_and_kernel_name_no_country_currency_or_vendor() -> None:
+    """Rule 15, enforced: scans modules and kernel (not tests, `data/` reference files or SQL history). A known leftover
+    must be in ALLOWED with its reason."""
+    found: dict[tuple[str, str], list[int]] = {}
+    for f in _scanned_files():
+        rel = str(f.relative_to(ROOT))
+        for number, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            for match in COUNTRY_WORDS.finditer(line):
+                found.setdefault((rel, match.group(0).lower()), []).append(number)
+    bad = {k: v for k, v in found.items() if k[1] not in ALLOWED.get(k[0], ((), ""))[0]}
+    assert not bad, "Country- or vendor-specific words in code (move them to a pack or a provider plugin, or make them " \
+        "data):\n" + "\n".join(f"{path}: {word!r} at lines {lines}" for (path, word), lines in sorted(bad.items()))
+    stale = [(path, word) for path, (words, _) in ALLOWED.items() for word in words if (path, word) not in found]
+    assert not stale, f"ALLOWED lists leftovers that no longer exist (remove them): {stale}"

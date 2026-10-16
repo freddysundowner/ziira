@@ -5,6 +5,7 @@ Accounts: (code, name, type, subtype, is_control). A control account is kept by 
 suppliers, mobile money), so people cannot post to it by hand.
 """
 
+from dataclasses import dataclass
 from typing import NamedTuple
 
 
@@ -128,3 +129,39 @@ DEFAULT_RULES: tuple[tuple[str, str, str, str], ...] = (
     ("opening_payable", "opening_equity", "3100", "debit"),
     ("opening_balance", "opening_equity", "3100", "credit"),
 )
+
+
+@dataclass(frozen=True)
+class ChartSet:
+    """The template a company's books are made from: the general one, refined by a country pack."""
+
+    accounts: tuple[TemplateAccount, ...]
+    journals: tuple[tuple[str, str], ...]
+    rules: tuple[tuple[str, str, str, str], ...]
+
+
+ACCOUNT_TYPES = ("asset", "liability", "equity", "income", "expense")
+
+
+def merged(extra_accounts: tuple[TemplateAccount, ...] = (), extra_journals: tuple[tuple[str, str], ...] = (),
+           extra_rules: tuple[tuple[str, str, str, str], ...] = ()) -> ChartSet:
+    """The general template with a pack's additions: an account with the same code takes the pack's name and subtype,
+    a new code is added; a rule for the same document type and role takes the pack's account. Raises ValueError when
+    a rule names an account the result lacks or an account has an unknown type."""
+    by_code = {a.code: a for a in CHART}
+    by_code.update({a.code: a for a in extra_accounts})
+    bad = [a.code for a in by_code.values() if a.type not in ACCOUNT_TYPES]
+    if bad:
+        raise ValueError(f"Accounts {', '.join(bad)} have an unknown type")
+    journals = dict(JOURNALS)
+    journals.update(dict(extra_journals))
+    rules = {(r[0], r[1]): r for r in DEFAULT_RULES}
+    rules.update({(r[0], r[1]): r for r in extra_rules})
+    missing = sorted({r[2] for r in rules.values() if r[2] not in by_code})
+    if missing:
+        raise ValueError(f"Posting rules name accounts the chart lacks: {', '.join(missing)}")
+    return ChartSet(tuple(sorted(by_code.values(), key=lambda a: a.code)), tuple(journals.items()),
+                    tuple(rules.values()))
+
+
+GENERAL = merged()

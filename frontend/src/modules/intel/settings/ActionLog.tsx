@@ -38,12 +38,12 @@ export default function ActionLog({ companyId }: { companyId: string }) {
           { header: t("log.what"), cell: (r) => (
             <div className="min-w-0">
               <p className="font-medium">{r.action_title}</p>
-              {r.finding_id && <Link to={`/findings/${r.finding_id}`} className="text-xs text-muted hover:underline">{r.finding_summary ?? t("noSummary")}</Link>}
+              <p className="text-sm text-muted">{r.result ? <ProposalOutcome result={r.result} /> : r.message}</p>
+              {r.finding_id && <Link to={`/intelligence/things/${r.finding_id}`} className="text-xs text-muted hover:underline">{r.finding_summary ?? t("noSummary")}</Link>}
             </div>
           ) },
           { header: t("log.who"), hideBelow: "sm", cell: (r) => (r.actor_name ?? (r.mode === "automatic" ? t("log.byRule") : t("bySystem"))) },
           { header: t("log.outcome"), cell: (r) => <Badge tone={r.outcome === "executed" ? "ok" : "bad"}>{t(`log.outcomes.${r.outcome}`)}</Badge> },
-          { header: t("log.message"), hideBelow: "md", cell: (r) => (r.result ? <ProposalOutcome result={r.result} /> : r.message) },
         ]} />
     </Card>
   );

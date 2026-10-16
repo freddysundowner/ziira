@@ -4,14 +4,36 @@
     {
       "name": "api",
       "runtimeExecutable": "bash",
-      "runtimeArgs": ["-c", "set -a; . ./.env; set +a; exec .venv/bin/uvicorn ziira.kernel.app:app --port 8000"],
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; set +a; exec .venv/bin/uvicorn ziira.kernel.app:app --port 8000"
+      ],
       "port": 8000
     },
     {
       "name": "web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev"
+      ],
       "port": 5173
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "site",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "4321"
+      ],
+      "port": 4321
     }
   ]
 }

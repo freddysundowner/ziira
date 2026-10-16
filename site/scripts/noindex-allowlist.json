@@ -1,0 +1,4 @@
+{
+  "_comment": "Pages that may carry noindex. Anything else with noindex fails seo:check. Legal pages are noindex until PUBLIC_LEGAL_REVIEWED=true.",
+  "paths": ["/404/", "/privacy-policy/", "/terms/"]
+}

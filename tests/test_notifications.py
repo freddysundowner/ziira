@@ -80,7 +80,7 @@ def test_recipients_and_messages_are_validated(client, shop) -> None:  # type: i
     from ziira.sdk import ValidationFailed
 
     for channel, to in (("sms", "12345"), ("sms", "abc"), ("email", "nope"), ("email", "a@b"),
-                        ("whatsapp", "0712345678"), ("pigeon", "0712345678")):
+                        ("whatsapp", "12345"), ("pigeon", "0712345678")):
         with pytest.raises(ValidationFailed):
             queue(shop, channel, to)
     with pytest.raises(ValidationFailed):

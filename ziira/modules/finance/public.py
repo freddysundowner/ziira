@@ -4,14 +4,72 @@ Other units do not call Finance: they publish documents (`sale.posted`, `sale.re
 Inventory already publishes) and Finance turns them into journal entries. Only reads are exposed here.
 """
 
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from typing import ClassVar
 from uuid import UUID
 
 from sqlalchemy import text
 
 from ziira.modules.finance.repository import finance_repo
 from ziira.sdk import Session
+
+CHART_TEMPLATE = "finance.chart_template"
+
+
+@dataclass(frozen=True)
+class AccountSeed:
+    """An account of a country pack's chart: `type` is asset, liability, equity, income or expense; `subtype` is what
+    the posting engine and reports recognise (see the general chart); a control account is kept by a sub-ledger."""
+
+    code: str
+    name: str
+    type: str
+    subtype: str | None = None
+    is_control: bool = False
+
+
+@dataclass(frozen=True)
+class RuleSeed:
+    """A default posting rule of a pack: for this document type and line role, post to this account on this side."""
+
+    doc_type: str
+    role: str
+    account_code: str
+    side: str
+
+
+class ChartTemplate(ABC):
+    """Contract for the CHART_TEMPLATE extension point: a country pack refines the general chart of accounts. A new
+    company's books are made from the general chart plus what the pack supplies; a company that already has books gets
+    the missing accounts added (nothing is renamed or removed). `countries` are ISO codes (empty: worldwide)."""
+
+    countries: ClassVar[tuple[str, ...]] = ()
+
+    @abstractmethod
+    def accounts(self) -> list[AccountSeed]:
+        """Accounts to add; one with a code the general chart has takes the pack's name for a new company."""
+
+    def journals(self) -> list[tuple[str, str]]:
+        """Extra journals as (code, name)."""
+        return []
+
+    def rules(self) -> list[RuleSeed]:
+        """Default posting rules that differ from the general ones."""
+        return []
+
+
+def check_chart_template(template: ChartTemplate) -> int:
+    """For a pack's own tests: raises ValueError when the template cannot be merged with the general chart (an unknown
+    account type, a posting rule naming a missing account). Returns how many accounts the merged chart has."""
+    from ziira.modules.finance.domain import chart
+
+    merged = chart.merged(
+        tuple(chart.TemplateAccount(a.code, a.name, a.type, a.subtype, a.is_control) for a in template.accounts()),
+        tuple(template.journals()), tuple((r.doc_type, r.role, r.account_code, r.side) for r in template.rules()))
+    return len(merged.accounts)
 
 
 def is_expense_account(session: Session, company_id: UUID, account_id: UUID) -> bool:

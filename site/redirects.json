@@ -1,0 +1,213 @@
+{
+  "_comment": "301 map for future moves: add {\"from\": \"/old-path/\", \"to\": \"/new-path/\"} rows. The build writes dist/_redirects (\"from to 301\" lines). Keep a moved URL here forever; never delete an indexed URL without a redirect.",
+  "redirects": [
+    {
+      "from": "/sw/anza-sasa/",
+      "to": "/get-started/"
+    },
+    {
+      "from": "/sw/bei/",
+      "to": "/pricing/"
+    },
+    {
+      "from": "/sw/istilahi/",
+      "to": "/glossary/"
+    },
+    {
+      "from": "/sw/kuhusu-ziira/",
+      "to": "/about/"
+    },
+    {
+      "from": "/sw/miunganisho/",
+      "to": "/integrations/"
+    },
+    {
+      "from": "/sw/miunganisho/api-na-webhooks/",
+      "to": "/integrations/api-and-webhooks/"
+    },
+    {
+      "from": "/sw/miunganisho/m-pesa/",
+      "to": "/integrations/m-pesa/"
+    },
+    {
+      "from": "/sw/miunganisho/whatsapp/",
+      "to": "/integrations/whatsapp/"
+    },
+    {
+      "from": "/sw/suluhisho/",
+      "to": "/solutions/"
+    },
+    {
+      "from": "/sw/suluhisho/biashara-ya-matawi-mengi/",
+      "to": "/solutions/multi-branch-business/"
+    },
+    {
+      "from": "/sw/suluhisho/rejareja/",
+      "to": "/solutions/retail/"
+    },
+    {
+      "from": "/sw/suluhisho/usambazaji-na-jumla/",
+      "to": "/solutions/distribution-and-wholesale/"
+    },
+    {
+      "from": "/sw/usalama-na-faragha/",
+      "to": "/security-and-privacy/"
+    },
+    {
+      "from": "/sw/ziira-core/",
+      "to": "/product/"
+    },
+    {
+      "from": "/sw/ziira-core/bidhaa-na-matawi/",
+      "to": "/product/inventory-and-branches/"
+    },
+    {
+      "from": "/sw/ziira-core/malipo-na-upatanisho/",
+      "to": "/product/payments-and-reconciliation/"
+    },
+    {
+      "from": "/sw/ziira-core/manunuzi-na-wasambazaji/",
+      "to": "/product/purchasing-and-suppliers/"
+    },
+    {
+      "from": "/sw/ziira-core/mauzo-na-kaunta/",
+      "to": "/product/pos-and-till/"
+    },
+    {
+      "from": "/sw/ziira-core/uhasibu-na-fedha/",
+      "to": "/product/accounting-and-finance/"
+    },
+    {
+      "from": "/sw/ziira-core/wateja-na-mikopo/",
+      "to": "/product/customers-and-credit/"
+    },
+    {
+      "from": "/sw/ziira-core/watu-na-mishahara/",
+      "to": "/product/people-and-payroll/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/",
+      "to": "/intelligence/how-it-works/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/inavyofanya-kazi/",
+      "to": "/intelligence/how-it-works/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/",
+      "to": "/intelligence/on-your-existing-system/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/csv-excel-pdf/",
+      "to": "/intelligence/on-your-existing-system/csv-excel-pdf/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/erpnext/",
+      "to": "/intelligence/on-your-existing-system/erpnext/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/odoo/",
+      "to": "/intelligence/on-your-existing-system/odoo/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/quickbooks-online/",
+      "to": "/intelligence/on-your-existing-system/quickbooks-online/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/taarifa-za-benki/",
+      "to": "/intelligence/on-your-existing-system/bank-statements/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/taarifa-za-pesa-za-simu/",
+      "to": "/intelligence/on-your-existing-system/mobile-money-statements/"
+    },
+    {
+      "from": "/sw/ziira-intelligence/kwenye-mfumo-wako-uliopo/zoho-books/",
+      "to": "/intelligence/on-your-existing-system/zoho-books/"
+    },
+    {
+      "from": "/sw/",
+      "to": "/"
+    },
+    {
+      "from": "/ziira-core/",
+      "to": "/product/"
+    },
+    {
+      "from": "/ziira-core/pos-and-till/",
+      "to": "/product/pos-and-till/"
+    },
+    {
+      "from": "/ziira-core/inventory-and-branches/",
+      "to": "/product/inventory-and-branches/"
+    },
+    {
+      "from": "/ziira-core/purchasing-and-suppliers/",
+      "to": "/product/purchasing-and-suppliers/"
+    },
+    {
+      "from": "/ziira-core/accounting-and-finance/",
+      "to": "/product/accounting-and-finance/"
+    },
+    {
+      "from": "/ziira-core/people-and-payroll/",
+      "to": "/product/people-and-payroll/"
+    },
+    {
+      "from": "/ziira-core/customers-and-credit/",
+      "to": "/product/customers-and-credit/"
+    },
+    {
+      "from": "/ziira-core/payments-and-reconciliation/",
+      "to": "/product/payments-and-reconciliation/"
+    },
+    {
+      "from": "/ziira-intelligence/",
+      "to": "/intelligence/how-it-works/"
+    },
+    {
+      "from": "/ziira-intelligence/how-it-works/",
+      "to": "/intelligence/how-it-works/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/",
+      "to": "/intelligence/on-your-existing-system/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/erpnext/",
+      "to": "/intelligence/on-your-existing-system/erpnext/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/odoo/",
+      "to": "/intelligence/on-your-existing-system/odoo/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/zoho-books/",
+      "to": "/intelligence/on-your-existing-system/zoho-books/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/quickbooks-online/",
+      "to": "/intelligence/on-your-existing-system/quickbooks-online/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/bank-statements/",
+      "to": "/intelligence/on-your-existing-system/bank-statements/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/mobile-money-statements/",
+      "to": "/intelligence/on-your-existing-system/mobile-money-statements/"
+    },
+    {
+      "from": "/ziira-intelligence/on-your-existing-system/csv-excel-pdf/",
+      "to": "/intelligence/on-your-existing-system/csv-excel-pdf/"
+    },
+    {
+      "from": "/intelligence/",
+      "to": "/intelligence/how-it-works/"
+    },
+    {
+      "from": "/sw/*",
+      "to": "/"
+    }
+  ]
+}

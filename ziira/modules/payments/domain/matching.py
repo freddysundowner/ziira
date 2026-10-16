@@ -1,7 +1,7 @@
 """Matching money that arrived (external transactions) to the payments people recorded. Pure Python.
 
 Three stages, each running only on what the previous one left (specification section 10):
- 1. exact reference   the M-Pesa receipt code (or bank reference) on the payment equals the transaction's;
+ 1. exact reference   the mobile money receipt code (or bank reference) on the payment equals the transaction's;
  2. account number    the paybill account number the customer typed equals the payment's number;
  3. rules             same account and amount, close in time, scored; applied when confident enough, else proposed.
 What nothing matches becomes an exception for a person. Amounts are tracked as what is still unmatched, so one

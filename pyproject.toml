@@ -14,6 +14,8 @@ dependencies = [
     "httpx>=0.27",            # calls out to Safaricom Daraja and other providers
     "pdfplumber>=0.11.10,<0.12",  # reads text PDF statements (MIT; brings pdfminer.six, pypdfium2, Pillow)
     "openpyxl>=3.1,<3.2",     # reads Excel (.xlsx) uploads (MIT)
+    "markdown-it-py>=3,<5",   # renders the website pages' Markdown with raw HTML switched off (MIT)
+    "Pillow>=10",             # checks and re-encodes the website's pictures (MIT-CMU; also brought by pdfplumber)
 ]
 
 [project.optional-dependencies]
@@ -33,7 +35,7 @@ build-backend = "setuptools.build_meta"
 include = ["ziira*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.toml", "*.sql", "*.md"]
+"*" = ["*.toml", "*.sql", "*.md", "*.json"]
 
 [tool.ruff]
 line-length = 120
@@ -47,9 +49,10 @@ ignore = ["N818"]  # error names like NotFound read better without an Error suff
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E501"]                      # test data and assertions read better on one line
 "ziira/modules/*/tests/*" = ["E501"]
+"ziira/plugins/*/tests/*" = ["E501"]
 
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.Header", "fastapi.Query"]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Header", "fastapi.Query", "ziira.kernel.api.operator_routes.require"]
 
 [tool.mypy]
 python_version = "3.12"

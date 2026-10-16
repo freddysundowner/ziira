@@ -1,7 +1,7 @@
-import { api, Badge, type BadgeTone, DataTable, Pager, unwrap, usePagedList, useTranslation } from "@/sdk";
+import { api, Badge, type BadgeTone, DataTable, formatDate, Pager, unwrap, usePagedList, useTranslation } from "@/sdk";
 
 const TONE: Record<string, BadgeTone> = { ok: "ok", partial: "warn", failed: "bad", running: "info" };
-export const when = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString() : "—");
+export const when = (iso: string | null | undefined) => formatDate(iso, true);
 
 /** The history of reads: what was read, how much was new or changed, what was skipped and why. */
 export function RunsTable({ connectionId }: { connectionId: string }) {

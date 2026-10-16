@@ -13,7 +13,7 @@ export default function SetupPage() {
   const [tab, setTab] = useState<"periods" | "rules">("periods");
   return (
     <>
-      <PageHeader title={t("setup.title")} description={t("setup.hint")} actions={<ScopeSelects scope={scope} branch={false} />} />
+      <PageHeader title={t("menu.setup")} description={t("setup.hint")} actions={<ScopeSelects scope={scope} branch={false} />} />
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "periods", label: t("periods.title") }, { id: "rules", label: t("rules.title") }]} />
       {tab === "periods" ? <PeriodsTab companyId={scope.companyId} /> : <RulesTab companyId={scope.companyId} />}
     </>

@@ -21,6 +21,10 @@ class DeviceIn(BaseModel):
     location_id: UUID | None = Field(default=None, description="The store this device's sales take stock from")
 
 
+class DeviceUpdateIn(BaseModel):
+    location_id: UUID = Field(description="The store this device's sales take stock from")
+
+
 class DeviceStatusIn(BaseModel):
     status: Literal["active", "blocked"]
 
@@ -139,7 +143,7 @@ class SaleLineIn(BaseModel):
 class SalePaymentIn(BaseModel):
     method: Literal["cash", "mobile_money", "card", "other", "credit"]
     amount: Money = Field(description="What was handed over. Cash may be more than is due: the rest is change")
-    external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code or card slip number")
+    external_ref: str | None = Field(default=None, max_length=60, description="Mobile-money code or card slip number")
     payment_account_id: UUID | None = None
 
 
@@ -418,7 +422,7 @@ class ReceiptIn(BaseModel):
     method: Literal["cash", "mobile_money", "bank", "card", "cheque", "other"]
     branch_id: UUID | None = None
     payment_account_id: UUID | None = None
-    external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code, bank ref, cheque no.")
+    external_ref: str | None = Field(default=None, max_length=60, description="Mobile-money code, bank ref, cheque no.")
     received_on: date | None = None
     allocations: list[AllocationIn] | None = Field(default=None, description="Default: the oldest invoices first")
     till_session_id: UUID | None = Field(default=None, description="Cash taken at your till")
@@ -664,7 +668,8 @@ class RefundOut(BaseModel):
 
 
 class SendReminderIn(BaseModel):
-    channel: Literal["sms", "email"] | None = Field(default=None, description="Default: the company's")
+    channel: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{1,39}$",
+                                description="A channel the business has. Default: the company's")
 
 
 class ReminderSentOut(BaseModel):
@@ -675,7 +680,7 @@ class ReminderSentOut(BaseModel):
 
 
 class SendRemindersIn(BaseModel):
-    channel: Literal["sms", "email"] | None = None
+    channel: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{1,39}$")
     min_days_overdue: int = Field(default=1, ge=0, le=3650)
     repeat_days: int = Field(default=7, ge=0, le=365)
     limit: int = Field(default=200, ge=1, le=500)

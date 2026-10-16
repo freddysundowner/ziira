@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer: Nightly backup of the master and every business database
+
+[Timer]
+OnCalendar=*-*-* 02:17:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=ziira-backup.service
+
+[Install]
+WantedBy=timers.target

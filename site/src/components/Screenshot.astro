@@ -1,0 +1,27 @@
+---
+// A product screenshot: AVIF and WebP at several widths, and a small WebP as the plain <img> (the pictures are stored at 2x, so Astro's
+// <Picture> would leave the full-size original as `src`; this component picks a mid-size one instead). Width/height set: no layout shift.
+import { getImage } from "astro:assets";
+import type { ScreenKey } from "../content/types";
+import { screen } from "../lib/screens";
+
+interface Props { name: ScreenKey; alt: string; caption?: string; priority?: boolean; sizes?: string; widths?: number[] }
+const { name, alt, caption, priority = false, sizes = "(min-width: 960px) 560px, calc(100vw - 40px)", widths = [480, 640] } = Astro.props;
+const src = screen(name);
+const srcset = async (format: "avif" | "webp") =>
+  (await Promise.all(widths.map(async (w) => `${(await getImage({ src, format, width: w, quality: 55 })).src} ${w}w`))).join(", ");
+const [avifSet, webpSet] = [await srcset("avif"), await srcset("webp")];
+const fallbackWidth = widths[Math.min(1, widths.length - 1)] as number;
+const fallback = await getImage({ src, format: "webp", width: fallbackWidth, quality: 55 });
+const largest = widths[widths.length - 1] as number;
+const height = Math.round((largest * src.height) / src.width);
+---
+<figure class="shot">
+  <picture>
+    <source type="image/avif" srcset={avifSet} sizes={sizes} />
+    <source type="image/webp" srcset={webpSet} sizes={sizes} />
+    <img src={fallback.src} srcset={webpSet} sizes={sizes} alt={alt} width={largest} height={height}
+      loading={priority ? "eager" : "lazy"} decoding={priority ? "sync" : "async"} fetchpriority={priority ? "high" : "auto"} />
+  </picture>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

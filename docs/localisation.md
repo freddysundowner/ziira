@@ -11,8 +11,9 @@ Ziira is used in any country. What differs between countries is **data a busines
 | Tax codes (VAT, GST, sales tax ...) | `products.tax_code`: a rate, plus an optional `authority_code` the tax authority uses |
 | Payroll taxes, contributions and levies | the business's **statutory rules** (`people.statutory_rate_table`, see `ziira/modules/people/domain/rules.py`): rate, bands, caps, who pays, whether it reduces taxable pay, calculation order, effective date, the account it is owed through |
 | Weekend, overtime, unpaid-leave day | company settings `weekend_days`, `overtime_multiplier`, `overtime_hours_per_month`, `payroll_unpaid_day_divisor` |
-| Chart of accounts | a general template a business edits (`finance/domain/chart.py`); posting rules are data |
-| Payment methods | `cash`, `mobile_money`, `bank`, `card`, ...; which service provides mobile money is the payment account's `provider` |
+| Chart of accounts | a general template a business edits (`finance/domain/chart.py`); a country pack refines it; posting rules are data |
+| Payment methods | `cash`, `mobile_money`, `bank`, `card`, ...; which service provides mobile money is the payment account's `provider` (a plugin) |
+| Country defaults (currency, calling code, time zone, what the tax number is called, formats) | `ziira/kernel/data/countries.json`, refined by country packs; `GET /api/v1/countries` |
 | Credentials of integrations | `kernel.integration_credential`, any provider name |
 
 ## Business dates
@@ -37,19 +38,48 @@ setting `timezone` (Settings in the web app, `PATCH /companies/{id}/settings`); 
 * **Tests** create their tenants in `Africa/Nairobi` (`LOCALE["timezone"]` in `tests/conftest.py`, a fixture value, passed
   with `--timezone`); `tests/test_business_date.py` shows the same instant on different days in UTC, Nairobi, Auckland and
   Los Angeles for a movement, a till, a journal entry, a receipt, a return and a price.
-* **Not a company date:** the M-Pesa provider reads and writes Safaricom's timestamps, which are East Africa Time by that
-  service's definition (`payments/domain/mpesa.py`); that is provider code, not the business date.
+* **Not a company date:** the M-Pesa plugin reads and writes Safaricom's timestamps, which are East Africa Time by that
+  service's definition (`ziira/plugins/mpesa/formats.py`); that is provider code, not the business date. Bank statements are
+  read in the company's own time zone.
 
 ## Country-specific things live outside the core
 
-* **Providers behind extension points.** Safaricom's Daraja (M-Pesa) is one `payments.provider`; its request formats, STK
-  push and the M-Pesa statement parser are in the payments module as that provider's code. Another country's mobile money
-  or card service is another provider.
-* **Plugins.** Kenya's eTIMS will be an installable plugin (`docs/parked/etims.md`) that listens to documents and keeps its own
-  tables. Core columns that such a plugin fills are neutral (`tax_code.authority_code`, `product.authority_item_class`,
-  `supplier_bill.authority_ref`).
+The rule is **anything that is a vendor, a country or a format is a plugin; core logic stays in modules**
+(`docs/plugin-audit.md` lists what was moved and what is left). `tests/test_architecture.py` fails when a currency code, a
+tax authority or a vendor name appears in `ziira/modules/**` or `ziira/kernel/**`.
+
+* **Country packs: a country's DATA.** A plugin with `category = "country"` and `countries = ["KE"]` carries data files
+  (TOML) and hands them to the units that asked for them: `products.tax_code_seed` (tax codes), `finance.chart_template`
+  (accounts, journals, posting rules), `people.statutory_table_seed` (payroll taxes, contributions and levies as
+  effective-dated tables), and its `country.toml` (currency, calling code, time zone, the name and pattern of the tax number,
+  date and number formats) which the sign-up form reads through `GET /api/v1/countries`. Each unit has its own generic
+  fallback and works with no pack at all. `ziira/plugins/pack_ke` is the reference pack; `pack_international` (worldwide)
+  is used when no pack names the country and adds only tax codes that charge nothing.
+  * **When it is applied:** at sign-up (the pack of the chosen country, else the international one), when the pack is
+    switched on later from Add-ons, when a unit that seeds is switched on afterwards, and on `ziira apply-packs`.
+  * **How:** the units copy the pack's rows into **the business's own tables**, as data it can edit. Only what is missing is
+    added; a code, account or table the business already has is never overwritten, renamed or given a newer version; nothing
+    is removed; posted records are never touched; running it again changes nothing. Payroll tables arrive **unverified**, so a
+    second person must check each against the official notice before a payroll run that used it can be approved.
+  * **Which pack applies to a company** is chosen by its `country` (`kernel.company.country`): a pack naming it, else the
+    worldwide pack. A company with no country recorded takes every pack that is switched on.
+  * **Figures:** only data files, each with its source and a "verify" note. The Kenya pack's payroll tables are *examples*
+    taken from the repository's tests and are not guaranteed current law.
+* **Providers: a vendor behind an extension point.** Safaricom's Daraja is the `mpesa` plugin (`payments.provider`, plus the
+  `payments.statement_format` for its statement); the Payments module keeps the models, matching, jobs and callback URLs.
+  Another country's mobile money or card service is another plugin with the same shape.
+* **Other plugins.** Kenya's eTIMS is a skeleton plugin (`ziira/plugins/etims`, design in `docs/parked/etims.md`): its contract and
+  status table exist, nothing is sent. Core columns such a plugin fills are neutral (`tax_code.authority_code`,
+  `product.authority_item_class`, `supplier_bill.authority_ref`).
 * **Demo and tests.** The demo business is a Kenyan shop (`scripts/seed_demo.py`), and many tests use Kenyan phone numbers
   and amounts as *fixtures*. They never decide behaviour.
+
+### Adding a country
+
+1. `ziira plugin new pack_xx --category country --countries XX` (the plugin kit scaffolds the folder).
+2. Put the data in `data/`: `country.toml`, and any of `tax_codes.toml`, `chart.toml`, `payroll.toml`; copy `pack_ke/hooks.py`
+   to read them. Cite a source for every figure; mark what must be verified; do not enter a rate you are unsure of.
+3. `ziira install pack_xx`; a business in that country gets it at sign-up, others add it from Add-ons.
 
 ## Rule for new code
 

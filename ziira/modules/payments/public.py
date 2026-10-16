@@ -1,20 +1,46 @@
 """Public interface of the Payments and Reconciliation module.
 
-Other units use these: POS records the money of a sale with `record_payment`, and a plugin (an Airtel Money or bank
-connector) can implement the `PaymentProvider` contract for the "payments.provider" extension point.
+Other units use these: POS records the money of a sale with `record_payment`, and a provider plugin (a mobile-money
+service, a card or bank connector) implements the `PaymentProvider` contract for the "payments.provider" extension
+point. The module knows no provider: request and callback formats, credential forms and statement formats belong to the
+plugin.
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
-from typing import Any
+from typing import Any, ClassVar
 from uuid import UUID
 
-from ziira.modules.payments.domain.mpesa import StkResult
-from ziira.sdk import Session
+from ziira.modules.payments.domain.mobile_money import (
+    C2BTransaction,
+    StkResult,
+    mask_phone,
+    parse_amount,
+    phone_fingerprint,
+)
+from ziira.modules.payments.domain.statements import (
+    GENERIC_HEADER_WORDS,
+    MAX_ROWS,
+    ParsedStatement,
+    StatementRow,
+    column_key,
+    csv_rows,
+    statement_amount,
+    statement_time,
+)
+from ziira.sdk import Session, ValidationFailed, normalise_phone
+
+__all__ = [
+    "GENERIC_HEADER_WORDS", "MAX_ROWS", "C2BTransaction", "FormField", "ParsedStatement", "PaymentProvider",
+    "StatementReader", "StatementRow", "StkQuery", "StkRequest", "StkResponse", "StkResult", "column_key", "csv_rows",
+    "mask_phone", "parse_amount", "phone_fingerprint", "statement_amount", "statement_time",
+]
 
 PROVIDER_EXTENSION = "payments.provider"
+STATEMENT_EXTENSION = "payments.statement_format"
+MANUAL_PROVIDER = "manual"           # an account with no integration: payments are recorded by hand or from statements
 
 
 @dataclass(frozen=True)
@@ -22,15 +48,14 @@ class StkRequest:
     """A request to put a payment prompt on a customer's phone."""
 
     shortcode: str
-    till_type: str                       # "till" (buy goods) or "paybill"
     amount: Decimal
-    msisdn: str                          # normalised, 2547XXXXXXXX
+    msisdn: str                          # as the provider wants it (see PaymentProvider.normalize_phone)
     callback_url: str
     account_reference: str
     description: str
     credentials: dict[str, Any] = field(repr=False, default_factory=dict)
     environment: str = "sandbox"
-    party_b: str | None = None           # the till number to pay, when different from the shortcode
+    settings: dict[str, Any] = field(default_factory=dict)    # the account's provider settings (config_fields)
 
 
 @dataclass(frozen=True)
@@ -51,10 +76,56 @@ class StkQuery:
     environment: str = "sandbox"
 
 
+@dataclass(frozen=True)
+class FormField:
+    """One field of a provider's credentials or settings form, described as data so the web app can draw the form."""
+
+    key: str
+    label: str
+    secret: bool = False              # a credential: stored encrypted, never shown again
+    required: bool = True
+    kind: str = "text"                # "text" or "select"
+    options: tuple[str, ...] = ()     # for "select"
+    default: str | None = None
+    help: str = ""
+
+
+class StatementReader(ABC):
+    """Contract of the "payments.statement_format" extension point: a statement format people upload (a provider's
+    business statement, a bank's export). `name` is what the upload names; `source` is recorded on each line."""
+
+    name: str = "format"
+    label: str = ""
+    source: str = "statement"
+
+    @abstractmethod
+    def parse(self, text: str) -> ParsedStatement:
+        """Read the statement's text. Raises ValidationFailed when it is not this format."""
+
+
 class PaymentProvider(ABC):
-    """Contract of the "payments.provider" extension point: a way to ask customers for money."""
+    """Contract of the "payments.provider" extension point: a way to ask customers for money, to read what the provider
+    reports, and to describe its own settings. Only `stk_push` and `query_stk` are required."""
 
     name: str = "provider"
+    title: str = ""
+    development_only: ClassVar[bool] = False          # refused for a business running in production
+    supports_prompts: ClassVar[bool] = True
+    credential_fields: ClassVar[tuple[FormField, ...]] = ()     # the secret form (keys, passkeys), stored encrypted
+    config_fields: ClassVar[tuple[FormField, ...]] = ()         # non-secret settings kept on the payment account
+    c2b_source: ClassVar[str] = ""                    # `source` recorded for callbacks about customers paying us
+    stk_source: ClassVar[str] = ""                    # `source` recorded for the outcome of a prompt
+    callback_reply: ClassVar[dict[str, Any]] = {"status": "accepted"}   # what the provider expects back from a callback
+    prompt_minimum: ClassVar[Decimal] = Decimal(1)
+    prompt_maximum: ClassVar[Decimal | None] = None
+    prompt_whole_amounts: ClassVar[bool] = False
+
+    def normalize_phone(self, raw: str, calling_code: str | None) -> str:
+        """The payer's number as this provider wants it (default: international digits)."""
+        number = normalise_phone(raw, calling_code)
+        if number is None:
+            raise ValidationFailed("A phone number is required")
+        return number
 
     @abstractmethod
     def stk_push(self, request: StkRequest) -> StkResponse:
@@ -63,6 +134,14 @@ class PaymentProvider(ABC):
     @abstractmethod
     def query_stk(self, query: StkQuery) -> StkResult:
         """Ask the provider what became of a prompt (when its callback never came)."""
+
+    def parse_stk_callback(self, payload: dict[str, Any]) -> StkResult:
+        """Read the provider's callback about a prompt. Raises ValidationFailed when it is not one."""
+        raise ValidationFailed(f"{self.name} does not send prompt callbacks")
+
+    def parse_c2b(self, payload: dict[str, Any]) -> C2BTransaction:
+        """Read the provider's report of a customer paying one of our tills. Raises ValidationFailed if not one."""
+        raise ValidationFailed(f"{self.name} does not send payment confirmations")
 
 
 @dataclass(frozen=True)
@@ -138,7 +217,7 @@ class DocumentPayment:
     status: str
     business_date: date
     amount: Decimal              # what was allocated to the document
-    reference: str | None = None  # the M-Pesa code, bank reference or cheque number
+    reference: str | None = None  # the mobile-money code, bank reference or cheque number
 
 
 def payments_for_document(session: Session, doc_type: str, doc_id: UUID) -> list[DocumentPayment]:

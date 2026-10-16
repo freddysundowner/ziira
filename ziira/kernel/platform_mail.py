@@ -12,10 +12,11 @@ import logging
 from typing import Any
 from uuid import uuid4
 
+from ziira.kernel.channels import NOTIFICATION_CHANNEL
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import Unavailable
 from ziira.kernel.extensions import provider_named
-from ziira.kernel.notifications import NOTIFICATION_CHANNEL, Outgoing
+from ziira.kernel.notifications import Outgoing
 
 log = logging.getLogger("ziira.platform_mail")
 

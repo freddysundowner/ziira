@@ -176,7 +176,8 @@ class ActivityOut(BaseModel):
 
 
 class DoNotContactIn(BaseModel):
-    channel: Literal["email", "sms"] | None = Field(default=None, description="Default: every channel")
+    channel: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{1,39}$",
+                                description="A channel the business has. Default: every channel")
     reason: str | None = Field(default=None, max_length=300)
 
 

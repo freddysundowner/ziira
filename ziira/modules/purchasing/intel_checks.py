@@ -27,7 +27,7 @@ LIVE_BILL_STATES = ("pending_approval", "posted", "part_paid", "paid")
 
 
 def money(amount: Decimal, currency: str) -> str:
-    """An amount with its currency code, to two places: "KES 1,250.00"."""
+    """An amount with its currency code, to two places: "USD 1,250.00"."""
     return f"{currency} {amount.quantize(CENT):,.2f}"
 
 
@@ -94,6 +94,8 @@ class SupplierPriceRise(IntelCheck):
     """A supplier charging noticeably more than their usual price for a product."""
 
     code = "purchasing.supplier_price_rise"
+
+    value_kind = "money"
     title = "Supplier price went up"
     area = "suppliers"
     description = "A supplier's latest price for a product is well above what they charged in earlier deliveries."
@@ -139,6 +141,8 @@ class OrderAboveUsualPrice(IntelCheck):
     """An open purchase order priced above what the supplier usually charges."""
 
     code = "purchasing.order_above_usual_price"
+
+    value_kind = "money"
     title = "Purchase order priced above usual"
     area = "suppliers"
     description = "An open purchase order has a unit price well above what this supplier charged for the product."
@@ -197,6 +201,8 @@ class MarginSqueeze(IntelCheck):
     """A cost rise that leaves a product with a thin or negative margin at today's selling price."""
 
     code = "purchasing.margin_squeeze"
+
+    value_kind = "percent"
     title = "Cost rise squeezes the margin"
     area = "suppliers"
     description = "A product's cost went up and its selling price now leaves very little profit."
@@ -246,6 +252,8 @@ class DuplicateSupplierBill(IntelCheck):
     """The same supplier bill possibly entered twice."""
 
     code = "purchasing.duplicate_supplier_bill"
+
+    value_kind = "money"
     title = "Possible duplicate supplier bill"
     area = "controls"
     description = "Two bills from one supplier have the same amount close together, or the same invoice number."
@@ -288,6 +296,8 @@ class DuplicateSupplierPayment(IntelCheck):
     """The same supplier possibly paid twice."""
 
     code = "purchasing.duplicate_supplier_payment"
+
+    value_kind = "money"
     title = "Possible duplicate supplier payment"
     area = "controls"
     description = "A supplier was paid the same amount twice within a few days, or two payments share a reference."
@@ -454,6 +464,8 @@ class OverdueSupplierBills(IntelCheck):
     """Money owed to a supplier past its due date."""
 
     code = "purchasing.overdue_supplier_bills"
+
+    value_kind = "days"
     title = "Overdue supplier bills"
     area = "suppliers"
     description = "A supplier has bills that are still unpaid well after their due date."

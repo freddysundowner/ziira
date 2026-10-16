@@ -1,21 +1,20 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Alert, api, Button, Card, Field, FormGrid, Input, Select, Switch, toast, unwrap, useMutation, useQueryClient, useTranslation } from "@/sdk";
+import { Alert, api, Button, Card, channelOptions, Field, FormGrid, Input, Select, Switch, toast, unwrap, useChannels, useMutation, useQueryClient, useTranslation } from "@/sdk";
 import type { Schemas } from "@/sdk";
 
 import { toTimeInput } from "../logic";
 
 type Schedule = Schemas["ScheduleOut"];
 type Kind = "daily" | "weekly";
-type Channel = "in_app" | "email" | "sms";
-const CHANNELS: Channel[] = ["in_app", "email", "sms"];
 
 /** When and how one kind of brief reaches me. Saved as a whole; removing it stops that brief. */
 export default function ScheduleForm({ kind, schedule }: { kind: Kind; schedule: Schedule | undefined }) {
   const { t } = useTranslation("command");
   const qc = useQueryClient();
-  const [channel, setChannel] = useState<Channel>(schedule?.channel ?? "in_app");
+  const [channel, setChannel] = useState(schedule?.channel ?? "in_app");
+  const available = useChannels().data ?? [];
   const [time, setTime] = useState(schedule ? toTimeInput(schedule.send_time) : "07:30");
   const [weekday, setWeekday] = useState(String(schedule?.weekday ?? 1));
   const [active, setActive] = useState(schedule?.is_active ?? true);
@@ -40,8 +39,8 @@ export default function ScheduleForm({ kind, schedule }: { kind: Kind; schedule:
       <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
         <FormGrid>
           <Field label={t("channel")}>
-            <Select value={channel} onChange={(e) => setChannel(e.target.value as Channel)}>
-              {CHANNELS.map((c) => <option key={c} value={c}>{t(`channels.${c}`)}</option>)}
+            <Select value={channel} onChange={(e) => setChannel(e.target.value)}>
+              {channelOptions(available, channel, ["in_app"]).map((o) => <option key={o.value} value={o.value}>{o.value === "in_app" ? t("channels.in_app") : o.missing ? t("channelGone", { channel: o.label }) : o.label}</option>)}
             </Select>
           </Field>
           <Field label={t("sendTime")} hint={t("sendTimeHint")}>

@@ -24,7 +24,7 @@ PROPOSAL_FROM = (
 LOG_COLUMNS = (
     "l.id, l.created_at, l.proposal_id, l.finding_id, l.company_id, l.branch_id, l.action_type, l.mode, "
     "l.actor_user_id, u.full_name as actor_name, l.rule_id, l.level, l.params, l.outcome, l.message, l.result, "
-    "f.summary as finding_summary"
+    "l.channel, f.summary as finding_summary"
 )
 
 
@@ -207,14 +207,15 @@ def runs_today(s: Session, rule_id: UUID, timezone: str, today: date) -> int:
 # --------------------------------------------------------------------------- the log
 def add_log(s: Session, *, proposal_id: UUID | None, finding_id: UUID | None, company_id: UUID,
             branch_id: UUID | None, action_type: str, mode: str, actor_user_id: UUID | None, rule_id: UUID | None,
-            level: int, params: dict[str, Any], outcome: str, message: str, result: dict[str, Any] | None) -> UUID:
+            level: int, params: dict[str, Any], outcome: str, message: str, result: dict[str, Any] | None,
+            channel: str = "app") -> UUID:
     row = s.execute(text(
         "insert into intel.action_log (tenant_id, proposal_id, finding_id, company_id, branch_id, action_type, mode, "
-        "actor_user_id, rule_id, level, params, outcome, message, result) values (kernel.current_tenant(), :p, :f, "
-        ":c, :b, :t, :m, :u, :r, :l, cast(:pa as jsonb), :o, :me, cast(:re as jsonb)) returning id"),
+        "actor_user_id, rule_id, level, params, outcome, message, result, channel) values (kernel.current_tenant(), "
+        ":p, :f, :c, :b, :t, :m, :u, :r, :l, cast(:pa as jsonb), :o, :me, cast(:re as jsonb), :ch) returning id"),
         {"p": _s(proposal_id), "f": _s(finding_id), "c": str(company_id), "b": _s(branch_id), "t": action_type,
          "m": mode, "u": _s(actor_user_id), "r": _s(rule_id), "l": level, "pa": _j(params), "o": outcome,
-         "me": message[:1000], "re": _j(result) if result is not None else None}).one()
+         "me": message[:1000], "re": _j(result) if result is not None else None, "ch": channel}).one()
     log_id: UUID = row.id
     return log_id
 

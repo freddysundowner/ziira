@@ -16,20 +16,35 @@ from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
 from ziira.kernel import notifications  # noqa: F401 - registers the send job and the channel socket
+from ziira.kernel.api.billing_routes import router as billing_router
+from ziira.kernel.api.country_routes import router as country_router
+from ziira.kernel.api.edition_routes import router as edition_router
+from ziira.kernel.api.integration_routes import router as integration_router
+from ziira.kernel.api.messaging_routes import router as messaging_router
 from ziira.kernel.api.notification_routes import router as notification_router
+from ziira.kernel.api.operator_payment_routes import router as operator_payment_router
 from ziira.kernel.api.operator_routes import router as operator_router
+from ziira.kernel.api.operator_unit_routes import router as operator_unit_router
 from ziira.kernel.api.ops_routes import router as ops_router
 from ziira.kernel.api.organisation_routes import router as organisation_router
+from ziira.kernel.api.payment_routes import router as subscription_payment_router
+from ziira.kernel.api.platform_routes import router as platform_router
 from ziira.kernel.api.privacy_routes import router as privacy_router
+from ziira.kernel.api.public_plan_routes import router as public_plan_router
 from ziira.kernel.api.routes import router as kernel_router
 from ziira.kernel.api.security_routes import router as security_router
+from ziira.kernel.api.site_routes import public_router as site_public_router
+from ziira.kernel.api.site_routes import router as site_router
 from ziira.kernel.api.support_routes import router as support_router
 from ziira.kernel.api.unit_routes import router as unit_router
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
 from ziira.kernel.export_audit import ExportAuditMiddleware
+from ziira.kernel.host_routing import HostRoutingMiddleware
 from ziira.kernel.http_middleware import HttpMiddleware
 from ziira.kernel.observability import configure_logging, current_request_id
+from ziira.kernel.operator_network import OperatorNetworkMiddleware
+from ziira.kernel.public_api import PublicApiHeaders, tag_public
 from ziira.kernel.registry import discover, load_event_handlers
 from ziira.kernel.support_log import SupportLogMiddleware
 from ziira.sdk import DB_SESSION
@@ -65,11 +80,23 @@ def create_app() -> FastAPI:
     app.include_router(kernel_router)
     app.include_router(security_router)
     app.include_router(notification_router)
+    app.include_router(messaging_router)
     app.include_router(privacy_router)
     app.include_router(support_router)
     app.include_router(operator_router)
+    app.include_router(operator_unit_router)
+    app.include_router(platform_router)
+    app.include_router(public_plan_router)
+    app.include_router(billing_router)
+    app.include_router(subscription_payment_router)
+    app.include_router(operator_payment_router)
+    app.include_router(site_router)
+    app.include_router(site_public_router)
     app.include_router(organisation_router)
     app.include_router(unit_router)
+    app.include_router(edition_router)
+    app.include_router(country_router)
+    app.include_router(integration_router)
     units = discover()
     load_event_handlers(units)
 
@@ -138,10 +165,22 @@ def create_app() -> FastAPI:
                            allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "X-API-Key",
                                           "X-Request-ID", "X-Device-ID", "Accept-Language"],
                            expose_headers=["X-Request-ID"], max_age=600)
+    app.add_middleware(PublicApiHeaders)
+    app.add_middleware(OperatorNetworkMiddleware)
+    app.add_middleware(HostRoutingMiddleware)
     app.add_middleware(ExportAuditMiddleware)
     app.add_middleware(SupportLogMiddleware)
     app.add_middleware(HttpMiddleware)          # outermost: request id, access log, security headers, size limit
 
+    base_openapi = app.openapi
+
+    def openapi_with_public_tag() -> dict[str, object]:
+        """The full description, with the public API's operations tagged `Public` (docs/public-api.md)."""
+        if app.openapi_schema is None:
+            app.openapi_schema = tag_public(base_openapi())
+        return app.openapi_schema
+
+    app.openapi = openapi_with_public_tag  # type: ignore[method-assign]
     return app
 
 

@@ -8,7 +8,6 @@ import {
 
 import { useBranches, useMoney } from "../hooks";
 import { DocStatus } from "./DocStatus";
-import { DocsTabs } from "./DocsTabs";
 import { CustomerName, CustomerPicker } from "./hooks";
 import { dayBefore, invoiceDisplayStatus, outstanding } from "./lib";
 
@@ -39,9 +38,8 @@ export default function InvoicesPage() {
 
   return (
     <>
-      <PageHeader title={t("docs.title")} description={t("docs.hint.invoice")}
+      <PageHeader title={t("docs.tabs.invoices")} description={t("docs.hint.invoice")}
         actions={canManage && <Link to="/pos/invoices/new"><Button><Plus className="h-4 w-4" />{t("docs.new.invoice")}</Button></Link>} />
-      <DocsTabs />
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()}
         rowKey={(i) => i.id} rowHref={(i) => `/pos/invoices/${i.id}`}

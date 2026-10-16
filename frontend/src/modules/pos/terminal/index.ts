@@ -9,7 +9,7 @@ export const terminalRoutes: PageRoute[] = [
 ];
 
 export const terminalMenu: MenuItem[] = [
-  { label: "pos:terminal.menu", to: "/pos/terminal", permission: "sales.sell", order: 1, group: "sell", icon: "sales" },
+  { label: "pos:terminal.menu", to: "/pos/terminal", permission: "sales.sell", order: 1, area: "sell", primary: true, icon: "sales" },
 ];
 
 export const terminalTranslations: { en: Record<string, unknown>; sw: Record<string, unknown> } = { en, sw };

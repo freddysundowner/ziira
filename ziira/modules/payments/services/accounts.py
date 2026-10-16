@@ -1,4 +1,4 @@
-"""Use cases: payment accounts (a branch's till cash, an M-Pesa till or paybill, a bank account, a card terminal)."""
+"""Use cases: payment accounts (a branch's till cash, a mobile-money till or paybill, a bank account, a card)."""
 
 import re
 from uuid import UUID
@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from ziira.modules.payments.permissions import PAYMENTS_MANAGE
-from ziira.modules.payments.public import PROVIDER_EXTENSION
+from ziira.modules.payments.public import MANUAL_PROVIDER, PROVIDER_EXTENSION, FormField, PaymentProvider
 from ziira.modules.payments.repository import payments_repo
 from ziira.modules.payments.repository.models import PaymentAccount
 from ziira.modules.payments.services.access import can_view, view_scopes
@@ -33,7 +33,7 @@ ENVIRONMENTS = ("sandbox", "production")
 
 def create_account(session: Session, *, company_id: UUID, kind: str, name: str, branch_id: UUID | None = None,
                    shortcode: str | None = None, bank_account_masked: str | None = None,
-                   ledger_account_id: UUID | None = None, provider: str = "daraja",
+                   ledger_account_id: UUID | None = None, provider: str | None = None,
                    environment: str = "sandbox", provider_config: dict[str, str] | None = None) -> PaymentAccount:
     """Add a payment account. Needs 'payments.manage' for the company (and branch)."""
     ctx = current_context()
@@ -54,11 +54,13 @@ def create_account(session: Session, *, company_id: UUID, kind: str, name: str, 
             raise ValidationFailed(f"Environment must be one of: {', '.join(ENVIRONMENTS)}")
     else:
         shortcode = None
-    known = sorted({getattr(p, "name", "") for p in implementations(session, PROVIDER_EXTENSION)})
-    if provider not in known:
+    provider = (provider or MANUAL_PROVIDER).strip()
+    found = None if provider == MANUAL_PROVIDER else provider_named(session, provider)
+    if provider != MANUAL_PROVIDER and found is None:
+        known = sorted({MANUAL_PROVIDER, *(p.name for p in implementations(session, PROVIDER_EXTENSION))})
         raise ValidationFailed(f"Provider must be one of: {', '.join(known)}")
-    if provider == "fake" and is_production():
-        raise ValidationFailed("The fake provider is for development only")
+    if found is not None and found.development_only and is_production():
+        raise ValidationFailed(f"The {provider} provider is for development only")
     if bank_account_masked is not None and len(bank_account_masked) > 40:
         raise ValidationFailed("The masked account number is too long")
     account = PaymentAccount(
@@ -127,7 +129,7 @@ def update_account(session: Session, account_id: UUID, *, name: str | None = Non
 
 
 def set_credentials(session: Session, account_id: UUID, secret: dict[str, str]) -> PaymentAccount:
-    """Store the account's provider credentials (Daraja: consumer key, secret, STK passkey), encrypted. Never shown
+    """Store the account's provider credentials (the fields its provider describes), encrypted. Never shown
     again. Needs 'payments.manage'."""
     account = payments_repo.get_account(session, account_id)
     if account is None:
@@ -135,8 +137,16 @@ def set_credentials(session: Session, account_id: UUID, secret: dict[str, str]) 
     current_context().require(PAYMENTS_MANAGE, company_id=account.company_id, branch_id=account.branch_id)
     if account.kind != "mobile_money":
         raise ValidationFailed("Only mobile money accounts have provider credentials")
-    required = ("consumer_key", "consumer_secret", "passkey") if account.provider == "daraja" else ()
-    missing = [k for k in required if not str(secret.get(k, "")).strip()]
+    if account.provider == MANUAL_PROVIDER:
+        raise ValidationFailed("A manual account has no provider: choose a provider to give it credentials")
+    provider = provider_named(session, account.provider)
+    if provider is None:
+        raise ValidationFailed(f"The {account.provider} provider is not switched on for this business")
+    known = {f.key for f in provider.credential_fields}
+    unknown = sorted(set(secret) - known)
+    if unknown:
+        raise ValidationFailed(f"Not a {account.provider} credential: {', '.join(unknown)}")
+    missing = [f.key for f in provider.credential_fields if f.required and not str(secret.get(f.key, "")).strip()]
     if missing or not secret:
         raise ValidationFailed(f"Missing: {', '.join(missing) or 'the credentials'}")
     account.credential_id = store_credential(
@@ -146,6 +156,40 @@ def set_credentials(session: Session, account_id: UUID, secret: dict[str, str]) 
     session.flush()
     audit_record(session, "set_credentials", "payments.payment_account", account.id)
     return account
+
+
+def provider_named(session: Session, name: str) -> PaymentProvider | None:
+    """The enabled provider implementation called `name`, or None."""
+    for provider in implementations(session, PROVIDER_EXTENSION):
+        if provider.name == name:
+            return provider  # type: ignore[no-any-return]
+    return None
+
+
+def provider_for(session: Session, name: str) -> PaymentProvider:
+    """The enabled provider called `name`, or ValidationFailed saying it is not switched on."""
+    found = provider_named(session, name)
+    if found is None:
+        raise ValidationFailed(f"No payment provider called '{name}' is enabled")
+    return found
+
+
+def describe_providers(session: Session) -> dict[str, object]:
+    """Providers and statement formats enabled for this business, as plain data."""
+    from ziira.modules.payments.public import STATEMENT_EXTENSION
+
+    def fields(items: tuple[FormField, ...]) -> list[dict[str, object]]:
+        return [{"key": f.key, "label": f.label, "secret": f.secret, "required": f.required, "kind": f.kind,
+                 "options": list(f.options), "default": f.default, "help": f.help} for f in items]
+
+    providers = sorted(implementations(session, PROVIDER_EXTENSION), key=lambda p: p.name)
+    readers = sorted(implementations(session, STATEMENT_EXTENSION), key=lambda r: r.name)
+    return {
+        "providers": [{"name": p.name, "title": p.title or p.name, "development_only": p.development_only,
+                       "supports_prompts": p.supports_prompts, "credential_fields": fields(p.credential_fields),
+                       "config_fields": fields(p.config_fields)} for p in providers],
+        "statement_formats": [{"name": "bank", "label": "Bank statement (CSV)"},
+                              *({"name": r.name, "label": r.label or r.name} for r in readers)]}
 
 
 def credentials_of(session: Session, account: PaymentAccount) -> dict[str, str]:
@@ -173,7 +217,7 @@ def rotate_callback_token(session: Session, account_id: UUID) -> str:
 
 
 def callback_urls(token: str, base_url: str) -> dict[str, str]:
-    """The C2B URLs to register with Safaricom for the account whose callback token this is. (The address for an STK
+    """The C2B URLs to register with the provider for the account whose callback token this is. (The address for an STK
     push's outcome is made for each prompt: see services/intents.py.)"""
     root = f"{base_url.rstrip('/')}/api/v1/payments/callbacks/{token}"
     return {"c2b_validation": f"{root}/c2b/validation", "c2b_confirmation": f"{root}/c2b/confirmation"}

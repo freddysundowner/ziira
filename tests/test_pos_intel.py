@@ -242,7 +242,7 @@ def test_a_till_closed_far_from_its_expected_cash_is_flagged(client, shop) -> No
     f = about(items, short)[0]
     assert (f["severity"], Dec(f["amount"]), f["branch_id"], Dec(f["value"])) == ("medium", Dec("600.00"),
                                                                                   str(shop["branch_id"]), Dec("-600.00"))
-    assert "tilly's till at Head office on 2026-10-10 closed KES 600.00 short" in f["summary"]
+    assert "tilly's till at Head office on 10 Oct 2026 closed KES 600.00 short" in f["summary"]
     assert "KES 400.00 counted against KES 1,000.00 expected" in f["summary"]
     assert about(items, way_short)[0]["severity"] == "high" and Dec(about(items, way_short)[0]["amount"]) == 3000
     assert detail(client, shop, f)["records"][0]["type"] == "pos.till_session"
@@ -338,7 +338,7 @@ def test_a_single_large_void_refund_or_override(client, shop) -> None:  # type: 
     assert not {str(void_small), str(void_old)} & set(by_entity)
     assert (by_entity[str(void_mid)]["severity"], Dec(by_entity[str(void_mid)]["amount"])) == ("medium", Dec("2500.00"))
     assert by_entity[str(void_big)]["severity"] == "high"                                  # 7,000 >= 3 x 2,000
-    assert "Sale LV-1 for KES 2,500.00 by lars was voided by lars on 2026-10-12" in by_entity[str(void_mid)]["summary"]
+    assert "Sale LV-1 for KES 2,500.00 by lars was voided by lars on 12 Oct 2026" in by_entity[str(void_mid)]["summary"]
     assert by_entity[str(ret)]["severity"] == "medium" and "Return RET-L1 refunded KES 2,500.00" in by_entity[str(ret)]["summary"]
     assert Dec(by_entity[str(over_mid)]["amount"]) == Dec("1500.00")                      # list 2,500 sold at 1,000
     assert by_entity[str(over_mid)]["severity"] == "medium"
@@ -374,7 +374,7 @@ def test_sales_outside_trading_hours_are_judged_in_the_companys_time_zone(client
         jj = next(f for f in items if f["branch_id"] == str(juja))
         assert (first["severity"], Dec(first["amount"]), Dec(first["value"]), first["period_start"]) == (
             "low", Dec("232.00"), Dec(2), "2026-10-14")
-        assert "Branch OHA made 2 sales worth KES 232.00 on 2026-10-14 outside 06:00-22:00, the first at 03:00" in first["summary"]
+        assert "Branch OHA made 2 sales worth KES 232.00 on 14 Oct 2026 outside 06:00-22:00, the first at 03:00" in first["summary"]
         assert (jj["severity"], Dec(jj["amount"])) == ("medium", Dec("250.00"))              # five sales
         assert [r["label"] for r in detail(client, shop, first)["records"]] == ["Sale OH-1", "Sale OH-2"]
         # an earlier opening hour makes the 03:00 sale normal; the day's finding is the same one, now smaller
@@ -440,9 +440,10 @@ def test_a_branch_selling_far_less_than_it_usually_does_that_weekday(client, sho
     # the range the engine learned includes yesterday: (8,000 + 300) / 9
     assert abs(Dec(low["expected_value"]) - Dec("922.22")) < Dec("0.01")
     assert abs(Dec(low["amount"]) - Dec("622.22")) < Dec("0.01")
-    assert "Branch BLHQ sold KES 300.00 on 2026-10-13 (Tuesday); it usually sells about KES 922.22 on that day" in low["summary"]
+    assert "Branch BLHQ sold KES 300.00 on 13 Oct 2026 (Tuesday); it usually sells about KES 922.22 on that day" in low["summary"]
     zero = next(f for f in items if f["branch_id"] == str(shut))
     assert zero["severity"] == "high" and Dec(zero["value"]) == 0 and Dec(zero["amount"]) == Dec("1000.00")
+    assert "recorded no sales on 13 Oct 2026" in zero["summary"] and "KES 0.00" not in zero["summary"]
     assert not [f for f in items if f["branch_id"] in (str(juja), str(newb))]
     with tuned(client, shop, code, min_history=3):
         assert run(shop, code).created == 1                                                  # the new branch now counts
@@ -550,7 +551,7 @@ def test_credit_given_to_a_customer_who_was_already_overdue(client, shop) -> Non
     assert set(by_entity) == {str(new_pat), str(new_sue)}
     p = by_entity[str(new_pat)]
     assert (p["severity"], Dec(p["amount"]), p["branch_id"]) == ("medium", Dec("600.00"), str(shop["branch_id"]))
-    assert "Invoice CO-P2 for KES 600.00 was issued on 2026-10-12 to pat" in p["summary"].replace("Pat", "pat")
+    assert "Invoice CO-P2 for KES 600.00 was issued on 12 Oct 2026 to pat" in p["summary"].replace("Pat", "pat")
     assert "still owes KES 1,000.00 on 1 older invoice that were already overdue (the oldest by 42 days)" in p["summary"]
     assert by_entity[str(new_sue)]["severity"] == "high"                                         # 120 days
     assert detail(client, shop, p)["figures"]["overdue_before"] == "1,000.00"

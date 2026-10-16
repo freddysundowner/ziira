@@ -1,4 +1,4 @@
-.PHONY: setup db-up db-down install run test lint check web-setup web web-check api-types e2e-setup e2e
+.PHONY: deploy-test deploy-test-docker setup db-up db-down install run test lint check web-setup web web-check api-types e2e-setup e2e site-setup site site-catalog site-build site-check site-screens
 
 PY ?= python3
 
@@ -52,3 +52,28 @@ e2e-setup:        ## real-browser tests: install Playwright and its Chromium (on
 
 e2e:              ## real-browser journeys against a throwaway stack (scratch databases, API on :8765, web on :4175); see docs/testing.md
 	bash e2e/run.sh
+
+site-setup:       ## marketing website (site/): npm ci
+	cd site && npm ci
+
+site:             ## marketing website dev server on http://localhost:4321
+	cd site && npm run dev
+
+site-catalog:     ## marketing website: regenerate site/src/content/checks.catalog.json (checks, actions, ask tools) from the real registry
+	.venv/bin/python scripts/export_check_catalog.py
+
+site-build: site-catalog  ## marketing website: static build into site/dist (warns loudly if PUBLIC_SITE_URL is unset)
+	cd site && npm run build
+
+site-check: site-catalog  ## marketing website: unit tests, build, SEO audit, link check; warns (not fails) on stale screenshots (docs/marketing-site.md)
+	cd site && npm test && npm run build && npm run seo:check && npm run links:check
+
+site-screens:     ## marketing website: re-capture every product screenshot from the RUNNING app (:5173 + API :8000, demo business), then rebuild the optimised assets
+	cd site && node scripts/capture-screens.mjs && npm run build && npm run responsive
+
+deploy-test:      ## production installer kit (deploy/): unit tests with a fake server, ruff
+	.venv/bin/ruff check deploy
+	.venv/bin/python -m pytest deploy/tests -q
+
+deploy-test-docker: ## installer config-only run in a throwaway Ubuntu 24.04 container with a real nginx (needs Docker)
+	bash deploy/tests/docker/run.sh

@@ -11,6 +11,7 @@ import AttentionPanel from "../components/AttentionPanel";
 import FigureCard from "../components/FigureCard";
 import { byArea, type Figure, groupFigures } from "../logic";
 import { COMMAND_PANELS } from "../public";
+import { guideUrl } from "../guideUrl";
 
 export default function CommandPage() {
   const { t } = useTranslation("command");
@@ -43,6 +44,7 @@ export default function CommandPage() {
                 {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Select>
             )}
+            {guideUrl() && <a href={guideUrl()} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-brand-strong hover:underline">{t("howItWorks")}</a>}
             <Link to="/command/briefs" className="text-sm font-medium text-brand-strong hover:underline">{t("myBriefs")}</Link>
           </>
         } />

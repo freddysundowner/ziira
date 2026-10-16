@@ -14,12 +14,13 @@ from typing import Any
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
+from ziira.modules.intel.domain.grouping import covers, worse
 from ziira.modules.intel.domain.model import SEVERITIES, Candidate
 from ziira.modules.intel.domain.rules import severity_rank
 from ziira.modules.intel.public import INTEL_CHECK, CheckContext, IntelCheck
 from ziira.modules.intel.repository import findings_repo as repo
 from ziira.modules.intel.services import baselines as baseline_service
-from ziira.sdk import Event, Session, company_setting, flag_for_review, implementations, publish_many
+from ziira.sdk import Event, Session, company_setting, flag_for_review, humanise_dates, implementations, publish_many
 
 log = logging.getLogger("ziira.intel")
 
@@ -61,6 +62,7 @@ def run_company(session: Session, company_id: UUID, *, today: date | None = None
     timezone = str(company_setting(session, company_id, "timezone"))
     baselines = baseline_service.load(session, company_id)
     settings = repo.check_settings(session)
+    rules = repo.active_rules(session, today, company_id)
     for check in implementations(session, INTEL_CHECK):
         if only is not None and check.code not in only:
             continue
@@ -83,7 +85,7 @@ def run_company(session: Session, company_id: UUID, *, today: date | None = None
                             dedupe_key=f"intel-check-failed:{check.code}:{company_id}:{today}")
             continue
         result.checks_run += 1
-        _apply(session, check, check_id, company_id, candidates, result)
+        _apply(session, check, check_id, company_id, candidates, result, rules, today)
     _actions(session, company_id, result)
     return result
 
@@ -102,7 +104,7 @@ def _actions(session: Session, company_id: UUID, result: RunResult) -> None:
 
 
 def _apply(session: Session, check: IntelCheck, check_id: UUID, company_id: UUID, candidates: list[Candidate],
-           result: RunResult) -> None:
+           result: RunResult, rules: list[Any], today: date) -> None:
     """Turn a check's candidates into findings. Works in batches (one read of the check's findings, then a few bulk
     writes) because a check can find thousands of things; the effect is the same as handling them one at a time."""
     open_before = repo.open_ids_for_check(session, check.code, company_id)
@@ -118,27 +120,81 @@ def _apply(session: Session, check: IntelCheck, check_id: UUID, company_id: UUID
                 log.warning("Check %s returned an unusable candidate %s; ignored", check.code, c.fingerprint)
             continue
         seen.add(c.fingerprint)
+        summary = humanise_dates(c.summary)  # words for people: '13 Oct 2026', not the ISO form
+        action = humanise_dates(c.recommended_action)
         evidence = json.dumps(_evidence(c), default=str)
         amount = c.amount.quantize(Decimal("0.01")) if c.amount is not None else None
         row = existing.get(c.fingerprint)
         if row is None:
+            if any(
+                covers(
+                    r,
+                    check_code=check.code,
+                    branch_id=c.branch_id,
+                    entity_type=c.entity_type,
+                    entity_id=c.entity_id,
+                    company_id=company_id,
+                    today=today,
+                )
+                for r in rules
+            ):
+                continue  # the business said this kind of thing is normal here
             finding_id = uuid4()
-            created.append({
-                "id": str(finding_id), "ci": str(check_id), "cc": check.code, "ar": check.area, "fp": c.fingerprint,
-                "sv": c.severity, "co": str(c.company_id), "br": str(c.branch_id) if c.branch_id else None,
-                "et": c.entity_type, "ei": str(c.entity_id) if c.entity_id else None, "ps": c.period_start,
-                "pe": c.period_end, "v": c.value, "ev": c.expected_value, "am": amount, "su": c.summary[:1000],
-                "ra": c.recommended_action[:1000], "evd": evidence})
+            created.append(
+                {
+                    "id": str(finding_id),
+                    "ci": str(check_id),
+                    "cc": check.code,
+                    "ar": check.area,
+                    "fp": c.fingerprint,
+                    "sv": c.severity,
+                    "co": str(c.company_id),
+                    "br": str(c.branch_id) if c.branch_id else None,
+                    "et": c.entity_type,
+                    "ei": str(c.entity_id) if c.entity_id else None,
+                    "ps": c.period_start,
+                    "pe": c.period_end,
+                    "v": c.value,
+                    "ev": c.expected_value,
+                    "am": amount,
+                    "su": summary[:1000],
+                    "ra": action[:1000],
+                    "evd": evidence,
+                }
+            )
             events.append((finding_id, "detected", None))
-            announced.append(Event("finding.created", "intel.finding", finding_id, {
-                "check": check.code, "severity": c.severity, "company_id": c.company_id, "branch_id": c.branch_id,
-                "summary": c.summary, "amount": amount}))
+            announced.append(
+                Event(
+                    "finding.created",
+                    "intel.finding",
+                    finding_id,
+                    {
+                        "check": check.code,
+                        "severity": c.severity,
+                        "company_id": c.company_id,
+                        "branch_id": c.branch_id,
+                        "summary": summary,
+                        "amount": amount,
+                    },
+                )
+            )
             result.created += 1
             continue
         reopen = row.status == "resolved"
-        refreshed.append({"sv": c.severity, "v": c.value, "ev": c.expected_value, "am": amount,
-                          "su": c.summary[:1000], "ra": c.recommended_action[:1000], "evd": evidence,
-                          "reopen": reopen, "i": str(row.id)})
+        refreshed.append(
+            {
+                "sv": c.severity,
+                "v": c.value,
+                "ev": c.expected_value,
+                "am": amount,
+                "su": summary[:1000],
+                "ra": action[:1000],
+                "evd": evidence,
+                "reopen": reopen,
+                "worse": worse(row.severity, c.severity, row.amount, amount),
+                "i": str(row.id),
+            }
+        )
         if reopen:
             events.append((row.id, "reopened", "The problem is back"))
             result.reopened += 1

@@ -70,6 +70,8 @@ class TillCashVariance(IntelCheck):
     """A till was closed with the cash counted far from the cash expected."""
 
     code = "pos.till_cash_variance"
+
+    value_kind = "money"
     title = "Till closed with a cash difference"
     area = "cash_sales"
     description = "A cashier closed their till and the cash counted was far from what the sales say it should be."
@@ -194,6 +196,8 @@ class CashierVoidRateMetric(_RateMetric):
     """Share of a cashier's sales that are voided, per day."""
 
     code = "pos.cashier_void_rate"
+
+    value_kind = "percent"
     title = "Cashier void rate"
 
     def rate_of(self, day: CashierDay) -> Decimal | None:
@@ -390,6 +394,8 @@ class OutOfHoursSales(IntelCheck):
     """Sales rung up when the branch is normally closed."""
 
     code = "pos.out_of_hours_sales"
+
+    value_kind = "count"
     title = "Sales outside trading hours"
     area = "controls"
     description = "Sales were made at a branch before it normally opens or after it normally closes."
@@ -432,6 +438,8 @@ class LateRecordedSales(IntelCheck):
     """Sales recorded days after the trading day they belong to."""
 
     code = "pos.late_recorded_sales"
+
+    value_kind = "count"
     title = "Sales recorded long after their business date"
     area = "controls"
     description = "A sale was entered, or synced from an offline till, days after the day it is dated."
@@ -472,6 +480,8 @@ class BranchSalesLow(IntelCheck):
     """A branch sold far less yesterday than it normally does on that weekday."""
 
     code = "pos.branch_sales_low"
+
+    value_kind = "money"
     title = "A branch sold far less than usual"
     area = "cash_sales"
     description = "A branch's sales yesterday were far below what it normally sells on that day of the week."
@@ -500,8 +510,8 @@ class BranchSalesLow(IntelCheck):
             found.append(Candidate(
                 fingerprint=fingerprint(self.code, b.id, day),
                 severity="high" if value <= baseline.mean / 4 else "medium",
-                summary=(f"{b.name} sold {cur} {money(value)} on {day} ({day.strftime('%A')}); it usually sells about "
-                         f"{cur} {money(baseline.mean)} on that day."),
+                summary=(f"{b.name} {'recorded no sales' if value == 0 else f'sold {cur} {money(value)}'} on {day} "
+                         f"({day.strftime('%A')}); it usually sells about {cur} {money(baseline.mean)} on that day."),
                 recommended_action="Ask the branch manager what happened that day.", company_id=ctx.company_id,
                 branch_id=b.id, entity_type="kernel.branch", entity_id=b.id, period_start=day, period_end=day,
                 value=value, expected_value=baseline.mean, amount=baseline.mean - value,
@@ -518,6 +528,8 @@ class OverdueCustomers(IntelCheck):
     """Customers with invoices that are well past their due date."""
 
     code = "pos.customer_overdue"
+
+    value_kind = "days"
     title = "A customer is overdue"
     area = "customers"
     description = "A customer has an invoice that is more than the set number of days past its due date."
@@ -557,6 +569,8 @@ class SlowerPayers(IntelCheck):
     """Customers who now take noticeably longer to pay than they used to."""
 
     code = "pos.customer_paying_slower"
+
+    value_kind = "days"
     title = "A customer is paying slower"
     area = "customers"
     description = "A customer takes much longer to pay their invoices than they did in the period before."
@@ -611,6 +625,8 @@ class CreditToOverdueCustomer(IntelCheck):
     """New credit given to a customer who was already behind."""
 
     code = "pos.credit_to_overdue_customer"
+
+    value_kind = "money"
     title = "Credit given to a customer who was overdue"
     area = "customers"
     description = "A new invoice or credit sale was made to a customer who already had an overdue invoice unpaid."
@@ -653,6 +669,8 @@ class OverCreditLimit(IntelCheck):
     """Customers who owe more than their credit limit."""
 
     code = "pos.customer_over_credit_limit"
+
+    value_kind = "money"
     title = "A customer is over their credit limit"
     area = "customers"
     description = "A customer owes more than the credit limit set for them."

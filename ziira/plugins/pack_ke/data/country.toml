@@ -1,0 +1,14 @@
+# Defaults for a business in Kenya. Shown on the sign-up form; the business can change every one of them later.
+# Source: general knowledge of the country's conventions, not a legal reference. The tax number pattern is only a hint
+# for the form (the server accepts any 3-30 character tax number).
+
+[[country]]
+code = "KE"
+name = "Kenya"
+currency = "KES"
+phone_calling_code = "254"
+timezone = "Africa/Nairobi"
+tax_id_label = "KRA PIN"
+tax_id_pattern = "^[AP][0-9]{9}[A-Z]$"
+date_format = "DD/MM/YYYY"
+number_format = "1,234.56"

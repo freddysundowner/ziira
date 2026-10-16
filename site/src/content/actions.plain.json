@@ -1,0 +1,70 @@
+{
+  "_comment": "Plain-language text for every action Intelligence can propose or take, keyed by action type. The code (ActionProvider in each unit's action_providers.py) holds the title, description, who must approve (permission) and whether it may run automatically. tests/test_check_catalog.py fails if an action has no entry here, or an entry has no action.",
+  "_permissions": {
+    "po.create": "Someone allowed to create purchase requests for that branch",
+    "prices.manage": "Someone allowed to change selling prices",
+    "receivables.manage": "Someone allowed to manage what customers owe (for example a branch manager or an accountant)",
+    "customers.manage": "Someone allowed to change customers' credit",
+    "findings.manage": "Someone allowed to manage alerts (for example the owner or a finance manager)"
+  },
+  "purchasing.draft_purchase_request": {
+    "level": 3,
+    "kind": "Prepares a draft",
+    "plain": "When a product has run out or is low at a branch, Ziira writes a draft purchase request: enough to get back to your reorder level or cover a month of sales, whichever is more. Your usual suppliers are noted on it. Nothing is ordered until a person sends it.",
+    "example": "Cement is out of stock at Branch A. Ziira drafts a request for 120 bags and notes the two suppliers you buy from most."
+  },
+  "purchasing.propose_price_update": {
+    "level": 3,
+    "kind": "Prepares a change",
+    "plain": "When a supplier raises a cost and your margin shrinks, Ziira works out a new selling price that gives the new cost the same margin the old cost had. It takes effect from tomorrow, and only after a person approves.",
+    "example": "Cement now costs 17% more. Ziira proposes raising the price from 850 to 975 so the margin stays at 12%."
+  },
+  "pos.send_payment_reminder": {
+    "level": 4,
+    "kind": "Sends a message",
+    "plain": "Sends your usual payment reminder to a customer who is late, about their oldest overdue invoices (at most three). Customers who asked not to be contacted are never messaged.",
+    "example": "Customer A is 45 days late on two invoices. A reminder goes out by SMS or email, the way you normally remind customers."
+  },
+  "pos.hold_credit": {
+    "level": 3,
+    "kind": "Prepares a change",
+    "plain": "Lowers a late customer's credit limit to what they already owe, so nothing more can be sold to them on account until they pay. It always needs a person, because credit is money.",
+    "example": "Customer C is 60 days late. Ziira proposes dropping the limit from 200,000 to the 150,000 they owe."
+  },
+  "people.nudge_approver": {
+    "level": 4,
+    "kind": "Sends a message",
+    "plain": "Reminds the person who can decide that a leave request or a payroll run has been waiting too long. It sends a short message and decides nothing.",
+    "example": "A leave request has waited 8 days. The branch's approver gets a reminder."
+  },
+  "finance.ask_for_reconciliation": {
+    "level": 4,
+    "kind": "Sends a message",
+    "plain": "Asks the people who can reconcile the bank to finish a reconciliation that has been open too long.",
+    "example": "The main account's reconciliation has been open 41 days. The finance team gets a reminder."
+  },
+  "intel.nudge_exceptions_reviewers": {
+    "level": 4,
+    "kind": "Sends a message",
+    "plain": "Reminds the people who work through the exceptions inbox that items have been waiting too long.",
+    "example": "11 items have waited more than a week. The reviewers get a reminder."
+  },
+  "_ask_tools": {
+    "command_figures": "Your key figures for a period (sales, voids, refunds, stock value, overdue balances), compared with the period before, for the business and by branch.",
+    "crm_customer_balance": "What a named customer owes, how much of it is late, and their credit limit.",
+    "crm_overdue_customers": "Customers who are late paying, the biggest amount first.",
+    "finance_profit_and_loss": "Income, cost of sales, profit and expenses between two dates, from your books.",
+    "finance_cash_position": "Cash, bank and mobile-money balances, and what moved them.",
+    "intel_list_findings": "The alerts you are allowed to see, the most serious first.",
+    "intel_finding_detail": "One alert in full: the facts, the figures and the records behind it.",
+    "inventory_stock_on_hand": "How much of a product is in stock at each branch you can see.",
+    "inventory_low_stock": "Products at or below their reorder level, the most short first.",
+    "people_headcount": "How many employees are active, on leave or have left, by branch.",
+    "people_leave_pending": "Leave requests waiting for a decision.",
+    "pos_sales_summary": "How many sales and their total between two dates, and how many were cancelled, by branch or by day.",
+    "pos_top_products": "Your best-selling products between two dates.",
+    "pos_voids": "Cancelled sales between two dates: how many, their value and the latest.",
+    "purchasing_supplier_balance": "What you owe a named supplier and how much of it is late.",
+    "purchasing_bills_due": "Supplier bills that are late or due soon, the earliest first."
+  }
+}

@@ -1,0 +1,140 @@
+---
+// Original inline SVG diagrams for the complete guide. Colours come from the site's tokens (classes in styles/guide.css); every diagram has a text label and caption.
+interface Props { name: "pipeline" | "sources" | "normal" | "lifecycle" | "ladder" | "privacy"; label: string }
+const { name, label } = Astro.props;
+const steps = ["Data comes in", "Compare with normal", "An alert is raised", "Brief and urgent alerts", "You decide", "Optional actions", "It keeps learning"];
+const wrap = (s: string, max: number): string[] => { const out: string[] = []; let cur = ""; for (const w of s.split(" ")) { if ((cur + " " + w).trim().length > max) { out.push(cur); cur = w; } else cur = (cur + " " + w).trim(); } if (cur) out.push(cur); return out; };
+// normal range chart: 21 days of one cashier's cancelled sales; the last one is far above the band
+const days = [2, 1, 3, 2, 2, 1, 4, 2, 3, 2, 1, 2, 3, 2, 2, 3, 1, 2, 2, 3, 14];
+const maxV = 16;
+const levels = [
+  ["1", "Report only", "It tells you"],
+  ["2", "Ask", "It asks someone to explain"],
+  ["3", "Prepare", "It drafts, you approve"],
+  ["4", "Act within limits", "Routine messages, under your rules"],
+];
+const privacy = ["Your question", "Look up your own records, only what you may see", "Names become labels, personal details stay out", "The model writes the sentences", "Every number is checked against your records", "Your answer, with its sources"];
+---
+{name === "pipeline" && (
+  <>
+    <svg class="d d-wide" viewBox="0 0 1000 230" role="img" aria-label={label}>
+      <title>{label}</title>
+      {steps.map((s, i) => { const x = i * 143; const ls = wrap(s, 13); return (
+        <g transform={`translate(${x} 20)`}>
+          <rect class={i === 2 || i === 4 ? "d-box d-hi" : "d-box"} width="124" height="132" rx="14" />
+          <circle class="d-num" cx="62" cy="26" r="15" />
+          <text class="d-n" x="62" y="31" text-anchor="middle">{i + 1}</text>
+          {ls.map((l, k) => <text class="d-t" x="62" y={66 + k * 20} text-anchor="middle">{l}</text>)}
+          {i < 6 && <path class="d-arrow" d="M127 66h14m-5-5 5 5-5 5" />}
+        </g>
+      ); })}
+      <path class="d-loop" d="M920 156v32H205v-32" />
+      <path class="d-arrow" d="M199 164l6-8 6 8" />
+      <text class="d-m" x="562" y="214" text-anchor="middle">What you decide teaches it what is normal for you</text>
+    </svg>
+    <svg class="d d-tall" viewBox="0 0 340 700" role="img" aria-label={label}>
+      <title>{label}</title>
+      {steps.map((s, i) => (
+        <g transform={`translate(10 ${i * 96})`}>
+          <rect class={i === 2 || i === 4 ? "d-box d-hi" : "d-box"} width="320" height="64" rx="14" />
+          <circle class="d-num" cx="36" cy="32" r="16" />
+          <text class="d-n" x="36" y="38" text-anchor="middle">{i + 1}</text>
+          <text class="d-t d-l" x="66" y="38">{s}</text>
+          {i < 6 && <path class="d-arrow" d="M160 66v26m-6-6 6 6 6-6" />}
+        </g>
+      ))}
+    </svg>
+  </>
+)}
+{name === "sources" && (
+  <svg class="d d-one" viewBox="0 0 440 470" role="img" aria-label={label}>
+    <title>{label}</title>
+    {["Your ERP", "Accounting package", "Bank and mobile-money statements", "Sales, stock and expense files"].map((s, i) => { const x = (i % 2) * 222; const y = Math.floor(i / 2) * 78; const ls = wrap(s, 17); return (
+      <g transform={`translate(${x} ${y})`}>
+        <rect class="d-box" width="218" height="66" rx="12" />
+        {ls.map((l, k) => <text class="d-t" x="109" y={(ls.length === 1 ? 40 : 30) + k * 20} text-anchor="middle">{l}</text>)}
+      </g>
+    ); })}
+    <path class="d-arrow" d="M220 160v34m-6-6 6 6 6-6" />
+    <g transform="translate(40 200)"><rect class="d-box d-hi" width="360" height="54" rx="12" /><text class="d-t" x="180" y="33" text-anchor="middle">A reader that only looks</text></g>
+    <path class="d-arrow" d="M220 256v34m-6-6 6 6 6-6" />
+    <g transform="translate(40 296)"><rect class="d-box" width="360" height="54" rx="12" /><text class="d-t" x="180" y="33" text-anchor="middle">Ziira's own read-only copy</text></g>
+    <path class="d-arrow" d="M220 352v34m-6-6 6 6 6-6" />
+    <g transform="translate(40 392)"><rect class="d-box d-hi" width="360" height="62" rx="12" /><text class="d-t" x="180" y="30" text-anchor="middle">The same daily checks</text><text class="d-m" x="180" y="50" text-anchor="middle">then alerts and the brief</text></g>
+  </svg>
+)}
+{name === "normal" && (
+  <svg class="d d-one" viewBox="0 0 440 280" role="img" aria-label={label}>
+    <title>{label}</title>
+    <rect class="d-band" x="40" y={20 + (1 - 5 / maxV) * 190} width="380" height={(5 - 0.5) / maxV * 190} rx="4" />
+    <path class="d-axis" d="M40 210h380M40 20v190" />
+    {days.map((v, i) => { const x = 48 + i * 18; const h = (v / maxV) * 190; return <rect class={v > 8 ? "d-bar d-hot" : "d-bar"} x={x} y={210 - h} width="12" height={h} rx="2" />; })}
+    <text class="d-m" x="418" y={20 + (1 - 5 / maxV) * 190 - 6} text-anchor="end">Your normal range</text>
+    <text class="d-t d-hotText" x="404" y="52" text-anchor="end">Unusual: 14 cancelled sales</text>
+    <text class="d-m" x="40" y="238">21 days of one cashier</text>
+    <text class="d-m" x="418" y="238" text-anchor="end">today</text>
+    <text class="d-m" x="40" y="262">Sales cancelled each day (example)</text>
+  </svg>
+)}
+{name === "lifecycle" && (
+  <>
+    <svg class="d d-wide" viewBox="0 0 1000 250" role="img" aria-label={label}>
+      <title>{label}</title>
+      {["New", "Seen", "Explained"].map((s, i) => (
+        <g transform={`translate(${i * 215} 30)`}>
+          <rect class="d-box" width="160" height="64" rx="32" />
+          <text class="d-t" x="80" y="40" text-anchor="middle">{s}</text>
+          <path class="d-arrow" d="M164 32h40m-6-6 6 6-6 6" />
+        </g>
+      ))}
+      <g transform="translate(645 6)"><rect class="d-box d-ok" width="200" height="56" rx="28" /><text class="d-t" x="100" y="35" text-anchor="middle">Resolved</text></g>
+      <g transform="translate(645 74)"><rect class="d-box" width="200" height="56" rx="28" /><text class="d-t" x="100" y="35" text-anchor="middle">Not a problem</text></g>
+      <path class="d-arrow" d="M594 62h18V34h22m-6-6 6 6-6 6" />
+      <path class="d-arrow" d="M612 62v40h22m-6-6 6 6-6 6" />
+      <text class="d-m" x="40" y="150">Any step can be skipped: a clear problem can go straight to Resolved.</text>
+      <g transform="translate(40 168)"><rect class="d-note" width="440" height="56" rx="12" /><text class="d-m" x="16" y="24">Closes by itself when the problem clears</text><text class="d-m" x="16" y="44">(for checks about a state, such as out of stock)</text></g>
+      <g transform="translate(510 168)"><rect class="d-note" width="440" height="56" rx="12" /><text class="d-m" x="16" y="24">Reopens if a resolved problem comes back.</text><text class="d-m" x="16" y="44">Not a problem is not raised again.</text></g>
+    </svg>
+    <svg class="d d-tall" viewBox="0 0 340 560" role="img" aria-label={label}>
+      <title>{label}</title>
+      {["New", "Seen", "Explained"].map((s, i) => (
+        <g transform={`translate(70 ${i * 92})`}>
+          <rect class="d-box" width="200" height="58" rx="29" />
+          <text class="d-t" x="100" y="36" text-anchor="middle">{s}</text>
+          <path class="d-arrow" d="M100 60v28m-6-6 6 6 6-6" />
+        </g>
+      ))}
+      <g transform="translate(10 280)"><rect class="d-box d-ok" width="150" height="56" rx="28" /><text class="d-t" x="75" y="35" text-anchor="middle">Resolved</text></g>
+      <g transform="translate(180 280)"><rect class="d-box" width="150" height="56" rx="28" /><text class="d-t" x="75" y="35" text-anchor="middle">Not a problem</text></g>
+      <g transform="translate(10 364)"><rect class="d-note" width="320" height="76" rx="12" /><text class="d-m" x="14" y="30">Closes by itself when the problem</text><text class="d-m" x="14" y="52">clears (a state, such as out of stock)</text></g>
+      <g transform="translate(10 456)"><rect class="d-note" width="320" height="76" rx="12" /><text class="d-m" x="14" y="30">Reopens if a resolved problem</text><text class="d-m" x="14" y="52">comes back. Not a problem stays closed.</text></g>
+    </svg>
+  </>
+)}
+{name === "ladder" && (
+  <svg class="d d-one" viewBox="0 0 440 330" role="img" aria-label={label}>
+    <title>{label}</title>
+    {levels.map(([n, t, d], i) => { const w = 150 + i * 90; const y = 252 - i * 80; return (
+      <g transform={`translate(0 ${y})`}>
+        <rect class={i === 0 ? "d-box d-hi" : "d-box"} width={w} height="66" rx="12" />
+        <circle class="d-num" cx="30" cy="33" r="15" />
+        <text class="d-n" x="30" y="38" text-anchor="middle">{n}</text>
+        <text class="d-t" x="56" y="30">{t}</text>
+        <text class="d-m" x="56" y="52">{d}</text>
+      </g>
+    ); })}
+    <text class="d-m" x="436" y="24" text-anchor="end">Every business starts at 1</text>
+  </svg>
+)}
+{name === "privacy" && (
+  <svg class="d d-one" viewBox="0 0 440 540" role="img" aria-label={label}>
+    <title>{label}</title>
+    {privacy.map((s, i) => { const ls = wrap(s, 38); return (
+      <g transform={`translate(20 ${i * 90})`}>
+        <rect class={i === 3 ? "d-box d-hi" : "d-box"} width="400" height="64" rx="12" />
+        {ls.map((l, k) => <text class="d-t" x="200" y={(ls.length === 1 ? 38 : 28) + k * 20} text-anchor="middle">{l}</text>)}
+        {i < 5 && <path class="d-arrow" d="M200 66v20m-6-6 6 6 6-6" />}
+      </g>
+    ); })}
+  </svg>
+)}

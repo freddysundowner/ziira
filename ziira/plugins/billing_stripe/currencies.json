@@ -1,0 +1,5 @@
+{
+  "_note": "How many decimal places Stripe's smallest unit has, by currency; 2 for every currency not listed. From Stripe's currencies documentation (UNVERIFIED against the live API).",
+  "zero_decimal": ["BIF", "CLP", "DJF", "GNF", "JPY", "KMF", "KRW", "MGA", "PYG", "RWF", "UGX", "VND", "VUV", "XAF", "XOF", "XPF"],
+  "three_decimal": ["BHD", "IQD", "JOD", "KWD", "LYD", "OMR", "TND"]
+}

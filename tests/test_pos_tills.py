@@ -78,9 +78,13 @@ def test_opening_a_till(client, shop) -> None:  # type: ignore[no-untyped-def]
     assert first.status_code == 201 and Dec(first.json()["opening_float"]) == 500 and first.json()["status"] == "open"
     again = open_till(client, shop, "lena", float_="500.00", local_id=local)
     assert again.status_code == 200 and again.json()["id"] == first.json()["id"]            # a retry
-    assert open_till(client, shop, "lena").status_code == 409                                # one open till each
+    resumed = open_till(client, shop, "lena")                                                # a fresh browser: carry on
+    assert resumed.status_code == 200 and resumed.json()["id"] == first.json()["id"]
+    other_device = open_till(client, shop, "lena", device=shop["device"])                    # one open till each
+    assert other_device.status_code == 409 and "already have an open till on" in other_device.text
     mara = new_cashier(client, shop, "mara")
-    assert open_till(client, shop, "mara", device=shop["devices"]["lena"]).status_code == 409   # one per device
+    taken = open_till(client, shop, "mara", device=shop["devices"]["lena"])                  # one per device
+    assert taken.status_code == 409 and "opened by lena" in taken.text                       # and who has it is said
     assert open_till(client, shop, "mara").status_code == 201 and mara
     assert open_till(client, shop, "storekeeper", device=shop["device"]).status_code == 403
     one_open = one(shop, "select count(*) from pos.till_session where status = 'open' and cashier_id = "
@@ -91,7 +95,8 @@ def test_opening_a_till(client, shop) -> None:  # type: ignore[no-untyped-def]
 def test_simultaneous_openings_leave_one_till(client, shop) -> None:  # type: ignore[no-untyped-def]
     new_cashier(client, shop, "nora")
     results = together([lambda: open_till(client, shop, "nora") for _ in range(6)])
-    assert sorted(r.status_code for r in results) == [201] + [409] * 5
+    assert sorted(r.status_code for r in results) == [200] * 5 + [201]            # one till; the rest carry on with it
+    assert len({r.json()["id"] for r in results}) == 1
 
 
 def test_who_sees_which_tills(client, shop) -> None:  # type: ignore[no-untyped-def]

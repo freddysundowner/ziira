@@ -18,7 +18,6 @@ export default function AccountsPage() {
   const [editing, setEditing] = useState<PaymentAccount | undefined>();
   const [securing, setSecuring] = useState<PaymentAccount | null>(null);
   const q = usePaymentAccounts({ includeInactive: inactive });
-  const providers = [...new Set((q.data ?? []).map((a) => a.provider))];
   const branchName = (a: PaymentAccount) => companies.find((c) => c.id === a.company_id)?.branches.find((b) => b.id === a.branch_id)?.name;
 
   return (
@@ -47,8 +46,8 @@ export default function AccountsPage() {
           },
         ]}
       />
-      <AccountForm open={creating} onClose={() => setCreating(false)} providers={providers} />
-      <AccountForm open={!!editing} onClose={() => setEditing(undefined)} account={editing} providers={providers} />
+      <AccountForm open={creating} onClose={() => setCreating(false)} />
+      <AccountForm open={!!editing} onClose={() => setEditing(undefined)} account={editing} />
       <AccountSecurity account={securing} onClose={() => setSecuring(null)} />
     </>
   );

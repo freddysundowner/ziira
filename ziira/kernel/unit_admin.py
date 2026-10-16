@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from ziira.kernel import audit
 from ziira.kernel.errors import DependencyError, NotFound
 from ziira.kernel.manifest import Manifest
+from ziira.kernel.platform import entitlements
 from ziira.kernel.registry import Registry
 
 PERMISSION = "units.manage"
@@ -42,9 +43,10 @@ def catalog(session: Session, reg: Registry) -> list[dict[str, Any]]:
     installed = reg.installed()
     enabled = _enabled(session)
     present = _present(session)
+    plan = entitlements.for_tenant(session.execute(text("select kernel.current_tenant()")).scalar_one())
     out: list[dict[str, Any]] = []
     for m in sorted(reg.units.values(), key=lambda u: (u.kind != "module", u.title)):
-        if m.core:
+        if m.core or m.platform_scope:
             continue
         is_installed = m.name in installed
         is_enabled = m.name in enabled
@@ -67,12 +69,17 @@ def catalog(session: Session, reg: Registry) -> list[dict[str, Any]]:
         elif present_dependants:
             can_remove, why_not_remove = False, f"{_titles(reg.units, present_dependants)} still holds data " \
                                                "that needs it: remove that first."
+        in_plan = plan.units is None or m.name in plan.units
         out.append({
-            "name": m.name, "title": m.title, "description": m.description, "kind": m.kind, "version": m.version,
+            "name": m.name, "title": m.title, "description": m.description, "category": m.category,
+            "countries": list(m.countries), "kind": m.kind, "version": m.version,
             "requires": list(m.requires), "optional": list(m.optional), "dependants": dependants,
             "installed": is_installed, "enabled": is_enabled, "has_data": m.name in present,
             "will_also_enable": [] if is_enabled else [n for n in reg.units if n in also],
-            "can_enable": is_installed and not is_enabled and all(n in installed for n in also),
+            "can_enable": is_installed and not is_enabled and in_plan and all(n in installed for n in also),
+            "in_plan": in_plan,
+            "why_not_enable": None if in_plan else
+            f"Not in your plan{f' ({plan.plan_name})' if plan.plan_name else ''}: upgrade to switch it on.",
             "can_disable": can_disable, "why_not_disable": why_not_disable,
             "can_remove": can_remove, "why_not_remove": why_not_remove})
     return out

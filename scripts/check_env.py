@@ -9,6 +9,7 @@ The same rules are partly enforced by the application at start-up (`Settings.che
 script is stricter and also looks at consistency (registration needs email, metrics need a token, ...).
 """
 
+import ipaddress
 import json
 import os
 import re
@@ -119,6 +120,41 @@ def check(env: dict[str, str]) -> list[Finding]:
     if get("MFA_DEFAULT_POLICY", "off") not in ("privileged", "everyone"):
         error("MFA_DEFAULT_POLICY", "must be privileged or everyone: owners and finance roles need a second factor "
                                     "(the application refuses to start in production otherwise)")
+
+    # --- platform staff (Super Admin) sign-in
+    operator_mfa = get("OPERATOR_MFA", "off")
+    if operator_mfa not in ("off", "totp"):
+        error("OPERATOR_MFA", "must be off or totp")
+    elif operator_mfa == "off":
+        if not _is_true(get("OPERATOR_MFA_OFF_ACKNOWLEDGED")):
+            error("OPERATOR_MFA", "off: platform staff sign in with a password only, and the application refuses to "
+                                  "start in production unless you accept that on purpose "
+                                  "(ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED=true) or choose ZIIRA_OPERATOR_MFA=totp")
+        else:
+            warn("OPERATOR_MFA", "off, acknowledged. Risk: one stolen or guessed Super Admin password gives control of "
+                                 "every business (units, plans, prices, licences, payment settings, support access). "
+                                 "Compensate with long unique passwords in a secrets manager, ZIIRA_OPERATOR_ALLOWED_"
+                                 "NETWORKS, ZIIRA_OPERATOR_SIGNIN_EMAILS and reading the operator trail "
+                                 "(docs/security.md)")
+        if not get("OPERATOR_ALLOWED_NETWORKS"):
+            warn("OPERATOR_ALLOWED_NETWORKS", "empty: the Super Admin is reachable from any address; with a password "
+                                              "alone, restrict it to your office or VPN addresses "
+                                              "(here and at the proxy)")
+        if not _is_true(get("OPERATOR_SIGNIN_EMAILS")):
+            warn("OPERATOR_SIGNIN_EMAILS", "false: operators are not told about a sign-in from a new address")
+    for name, low, high in (("OPERATOR_SESSION_HOURS", 1, 24), ("OPERATOR_IDLE_MINUTES", 5, 240)):
+        value = get(name)
+        if value:
+            try:
+                if not low <= int(value) <= high:
+                    warn(name, f"{value}: keep it between {low} and {high}; shorter limits protect a stolen session")
+            except ValueError:
+                error(name, "must be a whole number")
+    for network in (n.strip() for n in get("OPERATOR_ALLOWED_NETWORKS").split(",") if n.strip()):
+        try:
+            ipaddress.ip_network(network, strict=False)
+        except ValueError:
+            error("OPERATOR_ALLOWED_NETWORKS", f"'{network}' is not a network such as 203.0.113.0/24")
 
     # --- public addresses
     for name in ("PUBLIC_BASE_URL", "PUBLIC_WEB_URL"):

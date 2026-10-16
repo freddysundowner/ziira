@@ -1,4 +1,4 @@
-"""Reconciling a bank, M-Pesa or card account to its statement. Pure Python: no database, no HTTP.
+"""Reconciling a bank, mobile money or card account to its statement. Pure Python: no database, no HTTP.
 
 The books say what the account holds; the statement says what the bank holds. They differ by the things that have not
 reached the other side yet. Lines of the ledger that appear on the statement are *cleared*; the account is reconciled

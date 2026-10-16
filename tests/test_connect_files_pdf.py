@@ -167,7 +167,9 @@ def test_dropping_a_file_names_its_kind(client, shop) -> None:  # type: ignore[n
     assert protected.json()["kind"] is None
 
 
-def test_unreadable_and_unsupported_files_say_what_to_do(client, shop) -> None:  # type: ignore[no-untyped-def]
+def test_unreadable_and_unsupported_files_say_what_to_do(client, shop, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    # whatever is installed on this machine: pretend no picture reader is switched on
+    monkeypatch.setattr(scans, "why_unavailable", lambda session: "Reading pictures is not switched on on this server yet.")
     cid = new_connection(client, shop, "bank_statement", "Bad files")["id"]
     old = upload(client, shop, cid, b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"0" * 100, name="old.xls")
     assert old.status_code == 422 and ".xlsx" in old.text

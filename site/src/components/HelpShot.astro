@@ -1,0 +1,22 @@
+---
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import type { HelpShot } from "../content/help/types";
+
+interface Props { shot: HelpShot; eager?: boolean }
+const { shot, eager = false } = Astro.props;
+const files = import.meta.glob("../assets/help/*.png", { eager: true, import: "default" }) as Record<string, ImageMetadata>;
+const hit = Object.entries(files).find(([f]) => f.endsWith(`/${shot.key}.png`));
+if (!hit) throw new Error(`Missing help screenshot src/assets/help/${shot.key}.png (run npm run help:screens)`);
+---
+<figure class="help-shot">
+  <Picture src={hit[1]} alt={shot.alt} formats={["avif"]} fallbackFormat="webp" widths={[560, 840, 1100]} sizes="(min-width: 1180px) 720px, (min-width: 760px) 60vw, calc(100vw - 40px)" quality={68}
+    loading={eager ? "eager" : "lazy"} decoding={eager ? "sync" : "async"} />
+  {shot.legend && shot.legend.length > 0 && (
+    <figcaption>
+      <ol class="legend">{shot.legend.map((l) => <li>{l}</li>)}</ol>
+      <span class="demo">Demo data</span>
+    </figcaption>
+  )}
+  {!(shot.legend && shot.legend.length > 0) && <figcaption><span class="demo">Demo data</span></figcaption>}
+</figure>

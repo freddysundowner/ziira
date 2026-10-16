@@ -1,11 +1,13 @@
 import { Badge, type BadgeTone, humanise, useTranslation } from "@/sdk";
 
-const SEVERITY_TONE: Record<string, BadgeTone> = { critical: "bad", high: "bad", medium: "warn", low: "info", info: "neutral" };
+import { bandOf } from "../plainWords";
+
+const BAND_TONE: Record<string, BadgeTone> = { urgent: "bad", soon: "warn", look: "info" };
 const STATUS_TONE: Record<string, BadgeTone> = { new: "brand", sent: "info", acknowledged: "warn", explained: "info", resolved: "ok", dismissed: "neutral" };
 
 export function SeverityBadge({ severity }: { severity: string }) {
   const { t } = useTranslation("intel");
-  return <Badge tone={SEVERITY_TONE[severity] ?? "neutral"}>{t(`severity.${severity}`, humanise(severity))}</Badge>;
+  return <Badge tone={BAND_TONE[bandOf(severity)]}>{t(`band.${bandOf(severity)}`)}</Badge>;
 }
 
 export function FindingStatusBadge({ status }: { status: string }) {

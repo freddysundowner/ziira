@@ -8,7 +8,7 @@ from sqlalchemy import text
 
 from ziira.modules.intel.domain.action_rules import Proposal
 from ziira.modules.intel.public import ActionContext, ActionProvider, ActionResult, FindingInfo, nudge_people
-from ziira.sdk import Session, company_setting, recipients_with_permission
+from ziira.sdk import Session, can_reach, company_setting, recipients_with_permission
 
 REVIEW_PERMISSION = "exceptions.manage"             # who works the exceptions inbox, and so who is reminded
 NOTE_SCHEMA: dict[str, Any] = {"properties": {
@@ -19,12 +19,16 @@ def reachable(session: Session, company_id: UUID, branch_id: UUID | None, permis
     """Names of the people who hold `permission` where the company or branch is and have an address on the alert
     channel (what a nudge needs)."""
     channel = str(company_setting(session, company_id, "intel_alert_channel"))
+    if channel == "off":
+        return []
+    ways = [channel]
     return [p.full_name for p in recipients_with_permission(session, permission)
-            if p.covers(permission, company_id, branch_id) and (p.phone if channel == "sms" else p.email)]
+            if p.covers(permission, company_id, branch_id)
+            and can_reach(session, company_id, p.user_id, "alerts", ways)]
 
 
 def alert_channel_on(session: Session, info: FindingInfo) -> bool:
-    return str(company_setting(session, info.company_id, "intel_alert_channel")) in ("sms", "email")
+    return str(company_setting(session, info.company_id, "intel_alert_channel")) != "off"
 
 
 class NudgeExceptionsReviewers(ActionProvider):

@@ -70,3 +70,12 @@ def ai_rank(tenant_id: UUID) -> None:
 def purge_ai_history(session: Session) -> None:
     """Forget old AI call-log rows and Ask Ziira conversations."""
     ai_repo.purge_old(session, CALL_LOG_DAYS, CONVERSATION_DAYS)
+
+
+@unbound_periodic("intel.answer_channel_questions", every_seconds=60)
+def answer_channel_questions(tenant_id: UUID) -> None:
+    """Answer questions people typed to Ziira in a chat, and send each answer back on the same channel. Runs with no
+    transaction open while the AI provider thinks."""
+    from ziira.modules.intel.services import channel_questions
+
+    channel_questions.answer_pending(tenant_id)

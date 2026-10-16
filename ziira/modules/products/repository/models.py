@@ -76,7 +76,7 @@ class PriceList(TenantColumns, Base):
     name: Mapped[str]
     branch_id: Mapped[UUID | None]
     customer_group: Mapped[str | None]
-    currency: Mapped[str] = mapped_column(server_default=text("'KES'"))
+    currency: Mapped[str]
     is_default: Mapped[bool] = mapped_column(server_default=text("false"))
 
 

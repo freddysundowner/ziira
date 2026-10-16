@@ -2,11 +2,12 @@
 name = "inventory"
 title = "Inventory and Branches"
 description = "Stock by location and batch, receiving, transfers, counts and adjustments, with a full movement history."
+category = "stock"
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
 requires = ["products"]
-optional = ["purchasing", "pos", "intel", "command", "imports"]
+optional = ["purchasing", "pos", "intel", "command", "imports", "connect"]
 
 [provides]
 api_prefix = "/api/v1/inventory"
@@ -15,7 +16,7 @@ subscribes = ["approval.decided", "sale.posted", "sale.returned", "goods.receive
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "intel.ask_tool"]
+implements = ["kernel.branch_usage", "kernel.integrity_check", "intel.check", "intel.baseline_metric", "command.pulse_source", "imports.importer", "intel.ask_tool", "connect.core_coverage", "kernel.country_seeder"]
 
 [permissions]
 "stock.view" = "View stock"
@@ -55,3 +56,8 @@ DAMAGED_IN_TRANSIT = "Damaged in transit"
 COUNT_ERROR = "Earlier count was wrong"
 UNRECORDED_SALE = "Sale not recorded"
 THEFT = "Theft or loss"
+
+# Events a business may subscribe to with an outgoing webhook (docs/webhooks.md): only these fields leave the system.
+[provides.public_events."stock.below_reorder"]
+description = "A product fell below its reorder level"
+fields = ["company_id", "product_id", "sku", "quantity", "reorder_level"]

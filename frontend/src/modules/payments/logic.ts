@@ -53,9 +53,3 @@ export function flattenTotals(totals: Record<string, unknown>, prefix: string[] 
 }
 
 export const looksNumeric = (value: string): boolean => /^-?\d+(\.\d+)?$/.test(value);
-
-/** Add a provider setting row's key/value pairs into the object the API wants, skipping blank rows. */
-export function settingsObject(rows: readonly { key: string; value: string }[]): Record<string, string> | null {
-  const entries = rows.map((r) => [r.key.trim(), r.value.trim()] as const).filter(([k, v]) => k && v);
-  return entries.length ? Object.fromEntries(entries) : null;
-}

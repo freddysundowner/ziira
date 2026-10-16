@@ -87,6 +87,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
             extensions._add_implementation(points[point], "intel", impl)
     s = make_stock_shop(client, registry, "Intel Co")
     registry.enable(s["tenant_id"], "intel")
+    registry.enable(s["tenant_id"], "messaging")
     yield s
     for point, impls in ((INTEL_CHECK, (FakeCheck, FakeOneOff)), (INTEL_BASELINE_METRIC, (FakeMetric,))):
         for impl in impls:

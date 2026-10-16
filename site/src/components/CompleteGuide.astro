@@ -1,0 +1,105 @@
+---
+// The complete guide to Ziira Intelligence: a long-form page with a sticky table of contents (scroll-spy), numbered sections,
+// previous/next links, diagrams, annotated screenshots and the generated catalogue of checks. Content: src/content/completeGuide.ts.
+import type { Lang } from "../content/types";
+import type { Entry } from "../lib/registry";
+import { urlFor } from "../lib/registry";
+import { sections, faq, faqSection, intro } from "../content/completeGuide";
+import { catalog } from "../lib/catalog";
+import { BUILD_DATE } from "../lib/buildDate";
+import PageHead from "./PageHead.astro";
+import GuideBlock from "./GuideBlock.astro";
+import Faq from "./Faq.astro";
+import Cta from "./Cta.astro";
+// Loaded by a <link> on this page only (not imported as a side effect, which would add the stylesheet to every page of the site).
+import guideCss from "../styles/guide.css?url";
+interface Props { lang: Lang; entry: Entry; crumbs: { name: string; path: string }[]; words: number }
+const { lang, entry, crumbs, words } = Astro.props;
+const def = entry.def;
+const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+const minutes = Math.max(1, Math.round(words / 200));
+const toc = [...sections.map((s, k) => ({ id: s.id, n: String(k + 1), title: s.title })), { id: "faq", n: String(sections.length + 1), title: faqSection.title }, { id: "next", n: "", title: "Where to go next" }];
+const order = toc.map((t) => t.id);
+const nav = (id: string) => { const k = order.indexOf(id); return { prev: k > 0 ? toc[k - 1] : undefined, next: k < toc.length - 1 ? toc[k + 1] : undefined }; };
+const link = (id: string, label?: string) => ({ href: urlFor(id, lang), label: label ?? "" });
+const go = [
+  { h: "Start here", links: [
+    ["intelligence-how", "How Intelligence works, step by step"], ["intelligence-existing", "Use it with the system you already have"], ["get-started", "Create your business or talk to us"], ["pricing", "Plans and pricing"],
+  ] },
+  { h: "Connect a source", links: [
+    ["intelligence-source-erpnext", "ERPNext, read-only"], ["intelligence-source-odoo", "Odoo, read-only"], ["intelligence-source-zoho-books", "Zoho Books, read-only"], ["intelligence-source-quickbooks", "QuickBooks Online, read-only"],
+    ["intelligence-source-bank", "Bank statements"], ["intelligence-source-mobile-money", "Mobile-money statements"], ["intelligence-source-files", "Sales, stock and expense files (CSV, Excel, PDF)"],
+  ] },
+  { h: "Step-by-step help", links: [
+    ["helpj-intelligence", "Help centre: all the Intelligence guides"], ["help-what-intelligence-checks", "What Intelligence checks"], ["help-daily-brief", "Read your daily brief"], ["help-work-through-findings", "Work through your alerts"],
+    ["help-approve-suggested-actions", "Approve suggested actions"], ["help-ask-ziira", "Ask Ziira a question"], ["help-alerts-and-quiet-hours", "Set up alerts and quiet hours"], ["help-choose-the-action-level", "Choose the action level"], ["help-connect-your-system", "Connect your system"], ["help-coverage-panel", "Read the coverage panel"],
+  ] },
+  { h: "Read more", links: [
+    ["guide-cashier-voids-discount-abuse", "How to spot cashier voids and discount abuse"], ["guide-stock-shrinkage", "How to detect stock shrinkage"], ["guide-reconcile-mobile-money", "How to reconcile mobile-money statements to sales"], ["guide-read-only-access", "Connect your ERP safely, read-only"],
+    ["guide-daily-owner-brief", "What a daily owner brief should contain"], ["guide-separation-of-duties", "How small businesses separate duties"], ["security", "Security and privacy"], ["glossary", "Glossary of business words"],
+  ] },
+];
+const sorted = go.map((g) => ({ h: g.h, links: g.links.map(([id, label]) => ({ ...link(id), label })) }));
+---
+<link rel="stylesheet" href={guideCss} />
+<PageHead lang={lang} crumbs={crumbs} eyebrow="Intelligence · The complete guide" h1={def.h1} lead={intro.lead} glance={intro.glance.map((t) => ({ t }))} glanceTitle="What this guide covers" />
+<section class="section guide" data-longform>
+  <div class="container guide-wrap">
+    <nav class="toc-side" aria-label="Contents of this guide">
+      <p class="toc-h">In this guide</p>
+      <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.n && <span class="tn">{t.n}</span>}{t.title}</a></li>)}</ol>
+    </nav>
+    <div class="guide-body">
+      <p class="g-meta">
+        <span>Last reviewed <time datetime={BUILD_DATE}>{fmt(BUILD_DATE)}</time></span>
+        <span>About {minutes} minutes to read</span>
+        <span>{catalog.totals.checks} checks, {catalog.totals.actions} actions, all listed</span>
+      </p>
+      <details class="toc-inline">
+        <summary>Contents of this guide</summary>
+        <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.n && <span class="tn">{t.n}</span>}{t.title}</a></li>)}</ol>
+      </details>
+
+      {sections.map((s, k) => { const p = nav(s.id); return (
+        <section class="g-sec" id={s.id} aria-labelledby={`${s.id}-h`} data-sec>
+          <h2 id={`${s.id}-h`}><span class="g-num" aria-hidden="true">{k + 1}</span>{s.title}</h2>
+          <p class="g-sum">{s.summary}</p>
+          {s.blocks.map((b) => <GuideBlock block={b} lang={lang} />)}
+          <div class="g-pager">
+            {p.prev ? <a class="prev" rel="prev" href={`#${p.prev.id}`}><span>Previous</span>{p.prev.title}</a> : <span></span>}
+            {p.next ? <a class="next" rel="next" href={`#${p.next.id}`}><span>Next</span>{p.next.title}</a> : <span></span>}
+          </div>
+        </section>
+      ); })}
+
+      <section class="g-sec" id="faq" aria-labelledby="faq-h" data-sec>
+        <h2 id="faq-h"><span class="g-num" aria-hidden="true">{sections.length + 1}</span>{faqSection.title}</h2>
+        <p class="g-sum">{faqSection.summary}</p>
+        <Faq lang={lang} items={faq} bare />
+        <div class="g-pager">
+          <a class="prev" rel="prev" href={`#${sections[sections.length - 1].id}`}><span>Previous</span>{sections[sections.length - 1].title}</a>
+          <a class="next" rel="next" href="#next"><span>Next</span>Where to go next</a>
+        </div>
+      </section>
+
+      <section class="g-sec" id="next" aria-labelledby="next-h" data-sec>
+        <h2 id="next-h">Where to go next</h2>
+        <div class="g-go">
+          {sorted.map((g) => <div class="card"><h3>{g.h}</h3><ul>{g.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul></div>)}
+        </div>
+        <div class="g-pager"><a class="prev" rel="prev" href="#faq"><span>Previous</span>{faqSection.title}</a><span></span></div>
+      </section>
+    </div>
+  </div>
+</section>
+<Cta lang={lang} variant="intelligence" />
+<script is:inline>
+(function () {
+  var links = [].slice.call(document.querySelectorAll(".toc-side a")); if (!links.length || !("IntersectionObserver" in window)) return;
+  var map = {}; links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting && map[e.target.id]) { links.forEach(function (a) { a.removeAttribute("aria-current"); }); map[e.target.id].setAttribute("aria-current", "true"); } });
+  }, { rootMargin: "-20% 0px -70% 0px" });
+  document.querySelectorAll("[data-sec]").forEach(function (s) { io.observe(s); });
+})();
+</script>

@@ -1,0 +1,15 @@
+[unit]
+name = "billing_stripe"
+title = "Subscription payments: card (Stripe)"
+description = "Lets businesses pay their Ziira subscription by card on Stripe's hosted payment page."
+category = "payments"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+platform_scope = true
+
+[provides]
+
+[extends]
+implements = ["kernel.payment_gateway"]

@@ -4,13 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { cx, iconFor, Modal, useTranslation, type MenuItem } from "@/sdk";
 
 /** Ctrl/Cmd + K: jump to any screen you may open. */
-export function CommandPalette({ open, onClose, items, onGo }: { open: boolean; onClose: () => void; items: MenuItem[]; onGo: (to: string) => void }) {
+export function CommandPalette({ open, onClose, items, areaOf, onGo }: { open: boolean; onClose: () => void; items: MenuItem[]; areaOf: Record<string, string>; onGo: (to: string) => void }) {
   const { t } = useTranslation();
   const [text, setText] = useState("");
   const [active, setActive] = useState(0);
   useEffect(() => { if (open) { setText(""); setActive(0); } }, [open]);
   const all = useMemo(() => [{ label: "home.menu", to: "/", icon: "home" } as MenuItem, ...items], [items]);
-  const found = all.filter((i) => t(i.label).toLowerCase().includes(text.trim().toLowerCase()));
+  const wanted = text.trim().toLowerCase();
+  const found = all.filter((i) => `${t(i.label)} ${areaOf[i.to] ?? ""} ${i.keywords ? t(i.keywords) : ""}`.toLowerCase().includes(wanted));
   return (
     <Modal open={open} onClose={onClose} title={t("search")} size="sm">
       <div className="relative">
@@ -30,7 +31,8 @@ export function CommandPalette({ open, onClose, items, onGo }: { open: boolean; 
           return (
             <li key={i.to}>
               <button onMouseEnter={() => setActive(n)} onClick={() => onGo(i.to)} className={cx("flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm", n === active && "bg-sunken")}>
-                <I className="h-4 w-4 text-muted" />{t(i.label)}
+                <I className="h-4 w-4 text-muted" /><span className="flex-1">{t(i.label)}</span>
+                {areaOf[i.to] && <span className="text-xs text-muted">{areaOf[i.to]}</span>}
               </button>
             </li>
           );

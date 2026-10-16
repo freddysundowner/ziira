@@ -9,8 +9,8 @@ describe("people module", () => {
   it("has the same English and Swahili keys", () => {
     expect(keys(people.translations!.sw).sort()).toEqual(keys(people.translations!.en).sort());
   });
-  it("gives every page a permission and every menu entry a group", () => {
+  it("gives every page a permission and every menu entry the People area", () => {
     expect((people.routes ?? []).filter((r) => !r.permission)).toEqual([]);
-    expect((people.menu ?? []).filter((m) => m.group !== "people")).toEqual([]);
+    expect((people.menu ?? []).filter((m) => m.area !== "people")).toEqual([]);
   });
 });

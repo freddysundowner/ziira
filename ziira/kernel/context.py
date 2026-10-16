@@ -63,6 +63,9 @@ class RequestContext:
     support_session_id: UUID | None = None
     support_level: str | None = None         # 'read' or 'full'
     support_until: datetime | None = None
+    # Set when the caller is an API key (kernel/api_keys.py): which key, and whether it may only read.
+    api_key_id: UUID | None = None
+    api_key_read_only: bool = False
 
     def can(self, permission: str, *, company_id: UUID | None = None, branch_id: UUID | None = None,
             owner_id: UUID | None = None) -> bool:

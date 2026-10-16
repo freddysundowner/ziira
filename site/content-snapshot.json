@@ -1,0 +1,24 @@
+{
+  "_placeholder": true,
+  "_notice": "PLACEHOLDER SEED. Every value here is a stand-in so the site builds offline and in CI. The real content is published in the Super Admin (Website > Publish) and fetched from PUBLIC_PLATFORM_API_URL at build time. A production build that uses this file warns loudly (SITE_STRICT=1 makes it fail).",
+  "published": false,
+  "settings": {
+    "company": { "legal_name": null, "trading_name": "Ziira", "tagline": {}, "registration_number": null, "tax_id": null, "postal_address": null },
+    "contact": { "support_email": null, "sales_email": null, "phones": [], "whatsapp": null, "form_target": null },
+    "social": {},
+    "seo": { "title_template": {}, "description": {}, "og_image": null },
+    "branding": { "logo": null, "favicon": null },
+    "analytics": null,
+    "cookie_notice": {},
+    "links": { "app_url": null, "status_page_url": null },
+    "banner": null,
+    "locales": ["en", "sw"],
+    "default_locale": "en"
+  },
+  "pages": [],
+  "plans": [],
+  "addons": [],
+  "assets": [],
+  "published_at": null,
+  "version_hash": null
+}

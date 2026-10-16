@@ -19,13 +19,20 @@ Every business (tenant) has its own database; the master database lists them.
     ziira backup [--tenant CODE] --dir PATH [--keep-daily 35 --keep-monthly 12]   pg_dump of master + tenants, pruned
     ziira restore-test [--tenant CODE] --dir PATH   restore the newest dump to a scratch database, check it, drop it
     ziira restore --tenant CODE --dir PATH --into NEWDB   restore a dump into a NEW database (never over a live one)
-    ziira operator create NAME EMAIL | list | disable|enable|reset-mfa EMAIL   platform staff (support access)
+    ziira operator create NAME EMAIL [--role ROLE] | list | disable|enable|reset-mfa|reset-password EMAIL
+                                        | role EMAIL ROLE
+                                        platform staff (Super Admin); ROLE: superadmin billing support content readonly
+    ziira licence keygen | issue ... | install FILE | status | verify FILE | revocations | instance-id
+                                        licences for self-hosted copies (docs/licensing.md)
+    ziira billing-run                   renewal invoices, reminders and dunning now (the worker does this hourly)
     ziira verify [tenant] [--unit U] [--fix]   check units' derived data (exit 1 if a problem remains)
     ziira stock-verify [tenant] [--fix]        the same, for Inventory only (run it nightly)
     ziira import <tenant> <kind> FILE.csv [--company NAME] [--commit]   check (and with --commit import) a file
     ziira connect sync <tenant> [--connection NAME]      read the connected systems now (standalone mode)
     ziira connect upload <tenant> <connection> FILE [--check]   upload a CSV, Excel or text-PDF file or statement
     ziira connect ocr-check                              can this server read pictures (scanned statements, photos)?
+    ziira plugin new NAME --category C [--countries KE,UG] [--dir PATH]   scaffold a plugin (docs/writing-a-plugin.md)
+    ziira plugin check|test|pack PATH | install-archive FILE --expect-sha256 H | list   check, test, package, install
 """
 
 import argparse
@@ -56,6 +63,7 @@ def cmd_units(reg: Registry, _: argparse.Namespace) -> None:
 def cmd_install(reg: Registry, a: argparse.Namespace) -> None:
     done = reg.install_all() if a.all else reg.install(a.unit)
     print("Installed: " + (", ".join(done) if done else "nothing new"))
+    load_event_handlers(reg.units, strict=True)          # a unit whose code cannot be imported must not pass quietly
 
 
 def cmd_uninstall(reg: Registry, a: argparse.Namespace) -> None:
@@ -65,16 +73,25 @@ def cmd_uninstall(reg: Registry, a: argparse.Namespace) -> None:
 
 def cmd_create_tenant(reg: Registry, a: argparse.Namespace) -> None:
     password = os.environ.get("ZIIRA_OWNER_PASSWORD") or getpass.getpass("Owner password: ")
+    from ziira.kernel import editions
+
+    edition = editions.resolve(a.edition, a.mode if a.mode == "standalone" else None)
     t = create_tenant(name=a.name, code=a.code, company=a.company, branch_code=a.branch_code,
                       branch_name=a.branch_name, owner_name=a.owner_name, owner_email=a.owner_email,
                       owner_password=password, tax_id=a.tax_id, currency=a.currency,
                       phone_country_code=a.phone_country_code, country=a.country,
-                      vat_registered=a.vat_registered, timezone=a.timezone, registry=reg)
-    if a.mode == "standalone":                 # Ziira only watches the business's existing system
-        from ziira.kernel.registration import units_for_mode
+                      vat_registered=a.vat_registered, timezone=a.timezone, edition=edition,
+                      registry=reg)
+    if a.edition or a.mode == "standalone":
+        editions.enable_edition(reg, t.tenant_id, edition)
+        from ziira.kernel import packs
 
-        for unit in units_for_mode("standalone"):
-            reg.enable(t.tenant_id, unit)
+        packs.enable_country_pack(reg, t.tenant_id, a.country)
+    if a.plan:
+        from ziira.kernel.platform import subscriptions
+
+        subscriptions.start(t.tenant_id, a.plan, currency=a.currency, mode=a.plan_mode, by="cli")
+        print(f"subscription = {a.plan} ({a.plan_mode})")
     print(f"tenant_id  = {t.tenant_id}\ncompany_id = {t.company_id}\nbranch_id  = {t.branch_id}\n"
           f"owner_id   = {t.owner_id}")
 
@@ -108,7 +125,7 @@ def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
 def cmd_verify(reg: Registry, a: argparse.Namespace) -> int:
     from ziira.kernel.checks import run_integrity_checks
 
-    load_event_handlers(reg.units)
+    load_event_handlers(reg.units, strict=True)
     unit = "inventory" if a.cmd == "stock-verify" else a.unit
     tenants = [_tenant(a.tenant)] if a.tenant else reg.tenant_ids()
     problems = 0
@@ -132,23 +149,112 @@ def cmd_index_logins(reg: Registry, a: argparse.Namespace) -> None:
     print(f"Registered {done} login(s) in the login directory")
 
 
+def cmd_apply_packs(reg: Registry, a: argparse.Namespace) -> None:
+    """Seed the data of the country packs switched on (adds only what is missing; safe to run again)."""
+    from ziira.kernel import packs
+    from ziira.kernel.registry import load_event_handlers
+
+    load_event_handlers(reg.units)
+    for tenant in [_tenant(a.tenant)] if a.tenant else reg.tenant_ids():
+        done = packs.apply_to_tenant(tenant)
+        print(f"{tenant}: " + (", ".join(f"{k}: {v}" for c in done.values() for k, v in c.items()) or "nothing to add"))
+
+
 def cmd_operator(_: Registry, a: argparse.Namespace) -> None:
     from ziira.kernel import operators
 
     if a.action == "create":
         password = os.environ.get("ZIIRA_OPERATOR_PASSWORD") or getpass.getpass("Operator password: ")
-        _id, secret, uri = operators.create_operator(a.name, a.email, password)
-        print("Operator created. Add this to an authenticator app now: it is shown once and every sign-in needs it.")
-        print(f"secret: {secret}\naddress: {uri}")
+        _id, secret, uri = operators.create_operator(a.name, a.email, password, a.role)
+        if secret:
+            print("Operator created. Add this to an authenticator app now: it is shown once, every sign-in needs it.")
+            print(f"secret: {secret}\naddress: {uri}")
+        else:
+            print("Operator created. They sign in with their email and password (ZIIRA_OPERATOR_MFA=off).")
     elif a.action == "list":
         for o in operators.list_operators():
-            print(f"{o['email']:<36} {o['status']:<9} {o['name']}   last sign-in: {o['last_sign_in_at'] or 'never'}")
+            print(f"{o['email']:<36} {o['status']:<9} {o['role']:<10} {o['name']}   "
+                  f"last sign-in: {o['last_sign_in_at'] or 'never'}")
+    elif a.action == "role":
+        operators.set_role(a.name, a.email)
+        print(f"Operator {a.name} is now {a.email}")
     elif a.action in ("disable", "enable"):
         operators.set_status(a.name, "disabled" if a.action == "disable" else "active")
         print(f"Operator {a.name} {a.action}d")
     elif a.action == "reset-mfa":
         secret, uri = operators.reset_mfa(a.name)
         print(f"New secret (shown once): {secret}\naddress: {uri}")
+    elif a.action == "reset-password":
+        chosen = os.environ.get("ZIIRA_OPERATOR_PASSWORD")
+        new = operators.reset_password(a.name, password=chosen)
+        if chosen:
+            print(f"The password of {a.name} is set to the one in ZIIRA_OPERATOR_PASSWORD; their sign-ins ended.")
+        else:
+            print(f"Temporary password (shown once; {a.name} must change it at the next sign-in): {new}")
+
+
+def cmd_licence(_: Registry, a: argparse.Namespace) -> int:
+    """Licences: the vendor makes keys and licences; a self-hosted copy installs and checks them (docs/licensing.md)."""
+    from datetime import UTC, datetime
+    from pathlib import Path
+
+    from ziira.kernel.platform import licences
+
+    def when(value: str | None) -> datetime | None:
+        return datetime.fromisoformat(value).replace(tzinfo=UTC) if value else None
+
+    if a.action == "keygen":
+        private, public = licences.generate_keypair()
+        out = Path(a.out)
+        out.mkdir(parents=True, exist_ok=True)
+        key_file = out / "licence-signing.key"
+        key_file.write_text(private + "\n")
+        key_file.chmod(0o600)
+        print(f"Private signing key written to {key_file}  (keep it ONLY on the vendor side; back it up offline)")
+        print(f"Public key (set ZIIRA_LICENCE_PUBLIC_KEY on customers' copies):\n{public}")
+    elif a.action == "issue":
+        key = Path(a.key).read_text().strip() if a.key else None
+        row = licences.issue(customer=a.customer, contact_email=a.email, plan_code=a.plan,
+                             units=[u for u in (a.units or "").split(",") if u], edition=a.edition,
+                             max_users=a.max_users, max_branches=a.max_branches, max_companies=a.max_companies,
+                             valid_until=when(a.valid_until), update_until=when(a.update_until),
+                             grace_days=a.grace_days,
+                             instance_id=a.instance, notes=a.notes or "", issued_by="cli", private_key=key)
+        out_file = Path(a.out or f"{row['licence_no']}.ziira-licence")
+        out_file.write_text(row["token"])
+        print(f"Licence {row['licence_no']} for {row['customer']} written to {out_file}")
+    elif a.action == "install":
+        info = licences.install(Path(a.file).read_text(), by="cli")
+        print(f"Installed {info['licence_no']} for {info['customer']}: {info['status']}. {info['message']}")
+    elif a.action == "verify":
+        from ziira.kernel.config import get_settings
+
+        payload = licences.verify(Path(a.file).read_text(), get_settings().licence_public_key)
+        print(f"Valid signature: {payload.get('kind')} {payload.get('licence_no', '')} {payload.get('customer', '')}")
+    elif a.action == "status":
+        info = licences.describe()
+        for key in ("instance_id", "installed", "status", "access", "customer", "licence_no", "valid_until",
+                    "update_until", "days_left", "message"):
+            if info.get(key) is not None:
+                print(f"{key}: {info[key]}")
+        return 0 if info["access"] != "read_only" else 1
+    elif a.action == "revocations":
+        if a.file:
+            print(f"{licences.install_revocations(Path(a.file).read_text())} revoked licence(s) installed")
+        else:
+            out_file = Path(a.out or "revocations.ziira-licence")
+            key = Path(a.key).read_text().strip() if a.key else None
+            out_file.write_text(licences.revocation_list(private_key=key))
+            print(f"Signed revocation list written to {out_file}")
+    elif a.action == "instance-id":
+        print(licences.instance_id())
+    return 0
+
+
+def cmd_billing_run(_: Registry, a: argparse.Namespace) -> None:
+    from ziira.kernel.platform import billing
+
+    print(billing.run_due())
 
 
 def cmd_invite(reg: Registry, a: argparse.Namespace) -> None:
@@ -200,19 +306,37 @@ def cmd_connect(reg: Registry, a: argparse.Namespace) -> int:
     return run_upload(tenant, a.connection, Path(a.file), check_only=a.check)
 
 
+def cmd_plugin(reg: Registry, a: argparse.Namespace) -> int:
+    """The plugin kit: scaffold, check, test, pack and install plugins (docs/writing-a-plugin.md)."""
+    from ziira.kernel import plugin_kit_cli
+
+    return plugin_kit_cli.run(a.action, a)
+
+
 def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
     from ziira.kernel import jobs, notifications  # noqa: F401 - notifications registers its send job
 
     configure_logging()
     load_event_handlers(reg.units)
     if a.once:
-        print(f"Delivered {outbox.process_all()} event(s), ran {jobs.run_all()} job(s)")
+        from ziira.kernel import registration, site_hook
+
+        registration.repair_pending()
+        print(f"Delivered {outbox.process_all()} event(s), ran {jobs.run_all()} job(s), "
+              f"made {site_hook.run_pending()} website rebuild call(s)")
         return
     import time
 
+    from ziira.kernel import site_hook
+
     purged_at = 0.0
+    recovered_at = 0.0
     while True:
-        busy = outbox.process_all() + jobs.run_all()
+        busy = outbox.process_all() + jobs.run_all() + site_hook.run_pending()
+        if time.monotonic() - recovered_at > 60:
+            recovered_at = time.monotonic()
+            _recover_payments()
+            _repair_registrations()
         if time.monotonic() - purged_at > 3600:
             purged_at = time.monotonic()
             _purge_idempotency_keys(reg)
@@ -222,8 +346,54 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
             from ziira.kernel import throttle
 
             throttle.purge()
+            _run_billing()
         if busy == 0:
             time.sleep(2.0)
+
+
+def _repair_registrations() -> None:
+    """Retry the optional setup steps (country pack, trial plan) that failed when a business registered. Never fatal."""
+    import logging
+
+    try:
+        from ziira.kernel import registration
+
+        registration.repair_pending()
+    except Exception:  # noqa: BLE001
+        logging.getLogger("ziira.registration").exception("The registration repair pass failed")
+
+
+def _recover_payments() -> None:
+    """Ask the payment providers about payments still open, so a lost notification still ends in a credit (every
+    minute: young attempts are asked each time, older ones hourly). A failure is logged, never fatal to the worker."""
+    import logging
+
+    from ziira.kernel.config import get_settings
+
+    if get_settings().deployment_mode != "saas":
+        return
+    try:
+        from ziira.kernel.platform import payments
+
+        payments.recover_pending()
+    except Exception:  # noqa: BLE001
+        logging.getLogger("ziira.payments").exception("The payment recovery pass failed")
+
+
+def _run_billing() -> None:
+    """The platform's recurring billing pass (SaaS deployments only); a failure is logged, never fatal to the worker."""
+    import logging
+
+    from ziira.kernel.config import get_settings
+
+    if get_settings().deployment_mode != "saas":
+        return
+    try:
+        from ziira.kernel.platform import billing
+
+        billing.run_due()
+    except Exception:  # noqa: BLE001
+        logging.getLogger("ziira.billing").exception("The billing pass failed")
 
 
 def _purge_idempotency_keys(reg: Registry) -> None:
@@ -337,7 +507,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--timezone", help="IANA time zone of the business, such as Europe/London (default UTC)")
     s.add_argument("--vat-registered", action="store_true")
     s.add_argument("--mode", choices=["core", "standalone"], default="core",
-                   help="standalone: enable only what Ziira needs to watch the system the business already has")
+                   help="older spelling: standalone = --edition intelligence")
+    s.add_argument("--edition", help="switch on an edition's units (retail, distribution, books, intelligence, full); "
+                                     "without it no units are switched on")
+    s.add_argument("--plan", help="give the business a subscription on this plan (Super Admin > Plans)")
+    s.add_argument("--plan-mode", choices=["trial", "active", "comp"], default="trial")
     s.set_defaults(fn=cmd_create_tenant)
     sub.add_parser("tenants").set_defaults(fn=cmd_tenants)
     s = sub.add_parser("drop-tenant")
@@ -380,6 +554,27 @@ def main(argv: list[str] | None = None) -> int:
     cu.add_argument("--check", action="store_true", help="show what would be read, store nothing")
     c.add_parser("ocr-check", help="can this server read pictures of statements (Tesseract installed)?")
     s.set_defaults(fn=cmd_connect)
+    s = sub.add_parser("plugin", help="plugin kit: new, check, test, pack, install-archive, list")
+    k = s.add_subparsers(dest="action", required=True)
+    pn = k.add_parser("new", help="scaffold a complete plugin")
+    pn.add_argument("name")
+    pn.add_argument("--category", required=True)
+    pn.add_argument("--countries", default="", help="comma separated ISO codes, e.g. KE,UG (default: worldwide)")
+    pn.add_argument("--dir", help="create it in this folder instead of ziira/plugins (an extra plugin folder)")
+    for action, text_ in (("check", "static checks and a migration round trip"), ("test", "run the plugin's tests"),
+                          ("pack", "build a distributable archive with a checksum")):
+        pc = k.add_parser(action, help=text_)
+        pc.add_argument("path")
+        if action == "check":
+            pc.add_argument("--no-db", action="store_true", help="skip the migration round trip (no database needed)")
+        if action == "pack":
+            pc.add_argument("--out", default="dist", help="folder for the archive")
+    pi = k.add_parser("install-archive", help="verify and unpack an archive (operator only)")
+    pi.add_argument("file")
+    pi.add_argument("--expect-sha256", required=True, help="the archive's sha256 as the publisher gave it")
+    pi.add_argument("--replace", action="store_true", help="replace an installed version")
+    k.add_parser("list", help="plugins in the extra folders, and any that were refused")
+    s.set_defaults(fn=cmd_plugin)
     s = sub.add_parser("worker")
     s.add_argument("--once", action="store_true", help="one pass, then stop")
     s.set_defaults(fn=cmd_worker)
@@ -389,10 +584,33 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--note")
     s.set_defaults(fn=cmd_invite)
     s = sub.add_parser("operator", help="platform staff who may open support sessions (create, list, disable)")
-    s.add_argument("action", choices=["create", "list", "disable", "enable", "reset-mfa"])
-    s.add_argument("name", nargs="?", help="create: the name; disable/enable/reset-mfa: the email")
-    s.add_argument("email", nargs="?", help="create: the email")
+    s.add_argument("action", choices=["create", "list", "disable", "enable", "reset-mfa", "reset-password", "role"])
+    s.add_argument("name", nargs="?", help="create: the name; disable/enable/reset-mfa/reset-password/role: the email")
+    s.add_argument("email", nargs="?", help="create: the email; role: the new role")
+    s.add_argument("--role", default="superadmin", help="create: superadmin, billing, support, content or readonly")
     s.set_defaults(fn=cmd_operator)
+    s = sub.add_parser("licence", help="licences for outright purchase / self-hosted copies (docs/licensing.md)")
+    s.add_argument("action", choices=["keygen", "issue", "install", "status", "verify", "revocations", "instance-id"])
+    s.add_argument("file", nargs="?", help="install/verify: the licence file; revocations: a list to install")
+    s.add_argument("--out", help="keygen: folder for the key; issue/revocations: the file to write")
+    s.add_argument("--key", help="issue/revocations: file holding the signing key "
+                                 "(default: ZIIRA_LICENCE_SIGNING_KEY_FILE)")
+    s.add_argument("--customer"), s.add_argument("--email"), s.add_argument("--plan"), s.add_argument("--edition")
+    s.add_argument("--units", help="comma-separated unit names")
+    s.add_argument("--max-users", type=int), s.add_argument("--max-branches", type=int)
+    s.add_argument("--max-companies", type=int)
+    s.add_argument("--valid-until", help="YYYY-MM-DD; omit for a perpetual licence")
+    s.add_argument("--update-until", help="YYYY-MM-DD: updates released after this need a renewal")
+    s.add_argument("--grace-days", type=int, default=30)
+    s.add_argument("--instance", help="bind to one installation (its `ziira licence instance-id`)")
+    s.add_argument("--notes")
+    s.set_defaults(fn=cmd_licence)
+    s = sub.add_parser("billing-run", help="renewal invoices, reminders and dunning now (the worker does this hourly)")
+    s.set_defaults(fn=cmd_billing_run)
+    s = sub.add_parser("apply-packs", help="copy the data of the country packs switched on into the business's tables "
+                                           "(adds what is missing; changes nothing else)")
+    s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
+    s.set_defaults(fn=cmd_apply_packs)
     s = sub.add_parser("index-logins", help="rebuild the login directory used to sign in without a workspace code")
     s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
     s.set_defaults(fn=cmd_index_logins)
@@ -432,8 +650,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "operator":
         if args.action == "create" and not (args.name and args.email):
             p.error("operator create needs NAME and EMAIL")
-        if args.action in ("disable", "enable", "reset-mfa") and not args.name:
+        if args.action in ("disable", "enable", "reset-mfa", "reset-password", "role") and not args.name:
             p.error(f"operator {args.action} needs the operator's EMAIL")
+        if args.action == "role" and not args.email:
+            p.error("operator role needs EMAIL and ROLE")
+    if args.cmd == "licence" and args.action == "issue" and not args.customer:
+        p.error("licence issue needs --customer")
+    if args.cmd == "licence" and args.action in ("install", "verify") and not args.file:
+        p.error(f"licence {args.action} needs the licence FILE")
     if args.cmd == "install" and not args.all and not args.unit:
         p.error("give a unit name or --all")
     try:

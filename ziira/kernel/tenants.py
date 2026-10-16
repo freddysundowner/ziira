@@ -85,11 +85,11 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
                   owner_name: str, owner_email: str, currency: str, owner_password: str | None = None,
                   owner_password_hash: str | None = None, tax_id: str | None = None, phone_country_code: str = "",
                   country: str | None = None, vat_registered: bool = False, timezone: str | None = None,
-                  registry: Registry | None = None) -> NewTenant:
+                  edition: str = "full", registry: Registry | None = None) -> NewTenant:
     """Create a business with its own database, ready to sign in to with the workspace code.
 
     The owner gets the Owner role for the whole tenant. `currency` is the company's base currency (a three-letter code
-    such as USD or KES); `phone_country_code` is its calling code (such as 44 or 254), used to read national phone
+    such as USD or EUR); `phone_country_code` is its calling code (such as 44 or 1), used to read national phone
     numbers; `timezone` (an IANA name such as Europe/London; default UTC) is where its business dates are read. Nothing
     about a country is assumed: all are chosen here. The owner's password is given as text or, when
     it was already hashed (self-service registration), as `owner_password_hash`.
@@ -139,7 +139,7 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
                          branch_code=branch_code, branch_name=branch_name, owner_name=owner_name,
                          owner_email=owner_email, password_hash=password_hash, tax_id=tax_id,
                          vat_registered=vat_registered, currency=currency, phone_country_code=phone_country_code,
-                         country=country, timezone=zone)
+                         country=country, timezone=zone, edition=edition)
         with master_session() as s:
             s.execute(text("update master.tenant set status = 'active', updated_at = now() where id = :i"),
                       {"i": str(tenant_id)})
@@ -153,11 +153,13 @@ def create_tenant(*, name: str, code: str, company: str, branch_code: str, branc
 def _set_up_business(reg: Registry, tenant_id: UUID, company_id: UUID, branch_id: UUID, owner_id: UUID, *,
                      name: str, code: str, company: str, branch_code: str, branch_name: str, owner_name: str,
                      owner_email: str, password_hash: str, tax_id: str | None, vat_registered: bool, currency: str,
-                     phone_country_code: str, country: str | None, timezone: str | None = None) -> None:
+                     phone_country_code: str, country: str | None, timezone: str | None = None,
+                     edition: str = "full") -> None:
     system_context(tenant_id)
     with tenant_session(tenant_id, admin=True) as s:
-        s.execute(text("insert into kernel.tenant (id, name, code, mfa_policy) values (:i, :n, :c, :m)"),
-                  {"i": str(tenant_id), "n": name, "c": code, "m": get_settings().mfa_default_policy})
+        s.execute(text("insert into kernel.tenant (id, name, code, mfa_policy, edition) "
+                       "values (:i, :n, :c, :m, :e)"),
+                  {"i": str(tenant_id), "n": name, "c": code, "m": get_settings().mfa_default_policy, "e": edition})
         settings: dict[str, str] = {"phone_country_code": phone_country_code} if phone_country_code else {}
         if timezone:
             settings["timezone"] = timezone

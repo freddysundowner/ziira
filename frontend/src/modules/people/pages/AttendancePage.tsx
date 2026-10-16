@@ -16,7 +16,7 @@ export default function AttendancePage() {
   const directory = useEmployeeDirectory(scope.companyId);
   return (
     <>
-      <PageHeader title={t("attendance.title")} description={t("attendance.hint")} actions={<CompanySelect companies={scope.companies} value={scope.companyId} onChange={scope.setCompanyId} />} />
+      <PageHeader title={t("menu.attendanceLeave")} description={t("attendance.hint")} actions={<CompanySelect companies={scope.companies} value={scope.companyId} onChange={scope.setCompanyId} />} />
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "records", label: t("attendance.records") }, { id: "summary", label: t("attendance.summary") }, { id: "shifts", label: t("shift.title") }]} />
       {tab === "records" && <RecordsPanel companyId={scope.companyId} branches={scope.branches} names={directory.name} />}
       {tab === "summary" && <SummaryPanel companyId={scope.companyId} />}

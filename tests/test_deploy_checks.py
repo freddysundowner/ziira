@@ -29,6 +29,7 @@ GOOD = {
     "ZIIRA_PLATFORM_EMAIL_SECRET": '{"password": "x"}', "ZIIRA_PLATFORM_EMAIL_CONFIG": '{"from_address": "a@example.com"}',
     "ZIIRA_METRICS_TOKEN": "mT7qW2eR9yU4iO1pA6sD3fG8hJ5kL0zX", "ZIIRA_LOG_FORMAT": "json",
     "ZIIRA_CORS_ORIGINS": "https://app.example.com", "ZIIRA_TRUST_FORWARDED_FOR": "true",
+    "ZIIRA_OPERATOR_MFA": "totp",
 }
 
 
@@ -68,9 +69,25 @@ def test_a_complete_production_configuration_has_no_errors() -> None:
     ({"ZIIRA_CORS_ORIGINS": "https://app.example.com/path"}, "ZIIRA_CORS_ORIGINS"),
     ({"ZIIRA_LOG_FORMAT": "xml"}, "ZIIRA_LOG_FORMAT"),
     ({"ZIIRA_MAX_BODY_BYTES": "lots"}, "ZIIRA_MAX_BODY_BYTES"),
+    ({"ZIIRA_OPERATOR_MFA": "sms"}, "ZIIRA_OPERATOR_MFA"),
+    ({"ZIIRA_OPERATOR_MFA": "off"}, "ZIIRA_OPERATOR_MFA"),                       # not acknowledged
+    ({"ZIIRA_OPERATOR_ALLOWED_NETWORKS": "10.0.0.0/8, not-a-network"}, "ZIIRA_OPERATOR_ALLOWED_NETWORKS"),
+    ({"ZIIRA_OPERATOR_IDLE_MINUTES": "soon"}, "ZIIRA_OPERATOR_IDLE_MINUTES"),
 ])
 def test_each_unsafe_setting_is_an_error(change: dict[str, str], expected: str) -> None:
     assert expected in errors({**GOOD, **change})
+
+
+def test_password_only_operators_are_a_visible_choice() -> None:
+    off = {**GOOD, "ZIIRA_OPERATOR_MFA": "off"}
+    assert "ZIIRA_OPERATOR_MFA" in errors(off)                                    # the default is refused in production
+    accepted = {**off, "ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED": "true"}
+    assert errors(accepted) == []
+    warnings = {f.name: f.message for f in check_env.check(accepted) if f.level == "WARN"}
+    assert "every business" in warnings["ZIIRA_OPERATOR_MFA"]                      # the risk is spelled out
+    assert {"ZIIRA_OPERATOR_ALLOWED_NETWORKS", "ZIIRA_OPERATOR_SIGNIN_EMAILS"} <= set(warnings)
+    covered = {**accepted, "ZIIRA_OPERATOR_ALLOWED_NETWORKS": "203.0.113.0/24", "ZIIRA_OPERATOR_SIGNIN_EMAILS": "true"}
+    assert [f.name for f in check_env.check(covered) if f.level == "WARN"] == ["ZIIRA_OPERATOR_MFA"]
 
 
 def test_closed_registration_needs_no_email_provider() -> None:
@@ -113,3 +130,31 @@ def test_secret_scan_finds_real_looking_secrets_and_a_tracked_env(tmp_path: Path
 
 def test_the_repository_itself_is_clean() -> None:
     assert secret_scan.scan(secret_scan.tracked_files()) == []
+
+
+def test_the_application_refuses_password_only_operators_in_production_unless_acknowledged(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from ziira.kernel.config import Settings
+
+    for key, value in GOOD.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setenv("ZIIRA_OPERATOR_MFA", "off")
+    with pytest.raises(RuntimeError, match="ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED"):
+        Settings().check_safe_for_production()
+    monkeypatch.setenv("ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED", "true")
+    Settings().check_safe_for_production()                                        # starts, by explicit choice
+    monkeypatch.setenv("ZIIRA_OPERATOR_MFA", "sms")
+    with pytest.raises(RuntimeError, match="off or totp"):
+        Settings().check_safe_for_production()
+    monkeypatch.setenv("ZIIRA_OPERATOR_MFA", "totp")
+    monkeypatch.setenv("ZIIRA_OPERATOR_ALLOWED_NETWORKS", "203.0.113.0/24, nonsense")
+    with pytest.raises(RuntimeError, match="CIDR"):
+        Settings().check_safe_for_production()
+
+
+def test_development_does_not_need_the_acknowledgement(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from ziira.kernel.config import Settings
+
+    monkeypatch.setenv("ZIIRA_ENV", "development")
+    monkeypatch.setenv("ZIIRA_OPERATOR_MFA", "off")
+    monkeypatch.delenv("ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED", raising=False)
+    Settings().check_safe_for_production()

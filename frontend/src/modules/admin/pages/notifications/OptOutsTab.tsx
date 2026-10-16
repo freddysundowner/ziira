@@ -2,7 +2,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
 import {
-  api, Button, ConfirmDialog, DataTable, Drawer, Field, humanise, Input, Pager, Select, toast, unwrap, useFormState, useMutation, usePagedList,
+  api, Button, ConfirmDialog, DataTable, Drawer, Field, humanise, Input, Pager, Select, toast, unwrap, useChannels, useFormState, useMutation, usePagedList,
   useQueryClient, useTranslation, type Schemas,
 } from "@/sdk";
 
@@ -44,11 +44,12 @@ export default function OptOutsTab({ companyId }: { companyId: string | undefine
 function AddOptOut({ open, companyId, onClose }: { open: boolean; companyId: string; onClose: () => void }) {
   const { t } = useTranslation("kernel");
   const qc = useQueryClient();
+  const available = useChannels(companyId).data ?? [];
   const f = useFormState({ recipient: "", channel: "", reason: "" });
   const create = useMutation({
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/notifications/opt-outs", { body: {
-      company_id: companyId, recipient: f.values.recipient.trim(), channel: (f.values.channel || null) as "sms" | null, reason: f.values.reason.trim() || null,
+      company_id: companyId, recipient: f.values.recipient.trim(), channel: f.values.channel || null, reason: f.values.reason.trim() || null,
     } })),
     onSuccess: () => { void qc.invalidateQueries({ queryKey: ["optouts"] }); toast(t("optOutAdded"), "ok"); f.reset(); onClose(); },
     onError: (e) => { f.fail(e); toast(e.message, "bad"); },
@@ -60,7 +61,7 @@ function AddOptOut({ open, companyId, onClose }: { open: boolean; companyId: str
       <form id="new-optout" onSubmit={submit} className="space-y-4">
         <Field label={t("recipient")} hint={t("recipientHint")} required error={f.error("recipient")}><Input {...f.bind("recipient")} required maxLength={200} autoFocus /></Field>
         <Field label={t("channel")} error={f.error("channel")}>
-          <Select {...f.bind("channel")}><option value="">{t("allChannels")}</option><option value="sms">{t("sms")}</option><option value="email">{t("emailChannel")}</option></Select>
+          <Select {...f.bind("channel")}><option value="">{t("allChannels")}</option>{available.map((c) => <option key={c.channel} value={c.channel}>{c.label}</option>)}</Select>
         </Field>
         <Field label={t("reason")} error={f.error("reason")}><Input {...f.bind("reason")} maxLength={300} /></Field>
       </form>

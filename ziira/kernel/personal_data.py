@@ -74,7 +74,7 @@ class Subject:
 
 
 def mask_text(value: str) -> str:
-    """'jane.doe@example.com' -> 'j***@example.com'; '254712345678' -> '2547****678'; 'Jane Doe' -> 'J*** D**'."""
+    """'jane.doe@example.com' -> 'j***@example.com'; '447911123456' -> '4479****456'; 'Jane Doe' -> 'J*** D**'."""
     value = value.strip()
     if "@" in value:
         local, _, domain = value.partition("@")
@@ -117,13 +117,13 @@ def like_pattern(value: str) -> str:
 
 
 def sql_digits(column: str) -> str:
-    """SQL for a column's digits only (so '+254 712-345-678' and '254712345678' compare equal)."""
+    """SQL for a column's digits only (so '+44 7911-123-456' and '447911123456' compare equal)."""
     return f"regexp_replace({column}, '[^0-9]', '', 'g')"
 
 
 def sql_phone_matches(column: str, param: str) -> str:
     """SQL that is true when the column holds the phone number in `:param` (international digits), however it was typed:
-    '+254 712 345 678', '254712345678' or the national form '0712 345 678' (matched by its last digits, 7 or more)."""
+    '+44 7911 123 456', '447911123456' or the national form '07911 123 456' (matched by its last digits, 7 or more)."""
     d = sql_digits(column)
     return (f"({column} is not null and ({d} = :{param} or (length(ltrim({d}, '0')) >= 7 "
             f"and :{param} like '%' || ltrim({d}, '0'))))")

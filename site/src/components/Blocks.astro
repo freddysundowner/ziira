@@ -1,0 +1,38 @@
+---
+import type { Block, Lang } from "../content/types";
+import { inline } from "../lib/md";
+import { urlFor } from "../lib/registry";
+import type { Entry } from "../lib/registry";
+import Screenshot from "./Screenshot.astro";
+import Cards from "./Cards.astro";
+interface Props { lang: Lang; blocks: Block[]; kids?: Entry[] }
+const { lang, blocks, kids = [] } = Astro.props;
+const i = (s: string) => inline(s, lang, urlFor);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+---
+{blocks.map((b) => (
+  <section class="block" aria-labelledby={`h-${b.id ?? slug(b.h2)}`} style="margin-bottom: 2.4em">
+    <h2 id={`h-${b.id ?? slug(b.h2)}`}>{b.h2}</h2>
+    {b.p?.map((x) => <p set:html={i(x)} />)}
+    {b.img && <Screenshot name={b.img.key} alt={b.img.alt} caption={b.img.caption} />}
+    {b.ul && <ul>{b.ul.map((x) => <li set:html={i(x)} />)}</ul>}
+    {b.ol && <ol>{b.ol.map((x) => <li set:html={i(x)} />)}</ol>}
+    {b.table && (
+      <div class="table-wrap" role="region" aria-label={b.table.caption ?? b.h2} tabindex="0">
+        <table>
+          {b.table.caption && <caption>{b.table.caption}</caption>}
+          <thead><tr>{b.table.head.map((h) => <th scope="col">{h}</th>)}</tr></thead>
+          <tbody>{b.table.rows.map((r) => <tr>{r.map((c, idx) => idx === 0 ? <th scope="row" set:html={i(c)} /> : <td set:html={i(c)} />)}</tr>)}</tbody>
+        </table>
+      </div>
+    )}
+    {b.callout && (
+      <div class={`callout ${b.callout.tone}`} role="note">
+        {b.callout.title && <strong class="t">{b.callout.title}</strong>}
+        <p set:html={i(b.callout.text)} />
+      </div>
+    )}
+    {b.cards && kids.length > 0 && <Cards lang={lang} items={kids} />}
+    {b.after?.map((x) => <p set:html={i(x)} />)}
+  </section>
+))}

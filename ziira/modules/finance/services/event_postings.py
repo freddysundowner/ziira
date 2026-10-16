@@ -10,7 +10,7 @@ Event contracts (payload keys; ids may be UUIDs or strings, amounts Decimals or 
       company_id, branch_id (null for the in-transit location), location_kind, movement_type, value, business_date
   sale.posted      aggregate = the sale
       company_id, branch_id, business_date, number (optional), customer_id (optional, for credit sales),
-      net, tax, payments: [{method: cash|mpesa|card|credit|other, amount}]   (payments add up to net + tax)
+      net, tax, payments: [{method: cash|mobile_money|card|credit|other, amount}]   (payments add up to net + tax)
   sale.returned    aggregate = the return
       the same keys: net and tax returned, refunds paid back in `payments` (credit = reduced receivable)
 
@@ -110,15 +110,15 @@ def post_sale_return(session: Session, event: Event) -> JournalEntry | None:
 
 
 def post_settlement(session: Session, event: Event) -> JournalEntry | None:
-    """`payment.settled`: M-Pesa takings reached the bank (less Safaricom's charges)."""
+    """`payment.settled`: mobile money takings reached the bank (less the provider's charges)."""
     p = event.payload
     return post_from_recipe(
         session, company_id=_uuid(p.get("company_id"), "company_id"), doc_type="settlement", journal_code="CSH",
         entry_date=_date(session, p),
         recipe=recipes.settlement(_amount(p.get("amount"), "amount"), _amount(p.get("fee", 0), "fee"),
-                                  description=f"M-Pesa settlement {p.get('reference') or ''}".strip()),
+                                  description=f"Mobile money settlement {p.get('reference') or ''}".strip()),
         context={}, branch_id=_optional_uuid(p.get("branch_id"), "branch_id"), source_type="settlement",
-        source_id=event.aggregate_id, description=f"M-Pesa settlement {p.get('reference') or ''}".strip())
+        source_id=event.aggregate_id, description=f"Mobile money settlement {p.get('reference') or ''}".strip())
 
 
 def post_cash_deposit(session: Session, event: Event) -> JournalEntry | None:

@@ -1,11 +1,10 @@
 import { useState } from "react";
 
-import { api, Button, Card, ConfirmDialog, Field, FormGrid, Select, toast, unwrap, useCompany, useMutation, useQueryClient, useTranslation } from "@/sdk";
+import { api, Button, Card, channelOptions, ConfirmDialog, Field, FormGrid, Select, toast, unwrap, useChannels, useCompany, useMutation, useQueryClient, useTranslation } from "@/sdk";
 
 import BriefText from "./BriefText";
 
 type Kind = "daily" | "weekly";
-type Channel = "in_app" | "email" | "sms";
 
 /** What my brief would say right now, with a button to send it to myself now. */
 export default function PreviewCard() {
@@ -14,7 +13,8 @@ export default function PreviewCard() {
   const { company, companies } = useCompany();
   const [companyId, setCompanyId] = useState("");
   const [kind, setKind] = useState<Kind>("daily");
-  const [channel, setChannel] = useState<Channel>("in_app");
+  const [channel, setChannel] = useState("in_app");
+  const available = useChannels().data ?? [];
   const [confirm, setConfirm] = useState(false);
   const cid = companyId || company?.id;
 
@@ -46,8 +46,8 @@ export default function PreviewCard() {
             </Select>
           </Field>
           <Field label={t("sendVia")}>
-            <Select value={channel} onChange={(e) => setChannel(e.target.value as Channel)}>
-              {(["in_app", "email", "sms"] as const).map((c) => <option key={c} value={c}>{t(`channels.${c}`)}</option>)}
+            <Select value={channel} onChange={(e) => setChannel(e.target.value)}>
+              {channelOptions(available, channel, ["in_app"]).map((o) => <option key={o.value} value={o.value}>{o.value === "in_app" ? t("channels.in_app") : o.label}</option>)}
             </Select>
           </Field>
         </FormGrid>
@@ -59,7 +59,7 @@ export default function PreviewCard() {
         {preview.data && <div className="rounded-lg border border-line bg-sunken/50 p-4"><BriefText body={preview.data.body} /></div>}
       </div>
       <ConfirmDialog open={confirm} onClose={() => setConfirm(false)} onConfirm={() => send.mutate()} busy={send.isPending}
-        title={t("sendNowTitle")} message={t("sendNowMessage", { channel: t(`channels.${channel}`) })} confirmLabel={t("sendNow")} />
+        title={t("sendNowTitle")} message={t("sendNowMessage", { channel: channelOptions(available, channel, ["in_app"]).find((o) => o.value === channel)?.label ?? channel })} confirmLabel={t("sendNow")} />
     </Card>
   );
 }

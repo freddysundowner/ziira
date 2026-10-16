@@ -26,12 +26,17 @@ Stock-like modules keep derived figures (balances, running totals). Keep them up
 the records they come from, and provide an integrity check (`kernel.integrity_check`, see `docs/extending-units.md`)
 that recomputes them, so `ziira verify` can find and rebuild any difference. Inventory is the example.
 
-## Showing up in Apps & plugins
+## Showing up in Add-ons
 
-Settings > Apps & plugins (permission `units.manage`, Owner only) lets a business switch units on or off and delete a
+Add-ons (sidebar) (permission `units.manage`, Owner only) lets a business switch units on or off and delete a
 switched-off unit's data. It reads your manifest: add `description = "one plain sentence"` under `[unit]` (shown on the
 card), and keep `requires` honest (switching on enables what a unit requires; switching off or removing is refused while
-another unit needs it). Removal runs your `down.sql` migrations, so every unit needs working ones. Platform install and
+another unit needs it). Removal runs your `down.sql` migrations, so every unit needs working ones. Add
+`category = "payments"` (one of `CATEGORIES` in `ziira/kernel/manifest.py`: sales, stock, purchasing, accounting, people,
+customers, payments, tax, messaging, connector, country, intelligence, data, ai, example) so the screen groups it, and, for a
+plugin made for particular countries, `countries = ["KE", ...]` (two-letter codes; empty or absent means worldwide, otherwise it is
+recommended only to businesses in those countries). Both appear in `/api/v1/units/catalog`; a wrong value fails loading.
+Editions (`docs/registration.md`) decide which units a new business starts with. Platform install and
 uninstall stay CLI jobs: a unit not installed shows as "Not available yet". Code: `ziira/kernel/unit_admin.py`,
 `ziira/kernel/api/unit_routes.py` (`/api/v1/units/catalog`, `/{name}/enable|disable|remove`), web `modules/admin/pages/AppsPage.tsx`.
 

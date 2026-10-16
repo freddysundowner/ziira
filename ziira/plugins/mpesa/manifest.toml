@@ -1,0 +1,19 @@
+[unit]
+name = "mpesa"
+title = "M-Pesa (Safaricom Daraja)"
+description = "Send M-Pesa payment prompts, receive till and paybill payments, and read M-Pesa statements."
+category = "payments"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["payments"]
+countries = ["KE"]
+
+# Businesses that already use M-Pesa get this plugin switched on by `ziira install` (an upgrade): payment accounts
+# whose provider is one of ours. Read-only SQL, run in each tenant database that has the payments tables.
+[upgrade]
+enable_if_sql = "select 1 from payments.payment_account where provider in ('daraja', 'fake') limit 1"
+
+# Sockets of other units this plugin plugs into (code in hooks.py)
+[extends]
+implements = ["payments.provider", "payments.statement_format"]

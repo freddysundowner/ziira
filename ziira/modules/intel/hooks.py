@@ -5,6 +5,7 @@ from ziira.modules.intel import kernel_checks  # noqa: F401 - registers Intellig
 from ziira.modules.intel.action_providers import NudgeExceptionsReviewers
 from ziira.modules.intel.ask_tools import FindingDetail, ListFindings
 from ziira.modules.intel.fake_llm import FakeLlm
+from ziira.modules.intel.inbound import ProposalReplies
 from ziira.modules.intel.public import (
     INTEL_ACTION,
     INTEL_ASK_TOOL,
@@ -17,7 +18,7 @@ from ziira.modules.intel.public import (
     IntelCheck,
     LlmProvider,
 )
-from ziira.sdk import define_extension_point, provides
+from ziira.sdk import INBOUND_COMMAND, define_extension_point, provides
 
 define_extension_point(INTEL_CHECK, IntelCheck, "A check over a unit's data that raises findings")
 define_extension_point(INTEL_BASELINE_METRIC, BaselineMetric, "Observations of a metric, to learn what is normal")
@@ -32,5 +33,6 @@ provides(INTEL_LLM)(FakeLlm)
 provides(INTEL_ACTION)(NudgeExceptionsReviewers)
 provides(INTEL_ASK_TOOL)(ListFindings)
 provides(INTEL_ASK_TOOL)(FindingDetail)
+provides(INBOUND_COMMAND)(ProposalReplies)
 
 from ziira.modules.intel import privacy as _privacy  # noqa: E402, F401, I001 - registers the personal-data provider

@@ -36,6 +36,18 @@ def _check_location(session: Session, location_id: UUID | None, company_id: UUID
         raise ValidationFailed("The stock location must belong to the device's branch")
 
 
+NO_STORE_MESSAGE = "This till has no store set. Ask a manager to set one under Sell > Tills and devices"
+
+
+def default_store(session: Session, company_id: UUID, branch_id: UUID) -> UUID | None:
+    """The store a device of this branch sells from when none is named: the branch's only store. None when the branch
+    has none; a branch with several makes the person choose (`ValidationFailed`)."""
+    stores = pos_repo.branch_stores(session, company_id, branch_id)
+    if len(stores) > 1:
+        raise ValidationFailed("This branch has more than one store: choose the store this till sells from")
+    return stores[0] if stores else None
+
+
 def register_device(session: Session, *, branch_id: UUID, code: str, name: str,
                     location_id: UUID | None = None) -> tuple[Device, str]:
     """Register a device at a branch and give it a key. `location_id` is the store its sales take stock from. Returns
@@ -52,6 +64,8 @@ def register_device(session: Session, *, branch_id: UUID, code: str, name: str,
     if not name.strip():
         raise ValidationFailed("A device needs a name")
     _check_location(session, location_id, company_id, branch_id)
+    if location_id is None:
+        location_id = default_store(session, company_id, branch_id)
     if pos_repo.device_code_exists(session, branch_id, code):
         raise Conflict(f"This branch already has a device with code {code}")
     key = KEY_PREFIX + new_secret()
@@ -97,6 +111,33 @@ def set_status(session: Session, device_id: UUID, status: str) -> Device:
     session.flush()
     audit_record(session, "set_status", "pos.device", device.id, {"status": status})
     return device
+
+
+def set_location(session: Session, device_id: UUID, location_id: UUID) -> Device:
+    """Change the store a device's sales take stock from. Refused while a till is open on it (its sales would split
+    between two stores). Needs 'devices.manage'."""
+    device = pos_repo.get_device(session, device_id, lock=True)
+    company_id = pos_repo.branch_company(session, device.branch_id) if device else None
+    if device is None or company_id is None:
+        raise NotFound("Device not found")
+    current_context().require(DEVICES_MANAGE, company_id=company_id, branch_id=device.branch_id)
+    _check_location(session, location_id, company_id, device.branch_id)
+    if pos_repo.open_till_of_device(session, device.id) is not None:
+        raise Conflict("A till is open on this device: close it before changing its store")
+    before = device.location_id
+    device.location_id = location_id
+    session.flush()
+    audit_record(session, "set_location", "pos.device", device.id, {"from": before, "to": location_id})
+    return device
+
+
+def check_has_store(session: Session, device: Device) -> None:
+    """A sale needs to know which store gives up the stock: the device's, or else the branch's only one."""
+    if device.location_id is not None:
+        return
+    company_id = pos_repo.branch_company(session, device.branch_id)
+    if company_id is not None and len(pos_repo.branch_stores(session, company_id, device.branch_id)) != 1:
+        raise ValidationFailed(NO_STORE_MESSAGE)
 
 
 def rotate_key(session: Session, device_id: UUID) -> tuple[Device, str]:

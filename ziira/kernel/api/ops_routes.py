@@ -30,7 +30,7 @@ def healthz() -> dict[str, str]:
 
 def readiness_problems() -> list[str]:
     """Why this instance should not receive traffic (empty when it is ready)."""
-    from ziira.kernel.registry import discover
+    from ziira.kernel.registry import broken_units, discover
 
     problems: list[str] = []
     try:
@@ -52,6 +52,8 @@ def readiness_problems() -> list[str]:
             problems.append("units need `ziira install --all`: " + ", ".join(sorted(outdated)))
     except Exception as exc:  # noqa: BLE001 - any failure to ask means "not ready"
         return [f"master database unreachable: {type(exc).__name__}"]
+    problems += [f"unit '{name}' could not be loaded and is skipped ({why})"
+                 for name, why in sorted(broken_units.items())]
     return problems
 
 

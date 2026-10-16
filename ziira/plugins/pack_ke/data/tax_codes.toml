@@ -1,0 +1,34 @@
+# VAT classes for Kenya. `authority_code` is the tax type letter KRA's eTIMS uses for the class (the repository's demo
+# data uses B for the standard rate).
+# VERIFY: rates change with each Finance Act. Check them against KRA's current notice before relying on them; a
+# business that sells fuel, financial services or exempt goods must check which class each of its products belongs to.
+
+[[tax_code]]
+code = "VAT16"
+name = "Standard rate VAT (16%)"
+vat_rate = "16"
+authority_code = "B"
+
+[[tax_code]]
+code = "VAT8"
+name = "Reduced rate VAT (8%)"
+vat_rate = "8"
+authority_code = "E"
+
+[[tax_code]]
+code = "ZERO"
+name = "Zero-rated"
+vat_rate = "0"
+authority_code = "C"
+
+[[tax_code]]
+code = "EXEMPT"
+name = "Exempt"
+vat_rate = "0"
+authority_code = "A"
+
+[[tax_code]]
+code = "NONVAT"
+name = "Not subject to VAT"
+vat_rate = "0"
+authority_code = "D"

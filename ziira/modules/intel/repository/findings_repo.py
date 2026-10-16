@@ -9,14 +9,27 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.engine import Row
 
+from ziira.modules.intel.domain.source import CONNECTED_PREFIX
 from ziira.sdk import RequestContext, Session
 
 COLUMNS = (
     "f.id, f.check_code, f.area, f.company_id, f.branch_id, f.entity_type, f.entity_id, f.period_start, f.period_end, "
     "f.value, f.expected_value, f.amount, f.severity, f.summary, f.recommended_action, f.evidence, f.explanation, "
     "f.explanation_ai, f.explanation_ai_at, f.status, f.owner_user_id, f.first_seen_at, f.last_seen_at, "
-    "f.resolved_at, f.alerted_at, f.created_at"
+    "f.resolved_at, f.alerted_at, f.created_at, f.snoozed_until"
 )
+
+
+OPEN_SQL = "f.status in ('new', 'sent', 'acknowledged', 'explained')"
+# The three tabs of "Things to look at": waiting for me to deal with, someone is on it (or put aside), and finished.
+VIEWS = {
+    "open": "f.status in ('new', 'sent') and f.owner_user_id is null and (f.snoozed_until is null or "
+    "f.snoozed_until <= now())",
+    "waiting": f"{OPEN_SQL} and (f.owner_user_id is not null or f.status in ('acknowledged', 'explained') or "
+    "f.snoozed_until > now())",
+    "done": "f.status in ('resolved', 'dismissed')",
+}
+NOT_SNOOZED = "(f.snoozed_until is null or f.snoozed_until <= now())"
 
 
 def _s(value: UUID | None) -> str | None:
@@ -79,7 +92,7 @@ def find_by_fingerprint(s: Session, code: str, fingerprint: str) -> Row[Any] | N
 
 def existing_by_fingerprint(s: Session, code: str) -> dict[str, Row[Any]]:
     """Every finding of this check (id, status, severity) by fingerprint: one read instead of one per candidate."""
-    rows = s.execute(text("select fingerprint, id, status, severity from intel.finding where check_code = :c"),
+    rows = s.execute(text("select fingerprint, id, status, severity, amount from intel.finding where check_code = :c"),
                      {"c": code}).all()
     return {r.fingerprint: r for r in rows}
 
@@ -103,7 +116,8 @@ def refresh_findings(s: Session, rows: list[dict[str, Any]]) -> None:
         "update intel.finding set severity = :sv, value = :v, expected_value = :ev, amount = :am, summary = :su, "
         "recommended_action = :ra, evidence = cast(:evd as jsonb), last_seen_at = now(), updated_at = now(), "
         "status = case when :reopen then 'new' else status end, resolved_at = case when :reopen then null "
-        "else resolved_at end, alerted_at = case when :reopen then null else alerted_at end where id = :i"), rows)
+        "else resolved_at end, alerted_at = case when :reopen then null else alerted_at end, "
+        "snoozed_until = case when :reopen or :worse then null else snoozed_until end where id = :i"), rows)
 
 
 def add_events(s: Session, rows: list[tuple[UUID, str, str | None]]) -> None:
@@ -202,9 +216,17 @@ def get_finding(s: Session, finding_id: UUID) -> Row[Any] | None:
 def list_findings(s: Session, scope_sql: str, scope_params: dict[str, Any], *, statuses: list[str] | None,
                   severities: list[str] | None, area: str | None, company_id: UUID | None, branch_id: UUID | None,
                   check_code: str | None, owner_user_id: UUID | None, search: str | None, limit: int,
-                  offset: int) -> list[Row[Any]]:
+                  offset: int, source: str | None = None, snoozed: str = "hide",
+                  view: str | None = None) -> list[Row[Any]]:
     where = [scope_sql]
     params: dict[str, Any] = dict(scope_params, limit=limit, offset=offset)
+    if view:
+        where.append(VIEWS[view])
+        statuses = None
+    elif snoozed == "hide":
+        where.append(NOT_SNOOZED)
+    elif snoozed == "only":
+        where.append("f.snoozed_until > now()")
     if statuses:
         where.append("f.status = any(:statuses)")
         params["statuses"] = statuses
@@ -223,6 +245,9 @@ def list_findings(s: Session, scope_sql: str, scope_params: dict[str, Any], *, s
     if check_code:
         where.append("f.check_code = :check_code")
         params["check_code"] = check_code
+    if source:
+        where.append(f"coalesce(f.check_code, '') {'like' if source == 'connected' else 'not like'} :prefix")
+        params["prefix"] = f"{CONNECTED_PREFIX}%"
     if owner_user_id:
         where.append("f.owner_user_id = :owner")
         params["owner"] = str(owner_user_id)
@@ -238,6 +263,7 @@ def list_findings(s: Session, scope_sql: str, scope_params: dict[str, Any], *, s
 def open_for_ranking(s: Session, scope_sql: str, scope_params: dict[str, Any], limit: int) -> list[Row[Any]]:
     return list(s.execute(text(
         f"select {COLUMNS} from intel.finding f where {scope_sql} and f.status in ('new', 'sent', 'acknowledged') "
+        f"and {NOT_SNOOZED} "
         "order by array_position(array['critical','high','medium','low','info'], f.severity), f.amount desc nulls last "
         "limit :limit"), dict(scope_params, limit=limit)).all())
 
@@ -246,7 +272,7 @@ def counts(s: Session, scope_sql: str, scope_params: dict[str, Any], *, open_onl
     status = "f.status in ('new', 'sent', 'acknowledged', 'explained')" if open_only else "true"
     return list(s.execute(text(
         "select f.severity, f.status, f.area, count(*) as n, coalesce(sum(f.amount), 0) as amount "
-        f"from intel.finding f where {scope_sql} and {status} "
+        f"from intel.finding f where {scope_sql} and {status} and {NOT_SNOOZED} "
         "group by f.severity, f.status, f.area"), scope_params).all())
 
 
@@ -279,3 +305,154 @@ def load_baselines(s: Session, company_id: UUID) -> dict[tuple[str, str], tuple[
 def baselines_computed_at(s: Session, company_id: UUID) -> Any:
     return s.execute(text("select max(computed_at) from intel.baseline where company_id = :c"),
                      {"c": str(company_id)}).scalar()
+
+
+# --------------------------------------------------------------------------- snooze
+def set_snooze(s: Session, finding_id: UUID, until: Any) -> None:
+    s.execute(
+        text("update intel.finding set snoozed_until = :u, updated_at = now() where id = :i"),
+        {"u": until, "i": str(finding_id)},
+    )
+
+
+def count_snoozed(s: Session, scope_sql: str, scope_params: dict[str, Any]) -> int:
+    row = s.execute(
+        text(
+            f"select count(*) as n from intel.finding f where {scope_sql} and f.snoozed_until > now() "
+            "and f.status in ('new', 'sent', 'acknowledged', 'explained')"
+        ),
+        scope_params,
+    ).one()
+    return int(row.n)
+
+
+def related_findings(
+    s: Session, scope_sql: str, scope_params: dict[str, Any], row: Row[Any], limit: int
+) -> list[Row[Any]]:
+    """Other open findings about the same person or thing, or of the same kind at the same branch."""
+    return list(
+        s.execute(
+            text(
+                f"select {COLUMNS} from intel.finding f where {scope_sql} and f.id <> :me and f.status in "
+                "('new', 'sent', 'acknowledged', 'explained') and ((:et::text is not null and f.entity_type = "
+                ":et and f.entity_id = :ei) "
+                "or (:br::uuid is not null and f.branch_id = :br and f.check_code = :cc)) "
+                "order by f.last_seen_at desc limit :limit"
+            ),
+            dict(
+                scope_params,
+                me=str(row.id),
+                et=row.entity_type,
+                ei=_s(row.entity_id),
+                br=_s(row.branch_id),
+                cc=row.check_code,
+                limit=limit,
+            ),
+        ).all()
+    )
+
+
+def open_matching(
+    s: Session,
+    *,
+    company_id: UUID,
+    check_code: str,
+    branch_id: UUID | None,
+    entity_type: str | None,
+    entity_id: UUID | None,
+    limit: int = 500,
+) -> list[Row[Any]]:
+    """Open findings of one check that an ignore rule for that branch or thing would cover."""
+    return list(
+        s.execute(
+            text(
+                f"select {COLUMNS} from intel.finding f where f.company_id = :co and f.check_code = :cc and "
+                f"f.status in "
+                "('new', 'sent', 'acknowledged', 'explained') and (cast(:br as uuid) is null or f.branch_id = :br) "
+                "and (cast(:ei as uuid) is null or (f.entity_type = :et and f.entity_id = :ei)) limit :limit"
+            ),
+            {
+                "co": str(company_id),
+                "cc": check_code,
+                "br": _s(branch_id),
+                "et": entity_type,
+                "ei": _s(entity_id),
+                "limit": limit,
+            },
+        ).all()
+    )
+
+
+# --------------------------------------------------------------------------- ignore rules ("this is normal")
+RULE_COLUMNS = (
+    "r.id, r.created_at, r.created_by, u.full_name as created_by_name, r.company_id, r.check_code, r.branch_id, "
+    "r.entity_type, r.entity_id, r.scope_label, r.until_date, r.reason"
+)
+
+
+def insert_rule(
+    s: Session,
+    *,
+    company_id: UUID,
+    check_code: str,
+    branch_id: UUID | None,
+    entity_type: str | None,
+    entity_id: UUID | None,
+    scope_label: str,
+    until_date: date | None,
+    reason: str | None,
+    user_id: UUID | None,
+) -> UUID:
+    row = s.execute(
+        text(
+            "insert into intel.suppression_rule (tenant_id, created_by, company_id, check_code, branch_id, "
+            "entity_type, "
+            "entity_id, scope_label, until_date, reason) values (kernel.current_tenant(), :u, :co, :cc, :br, "
+            ":et, :ei, :sl, "
+            ":ud, :re) returning id"
+        ),
+        {
+            "u": _s(user_id),
+            "co": str(company_id),
+            "cc": check_code,
+            "br": _s(branch_id),
+            "et": entity_type,
+            "ei": _s(entity_id),
+            "sl": scope_label[:200],
+            "ud": until_date,
+            "re": reason,
+        },
+    ).one()
+    rule_id: UUID = row.id
+    return rule_id
+
+
+def active_rules(s: Session, today: date, company_id: UUID | None = None) -> list[Row[Any]]:
+    return list(
+        s.execute(
+            text(
+                f"select {RULE_COLUMNS} from intel.suppression_rule r left join kernel.app_user u on u.id = "
+                f"r.created_by "
+                "where r.removed_at is null and (r.until_date is null or r.until_date >= :today) "
+                "and (cast(:co as uuid) is null or r.company_id = :co) order by r.created_at desc"
+            ),
+            {"today": today, "co": _s(company_id)},
+        ).all()
+    )
+
+
+def get_rule(s: Session, rule_id: UUID) -> Row[Any] | None:
+    return s.execute(
+        text(
+            f"select {RULE_COLUMNS} from intel.suppression_rule r left join kernel.app_user u on u.id = r.created_by "
+            "where r.id = :i and r.removed_at is null"
+        ),
+        {"i": str(rule_id)},
+    ).first()
+
+
+def remove_rule(s: Session, rule_id: UUID, user_id: UUID | None) -> None:
+    s.execute(
+        text("update intel.suppression_rule set removed_at = now(), removed_by = :u where id = :i"),
+        {"u": _s(user_id), "i": str(rule_id)},
+    )

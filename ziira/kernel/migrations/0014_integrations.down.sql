@@ -1,0 +1,13 @@
+drop table if exists kernel.webhook_attempt;
+drop table if exists kernel.webhook_delivery;
+drop table if exists kernel.webhook_endpoint;
+alter table kernel.api_key drop column if exists rotated_from;
+alter table kernel.api_key drop column if exists window_count;
+alter table kernel.api_key drop column if exists window_started;
+alter table kernel.api_key drop column if exists use_count;
+alter table kernel.api_key drop column if exists last_ip;
+alter table kernel.api_key drop column if exists last_used_at;
+alter table kernel.api_key drop column if exists rate_limit_per_minute;
+alter table kernel.api_key drop column if exists branch_id;
+alter table kernel.api_key drop column if exists company_id;
+alter table kernel.api_key drop column if exists read_only;

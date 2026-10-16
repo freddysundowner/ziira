@@ -52,6 +52,8 @@ class UnusualExpense(IntelCheck):
     """A day's spending on an expense account far above what that branch normally spends on it."""
 
     code = "finance.unusual_expense"
+
+    value_kind = "money"
     title = "Unusually large expense"
     area = "books"
     description = "A branch spent far more on one kind of expense in a day than it normally does."
@@ -95,6 +97,8 @@ class StaleReconciliation(IntelCheck):
     """A bank reconciliation started and never finished."""
 
     code = "finance.stale_reconciliation"
+
+    value_kind = "days"
     title = "Bank reconciliation left open"
     area = "books"
     description = "A bank reconciliation was started a while ago and has not been completed."
@@ -130,6 +134,8 @@ class UnreconciledBankLines(IntelCheck):
     """Money movements on a bank account that never reached a reconciliation."""
 
     code = "finance.unreconciled_bank_lines"
+
+    value_kind = "count"
     title = "Old unreconciled bank lines"
     area = "books"
     description = "Entries on a bank account are older than the limit and still not matched to a bank statement."
@@ -173,6 +179,8 @@ class LowGrossMargin(IntelCheck):
     """The month so far earns a much lower gross margin than the previous three months."""
 
     code = "finance.low_gross_margin"
+
+    value_kind = "percent"
     title = "Gross margin well below normal"
     area = "books"
     description = "The share of sales kept after the cost of what was sold is far below the last three months."

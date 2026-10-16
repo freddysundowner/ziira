@@ -13,8 +13,11 @@ import pytest
 from sqlalchemy import text
 
 from tests.conftest import make_tenant, sign_in
+from tests.operator_mode import operator_mode
 from ziira.kernel import mfa, operators
 from ziira.kernel.db import master_session, tenant_session
+
+_second_factor = operator_mode("totp")        # these tests are about the authenticator-app sign-in
 
 API = "/api/v1"
 OP_PASSWORD = "operator-pass-987"
@@ -53,7 +56,9 @@ def code_for(secret: str) -> tuple[str, float]:
 def operator_token(client, email: str, secret: str) -> dict[str, str]:
     r = client.post(f"{API}/operator/sign-in", json={"email": email, "password": OP_PASSWORD})
     assert r.status_code == 200, r.text
-    assert set(r.json()) == {"challenge"}                      # a password alone never gives access
+    if "access_token" in r.json():                             # ZIIRA_OPERATOR_MFA=off: the password alone is enough
+        return {"Authorization": f"Bearer {r.json()['access_token']}"}
+    assert set(r.json()) == {"challenge", "must_change_password"}   # with a second factor a password alone gives nothing
     code, moment = code_for(secret)
     with patch.object(mfa, "_now", lambda: moment):
         v = client.post(f"{API}/operator/mfa/verify", json={"challenge": r.json()["challenge"], "code": code})

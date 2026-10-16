@@ -2,6 +2,7 @@
 name = "ai_anthropic"
 title = "AI provider: Anthropic Messages API"
 description = "Lets Ziira's AI features write explanations and answer questions using the Anthropic service."
+category = "ai"
 kind = "plugin"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

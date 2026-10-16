@@ -1,0 +1,86 @@
+---
+import type { Lang } from "../content/types";
+import { ui } from "../i18n/ui";
+import { homeOf } from "../lib/registry";
+import { resolveNav } from "../lib/nav";
+import { appLinks, siteConfig } from "../lib/siteConfig";
+import Logo from "./Logo.astro";
+import Icon from "./Icon.astro";
+
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const t = ui[lang];
+const groups = resolveNav(lang);
+const isActive = (g: { href: string; columns: { links: { href: string }[] }[] }) =>
+  g.href.startsWith("/#") ? false : path === g.href || (g.href !== "/" && path.startsWith(g.href)) || g.columns.some((c) => c.links.some((l) => l.href !== "/" && path.startsWith(l.href) && l.href.length > 1 && !l.href.startsWith("/#")));
+const ann = siteConfig.announcement;
+---
+{ann && (
+  <div class="announce" role="region" aria-label="Announcement" hidden={!ann.showNow} data-from={ann.from} data-until={ann.until}>
+    {ann.href ? <a href={ann.href}>{ann[lang]}</a> : ann[lang]}
+  </div>
+)}
+{ann && (ann.from || ann.until) && (
+  <script is:inline>
+    // The banner's dates are applied in the visitor's browser too, so a banner starts and ends on time between rebuilds.
+    (function () {
+      var el = document.querySelector(".announce[data-from], .announce[data-until]");
+      if (!el) return;
+      var now = Date.now(), from = el.getAttribute("data-from"), until = el.getAttribute("data-until");
+      el.hidden = (from && now < Date.parse(from)) || (until && now >= Date.parse(until));
+    })();
+  </script>
+)}
+<header class="site-header">
+  <div class="container bar">
+    <a class="logo" href={homeOf(lang)} aria-label={`${siteConfig.orgName}, ${t.home}`}><Logo />{siteConfig.orgName}</a>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label={t.menu} />
+    <label for="nav-toggle" class="nav-button" aria-hidden="true"><span class="burger"></span>{t.menu}</label>
+    <nav class="nav" aria-label={t.primaryNav}>
+      <ul class="nav-list">
+        {groups.map((g) => (
+          <li class={`nav-item${g.mega ? " mega" : ""}`}>
+            <a class={`nav-link${isActive(g) ? " active" : ""}`} href={g.href} aria-current={path === g.href ? "page" : undefined}>
+              {g.label}
+              {g.columns.length > 0 && <svg class="chev" viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="m2 4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>}
+            </a>
+            {g.columns.length > 0 && <input type="checkbox" id={`acc-${g.key}`} class="acc" aria-label={`Show the ${g.label} links`} />}
+            {g.columns.length > 0 && <label for={`acc-${g.key}`} class="acc-btn" aria-hidden="true"></label>}
+            {g.columns.length > 0 && (
+              <div class={`menu${g.right ? " right" : ""}`}>
+                <div class="menu-cols">
+                  {g.columns.map((c) => (
+                    <div>
+                      {c.title && <p class="menu-title">{c.title}</p>}
+                      <ul>
+                        {c.links.map((l) => (
+                          <li>
+                            <a class="menu-item" href={l.href}>
+                              <span class={`menu-ico c${l.color ?? 1}`}>{l.icon && <Icon name={l.icon} />}</span>
+                              <b>{l.label}</b>
+                              <span>{l.desc}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+                {g.foot && <a class="menu-foot" href={g.foot.href}>{g.foot.label}</a>}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div class="nav-actions">
+        <a class="btn-link" href={appLinks.signIn}>{t.signIn}</a>
+        <a class="btn btn-primary" href={appLinks.register}>{t.getStarted}</a>
+      </div>
+    </nav>
+  </div>
+</header>
+<script is:inline>
+  // Progressive: Escape closes an open menu; tapping a link in the phone menu closes it (an in-page link such as /#how-it-works does not reload the page).
+  document.addEventListener("keydown", function (e) { if (e.key !== "Escape") return; var t = document.getElementById("nav-toggle"); if (t) t.checked = false; var a = document.activeElement; if (a && a.closest && a.closest(".nav-item")) a.blur(); });
+  document.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest(".nav a"); var t = document.getElementById("nav-toggle"); if (a && t) t.checked = false; });
+</script>

@@ -2,6 +2,8 @@
   "menu": "Sales documents",
   "title": "Sales documents",
   "tabs": {
+    "quotesOrders": "Quotes and orders",
+    "customerPayments": "Customer payments",
     "quotations": "Quotations",
     "orders": "Sales orders",
     "invoices": "Invoices",

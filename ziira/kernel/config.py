@@ -1,5 +1,6 @@
 """Settings read from environment variables (prefix ZIIRA_) or a .env file."""
 
+import ipaddress
 from functools import lru_cache
 from uuid import UUID
 
@@ -47,7 +48,7 @@ class Settings(BaseSettings):
     # allows a limited number in total, so the least recently used pools are closed beyond this (they reopen on demand).
     max_cached_tenant_engines: int = 25
 
-    # The address other systems (Safaricom) use to reach this API, for callback URLs. Must be https in production.
+    # The address other systems (the provider) use to reach this API, for callback URLs. Must be https in production.
     public_base_url: str = "http://localhost:8000"
 
     # Encrypts tenant database credentials stored in the master database.
@@ -74,6 +75,8 @@ class Settings(BaseSettings):
     # Units for a business that registers (or is created) in standalone mode: Ziira Intelligence watching the system it
     # already has (docs/standalone-mode.md). What they require comes along.
     standalone_units: str = "connect,intel,command,imports"
+    # Optional TOML file of editions that replaces the built-in ziira/kernel/editions.toml (same shape).
+    editions_file: str = ""
     registration_per_email_per_hour: int = 3
     registration_per_ip_per_hour: int = 10
     registration_token_hours: int = 24
@@ -121,6 +124,35 @@ class Settings(BaseSettings):
     pg_dump_command: str = ""
     pg_restore_command: str = ""
     pg_tool_host: str = ""                  # host/port the tool above uses to reach the server (inside the container)
+    # The folder `ziira backup --dir` writes to, so the operator console can show when the last backup was taken (it
+    # only reads the manifests). Empty: the console says "not reported".
+    backup_dir: str = ""
+    # Platform staff must confirm with a fresh second-factor code before the console changes anything if their last
+    # confirmation is older than this many minutes.
+    operator_mfa_max_age_minutes: int = 10
+    # How platform staff (Super Admin) sign in (docs/security.md, "Platform staff sign-in"). "off": email and password
+    # only; "totp": password, then a code from an authenticator app. With "off" the same freshness window above applies
+    # to re-entering the password before a change. Production refuses "off" unless the choice is acknowledged.
+    operator_mfa: str = "off"
+    operator_mfa_off_acknowledged: bool = False
+    # With "off": a sign-in ends this many hours after it began, or after this many minutes without a request.
+    operator_session_hours: int = 8
+    operator_idle_minutes: int = 30
+    # Comma separated CIDRs (e.g. "203.0.113.0/24,2001:db8::/32") allowed to reach /api/v1/operator; empty: no limit.
+    operator_allowed_networks: str = ""
+    # Host names of a production install (ziira/kernel/host_routing.py): the Super Admin host and the business web app
+    # host. With operator_host set, /api/v1/operator answers only for that Host header (404 elsewhere); empty: no limit.
+    operator_host: str = ""
+    app_host: str = ""
+    # Email the operator when a sign-in comes from an address not seen before (needs the platform email provider).
+    operator_signin_emails: bool = False
+    # Website content (docs/platform-admin-content.md; switched off when `deployment_mode` is "selfhosted"). The address
+    # a publish calls so the static site rebuilds (a POST with a signed body; treat the address as a secret, it may
+    # carry a token), the key that signs that body, and how many requests a minute one address may make to the public
+    # content.
+    site_build_hook_url: str = ""
+    site_build_hook_secret: str = ""
+    site_public_rate_per_minute: int = 120
     # Reading pictures (scanned statements, photos): self-hosted Tesseract, so statements never leave the server.
     ocr_command: str = "tesseract"           # the program (a full path if it is not on PATH)
     ocr_languages: str = "eng"               # language codes joined with + (e.g. "eng+swa"); packs installed
@@ -139,14 +171,82 @@ class Settings(BaseSettings):
     ai_max_retries: int = 2
     ai_terms_confirmed: bool = False
 
+    # Plans, subscriptions and licences (docs/platform-admin.md, docs/licensing.md). "saas": this deployment sells
+    # subscriptions and enforces them; "selfhosted": a business runs its own copy, subscription rows are ignored and a
+    # signed licence (installed with `ziira licence install`) decides units, limits and expiry. The licence is checked
+    # with the vendor's public key (base64 of the 32 raw bytes). The vendor's own deployment keeps its signing key in a
+    # file named by
+    # `licence_signing_key_file`; self-hosted copies never have it. `licence_required` makes an instance without a valid
+    # licence read-only (leave false for development).
+    deployment_mode: str = "saas"
+    licence_public_key: str = ""
+    licence_signing_key_file: str = ""
+    licence_required: bool = False
+    instance_id: str = ""
+    licence_clock_tolerance_hours: int = 24
+    # Plan given to a business that registers (a plan code). Empty: the edition's own default plan if it has one, else
+    # none (the business is unmanaged: no limits, no billing).
+    default_plan_code: str = ""
+
+    # Third-party plugins (docs/plugin-review.md). Folders (separated by ":") whose sub-folders are plugins to load in
+    # addition to the built-in ones; `ziira plugin install-archive` unpacks into the first. In production a plugin from
+    # these folders loads only if it is listed in `allowed_plugins` (comma separated: `name` or `name=SHA256`, the hash
+    # being the checksum of its files that the reviewer approved) and its files still match their checksum.
+    extra_unit_paths: str = ""
+    allowed_plugins: str = ""
+
+    # Public API and webhooks (docs/public-api.md, docs/webhooks.md). The default requests per minute of an API key that
+    # has no limit of its own; how long a webhook delivery is retried; how long a delivery keeps its body (to retry and
+    # redeliver) before only its hash and first bytes remain; and how long its log lines are kept.
+    api_key_rate_limit_per_minute: int = 600
+    webhook_max_attempts: int = 9
+    webhook_retry_hours: int = 24
+    webhook_timeout_seconds: float = 10.0
+    webhook_body_days: int = 7
+    webhook_log_days: int = 90
+
+    def extra_unit_path_list(self) -> list[str]:
+        """The extra plugin folders as a list."""
+        return [p.strip() for p in self.extra_unit_paths.split(":") if p.strip()]
+
+    def allowed_plugin_map(self) -> dict[str, str]:
+        """Allowed plugins: name -> the approved checksum ("" when only the name was given)."""
+        found: dict[str, str] = {}
+        for item in self.allowed_plugins.split(","):
+            name, _, digest = item.strip().partition("=")
+            if name:
+                found[name] = digest.strip().lower()
+        return found
+
+    def operator_network_list(self) -> list[ipaddress.IPv4Network | ipaddress.IPv6Network]:
+        """The networks allowed to reach the operator API (empty: all). Raises ValueError on a bad entry."""
+        return [ipaddress.ip_network(item.strip(), strict=False)
+                for item in self.operator_allowed_networks.split(",") if item.strip()]
+
+    def operator_password_only(self) -> bool:
+        """True when platform staff sign in with email and password alone."""
+        return self.operator_mfa == "off"
+
     def cors_origin_list(self) -> list[str]:
         """The allowed CORS origins as a list."""
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     def check_safe_for_production(self) -> None:
         """Refuse to run in production with development shortcuts switched on."""
+        if self.operator_mfa not in ("off", "totp"):
+            raise RuntimeError("ZIIRA_OPERATOR_MFA must be off or totp")
+        try:
+            self.operator_network_list()
+        except ValueError as error:
+            raise RuntimeError(f"ZIIRA_OPERATOR_ALLOWED_NETWORKS must list CIDRs such as 203.0.113.0/24: {error}") \
+                from None
         if self.env != "production":
             return
+        if self.operator_mfa == "off" and not self.operator_mfa_off_acknowledged:
+            raise RuntimeError("Platform staff sign in with a password only (ZIIRA_OPERATOR_MFA=off): one stolen or "
+                               "guessed password then gives control of every business. Set ZIIRA_OPERATOR_MFA=totp, "
+                               "or accept the risk on purpose with ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED=true "
+                               "(docs/security.md)")
         if self.dev_tenant_header:
             raise RuntimeError("ZIIRA_DEV_TENANT_HEADER must be false in production")
         if self.secret_key == DEV_SECRET_KEY or len(self.secret_key) < 32:
@@ -169,6 +269,10 @@ class Settings(BaseSettings):
         if self.registration_mode != "closed" and not self.platform_email_provider:
             raise RuntimeError("Registration needs ZIIRA_PLATFORM_EMAIL_PROVIDER (and its secret) to send the "
                                "verification email; or set ZIIRA_REGISTRATION_MODE=closed")
+        if self.deployment_mode not in ("saas", "selfhosted"):
+            raise RuntimeError("ZIIRA_DEPLOYMENT_MODE must be saas or selfhosted")
+        if self.deployment_mode == "selfhosted" and self.licence_required and not self.licence_public_key:
+            raise RuntimeError("A self-hosted instance that requires a licence needs ZIIRA_LICENCE_PUBLIC_KEY")
 
 
 @lru_cache

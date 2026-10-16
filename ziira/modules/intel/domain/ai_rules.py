@@ -150,7 +150,7 @@ POOL_LIMIT = 60
 
 
 def numbers_in(text: str) -> list[Decimal]:
-    """Every number written in `text`, without sign: "KES 1,250.50" gives 1250.50; "2026-10-15" gives 2026, 10, 15."""
+    """Every number written in `text`, without sign: "USD 1,250.50" gives 1250.50; "2026-10-15" gives 2026, 10, 15."""
     found: list[Decimal] = []
     for m in _NUMBER.finditer(text):
         try:

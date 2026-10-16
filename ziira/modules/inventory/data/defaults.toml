@@ -1,0 +1,4 @@
+# The store every branch starts with, so stock can be received and sold from day one. Editable like any location.
+[store]
+name = "Main store"
+code_suffix = "MAIN"

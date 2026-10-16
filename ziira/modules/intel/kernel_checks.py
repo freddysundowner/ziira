@@ -94,6 +94,8 @@ class AfterHoursActivity(IntelCheck):
     """A person doing a lot in the system outside the business's working hours."""
 
     code = "controls.after_hours_activity"
+
+    value_kind = "count"
     title = "Activity at unusual hours"
     area = "controls"
     description = "A person made many changes outside working hours (read in the company's time zone)."
@@ -128,6 +130,8 @@ class ExceptionsBacklog(IntelCheck):
     """Exceptions raised by the system that nobody has looked at."""
 
     code = "controls.exceptions_backlog"
+
+    value_kind = "count"
     title = "Exceptions nobody has reviewed"
     area = "controls"
     description = "Items in the exceptions inbox have waited too long without anyone reviewing them."

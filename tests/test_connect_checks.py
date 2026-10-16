@@ -169,7 +169,7 @@ def test_sale_without_payment_flags_unmatched_electronic_sales_per_branch_and_da
     assert set(items) == {(d12, shop["branch_id"]), (d13, shop["branch_id"]), (d12, shop["juja"])}
     hq12 = items[(d12, shop["branch_id"])]
     assert D(hq12.amount) == D("2000.00") and hq12.severity == "medium"
-    assert "1 sale at Head office on 2026-10-12 worth KES 2,000.00" in hq12.summary
+    assert "1 sale at Head office on 12 Oct 2026 worth KES 2,000.00" in hq12.summary
     assert D(items[(d13, shop["branch_id"])].amount) == D("700.00")
     assert D(items[(d12, shop["juja"])].amount) == D("4000.00")
 
@@ -265,7 +265,7 @@ def test_branch_sales_low_judges_yesterday_against_the_weekday_normal(client, sh
     run(shop, "standalone.branch_sales_low")
     (f,) = found(shop, "standalone.branch_sales_low")
     assert f.severity == "high" and D(f.amount) == D("8000.00") and f.branch_id == shop["branch_id"]
-    assert "Head office sold KES 2,000.00 on 2026-10-13 (Tuesday)" in f.summary and "about KES 10,000.00" in f.summary
+    assert "Head office sold KES 2,000.00 on 13 Oct 2026 (Tuesday)" in f.summary and "about KES 10,000.00" in f.summary
 
 
 def test_branch_sales_low_silent_cases_boundaries_and_incomplete_days(client, shop) -> None:  # type: ignore[no-untyped-def]
@@ -302,7 +302,7 @@ def test_sales_outside_trading_hours_in_the_company_time_zone(client, shop) -> N
     (f,) = found(shop, "standalone.out_of_hours_sales")
     # 03:30, 05:59 (before 06:00) and 22:00, 23:10 (from 22:00 on) are out; 06:00 and 21:59 are in
     assert D(f.amount) == D("1400.00") and f.severity == "low" and f.branch_id == shop["branch_id"]
-    assert "made 4 sales worth KES 1,400.00 on 2026-10-12 outside 06:00-22:00, the first at 03:30" in f.summary
+    assert "made 4 sales worth KES 1,400.00 on 12 Oct 2026 outside 06:00-22:00, the first at 03:30" in f.summary
     tune(client, shop, "standalone.out_of_hours_sales", open_hour=0, close_hour=24)
     run(shop, "standalone.out_of_hours_sales")
     assert len(found(shop, "standalone.out_of_hours_sales")) == 1                   # an event stays until a person deals with it
@@ -325,7 +325,7 @@ def test_sales_entered_days_after_their_date(client, shop) -> None:  # type: ign
     items = {D(f.amount): f for f in found(shop, "standalone.late_entered_sales")}
     assert set(items) == {D("100.00"), D("200.00")}
     assert items[D("100.00")].severity == "low" and items[D("200.00")].severity == "medium"
-    assert ("Sale N-l2 by Wambui for KES 200.00 is dated 2026-10-01 but was entered on 2026-10-09, 8 days later."
+    assert ("Sale N-l2 by Wambui for KES 200.00 is dated 1 Oct 2026 but was entered on 9 Oct 2026, 8 days later."
             in items[D("200.00")].summary)
     tune(client, shop, "standalone.late_entered_sales", min_days_late=6)
     with system(shop) as s:
@@ -388,7 +388,7 @@ def test_cashier_habits_are_judged_against_their_own_baseline(client, shop, kind
         return
     (f,) = items
     assert D(f.amount) == D(amount) and f.severity == "medium" and f.branch_id == shop["branch_id"]
-    assert f"On {D0}" in f.summary and "over 10 sales" in f.summary
+    assert f"On {D0.day} {D0.strftime('%b %Y')}" in f.summary and "over 10 sales" in f.summary
     if kind == "void":
         assert "u1's void rate was 30% over 10 sales (KES 300.00); their usual is about 3%." in f.summary
 
@@ -521,7 +521,7 @@ def test_credit_given_to_a_customer_who_was_already_overdue(client, shop) -> Non
     run(shop, "standalone.credit_to_overdue_customer")
     (f,) = found(shop, "standalone.credit_to_overdue_customer")
     assert f.severity == "medium" and D(f.amount) == D("2000.00") and f.branch_id == shop["juja"]
-    assert ("Invoice INV-new for KES 2,000.00 was issued on 2026-10-10 to Late Payer, who still owes KES 5,000.00 on 1 "
+    assert ("Invoice INV-new for KES 2,000.00 was issued on 10 Oct 2026 to Late Payer, who still owes KES 5,000.00 on 1 "
             "older invoice that was already overdue (the oldest by 39 days).") in f.summary
     tune(client, shop, "standalone.credit_to_overdue_customer", days=14, high_days_overdue=30)
     with system(shop) as s:
@@ -551,7 +551,7 @@ def test_supplier_price_rise_compares_the_latest_purchase_with_earlier_ones(clie
     run(shop, "standalone.supplier_price_rise")
     (f,) = found(shop, "standalone.supplier_price_rise")
     assert f.severity == "high" and D(f.amount) == D("24.33")
-    assert "Cement 50kg was last bought on 2026-10-10 at KES 125.00 a unit, 24% above the KES 100.67 it cost on average" in f.summary
+    assert "Cement 50kg was last bought on 10 Oct 2026 at KES 125.00 a unit, 24% above the KES 100.67 it cost on average" in f.summary
     tune(client, shop, "standalone.supplier_price_rise", rise_percent=30)
     with system(shop) as s:
         s.execute(text("delete from intel.finding_event"))
@@ -581,7 +581,7 @@ def test_duplicate_supplier_invoices_by_number_or_by_date_and_clears_when_one_is
     items = found(shop, "standalone.duplicate_supplier_invoice")
     assert sorted(D(f.amount) for f in items) == [D("800.00"), D("5000.00")]
     big = next(f for f in items if D(f.amount) == D("5000.00"))
-    assert big.summary == ("Invoices INV-77 (2026-10-01) and inv-77 (2026-10-20) from Bidco Supplies are both for "
+    assert big.summary == ("Invoices INV-77 (1 Oct 2026) and inv-77 (20 Oct 2026) from Bidco Supplies are both for "
                            "KES 5,000.00: one may be a duplicate.")
     tune(client, shop, "standalone.duplicate_supplier_invoice", days_apart=1)
     assert run(shop, "standalone.duplicate_supplier_invoice").resolved == 1          # the 2-day pair is no longer one
@@ -610,7 +610,7 @@ def test_duplicate_payments_to_the_same_payee_close_together(client, shop) -> No
     amounts = sorted(D(f.amount) for f in found(shop, "standalone.duplicate_payment"))
     assert amounts == [D("700.00"), D("2500.00")]      # Bidco; and the two Mabati transfers with different codes
     big = next(f for f in found(shop, "standalone.duplicate_payment") if D(f.amount) == D("2500.00"))
-    assert "Two payments of KES 2,500.00 went to Bidco Ltd, on 2026-10-12 08:00 and 2026-10-12 14:00" in big.summary
+    assert "Two payments of KES 2,500.00 went to Bidco Ltd, on 12 Oct 2026 08:00 and 12 Oct 2026 14:00" in big.summary
     tune(client, shop, "standalone.duplicate_payment", hours_apart=96)
     run(shop, "standalone.duplicate_payment")
     assert sorted(D(f.amount) for f in found(shop, "standalone.duplicate_payment")) == [D("700.00"), D("900.00"), D("2500.00")]
@@ -645,7 +645,7 @@ def test_stock_adjustments_large_odd_hours_or_back_dated(client, shop) -> None: 
     items = {f.summary: f for f in found(shop, "standalone.stock_adjustment")}
     texts = " | ".join(items)
     assert len(items) == 4
-    assert "Otieno adjusted Cement 50kg by -120 on 2026-10-12: worth KES 6,000.00. Reason given: damaged." in texts
+    assert "Otieno adjusted Cement 50kg by -120 on 12 Oct 2026: worth KES 6,000.00. Reason given: damaged." in texts
     assert "entered at 02:00, outside trading hours" in texts and "entered 7 days after its date" in texts
     assert "150 units" in texts and all(f.severity == "medium" for f in items.values())
     tune(client, shop, "standalone.stock_adjustment", min_value="7000", min_quantity="200", backdate_days=10, open_hour=0)
@@ -756,7 +756,7 @@ def test_an_expense_far_above_its_category_normal(client, shop) -> None:  # type
     run(shop, "standalone.expense_unusually_high")
     (f,) = found(shop, "standalone.expense_unusually_high")
     assert f.branch_id == shop["juja"] and D(f.amount) == D("4000.00")
-    assert f.summary == ("An expense of KES 5,000.00 (generator) on 2026-10-12 in 'Fuel' is far above the usual "
+    assert f.summary == ("An expense of KES 5,000.00 (generator) on 12 Oct 2026 in 'Fuel' is far above the usual "
                          "KES 1,000.00 for that category.")
     tune(client, shop, "standalone.expense_unusually_high", min_amount="6000")
     with system(shop) as s:
@@ -785,7 +785,7 @@ def test_money_received_that_matches_nothing(client, shop) -> None:  # type: ign
     run(shop, "standalone.unmatched_receipt")
     (f,) = found(shop, "standalone.unmatched_receipt")
     assert D(f.amount) == D("4321.00") and f.severity == "low" and f.period_start == d8
-    assert f.summary == "1 payment received on 2026-10-08 worth KES 4,321.00 matches no sale or invoice."
+    assert f.summary == "1 payment received on 8 Oct 2026 worth KES 4,321.00 matches no sale or invoice."
     bank.put("payments", [P("u8", d8, 16, "4321", method="bank", reference="FT104")])       # a second one, same day
     run(shop, "standalone.unmatched_receipt")
     assert D(found(shop, "standalone.unmatched_receipt")[0].amount) == D("8642.00")
@@ -801,7 +801,7 @@ def test_a_new_user_in_the_connected_system(client, shop) -> None:  # type: igno
                     User("u3", "Unknown Age", "Admin")])
     run(shop, "standalone.new_user")
     (f,) = found(shop, "standalone.new_user")
-    assert f.summary == "Newbie Hire was added as a user (Cashier) on 2026-10-10." and f.severity == "low"
+    assert f.summary == "Newbie Hire was added as a user (Cashier) on 10 Oct 2026." and f.severity == "low"
     tune(client, shop, "standalone.new_user", days=2)
     assert run(shop, "standalone.new_user").created == 0
     assert len(found(shop, "standalone.new_user")) == 1                              # an event stays until dealt with

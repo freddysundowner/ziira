@@ -95,3 +95,8 @@ from ziira.modules.pos import privacy as _privacy  # noqa: E402, F401, I001 - re
 from ziira.modules.pos import organisation as _organisation  # noqa: E402, F401, I001
 
 from ziira.modules.pos import ask_tools as _ask_tools  # noqa: E402, F401, I001 - registers the Ask Ziira tools
+
+from ziira.modules.connect.public import CORE_COVERAGE  # noqa: E402, I001
+from ziira.modules.pos.core_coverage import PosCoverage  # noqa: E402, I001
+
+provides(CORE_COVERAGE)(PosCoverage)  # tells Connectors what Core covers

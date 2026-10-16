@@ -9,13 +9,13 @@ from ziira.sdk import Session, job
 
 @job("payments.send_stk")
 def send_stk(session: Session, payload: dict[str, Any]) -> None:
-    """Ask Safaricom to put the payment prompt on the customer's phone."""
+    """Ask the provider to put the payment prompt on the customer's phone."""
     intents.send(session, UUID(payload["intent_id"]), payload["phone"])
 
 
 @job("payments.check_stk")
 def check_stk(session: Session, payload: dict[str, Any]) -> None:
-    """Ask Safaricom what became of a prompt whose callback has not arrived."""
+    """Ask the provider what became of a prompt whose callback has not arrived."""
     intents.check(session, UUID(payload["intent_id"]), int(payload.get("attempt", 0)))
 
 

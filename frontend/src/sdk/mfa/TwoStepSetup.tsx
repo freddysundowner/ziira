@@ -1,11 +1,11 @@
 import { Copy } from "lucide-react";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { api, unwrap } from "../api";
 import { useTranslation } from "../i18n";
 import { toast } from "../notify";
 import { Alert, Button, ErrorState, Field, Input, Spinner } from "../ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { BackupCodes } from "./BackupCodes";
 import { copyText } from "./clipboard";
 import { cleanAuthenticatorCode, groupSecret, isAuthenticatorCode } from "./helpers";
@@ -33,11 +33,14 @@ export function TwoStepSetup({ onFinished, onCancel }: { onFinished: () => void;
   const { t } = useTranslation();
   const [code, setCode] = useState("");
   const [codes, setCodes] = useState<string[] | null>(null);
-  const started = useRef(false);
 
-  const setup = useMutation({
-    meta: { silent: true },
-    mutationFn: () => unwrap(api.POST("/api/v1/auth/mfa/setup")),
+  // A query, not a mutation fired from an effect: React runs effects twice in development and a mutation's result is then
+  // lost (the box stayed on "Loading"). A query is shared by both runs, asked once, and forgotten when the box closes, so
+  // the next opening gets a new secret. It must never refetch by itself: asking again replaces the secret being scanned.
+  const setup = useQuery({
+    queryKey: ["mfa-setup"],
+    queryFn: () => unwrap(api.POST("/api/v1/auth/mfa/setup")),
+    staleTime: Infinity, gcTime: 0, retry: false, refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false,
   });
   const enable = useMutation({
     meta: { silent: true },
@@ -46,14 +49,8 @@ export function TwoStepSetup({ onFinished, onCancel }: { onFinished: () => void;
     onError: () => setCode(""),
   });
 
-  useEffect(() => {
-    if (started.current) return;            // asking again would replace the secret the person is about to scan
-    started.current = true;
-    setup.mutate();
-  }, [setup]);
-
   if (codes) return <BackupCodes codes={codes} onDone={onFinished} />;
-  if (setup.isError) return <ErrorState title={t("mfa.setupFailed")} message={setup.error.message} onRetry={() => setup.mutate()} />;
+  if (setup.isError) return <ErrorState title={t("mfa.setupFailed")} message={setup.error.message} onRetry={() => void setup.refetch()} />;
   if (!setup.data) return <p className="flex items-center justify-center gap-2 p-8 text-sm text-muted"><Spinner /> {t("loading")}</p>;
 
   const { secret, otpauth_uri } = setup.data;

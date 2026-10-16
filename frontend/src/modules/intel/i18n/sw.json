@@ -1,6 +1,8 @@
 {
+ "howItWorks": "Jinsi Intelligence inavyofanya kazi",
  "menu": "Yaliyogunduliwa",
  "checksMenu": "Mipangilio ya ukaguzi",
+ "checksTab": "Ukaguzi",
  "title": "Yaliyogunduliwa",
  "hint": "Mambo ambayo Intelligence imeona kwenye biashara yako yanayostahili kuangaliwa. Kila moja ni swali la kujibiwa, si hukumu.",
  "openFindings": "Yaliyo wazi",
@@ -93,6 +95,7 @@
  "assignedSomeone": "Mtu mwingine",
  "unassigned": "Bado hakuna",
  "closedOn": "Lilifungwa tarehe",
+ "checkCode": "Msimbo wa ukaguzi",
  "check": "Ukaguzi",
  "checksTitle": "Mipangilio ya ukaguzi",
  "checksHint": "Ukaguzi ambao Intelligence hufanya kwa biashara yako. Zima usioutaka, au badilisha viwango vyake.",
@@ -311,5 +314,13 @@
   "outcome": "Matokeo",
   "outcomes": { "executed": "Imefanyika", "failed": "Haikufanikiwa" },
   "message": "Ujumbe"
- }
+ },
+  "source": {
+    "label": "Chanzo",
+    "filter": "Chanzo",
+    "all": "Vyanzo vyote",
+    "connected": "Kutoka mfumo uliounganisha",
+    "ziira": "Kutoka Ziira",
+    "connectedShort": "mfumo uliounganishwa"
+  }
 }

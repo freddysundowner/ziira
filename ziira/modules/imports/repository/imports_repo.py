@@ -12,21 +12,22 @@ from ziira.sdk import Session
 
 BATCH_COLUMNS = ("id, company_id, kind, filename, status, delimiter, headers, mapping, options, warnings, created_at, "
                  "created_by, committed_by, committed_at, finished_at, file_check, reverted_at, reverted_by, "
-                 "revert_reason")
+                 "revert_reason, source_kind, source_id")
 ROW_COLUMNS = "id, batch_id, row_no, raw, parsed, status, errors, record_id"
 STATUSES = ("pending", "valid", "invalid", "imported", "skipped", "failed", "reverted")
 
 
 def add_batch(session: Session, *, company_id: UUID, kind: str, filename: str, delimiter: str, headers: list[str],
               mapping: dict[str, str | None], options: dict[str, str], warnings: list[str],
-              created_by: UUID | None) -> UUID:
+              created_by: UUID | None, source_kind: str | None = None, source_id: UUID | None = None) -> UUID:
     row = session.execute(text(
         "insert into imports.batch (tenant_id, company_id, kind, filename, delimiter, headers, mapping, options, "
-        "warnings, created_by) values (kernel.current_tenant(), :c, :k, :f, :d, cast(:h as jsonb), "
-        "cast(:m as jsonb), cast(:o as jsonb), cast(:w as jsonb), :u) returning id"),
+        "warnings, created_by, source_kind, source_id) values (kernel.current_tenant(), :c, :k, :f, :d, "
+        "cast(:h as jsonb), cast(:m as jsonb), cast(:o as jsonb), cast(:w as jsonb), :u, :sk, :si) returning id"),
         {"c": str(company_id), "k": kind, "f": filename, "d": delimiter, "h": json.dumps(headers),
          "m": json.dumps(mapping), "o": json.dumps(options), "w": json.dumps(warnings),
-         "u": str(created_by) if created_by else None}).one()
+         "u": str(created_by) if created_by else None, "sk": source_kind,
+         "si": str(source_id) if source_id else None}).one()
     batch_id: UUID = row.id
     return batch_id
 

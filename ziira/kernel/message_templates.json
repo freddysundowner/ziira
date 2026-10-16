@@ -1,0 +1,74 @@
+{
+  "note": "Ziira's own message templates. {name} placeholders are the variables, in the order of `variables`. A conversational channel may start a conversation only with an approved template; the same wording is used for SMS and email. Wording lives here, as data, in every language we support.",
+  "templates": [
+    {
+      "code": "daily_brief",
+      "category": "utility",
+      "variables": ["name", "business", "summary"],
+      "examples": ["Amina", "Mama Shop", "Sales were up on yesterday and 2 things need attention"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your daily brief", "body": "Hello {name}, here is your daily brief for {business}: {summary}"},
+        "sw": {"subject": "Muhtasari wako wa kila siku", "body": "Habari {name}, huu ni muhtasari wako wa kila siku wa {business}: {summary}"}
+      }
+    },
+    {
+      "code": "urgent_alert",
+      "category": "utility",
+      "variables": ["business", "summary"],
+      "examples": ["Mama Shop", "Cash is short at Thika branch"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Needs your attention", "body": "Needs your attention at {business}: {summary} Open Ziira to see what to do."},
+        "sw": {"subject": "Inahitaji umakini wako", "body": "Inahitaji umakini wako katika {business}: {summary} Fungua Ziira uone cha kufanya."}
+      }
+    },
+    {
+      "code": "overdue_reminder",
+      "category": "utility",
+      "variables": ["customer", "invoice", "amount", "business", "due_date"],
+      "examples": ["Juma", "INV-0042", "1,200.00", "Mama Shop", "2026-09-30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Payment reminder", "body": "Dear {customer}, invoice {invoice} of {amount} to {business} was due on {due_date}. Please pay at your earliest convenience. If you have already paid, thank you. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ukumbusho wa malipo", "body": "Mpendwa {customer}, ankara {invoice} ya {amount} kwa {business} ilikuwa inadaiwa tarehe {due_date}. Tafadhali lipa mapema iwezekanavyo. Kama umeshalipa, asante. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "payment_due",
+      "category": "utility",
+      "variables": ["customer", "invoice", "amount", "business", "due_date"],
+      "examples": ["Juma", "INV-0043", "800.00", "Mama Shop", "2026-10-20"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Payment due soon", "body": "Dear {customer}, a friendly reminder: invoice {invoice} of {amount} to {business} is due on {due_date}. Reply STOP to stop these messages."},
+        "sw": {"subject": "Malipo yanakaribia", "body": "Mpendwa {customer}, ukumbusho: ankara {invoice} ya {amount} kwa {business} inadaiwa tarehe {due_date}. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "action_proposal",
+      "category": "utility",
+      "variables": ["business", "description"],
+      "examples": ["Mama Shop", "Send Juma a payment reminder about 2 overdue invoices."],
+      "buttons": {
+        "en": [["approve", "Approve"], ["reject", "Reject"], ["why", "Why?"]],
+        "sw": [["approve", "Idhinisha"], ["reject", "Kataa"], ["why", "Kwa nini?"]]
+      },
+      "text": {
+        "en": {"subject": "Approval needed", "body": "{business}: Ziira suggests: {description} It needs your decision."},
+        "sw": {"subject": "Idhini inahitajika", "body": "{business}: Ziira inapendekeza: {description} Linahitaji uamuzi wako."}
+      }
+    },
+    {
+      "code": "verification_code",
+      "category": "authentication",
+      "variables": ["code"],
+      "examples": ["482913"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your verification code", "body": "Your Ziira verification code is {code}. It expires in 15 minutes. If you did not ask for it, ignore this message."},
+        "sw": {"subject": "Msimbo wako wa uthibitisho", "body": "Msimbo wako wa uthibitisho wa Ziira ni {code}. Unaisha baada ya dakika 15. Kama hukuuomba, puuza ujumbe huu."}
+      }
+    }
+  ]
+}

@@ -350,7 +350,7 @@ SignedMoney = Annotated[Decimal, Field(max_digits=18, decimal_places=2)]
 
 class ReconcileStartIn(BaseModel):
     company_id: UUID
-    account_id: UUID = Field(description="A bank, M-Pesa or card account of the chart")
+    account_id: UUID = Field(description="A bank, mobile money or card account of the chart")
     statement_date: date
     statement_balance: SignedMoney = Field(description="The statement's closing balance (negative if overdrawn)")
 

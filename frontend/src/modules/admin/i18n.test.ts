@@ -35,9 +35,20 @@ describe("admin translations", () => {
     const holes = (text: string) => (text.match(/{{\w+}}/g) ?? []).sort();
     for (const k of Object.keys(e)) expect(holes(w[k] ?? ""), k).toEqual(holes(e[k] ?? ""));
   });
-  it("has the Apps & plugins screen in both languages with the same keys and placeholders", () => {
+  it("has the Add-ons screen in both languages with the same keys and placeholders", () => {
     expect(keys(swApps).sort()).toEqual(keys(enApps).sort());
     const e = flat(enApps), w = flat(swApps);
+    const holes = (text: string) => (text.match(/{{\w+}}/g) ?? []).sort();
+    for (const k of Object.keys(e)) expect(holes(w[k] ?? ""), k).toEqual(holes(e[k] ?? ""));
+  });
+});
+
+describe("billing translations", () => {
+  it("have the same keys and placeholders in English and Swahili", async () => {
+    const { default: enB } = await import("./i18n/en.billing.json");
+    const { default: swB } = await import("./i18n/sw.billing.json");
+    expect(keys(swB).sort()).toEqual(keys(enB).sort());
+    const e = flat(enB), w = flat(swB);
     const holes = (text: string) => (text.match(/{{\w+}}/g) ?? []).sort();
     for (const k of Object.keys(e)) expect(holes(w[k] ?? ""), k).toEqual(holes(e[k] ?? ""));
   });

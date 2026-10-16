@@ -4,6 +4,7 @@ import { api, Badge, Button, Card, DataTable, PageHeader, Select, unwrap, useCan
 import { useState } from "react";
 
 import { CoveragePanel } from "../components/CoveragePanel";
+import { OverlapBanner } from "../components/OverlapBanner";
 import { StatusChip } from "../components/StatusChip";
 import { when } from "../components/RunsTable";
 import { isStale } from "../logic";
@@ -24,6 +25,7 @@ export default function ConnectionsPage() {
       {companies.length > 1 && (
         <div className="mb-4 max-w-xs"><Select aria-label={t("company")} value={chosen} onChange={(e) => setCompanyId(e.target.value)}>{companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></div>
       )}
+      {chosen && <OverlapBanner companyId={chosen} />}
       <div className="space-y-5">
         <Card flush>
           <DataTable

@@ -32,7 +32,7 @@ def on_sale_returned(session: Session, event: Event) -> None:
 
 @subscribe("payment.settled")
 def on_payment_settled(session: Session, event: Event) -> None:
-    """Post an M-Pesa settlement to the bank."""
+    """Post an Mobile money settlement to the bank."""
     event_postings.post_settlement(session, event)
 
 

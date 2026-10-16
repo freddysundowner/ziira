@@ -16,6 +16,8 @@ class OutOfStock(IntelCheck):
     """A product that is sold here, or has a reorder level, has none left at a branch."""
 
     code = "inventory.out_of_stock"
+
+    value_kind = "count"
     title = "Products out of stock"
     area = "stock"
     description = "A product you normally stock or sell at a branch has run out there."
@@ -266,6 +268,8 @@ class TransferNotReceived(IntelCheck):
     """Stock was sent to another location and nobody has booked it in."""
 
     code = "inventory.transfer_not_received"
+
+    value_kind = "count"
     title = "Transfers not received"
     area = "stock"
     description = "Stock sent between branches has been on the road for days without being received."

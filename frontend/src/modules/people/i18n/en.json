@@ -1,5 +1,5 @@
 {
-  "menu": { "employees": "Employees", "attendance": "Attendance", "leave": "Leave", "payroll": "Payroll", "setup": "Payroll setup" },
+  "menu": { "attendanceLeave": "Attendance and leave", "employees": "Employees", "attendance": "Attendance", "leave": "Leave", "payroll": "Payroll", "setup": "Payroll setup" },
   "actions": "Actions",
   "add": "Add",
   "allBranches": "All branches",

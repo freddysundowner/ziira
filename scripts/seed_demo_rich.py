@@ -428,7 +428,8 @@ class Seeder:
         from ziira.kernel.registry import Registry, seed_unit_defaults
 
         reg = Registry()
-        for unit in ("pos", "crm", "finance", "purchasing", "people", "intel", "command", "imports", "catalog_stats"):
+        for unit in ("pos", "crm", "finance", "purchasing", "people", "intel", "command", "imports", "catalog_stats",
+                     "mpesa"):                     # mpesa: the provider plugin the demo's mobile-money tills use
             reg.enable(self.tenant_id, unit)
         # a business whose units were switched on at different times can lack default grants the others have
         # (a Cashier without the till permission): add what is missing to the default roles, as enabling would

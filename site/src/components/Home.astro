@@ -1,0 +1,280 @@
+---
+import type { Lang } from "../content/types";
+import type { HomeContent } from "../content/home";
+import { ui } from "../i18n/ui";
+import { urlFor } from "../lib/registry";
+import { inline } from "../lib/md";
+import { appLinks } from "../lib/siteConfig";
+import { screenAlt } from "../lib/screens";
+import Screenshot from "./Screenshot.astro";
+import Faq from "./Faq.astro";
+import Icon from "./Icon.astro";
+import Cta from "./Cta.astro";
+import { appTiles } from "../content/nav";
+
+interface Props { lang: Lang; h: HomeContent }
+const { lang, h } = Astro.props;
+const t = ui[lang];
+const i = (s: string) => inline(s, lang, urlFor);
+const [sent1, sent2] = h.h1.split(/(?<=\.) /);
+const [l1a, l1b] = sent1.split(h.h1Em);
+const [l2a, l2b] = sent2.split(h.h1Und);
+const underWords = h.h1Und.split(" ");
+/** Section headings: a phrase gets the small marker highlight. */
+const hl = (text: string, phrase: string) => { const i = text.indexOf(phrase); return i < 0 ? [text, "", ""] : [text.slice(0, i), phrase, text.slice(i + phrase.length)]; };
+const [aH1, aH2, aH3] = hl(h.appsH2, "in one place");
+const [oH1, oH2, oH3] = hl(h.onePlace.h2, "one platform");
+const [pH1, pH2, pH3] = hl(h.pricingTeaser.h2, "what you need");
+const nodes = appTiles.filter((a) => ["core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people", "intelligence-how"].includes(a.id)).map((a, n) => {
+  const ang = (-90 + n * 45) * Math.PI / 180;
+  const x = 300 + 235 * Math.cos(ang), y = 210 + 150 * Math.sin(ang);
+  return { ...a, x: Math.round(x), y: Math.round(y), ly: Math.round(y + (Math.sin(ang) < -0.3 ? -42 : 50)) };
+});
+const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
+---
+<section class="hero">
+  <div class="container">
+    <div class="hero-copy">
+      <span class="eyebrow">{h.eyebrow}</span>
+      <h1 class="hand">
+        <span class="line">{l1a}<mark class="swash"><svg viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 25 C 38 9, 78 33, 118 17 S 178 13, 195 23" /></svg>{h.h1Em}</mark>{l1b}</span>
+        <span class="line">{l2a}<span class="uline">{underWords.map((w, k) => <span class="uw" style={`--k:${k}`}>{w}<svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 7 C 14 1, 24 12, 38 6 S 62 1, 74 7 S 92 11, 98 5" /></svg></span>).reduce((acc: any[], el, k) => (k ? [...acc, " ", el] : [el]), [])}</span>{l2b}</span>
+      </h1>
+      <p class="lead">{h.lead}</p>
+      <div class="cta-wrap">
+        <div class="cta-row center">
+          <a class="btn btn-primary btn-lg" href={appLinks.register}>{h.ctaPrimary}</a>
+          <a class="btn btn-ghost btn-lg" href="#how-it-works">{h.ctaSecondary}</a>
+        </div>
+        <p class="annot"><svg viewBox="0 0 90 70" aria-hidden="true" focusable="false"><path pathLength="1" d="M80 64 C 72 34, 44 14, 12 20" /><path pathLength="1" d="M12 20 L 27 7 M12 20 L 29 31" /></svg>{h.annotation}</p>
+      </div>
+      <ul class="trust-line">
+        {h.trustLine.map((x) => <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={tick} />{x}</li>)}
+      </ul>
+    </div>
+
+    <div class="stage">
+      <div class="frame">
+        <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i><span>{h.mock.frameLabel}</span></div>
+        <Screenshot name="command" alt={screenAlt[lang].command.alt} priority widths={[480, 800, 1200]} sizes="(min-width: 1100px) min(80vw, 1080px), (min-width: 700px) 90vw, calc(100vw - 32px)" />
+      </div>
+      <div class="floats">
+        <div class="float float-a">
+          <span class="badge">{h.mock.badge}</span>
+          <strong>{h.mock.title}</strong>
+          <p>{h.mock.text}</p>
+          <p><b>{h.mock.next}</b></p>
+          <div class="acts" aria-hidden="true">{h.mock.acts.map((a) => <span>{a}</span>)}</div>
+        </div>
+        {h.mock.cards.map((c, k) => (
+          <div class={`float float-${"bcd"[k]}`}>
+            <span class="badge">{c.area}</span>
+            <strong>{c.title}</strong>
+            <p>{c.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section white arc" aria-labelledby="apps-h">
+  <div class="container">
+    <div class="section-head center"><h2 id="apps-h">{aH1}<span class="hl">{aH2}</span>{aH3}</h2><p>{h.appsLead}</p></div>
+    <ul class="apps">
+      {appTiles.map((a) => (
+        <li><a class={`app c${a.color}`} href={urlFor(a.id, lang)}><span class="app-ico"><Icon name={a.icon} /></span><b>{a.label}</b><span class="app-d">{a.desc}</span></a></li>
+      ))}
+    </ul>
+    <p class="note center" style="margin-top:28px;max-width:60ch">{h.heroNote}</p>
+  </div>
+</section>
+
+<section class="section dark" aria-labelledby="one-h">
+  <div class="container">
+    <div class="oneplace">
+      <div>
+        <span class="eyebrow">{h.productsH2}</span>
+        <h2 id="one-h">{oH1}<span class="hl">{oH2}</span>{oH3}</h2>
+        <p>{h.onePlace.text}</p>
+        <ul class="ticks">{h.onePlace.points.map((x) => <li>{x}</li>)}</ul>
+      </div>
+      <svg class="diagram" viewBox="0 0 600 420" role="img" aria-label={h.onePlace.alt}>
+        {nodes.map((n) => <line x1="300" y1="210" x2={n.x} y2={n.y} />)}
+        <circle class="hub" cx="300" cy="210" r="70" />
+        <text class="hub-t" x="300" y="206">{h.onePlace.hub}</text>
+        <text class="hub-s" x="300" y="226">{h.onePlace.hubSub}</text>
+        {nodes.map((n) => (
+          <g>
+            <circle cx={n.x} cy={n.y} r="30" fill={`rgb(var(--t${n.color}))`} />
+            <g transform={`translate(${n.x - 15} ${n.y - 15}) scale(1.25)`} style="color:#fff"><Icon name={n.icon} /></g>
+            <text class="node-t" x={n.x} y={n.ly}>{n.label}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+    <div class="parts" style="margin-top:clamp(48px,6vw,88px)">
+      {h.products.map((p) => (
+        <div class="part">
+          <span class="mode">{p.tag}</span>
+          <h3>{p.name}</h3>
+          <p>{p.text}</p>
+          <ul>{p.points.map((x) => <li>{x}</li>)}</ul>
+          <a class="btn btn-ghost" href={urlFor(p.page, lang)}>{p.link}</a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="scn-h">
+  <div class="container">
+    <div class="section-head"><h2 id="scn-h">{h.scenariosH2}</h2><p>{h.scenariosLead}</p></div>
+    {h.scenarios.map((s) => (
+      <article class="feat">
+        <div class={`feat-text c${s.color}`}>
+          <span class="feat-ico"><i><Icon name={s.icon} /></i>{s.modeLabel}</span> <span class="note">{s.modeHint}</span>
+          <h3>{s.t}</h3>
+          <p>{s.d}</p>
+          <ul class="ticks">{s.bullets.map((b) => <li>{b}</li>)}</ul>
+          <a class="more-link" href={urlFor(s.page, lang)}>{s.link}</a>
+        </div>
+        <div class="feat-vis">
+          {s.shot ? (
+            <div class="frame"><Screenshot name={s.shot} alt={screenAlt[lang][s.shot].alt} sizes="(min-width: 1100px) 46vw, (min-width: 960px) 50vw, (min-width: 700px) 90vw, calc(100vw - 32px)" /></div>
+          ) : null}
+          <div class={s.shot ? "over" : "mini"} aria-hidden="true">
+            {!s.shot && <span class="tag-ex">Illustration</span>}
+            {s.visual === "till" && (<>
+              <div class="mini-card"><b>Till 2</b><span class="pill warn">Offline</span></div>
+              <div class="mini-card"><span>Connection is back: each sale sent once</span><span class="pill ok">Synced</span></div>
+            </>)}
+            {s.visual === "branches" && (
+              <div class="mini-card" style="display:block"><b style="display:block;margin-bottom:12px">Sales today, by branch</b>
+                <div class="bars">
+                  <div class="bar-row">Branch A<i style="--w:82%"></i></div>
+                  <div class="bar-row">Branch B<i style="--w:55%"></i></div>
+                  <div class="bar-row">Branch C<i style="--w:68%"></i></div>
+                </div>
+              </div>
+            )}
+            {s.visual === "owing" && (<>
+              <div class="mini-card"><b>Customer A</b><span class="pill bad">Overdue</span></div>
+              <div class="mini-card"><b>Customer B</b><span class="pill warn">Due this week</span></div>
+              <div class="mini-card"><b>Customer C</b><span class="pill ok">Within limit</span></div>
+              <div class="bubble reply">Send a reminder</div>
+            </>)}
+            {s.visual === "records" && (<>
+              <div class="mini-card"><b>Sale posted</b><span class="pill ok">Till</span></div>
+              <div class="mini-card"><span>Stock lowered at the branch</span><span class="pill ok">Stock</span></div>
+              <div class="mini-card"><span>Entry made in the books</span><span class="pill ok">Books</span></div>
+            </>)}
+            {s.visual === "approval" && (<>
+              <div class="mini-card"><b>Supplier order</b><span class="pill warn">Waiting for approval</span></div>
+              <div class="mini-card"><b>Discount above the limit</b><span class="pill bad">Reason needed</span></div>
+              <div class="mini-card"><b>Stock correction</b><span class="pill ok">Approved by a manager</span></div>
+            </>)}
+            {s.visual === "daily" && (<>
+              <div class="bubble"><b>Ziira: daily summary</b>A cashier cancelled 14 sales after 9pm.</div>
+              <div class="bubble reply">Why am I seeing this?</div>
+            </>)}
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<section class="section white" aria-labelledby="screens-h">
+  <div class="container">
+    <div class="section-head center"><span class="eyebrow">The product</span><h2 id="screens-h">{h.screensH2}</h2><p>{h.screensLead}</p></div>
+    <div class="bento">
+      {h.screens.map((s) => <Screenshot name={s.key} alt={screenAlt[lang][s.key].alt} caption={screenAlt[lang][s.key].cap} sizes="(min-width: 900px) 640px, calc(100vw - 40px)" widths={[480, 640]} />)}
+    </div>
+    <div class="phones">
+      <Screenshot name="till-phone" alt={screenAlt[lang]["till-phone"].alt} caption={screenAlt[lang]["till-phone"].cap} widths={[390]} sizes="260px" />
+      <Screenshot name="command-phone" alt={screenAlt[lang]["command-phone"].alt} caption={screenAlt[lang]["command-phone"].cap} widths={[390]} sizes="260px" />
+    </div>
+  </div>
+</section>
+
+<section class="section tint" id="how-it-works" aria-labelledby="start-h">
+  <div class="container">
+    <div class="section-head center"><span class="eyebrow">How it works</span><h2 id="start-h">{h.startH2}</h2><p>{h.startLead}</p></div>
+    <ol class="steps three">
+      {h.startSteps.map((s, n) => <li><span class="n" aria-hidden="true">{n + 1}</span><h3>{s.t}</h3><p>{s.d}</p><a class="more-link" href={urlFor(s.page, lang)}>{s.link}</a></li>)}
+    </ol>
+    <h3 class="subhead">{h.stepsH2}</h3>
+    <ol class="loop">{h.steps.map((s) => <li data-n={s.n}><h3>{s.t}</h3><p>{s.d}</p></li>)}</ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="findings-h">
+  <div class="container">
+    <div class="section-head"><h2 id="findings-h">{h.findingsH2}</h2><p>{h.findingsLead}</p></div>
+    <div class="alerts">
+      {h.findings.map((r) => (
+        <article class="alert">
+          <header><span class="lbl">{h.findingsHead[0]}</span><strong>{r[0]}</strong></header>
+          <dl>
+            <div><dt>{h.findingsHead[1]}</dt><dd>{r[1]}</dd></div>
+            <div><dt>{h.findingsHead[2]}</dt><dd class="next">{r[2]}</dd></div>
+          </dl>
+        </article>
+      ))}
+    </div>
+    <p class="note" style="margin-top:20px">{h.findingsNote}</p>
+  </div>
+</section>
+
+<section class="section tint" aria-labelledby="compare-h">
+  <div class="container">
+    <div class="section-head"><h2 id="compare-h">{h.compareH2}</h2></div>
+    <div class="table-wrap compare" role="region" aria-label={h.compareH2} tabindex="0">
+      <table>
+        <thead><tr>{h.compareHead.map((x, k) => <th scope="col">{k === 0 ? <span class="sr-only">&nbsp;</span> : x}</th>)}</tr></thead>
+        <tbody>{h.compare.map((r) => <tr>{r.map((c, k) => k === 0 ? <th scope="row">{c}</th> : <td data-label={h.compareHead[k]}>{c}</td>)}</tr>)}</tbody>
+      </table>
+    </div>
+    <p class="note">{h.compareNote}</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="price-h">
+  <div class="container">
+    <div class="teaser">
+      <div><h2 id="price-h">{pH1}<span class="hl">{pH2}</span>{pH3}</h2><p>{h.pricingTeaser.text}</p><a class="btn btn-primary" href={urlFor("pricing", lang)}>{h.pricingTeaser.link}</a></div>
+      <ul class="sets">{h.pricingTeaser.sets.map((x) => <li>{x}</li>)}</ul>
+    </div>
+  </div>
+</section>
+
+<section class="section tint" aria-labelledby="for-h">
+  <div class="container">
+    <div class="section-head center"><h2 id="for-h">{h.forH2}</h2></div>
+    <div class="picker">
+      {h.forItems.map((f) => (
+        <a class="pick" href={urlFor(f.link, lang)}><h3>{f.t}</h3><p>{f.d}</p><span class="more">{t.readMore} &rarr;</span></a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section white" aria-labelledby="trust-h">
+  <div class="container">
+    <div class="section-head"><h2 id="trust-h">{h.trustH2}</h2></div>
+    <div class="trust">{h.trust.map((x) => <div class="card"><h3>{x.t}</h3><p>{x.d}</p></div>)}</div>
+    <p class="note" style="margin-top:20px" set:html={i(h.trustNote)} />
+  </div>
+</section>
+
+<section class="section tint">
+  <div class="container">
+    <div class="faq-split">
+      <div class="faq-intro"><h2 id="faq-h">{h.faqH2}</h2></div>
+      <Faq lang={lang} items={h.faq} bare />
+    </div>
+  </div>
+</section>
+<Cta lang={lang} variant="general" title={h.finalH2} text={h.finalText} />

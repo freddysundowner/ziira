@@ -1,0 +1,153 @@
+{
+  "app": {
+    "commit": "8368876",
+    "uncommittedFrontend": true,
+    "appUrl": "(local demo business)"
+  },
+  "screens": {
+    "command": {
+      "route": "/command",
+      "captured": "2026-10-16T06:56:02.849Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "home": {
+      "route": "/",
+      "captured": "2026-10-16T06:55:54.118Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "findings": {
+      "route": "/findings",
+      "captured": "2026-10-16T06:56:10.243Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "sales": {
+      "route": "/pos/sales",
+      "captured": "2026-10-16T06:56:24.234Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "stock": {
+      "route": "/stock",
+      "captured": "2026-10-16T06:57:08.897Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "orders": {
+      "route": "/orders",
+      "captured": "2026-10-16T06:57:15.703Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "owing": {
+      "route": "/receivables",
+      "captured": "2026-10-16T06:57:22.004Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "books": {
+      "route": "/finance/reports",
+      "captured": "2026-10-16T06:57:28.144Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "payroll": {
+      "route": "/payroll",
+      "captured": "2026-10-16T06:57:34.426Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "connect": {
+      "route": "/connect",
+      "captured": "2026-10-16T06:57:40.491Z",
+      "viewport": "1440x1000@2x",
+      "size": "2304x1356",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "connect-add": {
+      "route": "/connect/new",
+      "captured": "2026-10-16T06:57:46.805Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "addons": {
+      "route": "/addons",
+      "captured": "2026-10-16T06:57:53.752Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "command-phone": {
+      "route": "/command",
+      "captured": "2026-10-16T06:58:25.381Z",
+      "viewport": "390x844@3x",
+      "size": "1170x2532",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "till-phone": {
+      "route": "/pos/terminal",
+      "captured": "2026-10-16T06:58:18.990Z",
+      "viewport": "390x844@3x",
+      "size": "1170x2532",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "finding": {
+      "route": "/findings/:id",
+      "captured": "2026-10-16T06:56:17.440Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "till": {
+      "route": "/pos/terminal",
+      "captured": "2026-10-16T06:57:02.368Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "intel-actions": {
+      "route": "/admin/settings",
+      "captured": "2026-10-16T06:58:02.278Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    },
+    "brief": {
+      "route": "/command/briefs",
+      "captured": "2026-10-16T06:58:11.241Z",
+      "viewport": "1440x1000@2x",
+      "size": "2880x2000",
+      "appCommit": "8368876+uncommitted",
+      "frontendSrcNewest": "2026-10-16T06:50:37.819Z"
+    }
+  }
+}

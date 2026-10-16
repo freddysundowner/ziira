@@ -2,6 +2,7 @@
 name = "messaging"
 title = "Messaging channels (email, SMS)"
 description = "Send email and SMS to customers and staff through your own channel."
+category = "messaging"
 kind = "plugin"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"

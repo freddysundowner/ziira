@@ -1,0 +1,82 @@
+---
+/**
+ * The plans exactly as the platform publishes them. A monthly/yearly choice and a currency choice appear only when the
+ * published prices offer more than one; they work without JavaScript (radio buttons and :has). A plan with no price for
+ * the chosen currency and period, or flagged custom, says "contact us": a price is never made up here.
+ */
+import type { Lang } from "../content/types";
+import { urlFor } from "../lib/registry";
+import { formatPrice, isContactOnly, offered, priceFor } from "../lib/platform";
+import { appLinks, siteConfig } from "../lib/siteConfig";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const plans = siteConfig.pricing;
+const { currencies, intervals } = offered(plans);
+const words = {
+  en: { interval: "Billing period", currency: "Currency", month: "Monthly", year: "Yearly", one_time: "One time", per: { month: "per month", year: "per year", one_time: "one time" }, contact: "Contact us", custom: "Custom pricing", start: "Get started", talk: "Talk to us", trial: "{n}-day free trial", taxIn: "tax included", taxEx: "plus tax", users: "users", branches: "branches", companies: "companies", upTo: "Up to" },
+}[lang];
+const intervalLabel = (i: string) => (words as Record<string, unknown>)[i] as string ?? i;
+const limitLine = (limits: Record<string, unknown> | undefined) => {
+  const parts = (["max_users", "max_branches", "max_companies"] as const)
+    .flatMap((k) => (typeof limits?.[k] === "number" ? [`${limits[k]} ${words[k.replace("max_", "") as "users" | "branches" | "companies"]}`] : []));
+  return parts.length ? `${words.upTo} ${parts.join(", ")}` : "";
+};
+const id = (kind: string, value: string) => `${kind}-${value.replace(/[^a-z0-9]/gi, "")}`;
+const rules = [
+  ...intervals.map((i) => `.pricing:has(#${id("iv", i)}:checked) .price-line:not([data-iv="${i}"]){display:none}`),
+  ...currencies.map((c) => `.pricing:has(#${id("cu", c)}:checked) .price-line:not([data-cu="${c}"]){display:none}`),
+].join("\n");
+---
+<div class="pricing">
+  {intervals.length > 1 && (
+    <fieldset class="choice"><legend>{words.interval}</legend>
+      {intervals.map((i, n) => (<><input type="radio" name="iv" id={id("iv", i)} checked={n === 0} /><label for={id("iv", i)}>{intervalLabel(i)}</label></>))}
+    </fieldset>
+  )}
+  {currencies.length > 1 && (
+    <fieldset class="choice"><legend>{words.currency}</legend>
+      {currencies.map((c, n) => (<><input type="radio" name="cu" id={id("cu", c)} checked={n === 0} /><label for={id("cu", c)}>{c}</label></>))}
+    </fieldset>
+  )}
+  <div class="grid three">
+    {plans.map((p) => {
+      const contactOnly = isContactOnly(p);
+      const limits = limitLine(p.limits);
+      return (
+        <div class="card plan">
+          <h3>{p.name}</h3>
+          {contactOnly
+            ? <p class="price">{p.custom || p.contact_only ? words.custom : words.contact}</p>
+            : currencies.flatMap((c) => intervals.map((i) => {
+                const price = priceFor(p, c, i);
+                return (
+                  <p class="price price-line" data-cu={c} data-iv={i}>
+                    {price ? <>{formatPrice(price, lang)} <span class="per">{words.per[i as keyof typeof words.per] ?? i}{price.tax_inclusive === undefined ? "" : `, ${price.tax_inclusive ? words.taxIn : words.taxEx}`}</span></> : words.contact}
+                  </p>
+                );
+              }))}
+          {p.description && <p>{p.description}</p>}
+          {(p.trial_days ?? 0) > 0 && <p class="note">{words.trial.replace("{n}", String(p.trial_days))}</p>}
+          <ul>
+            {limits && <li>{limits}</li>}
+            {(p.highlights ?? []).map((f) => <li>{f}</li>)}
+          </ul>
+          {contactOnly
+            ? <a class="btn btn-ghost" href={urlFor("get-started", lang)}>{words.talk}</a>
+            : <a class="btn btn-primary" href={appLinks.register}>{words.start}</a>}
+        </div>
+      );
+    })}
+  </div>
+  <style set:html={rules} />
+</div>
+<style>
+  .choice { border: 0; padding: 0; margin: 0 24px 16px 0; display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .choice legend { float: left; margin-right: 8px; font-size: 0.9rem; color: rgb(var(--muted)); }
+  .choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .choice label { border: 1px solid rgb(var(--line)); border-radius: 999px; padding: 4px 14px; cursor: pointer; background: rgb(var(--surface)); }
+  .choice input:checked + label { background: rgb(var(--brand-strong)); color: rgb(var(--brand-ink)); border-color: transparent; }
+  .choice input:focus-visible + label { outline: 3px solid rgb(var(--brand)); outline-offset: 2px; }
+  .per { font-size: 0.85rem; font-weight: 400; color: rgb(var(--muted)); }
+</style>

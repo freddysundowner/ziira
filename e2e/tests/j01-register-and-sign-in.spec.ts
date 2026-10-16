@@ -8,17 +8,28 @@ test("J1 register, sign in, wrong password, forgot password", async ({ page }) =
   const account = { email: `owner@${tag}.test`, password: "first-pass-123", name: "Jo Founder" };
 
   await page.goto("/register");
+  await expect(page.getByRole("heading", { name: "What do you need?" })).toBeVisible();
   await checkAccessibility(page, "register step 1");
-  await page.getByLabel("Your name").fill(account.name);
-  await page.getByLabel("Email").fill(account.email);
-  await page.getByLabel("Password (at least 8 characters)").fill(account.password);
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await page.getByLabel("Business name").fill(`J1 ${tag} Stores`);
-  await page.getByLabel("Country").selectOption({ label: "United Kingdom" });
-  await expect(page.getByLabel("Currency")).toHaveValue("GBP");
-  await expect(page.getByText("calling code +44")).toBeVisible();
-  await page.getByRole("button", { name: "Create business" }).click();
+  await page.getByLabel(/Your full name/).fill(account.name);
+  await page.getByLabel(/Work email/).fill(account.email);
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await page.getByLabel(/^Password/).fill(account.password);
+  await page.getByLabel(/Type the password again/).fill(account.password);
+  await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled();      // after the server's password check
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await page.getByLabel(/Business name/).fill(`J1 ${tag} Stores`);
+  await page.getByRole("combobox", { name: /Country/ }).click();
+  await page.getByRole("button", { name: "United Kingdom" }).click();
+  await expect(page.getByLabel(/^Currency/)).toHaveValue("GBP");
+  await expect(page.getByLabel(/Phone calling code/)).toHaveValue("44");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Create my business" }).click();
 
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
   await page.getByRole("link", { name: "Open the verification link" }).click();

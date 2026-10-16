@@ -1,0 +1,27 @@
+---
+import type { Lang, ScreenKey } from "../content/types";
+import Breadcrumbs from "./Breadcrumbs.astro";
+import Screenshot from "./Screenshot.astro";
+import { screenAlt } from "../lib/screens";
+interface Props { lang: Lang; crumbs: { name: string; path: string }[]; eyebrow?: string; h1: string; lead?: string; leadHtml?: string; glance?: { t: string; href?: string }[]; glanceTitle?: string; hero?: ScreenKey; read?: boolean }
+const { lang, crumbs, eyebrow, h1, lead, leadHtml, glance = [], glanceTitle = "What you get on this page", hero, read = false } = Astro.props;
+const alt = hero ? screenAlt[lang][hero] : undefined;
+const aside = !!(hero && alt) || glance.length > 0;
+---
+<div class="page-head">
+  <div class:list={["container", { read }]}>
+    {crumbs.length > 0 && <Breadcrumbs lang={lang} crumbs={crumbs} />}
+    <div class:list={["head-grid", { "has-aside": aside }]}>
+      <div>
+        {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+        <h1>{h1}</h1>
+        {leadHtml ? <p class="lead" set:html={leadHtml} /> : lead ? <p class="lead">{lead}</p> : null}
+      </div>
+      {hero && alt ? (
+        <div class="head-shot"><Screenshot name={hero} alt={alt.alt} caption={alt.cap} priority sizes="(min-width: 1100px) 38vw, (min-width: 700px) 90vw, calc(100vw - 32px)" /></div>
+      ) : glance.length > 0 ? (
+        <div class="glance"><h2>{glanceTitle}</h2><ul class="ticks">{glance.map((g) => <li>{g.href ? <a href={g.href}>{g.t}</a> : g.t}</li>)}</ul></div>
+      ) : null}
+    </div>
+  </div>
+</div>

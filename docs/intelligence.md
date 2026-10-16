@@ -39,7 +39,9 @@ can add more. Only units enabled for the business take part.
   (more than 3 standard deviations over the mean **and** above the 95th percentile, with at least 14 observations).
 - **Alerts**: with the company setting `intel_alert_channel` (`off` by default, `sms` or `email`), new findings at or above
   `intel_alert_min_severity` (default `high`) are queued to the people whose role covers them (`kernel.notification`, so opt-outs and
-  retries apply). Anything below waits for the brief. The finding becomes `sent`.
+  retries apply). Anything below waits for the brief. The finding becomes `sent`. `intel_alert_channel` may be any channel the business has (`sms`, `email`, or a chat channel from a plugin)
+  (then SMS and email are the fallbacks); each person may choose their own channel for alerts and quiet hours in My account >
+  Notifications (`docs/channels.md`), and a critical alert passes quiet hours only if they allowed it.
 - **Levels of action** (company setting `intel_action_level`; every business starts at 1, and moving up is its choice): 1 reports
   only; 2 also lets a manager ask a named person to explain a finding; **3 prepares** suggested actions for a person to approve;
   **4 acts within limits** (routine actions under the owner's rules). Raising it to 3 or 4 needs the Owner (permission
@@ -125,8 +127,10 @@ finding ──▶ providers propose ──▶ suggestion (waiting) ──▶ a p
 | `finance.ask_for_reconciliation` | `finance.stale_reconciliation` | `findings.manage` | **yes** | A message to those holding `bank.reconcile` |
 | `intel.nudge_exceptions_reviewers` | `controls.exceptions_backlog` | `findings.manage` | **yes** | A message to those holding `exceptions.manage` |
 
-  The nudges need `intel_alert_channel` set and a person with an address on file; otherwise nothing is proposed. There are no quiet hours
-  yet: an automatic message goes out when the run finds the finding.
+  The nudges need `intel_alert_channel` set and a person who can be reached (a phone, an email or a verified number on a chat channel);
+  otherwise nothing is proposed. Automatic messages respect each person's **quiet hours**: they are deferred to the end of the
+  quiet period, never dropped. `pos.send_payment_reminder` can send by any channel the business has (on a chat channel a template with the customer, amount in the
+  company currency, due date and business; SMS/email as fallbacks).
 - **Adding a provider** (in the unit that owns the effect; "intel" under `optional` and `"intel.action"` under `[extends] implements`
   in the manifest):
 
@@ -154,10 +158,19 @@ class MyAction(ActionProvider):
   automatic provider's class must not mention the books, payments, stock movements, prices or credit limits
   (`FORBIDDEN_FOR_AUTO`; `tests/test_intel_actions.py` scans every registered one). Test it end to end with the real engine as
   `tests/test_intel_action_providers.py` does.
+- **Reply to act**: when a suggestion is made, the people who can decide are messaged on their `approvals` channel; on a channel that declares reply buttons
+  (`supports_buttons`, e.g. WhatsApp with the Lead Intel plugin) the message has **Approve / Reject / Why?** buttons. Intelligence
+  knows no channel by name: it asks the channel layer for "the person's preferred available channel" and for a capability. A reply from a verified number is run as that person through the same
+  `actions.approve` / `reject` (so permissions and approval rules apply; the action log, the finding history and the audit log record
+  the channel `chat`), free text goes to Ask Ziira, and a number that is not exactly one active user's verified number is
+  ignored without a reply. `ziira/modules/intel/inbound.py`, `services/approver_messages.py`, `services/channel_questions.py`; the
+  channel layer is `docs/channels.md`.
 - **Screens**: the finding page has a "Suggested actions" card; **Findings > Actions** is the inbox of suggestions waiting for the
   signed-in person plus the history; **Settings > Intelligence actions** has the level, the rules and the action log.
-- **Not built**: a quiet-hours setting for automatic messages; approving by SMS (the spec's WhatsApp approvals are out); rule
-  conditions on the customer's group or the size of one invoice (only the finding's branch and amount).
+- **Not built**: approving by SMS or email reply; approving Core's own approval requests (leave, payroll) by reply; rule conditions
+  on the customer's group or the size of one invoice (only the finding's branch and amount). Chat channels need a plugin that provides one
+  (`leadsintel`) and have not been run against a live service. With no such plugin on, suggestions are announced nowhere and wait in
+  the app; alerts and briefs go by SMS or email; nothing breaks.
 
 ## The Command Center (`ziira/modules/command`)
 
@@ -171,14 +184,15 @@ class MyAction(ActionProvider):
   while the worker was down still goes out later the same day). A brief says what happened (figures against the period before) and
   what needs attention (top findings within the person's role), in plain words; SMS carries the short form. A missing contact falls back
   to the app. Briefs are stored so they can be read again.
-- WhatsApp is not a channel (decision 2026-10-13); the Intelligence spec's WhatsApp replies are out for now.
+- A brief may go by any channel the business has (the short form on chat channels; the `daily_brief` template when the window is closed) as well as in-app, email
+  or SMS, and follows the person's own choice and quiet hours (`docs/channels.md`).
 
 ## Settings (per company, `PATCH /companies/{id}/settings`)
 
 | Setting | Default | Meaning |
 |---|---|---|
 | `timezone` | `UTC` | The company's time zone (IANA name): briefs and "odd hours" are read in it. **Set it for every business.** |
-| `intel_alert_channel` | `off` | `sms` or `email`: where urgent findings are sent |
+| `intel_alert_channel` | `off` | `off`, or a channel the business has (`sms`, `email`, a chat channel): where urgent findings are sent. If the channel is switched off later the value is kept and alerts go by the next channel |
 | `intel_alert_min_severity` | `high` | Findings at or above this are sent as alerts |
 | `intel_action_level` | `1` | `2` lets managers ask people to explain a finding; `3` prepares suggested actions for approval; `4` also runs the owner's automation rules. Raising it to 3 or 4 needs `intel.automation` (Owner) |
 | `ai_enabled`, `ai_explanations`, `ai_auto_explain`, `ai_ask`, `ai_monthly_token_limit` | off, on, off, on, 2,000,000 | The AI assistant (changed on **Settings > AI assistant**, which records the consent); see `docs/ai.md` |
@@ -188,7 +202,15 @@ class MyAction(ActionProvider):
 The `connect` unit supplies `standalone.<name>` checks, baselines and pulse figures that read only its own read-only copy of another system's
 data (`connect.src_*`). They run only where connections exist and only for the entities a connection supplies; a check whose entity was never
 connected stays silent and the Coverage panel says so. A day is judged only once its data is complete. They never look at a Core unit's tables,
-so a business using both gets each set about its own data. See `docs/standalone-mode.md`.
+so a business using both gets each set about its own data. Where a Core unit now runs the same area at the same branch (judged by
+`connect.core_coverage`, which Core units implement) the standalone check stays silent there, unless the business chose to keep both; a paused
+connection is not checked. See `docs/standalone-mode.md` ("Core units and standalone checks", "Moving to Core").
+
+**Where a finding comes from.** Every finding says so: `source` is `connected` for a check whose code starts `standalone.` (it read the copy of
+the system the business keeps) and `ziira` for any other. It is a computed field on `FindingOut`, on the Command Center's top findings and
+filterable with `GET /findings?source=connected|ziira`; the web app shows "From your connected system" / "From Ziira" in the findings list
+(with a filter, for businesses that use Connected systems), on the finding page, Home and the Command Center. The page above the findings list
+is a slot (`intel.findings.banner`) that Connected systems fills with its "checked twice" banner.
 
 ## Extension points Intelligence offers
 

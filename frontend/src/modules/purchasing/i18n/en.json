@@ -1,4 +1,5 @@
 {
+  "returnsCredits": "Returns and credits",
   "suppliers": "Suppliers",
   "requests": "Purchase requests",
   "orders": "Purchase orders",
@@ -448,5 +449,7 @@
   "payAcctName": "Account name",
   "payAcctNameHint": "What you call it, for example Main bank account.",
   "payAcctNumber": "Account number (last digits)",
-  "payAcctNumberHint": "Optional. Only the last digits, so it is recognisable. The full number is never kept."
+  "payAcctNumberHint": "Optional. Only the last digits, so it is recognisable. The full number is never kept.",
+  "noLocationYet": "There is no stock location to receive into yet.",
+  "addLocationLink": "Add a store first"
 }

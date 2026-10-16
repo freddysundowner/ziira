@@ -7,7 +7,7 @@ MIN_SIMILARITY = 0.78
 
 
 def normalise(name: str) -> str:
-    """A header reduced to lower-case letters and digits, so 'Unit Price (KES)' and 'unit_price' compare alike."""
+    """A header reduced to lower-case letters and digits, so 'Unit Price (USD)' and 'unit_price' compare alike."""
     return re.sub(r"[^a-z0-9]", "", re.sub(r"\(.*?\)", "", name.lower()))
 
 

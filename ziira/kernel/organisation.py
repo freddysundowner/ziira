@@ -24,6 +24,7 @@ from ziira.kernel import audit, company_settings
 from ziira.kernel.context import RequestContext, get_context
 from ziira.kernel.errors import Conflict, NotFound, ValidationFailed
 from ziira.kernel.extensions import define_extension_point, implementations
+from ziira.kernel.platform import entitlements
 
 PERMISSION = "organisation.manage"
 BRANCH_USAGE = "kernel.branch_usage"
@@ -164,6 +165,7 @@ def create_company(session: Session, *, name: str, currency: str, country: str |
                    branch_name: str | None) -> UUID:
     """Add a company to the business, with a first branch if one is named. Tenant-wide permission."""
     get_context().require(PERMISSION)
+    entitlements.check_limit(session, get_context().tenant_id, "companies")
     clean_name = _clean(name, "Company name", required=True)
     if (branch_code is None) != (branch_name is None):
         raise ValidationFailed("Give both the first branch's code and name, or neither")
@@ -246,6 +248,7 @@ def create_branch(session: Session, company_id: UUID, *, code: str, name: str, a
                   phone: str | None) -> UUID:
     """Add a branch to a company."""
     get_context().require(PERMISSION, company_id=company_id)
+    entitlements.check_limit(session, get_context().tenant_id, "branches")
     _company_row(session, company_id)
     clean_code = _branch_code(code)
     clean_name = _clean(name, "Branch name", required=True)
@@ -320,6 +323,7 @@ def reactivate_branch(session: Session, branch_id: UUID) -> None:
     get_context().require(PERMISSION, company_id=before.company_id)
     if before.is_active:
         return
+    entitlements.check_limit(session, get_context().tenant_id, "branches")
     session.execute(text("update kernel.branch set is_active = true, updated_at = now(), updated_by = :u "
                          "where id = :i"), {"u": _user_id(get_context()), "i": str(branch_id)})
     audit.record(session, "reactivate", "kernel.branch", branch_id, {"code": before.code})

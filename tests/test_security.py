@@ -218,8 +218,12 @@ def test_api_key_lifecycle_and_garbage(client, sec) -> None:  # type: ignore[no-
 
 
 def test_expired_api_keys_stop_working(client, sec) -> None:  # type: ignore[no-untyped-def]
-    key = make_key(client, sec, ["products.view"], expires_at="2020-01-01T00:00:00Z")
-    assert client.get("/api/v1/products/products", headers={"X-API-Key": key["key"]}).status_code == 401
+    r = client.post("/api/v1/api-keys", headers=sec["owner"].headers,
+                    json={"name": "k", "scopes": ["products.view"], "expires_at": "2020-01-01T00:00:00Z"})
+    assert r.status_code == 422                                           # an expiry in the past is refused outright
+    key = make_key(client, sec, ["products.view"], expires_at="2999-01-01T00:00:00Z")
+    assert client.get("/api/v1/products/products", headers={"X-API-Key": key["key"]}).status_code == 200
+    # expiry at run time is covered in tests/test_api_keys.py
 
 
 def test_a_key_cannot_be_moved_to_another_tenant(client, sec) -> None:  # type: ignore[no-untyped-def]

@@ -58,7 +58,7 @@ test("J3 sell at the till, close it, review, void and return", async ({ page }) 
   // no mobile-money account exists yet: a clear message, the cart is unchanged
   await expect(page.getByText(/No mobile money account is set up/)).toBeVisible();
   await expect(page.getByText("Fix this and press Try again. The cart is unchanged.")).toBeVisible();
-  await api.post("/payments/accounts", { company_id: cat.companyId, branch_id: cat.branchId, kind: "mobile_money", name: "Till wallet", provider: "fake", environment: "sandbox", shortcode: "174379" });
+  await api.post("/payments/accounts", { company_id: cat.companyId, branch_id: cat.branchId, kind: "mobile_money", name: "Till wallet", environment: "sandbox", shortcode: "174379" });
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByText("Sale complete")).toBeVisible();
   await expect(page.getByText(/Mobile money · QWE123XYZ/)).toBeVisible();

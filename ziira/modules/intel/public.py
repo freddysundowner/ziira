@@ -98,6 +98,12 @@ class IntelCheck(ABC):
     default_severity: str = "medium"
     params: dict[str, Any] = {}
     auto_resolves: bool = True
+    value_kind: str = "number"      # what `value` is: money, percent, count, days or number (how a screen formats it)
+    # Plain words for the Simple layer (optional: the text file domain/plain_checks.json is used for what is
+    # not declared)
+    plain_title: str = ""           # what was noticed, as a short headline
+    why_it_matters: str = ""        # one sentence on why an owner should care
+    what_to_do: str = ""            # the first practical step
 
     @abstractmethod
     def run(self, session: Session, ctx: CheckContext) -> list[Candidate]:
@@ -215,6 +221,7 @@ class FindingBrief:
     branch_id: UUID | None
     amount: Decimal | None
     reason: str | None = None            # the AI layer's one-line reason for its place, when it ranked this finding
+    source: str = "ziira"                # "connected": read from the system the business keeps; "ziira": Ziira's own
 
 
 def nudge_people(session: Session, *, company_id: UUID, branch_id: UUID | None, permission: str, text: str,

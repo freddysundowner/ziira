@@ -38,6 +38,7 @@ from ziira.modules.connect.domain.rules import (
     signed,
     unusually_low,
 )
+from ziira.modules.connect.services import overlap
 from ziira.modules.connect.services.coverage import Supply, supplied
 from ziira.modules.intel.public import (
     BaselineMetric,
@@ -147,13 +148,20 @@ class StandaloneCheck(IntelCheck):
     """A check over `connect.src_*`. `requires` names the entities it needs; without them it says nothing."""
 
     requires: tuple[str, ...] = ()
+    core_areas: tuple[str, ...] = ()    # business areas (OVERLAP_AREAS) in which Core's own checks take over, see below
     auto_resolves = False
 
     def run(self, session: Session, ctx: CheckContext) -> list[Candidate]:
         supply = supplied(session, ctx.company_id)
         if not supply.has(*self.requires):
             return []
-        return self.scan(session, ctx, supply)[:CAP]
+        found = self.scan(session, ctx, supply)
+        # Where a Core unit now runs the same area at the same branch, its own checks look at the live data: this copy
+        # of the old system would only say the same thing again, late. Unless the business chose to keep both.
+        covered = overlap.covered_by_core(session, ctx.company_id, self.core_areas)
+        if covered is not None:
+            found = [c for c in found if not any(covered.covers(area, c.branch_id) for area in self.core_areas)]
+        return found[:CAP]
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
         raise NotImplementedError
@@ -164,12 +172,15 @@ class SaleWithoutPayment(StandaloneCheck):
     """Mobile-money or bank sales that no statement line backs up."""
 
     code = "standalone.sale_without_payment"
+
+    value_kind = "count"
     title = "Sales paid electronically with no payment to show for it"
     area = "cash_sales"
     description = ("Sales recorded as paid by mobile money or bank transfer where no payment of the same code, or the "
                    "same amount at about the same time, appears in the statements you connected.")
     default_severity = "medium"
     requires = ("sales", "payments")
+    core_areas = ("sales",)
     params: dict[str, Any] = {"days": 7, "grace_hours": 24, "window_minutes": 120, "min_amount": "1.00",
                               "methods": "mobile_money,bank", "high_count": 5}
     auto_resolves = True
@@ -228,6 +239,7 @@ class CashDepositGap(StandaloneCheck):
                    "(compared per branch when deposits say which branch, else for the whole business).")
     default_severity = "medium"
     requires = ("sales", "payments")
+    core_areas = ("sales",)
     params: dict[str, Any] = {"days": 7, "grace_days": 2, "tolerance_percent": 10, "min_gap": "100.00"}
     auto_resolves = True
 
@@ -286,6 +298,7 @@ class BranchSalesLow(StandaloneCheck):
     description = "A branch's sales yesterday were far below what it normally sells on that day of the week."
     default_severity = "medium"
     requires = ("sales",)
+    core_areas = ("sales",)
     params: dict[str, Any] = {"drop_percent": 50, "deviations": "2.0", "min_history": 6}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -320,9 +333,9 @@ class BranchSalesLow(StandaloneCheck):
             found.append(Candidate(
                 fingerprint=fingerprint(self.code, r.connection_id, r.branch_id, r.branch_ref, day),
                 severity="high" if value <= baseline.mean / 4 else "medium",
-                summary=lead(f"{label} sold {cur} {money(value)} on {day} ({day.strftime('%A')}); it usually sells "
-                             f"about "
-                             f"{cur} {money(baseline.mean)} on that day."),
+                summary=lead(f"{label} {'recorded no sales' if value == 0 else f'sold {cur} {money(value)}'} on {day} "
+                             f"({day.strftime('%A')}); it usually sells about {cur} {money(baseline.mean)} "
+                             "on that day."),
                 recommended_action="Ask the branch manager what happened that day.", company_id=ctx.company_id,
                 branch_id=r.branch_id, entity_type="kernel.branch", entity_id=r.branch_id, period_start=day,
                 period_end=day, value=value, expected_value=baseline.mean, amount=baseline.mean - value,
@@ -345,6 +358,7 @@ class OutOfHoursSales(StandaloneCheck):
     description = "Sales were made at a branch before it normally opens or after it normally closes."
     default_severity = "low"
     requires = ("sales",)
+    core_areas = ("sales",)
     params: dict[str, Any] = {"open_hour": 6, "close_hour": 22, "days": 7}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -390,6 +404,7 @@ class LateEnteredSales(StandaloneCheck):
     description = "A sale was entered into the system days after the day it is dated."
     default_severity = "low"
     requires = ("sales",)
+    core_areas = ("sales",)
     params: dict[str, Any] = {"days": 14, "min_days_late": 2, "high_days_late": 7}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -561,6 +576,7 @@ class _CashierRateCheck(StandaloneCheck):
     area = "controls"
     default_severity = "medium"
     requires = ("sales",)
+    core_areas = ("sales",)
     params: dict[str, Any] = {"days": 2, "min_sales": 5, "min_rate": "0.05"}
 
     def rate_of(self, day: CashierDay) -> Decimal | None:
@@ -647,6 +663,7 @@ class LargeExceptions(StandaloneCheck):
     description = "One sale was voided, one refunded, or one sale discounted for a large amount."
     default_severity = "medium"
     requires = ("sales",)
+    core_areas = ("sales",)
     params: dict[str, Any] = {"days": 7, "min_void": "2000.00", "min_refund": "2000.00", "min_discount": "1000.00"}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -704,6 +721,7 @@ class OverdueCustomers(StandaloneCheck):
     description = "A customer has an invoice that is more than the set number of days past its due date."
     default_severity = "medium"
     requires = ("invoices",)
+    core_areas = ("receivables",)
     params: dict[str, Any] = {"min_days_overdue": 30, "high_days_overdue": 90}
     auto_resolves = True
 
@@ -749,6 +767,7 @@ class SlowerPayers(StandaloneCheck):
     description = "A customer takes much longer to pay their invoices than they did in the period before."
     default_severity = "low"
     requires = ("invoices", "payments")
+    core_areas = ("receivables",)
     params: dict[str, Any] = {"window_days": 90, "increase_percent": 50, "min_increase_days": 5, "min_invoices": 3}
     auto_resolves = True
 
@@ -808,6 +827,7 @@ class CreditToOverdueCustomer(StandaloneCheck):
     description = "A new invoice was made out to a customer who already had an overdue invoice unpaid."
     default_severity = "medium"
     requires = ("invoices",)
+    core_areas = ("receivables",)
     params: dict[str, Any] = {"days": 7, "grace_days": 0, "high_days_overdue": 60}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -854,6 +874,7 @@ class SupplierPriceRise(StandaloneCheck):
     description = "The latest purchase of a product was at a price well above the average of earlier purchases."
     default_severity = "medium"
     requires = ("stock_movements",)
+    core_areas = ("stock",)
     params: dict[str, Any] = {"days": 30, "history_days": 180, "rise_percent": 10, "min_earlier": 2}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -901,6 +922,7 @@ class DuplicateSupplierInvoices(StandaloneCheck):
     description = "Two supplier invoices for the same supplier and amount have the same number or nearly the same date."
     default_severity = "medium"
     requires = ("invoices",)
+    core_areas = ("payables",)
     params: dict[str, Any] = {"lookback_days": 90, "days_apart": 3, "min_amount": "1.00"}
     auto_resolves = True
 
@@ -947,6 +969,7 @@ class DuplicatePayments(StandaloneCheck):
     description = "Two payments out of the same amount to the same payee within a short time."
     default_severity = "medium"
     requires = ("payments",)
+    core_areas = ("payments",)
     params: dict[str, Any] = {"days": 14, "hours_apart": 48, "min_amount": "1.00"}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -994,6 +1017,7 @@ class StockAdjustments(StandaloneCheck):
     description = "Stock was written off or adjusted for a large value, at odd hours, or entered days after its date."
     default_severity = "medium"
     requires = ("stock_movements",)
+    core_areas = ("stock",)
     params: dict[str, Any] = {"days": 14, "min_value": "5000.00", "min_quantity": "100", "open_hour": 6,
                               "close_hour": 22, "backdate_days": 3}
 
@@ -1051,6 +1075,7 @@ class ShrinkageByProduct(StandaloneCheck):
     description = "A product has lost a lot of stock to write-offs and short counts over the last weeks."
     default_severity = "medium"
     requires = ("stock_movements",)
+    core_areas = ("stock",)
     params: dict[str, Any] = {"days": 30, "min_loss": "5000.00", "min_units": "10"}
     auto_resolves = True
 
@@ -1100,6 +1125,7 @@ class NegativeStock(StandaloneCheck):
                    "count).")
     default_severity = "medium"
     requires = ("stock_movements",)
+    core_areas = ("stock",)
     params: dict[str, Any] = {"min_units": "1"}
     auto_resolves = True
 
@@ -1139,6 +1165,7 @@ class ManualJournals(StandaloneCheck):
                    "and approved by the same person.")
     default_severity = "medium"
     requires = ("journal_entries",)
+    core_areas = ("journals",)
     params: dict[str, Any] = {"days": 14, "large_amount": "100000.00", "round_step": "10000", "round_min": "10000",
                               "open_hour": 6, "close_hour": 22, "backdate_days": 7}
 
@@ -1216,6 +1243,7 @@ class ExpenseFarAboveNormal(StandaloneCheck):
     description = "One expense is much larger than the usual expense in the same category."
     default_severity = "medium"
     requires = ("expenses",)
+    core_areas = ("expenses",)
     params: dict[str, Any] = {"days": 7, "min_amount": "1000.00"}
 
     def scan(self, session: Session, ctx: CheckContext, supply: Supply) -> list[Candidate]:
@@ -1259,6 +1287,7 @@ class UnmatchedReceipts(StandaloneCheck):
                    "Needs sales or invoices connected to compare with; cash deposits are left out.")
     default_severity = "low"
     requires = ("payments",)
+    core_areas = ("payments", "sales", "receivables")
     params: dict[str, Any] = {"days": 14, "grace_days": 2, "window_minutes": 120, "min_amount": "1.00"}
     auto_resolves = True
 

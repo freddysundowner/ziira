@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { chosenReturnLines, overReturned, sumAmounts, variancePreview } from "./lib";
+import { chosenReturnLines, defaultStoreId, overReturned, sumAmounts, variancePreview } from "./lib";
 
 describe("sumAmounts", () => {
   it("adds decimal strings without float noise", () => {
@@ -31,5 +31,17 @@ describe("returns", () => {
   });
   it("finds lines returned beyond what was sold", () => {
     expect(overReturned({ a: "3", b: "1" }, { a: "2", b: "1" })).toEqual(["a"]);
+  });
+});
+
+describe("defaultStoreId", () => {
+  const store = (id: string, active = true, kind = "store") => ({ id, kind, is_active: active });
+  it("picks the only active store", () => {
+    expect(defaultStoreId([store("a", false), store("b")])).toBe("b");
+  });
+  it("prefers a store over a warehouse and is empty when there is none", () => {
+    expect(defaultStoreId([store("w", true, "warehouse"), store("s")])).toBe("s");
+    expect(defaultStoreId([])).toBe("");
+    expect(defaultStoreId(undefined)).toBe("");
   });
 });

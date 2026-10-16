@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { flattenTotals, hasPending, isFinalIntent, settingsObject, summarise, sumDecimals } from "./logic";
+import { flattenTotals, hasPending, isFinalIntent, summarise, sumDecimals } from "./logic";
 
 describe("sumDecimals", () => {
   it("adds exactly", () => {
@@ -43,12 +43,5 @@ describe("flattenTotals", () => {
     expect(flattenTotals({ cash: { expected: "10", banked: null }, variance: "0" })).toEqual([
       { path: ["cash", "expected"], value: "10" }, { path: ["cash", "banked"], value: "" }, { path: ["variance"], value: "0" },
     ]);
-  });
-});
-
-describe("settingsObject", () => {
-  it("drops blank rows and returns null when nothing is left", () => {
-    expect(settingsObject([{ key: " a ", value: "1" }, { key: "", value: "x" }, { key: "b", value: "" }])).toEqual({ a: "1" });
-    expect(settingsObject([{ key: "", value: "" }])).toBeNull();
   });
 });

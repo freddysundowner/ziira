@@ -4,7 +4,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
-from ziira.modules.payments.domain import mpesa
+from ziira.modules.payments.domain import mobile_money
 from ziira.modules.payments.permissions import PAYMENTS_RECORD
 from ziira.modules.payments.repository import payments_repo
 from ziira.modules.payments.repository.models import Payment, PaymentAllocation
@@ -18,10 +18,12 @@ from ziira.sdk import (
     ValidationFailed,
     audit_record,
     check_company,
+    company_setting,
     company_today,
     current_context,
     enqueue,
     next_document_number,
+    normalise_phone,
     publish,
 )
 
@@ -47,7 +49,7 @@ def record_payment(session: Session, *, company_id: UUID, branch_id: UUID | None
         raise ValidationFailed(f"Method must be one of: {', '.join(METHODS)}")
     if direction not in ("in", "out"):
         raise ValidationFailed("Direction must be 'in' or 'out'")
-    amount = mpesa.parse_amount(amount, "Payment amount")
+    amount = mobile_money.parse_amount(amount, "Payment amount")
     if party_type is not None and party_type not in PARTY_TYPES:
         raise ValidationFailed(f"Party type must be one of: {', '.join(PARTY_TYPES)}")
     day = business_date or company_today(session, company_id)
@@ -70,7 +72,8 @@ def record_payment(session: Session, *, company_id: UUID, branch_id: UUID | None
             if earlier.payment_account_id == account.id and earlier.status == "posted" \
                     and earlier.amount == amount and earlier.direction == direction:
                 raise Conflict(f"{reference} has already been recorded for {amount}")
-    fingerprint = mpesa.phone_fingerprint(phone) if phone else None
+    payer_number = normalise_phone(phone, company_setting(session, company_id, "phone_country_code")) if phone else None
+    fingerprint = mobile_money.phone_fingerprint(payer_number) if payer_number else None
 
     allocated = Decimal(0)
     for doc_type, _, part in allocations or []:

@@ -1,26 +1,30 @@
 import { Copy } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { api, Alert, Button, ConfirmDialog, Drawer, Field, IconButton, Input, toast, unwrap, useFormState, useMutation, useTranslation } from "@/sdk";
+import { api, Alert, Button, ConfirmDialog, Drawer, Field, IconButton, Input, toast, unwrap, useMutation, useTranslation } from "@/sdk";
 
 import type { PaymentAccount } from "../types";
+import { ProviderFields } from "./ProviderFields";
+import { fieldValues, missingRequired, usePaymentProviders } from "./usePaymentProviders";
 
 /** The provider secrets of an account (stored encrypted, never shown again) and the callback addresses the provider calls. */
 export function AccountSecurity({ account, onClose }: { account: PaymentAccount | null; onClose: () => void }) {
   const { t } = useTranslation("payments");
-  const f = useFormState({ consumer_key: "", consumer_secret: "", passkey: "" });
+  const providers = usePaymentProviders(!!account);
+  const provider = providers.data?.providers.find((p) => p.name === account?.provider);
+  const fields = provider?.credential_fields ?? [];
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [problem, setProblem] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [urls, setUrls] = useState<Record<string, string> | null>(null);
   const id = account?.id ?? "";
-  const { reset } = f;
-  useEffect(() => { reset(); setUrls(null); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setValues({}); setProblem(null); setUrls(null); }, [id]);
 
   const saveCredentials = useMutation({
     meta: { silent: true },
-    mutationFn: () => unwrap(api.PUT("/api/v1/payments/accounts/{account_id}/credentials", { params: { path: { account_id: id } }, body: {
-      consumer_key: f.values.consumer_key.trim(), consumer_secret: f.values.consumer_secret.trim(), passkey: f.values.passkey.trim() } })),
-    onSuccess: () => { toast(t("credentialsSaved"), "ok"); f.reset(); },
-    onError: (e) => { f.fail(e); toast((e as Error).message, "bad"); },
+    mutationFn: () => unwrap(api.PUT("/api/v1/payments/accounts/{account_id}/credentials", { params: { path: { account_id: id } }, body: fieldValues(fields, values) })),
+    onSuccess: () => { toast(t("credentialsSaved"), "ok"); setValues({}); setProblem(null); },
+    onError: (e) => { setProblem((e as Error).message); toast((e as Error).message, "bad"); },
   });
   const rotate = useMutation({
     mutationFn: () => unwrap(api.POST("/api/v1/payments/accounts/{account_id}/callback-token", { params: { path: { account_id: id } } })),
@@ -35,12 +39,19 @@ export function AccountSecurity({ account, onClose }: { account: PaymentAccount 
   return (
     <Drawer open onClose={onClose} title={t("connection", { name: account.name })}>
       <div className="space-y-8">
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); saveCredentials.mutate(); }}>
+        <form className="space-y-4" onSubmit={(e) => {
+          e.preventDefault();
+          const missing = missingRequired(fields, values);
+          if (missing) { setProblem(t("fieldRequired", { name: missing.label })); return; }
+          saveCredentials.mutate();
+        }}>
           <div><h3 className="text-sm font-semibold">{t("credentials")}</h3><p className="text-xs text-muted">{t("credentialsHint")}</p></div>
-          <Field label={t("consumerKey")} required error={f.error("consumer_key")}><Input {...f.bind("consumer_key")} required autoComplete="off" /></Field>
-          <Field label={t("consumerSecret")} required error={f.error("consumer_secret")}><Input type="password" {...f.bind("consumer_secret")} required autoComplete="new-password" /></Field>
-          <Field label={t("passkey")} required error={f.error("passkey")}><Input type="password" {...f.bind("passkey")} required autoComplete="new-password" /></Field>
-          <Button type="submit" loading={saveCredentials.isPending}>{t("saveCredentials")}</Button>
+          {providers.isLoading && <p className="text-sm text-muted">{t("loadingProvider")}</p>}
+          {!providers.isLoading && !provider && <Alert tone="warn">{t("providerNotOn", { name: account.provider })}</Alert>}
+          {provider && fields.length === 0 && <p className="text-sm text-muted">{t("noCredentials")}</p>}
+          <ProviderFields fields={fields} values={values} onChange={(k, v) => setValues((x) => ({ ...x, [k]: v }))} />
+          {problem && <Alert tone="bad">{problem}</Alert>}
+          {fields.length > 0 && <Button type="submit" loading={saveCredentials.isPending}>{t("saveCredentials")}</Button>}
         </form>
         <div className="space-y-3">
           <div><h3 className="text-sm font-semibold">{t("callbackAddresses")}</h3><p className="text-xs text-muted">{t("callbackHint")}</p></div>

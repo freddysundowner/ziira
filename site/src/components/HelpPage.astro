@@ -1,0 +1,149 @@
+---
+// Renders every page of the Help centre: the index, the A to Z list, a journey page and a guide.
+import "./help.css";
+import type { Entry } from "../lib/registry";
+import { urlFor, titleFor } from "../lib/registry";
+import { inline } from "../lib/md";
+import { helpJourneys, guidesIn, helpGuideId, guideForId, journeyForId, journeyOf, helpGuides, HELP_INDEX_ID, HELP_AZ_ID } from "../lib/help";
+import type { HelpGuide } from "../content/help/types";
+import Breadcrumbs from "./Breadcrumbs.astro";
+import HelpLayout from "./HelpLayout.astro";
+import HelpShot from "./HelpShot.astro";
+import HelpSearch from "./HelpSearch.astro";
+
+interface Props { entry: Entry; crumbs: { name: string; path: string }[] }
+const { entry, crumbs } = Astro.props;
+const i = (s: string) => inline(s, "en", urlFor);
+const gUrl = (g: HelpGuide) => urlFor(helpGuideId(g.slug), "en");
+const guide = guideForId(entry.id);
+const journey = journeyForId(entry.id);
+const isIndex = entry.id === HELP_INDEX_ID;
+const isAz = entry.id === HELP_AZ_ID;
+const nextLink = (n: string) => (n.startsWith("@") ? { href: urlFor(n.slice(1), "en"), label: titleFor(n.slice(1), "en") } : { href: gUrl(helpGuides.find((x) => x.slug === n)!), label: helpGuides.find((x) => x.slug === n)!.h1 });
+const start = ["create-your-account", "set-up-your-business", "make-your-first-sale", "tour-of-the-screens"].map((s) => helpGuides.find((g) => g.slug === s)).filter(Boolean) as HelpGuide[];
+const sorted = [...helpGuides].sort((a, b) => a.h1.localeCompare(b.h1));
+const toc = guide ? [...(guide.need.length ? [{ id: "before", label: "Before you start" }] : []), { id: "steps", label: "Steps" }, { id: "problems", label: "If something goes wrong" }, ...(guide.tips.length ? [{ id: "tips", label: "Tips" }] : []), { id: "next", label: "Next steps" }] : [];
+const J = guide ? journeyOf(guide) : undefined;
+---
+<div class="help-head">
+  <div class="container">
+    <Breadcrumbs lang="en" crumbs={crumbs} />
+    <span class="eyebrow">{entry.def.eyebrow}</span>
+    <h1>{entry.def.h1}</h1>
+    {entry.def.lead && <p class="lead">{entry.def.lead}</p>}
+    {guide && (
+      <ul class="help-meta">
+        <li><strong>For:</strong> {guide.who}</li>
+        <li><strong>Time:</strong> {guide.time}</li>
+        <li><strong>Part of:</strong> <a href={urlFor(`helpj-${J!.id}`, "en")}>{J!.title}</a></li>
+      </ul>
+    )}
+    {(isIndex || isAz || journey) && <HelpSearch id="help-q-head" />}
+  </div>
+</div>
+
+<section class="section tight help-body">
+  <HelpLayout currentGuide={guide} currentJourney={journey?.id} toc={toc}>
+    {isIndex && (
+      <>
+        <section class="help-start" aria-labelledby="start-h">
+          <h2 id="start-h">New here? Start with these four</h2>
+          <ol class="help-start-list">
+            {start.map((g, n) => <li><a href={gUrl(g)}><span class="n">{n + 1}</span><span><strong>{g.h1}</strong><small>{g.time}</small></span></a></li>)}
+          </ol>
+        </section>
+        <h2 id="journeys-h">Pick the job you want to do</h2>
+        <div class="help-cards">
+          {helpJourneys.map((j) => (
+            <a class="help-card" href={urlFor(`helpj-${j.id}`, "en")}>
+              <span class="n">{j.n}</span>
+              <h3>{j.title}</h3>
+              <p>{j.blurb}</p>
+              <span class="count">{guidesIn(j.id).length} {guidesIn(j.id).length === 1 ? "guide" : "guides"}</span>
+            </a>
+          ))}
+        </div>
+        <p class="note">Pictures show the Ziira web app with demo data. Looking for ideas and background instead of instructions? Read the <a href={urlFor("guides", "en")}>articles</a>, or look up a word in the <a href={urlFor("glossary", "en")}>glossary</a>.</p>
+      </>
+    )}
+
+    {isAz && (
+      <>
+        <ul class="help-az" id="az-list">
+          {sorted.map((g) => <li data-t={`${g.h1} ${(g.keywords ?? []).join(" ")}`.toLowerCase()}><a href={gUrl(g)}>{g.h1}</a><span>{journeyOf(g).title} · {g.time}</span></li>)}
+        </ul>
+        <p id="az-none" class="note" hidden>No guide matches that search. Try a shorter word.</p>
+        <script is:inline>
+          (function () {
+            var q = new URLSearchParams(location.search).get("q"); if (!q) return;
+            var words = q.toLowerCase().split(/\s+/).filter(Boolean), shown = 0;
+            document.querySelectorAll("#az-list li").forEach(function (li) { var t = li.getAttribute("data-t"), ok = words.every(function (w) { return t.indexOf(w) > -1; }); li.hidden = !ok; if (ok) shown++; });
+            if (!shown) document.getElementById("az-none").hidden = false;
+          })();
+        </script>
+      </>
+    )}
+
+    {journey && journey.id === "intelligence" && (
+      <div class="callout info" role="note"><strong class="t">New to Intelligence?</strong><p>See <a href={urlFor("intelligence-how", "en")}>how Intelligence works, step by step</a>. These guides then show what to click.</p></div>
+    )}
+
+    {journey && (
+      <ol class="help-guide-list">
+        {guidesIn(journey.id).map((g) => (
+          <li><a href={gUrl(g)}><strong>{g.h1}</strong><span>{g.description}</span><small>{g.time}</small></a></li>
+        ))}
+      </ol>
+    )}
+
+    {guide && (
+      <article class="help-guide" data-help-guide>
+        {guide.intro && <p class="help-intro" set:html={i(guide.intro)} />}
+        {guide.status && <div class="help-status" role="note"><strong>Status.</strong> <span set:html={i(guide.status)} /></div>}
+
+        {guide.need.length > 0 && (
+          <section id="before" aria-labelledby="before-h">
+            <h2 id="before-h">Before you start</h2>
+            <ul class="help-need">{guide.need.map((n) => <li set:html={i(n)} />)}</ul>
+          </section>
+        )}
+
+        <section id="steps" aria-labelledby="steps-h">
+          <h2 id="steps-h">Steps</h2>
+          <ol class="help-steps">
+            {guide.steps.map((s, n) => (
+              <li id={`step-${n + 1}`}>
+                <p class="do" set:html={i(s.do)} />
+                {s.shot && <HelpShot shot={s.shot} eager={n === 0} />}
+                {s.result && <p class="result"><strong>You should see:</strong> <span set:html={i(s.result)} /></p>}
+                {s.note && <p class="step-note" set:html={i(s.note)} />}
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section id="problems" aria-labelledby="problems-h">
+          <h2 id="problems-h">If something goes wrong</h2>
+          <div class="help-problems">
+            {guide.problems.map((p) => (
+              <div class="problem"><h3 set:html={i(p.p)} /><p set:html={i(p.fix)} /></div>
+            ))}
+          </div>
+          <p class="note">Still stuck? See <a href={urlFor(helpGuideId("fix-common-problems"), "en")}>Fix common problems</a>.</p>
+        </section>
+
+        {guide.tips.length > 0 && (
+          <section id="tips" aria-labelledby="tips-h">
+            <h2 id="tips-h">Tips</h2>
+            <ul class="help-tips">{guide.tips.map((t) => <li set:html={i(t)} />)}</ul>
+          </section>
+        )}
+
+        <section id="next" aria-labelledby="next-h" class="help-next">
+          <h2 id="next-h">Next steps</h2>
+          <ul>{guide.next.map((n) => { const l = nextLink(n); return <li><a href={l.href}>{l.label}</a></li>; })}</ul>
+        </section>
+      </article>
+    )}
+  </HelpLayout>
+</section>

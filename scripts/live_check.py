@@ -8,7 +8,7 @@
     python scripts/live_check.py ai       [--dry-run] [--no-tool]
 
 Credentials come from the environment (see docs/live-checks.md) and are never written anywhere. Every check uses the
-app's own provider classes (`ziira.modules.payments.providers`, `ziira.plugins.messaging.providers`), so a PASS means
+app's own provider classes (`ziira.plugins.mpesa.daraja`, `ziira.plugins.messaging.providers`), so a PASS means
 the code that production runs works against the real service. `--dry-run` sends nothing: it feeds the same code a
 made-up reply and prints the requests it would have sent, with secrets hidden, so formats can be reviewed offline.
 Daraja is always used in its sandbox. Refuses to run when ZIIRA_ENV=production unless `--i-know` is given.
@@ -30,8 +30,8 @@ from typing import Any
 import httpx
 
 from ziira.modules.intel.public import LlmMessage, ToolResult, ToolSpec
-from ziira.modules.payments.domain import mpesa
-from ziira.modules.payments.providers import DarajaProvider
+from ziira.plugins.mpesa import formats as mpesa
+from ziira.plugins.mpesa.daraja import DarajaProvider
 from ziira.modules.payments.public import StkQuery, StkRequest
 from ziira.plugins.ai_anthropic.provider import AnthropicMessages
 from ziira.plugins.messaging.providers import (
@@ -212,7 +212,8 @@ def daraja_check(*, phone: str, amount: str, polls: int, dry_run: bool, echo: bo
     print("Step 1-2: OAuth token, then the STK push (the sandbox test number gets no real prompt).")
     try:
         response = provider.stk_push(StkRequest(
-            shortcode=shortcode, till_type=till_type, amount=Decimal(amount), msisdn=mpesa.normalize_phone(phone),
+            shortcode=shortcode, settings={"till_type": till_type}, amount=Decimal(amount),
+            msisdn=mpesa.normalize_phone(phone),
             callback_url=env["ZIIRA_LIVE_DARAJA_CALLBACK_URL"], account_reference="ZIIRA-CHECK",
             description="Live check", credentials=credentials, environment="sandbox"))
     except httpx.HTTPError as exc:

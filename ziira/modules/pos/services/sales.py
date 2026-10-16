@@ -23,7 +23,7 @@ from ziira.modules.pos.domain import sales as rules
 from ziira.modules.pos.permissions import PRICE_OVERRIDE, SALES_SELL, SALES_VOID
 from ziira.modules.pos.repository import pos_repo
 from ziira.modules.pos.repository.models import Sale, SaleLine, SalePayment
-from ziira.modules.pos.services import access, credit, invoices, tills
+from ziira.modules.pos.services import access, credit, devices, invoices, tills
 from ziira.modules.products.public import ProductView, find_product, selling_prices
 from ziira.sdk import (
     Conflict,
@@ -57,7 +57,7 @@ class LineIn:
 class PaymentIn:
     method: str
     amount: Decimal
-    external_ref: str | None = None            # M-Pesa code, card slip number
+    external_ref: str | None = None            # mobile money code, card slip number
     payment_account_id: UUID | None = None     # default: the branch's account for the method
 
 
@@ -148,6 +148,7 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
         raise NotFound("Device not found")
     if device.status != "active" and not offline:
         raise ValidationFailed("This device is blocked")
+    devices.check_has_store(session, device)
 
     # when the sale happened, and which trading day it belongs to
     sold_at = sold_at or datetime.now(UTC)
@@ -244,7 +245,7 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
         reference = given.external_ref.strip().upper() if given.external_ref and given.external_ref.strip() else None
         if leg.method == "mobile_money" and reference is None:
             if not offline:
-                raise ValidationFailed("An M-Pesa payment needs the M-Pesa code")
+                raise ValidationFailed("A mobile money payment needs the mobile money code")
             warnings.append("mobile_money_without_code")
         account_id = given.payment_account_id
         if account_id is None and leg.method != "cash":

@@ -21,10 +21,11 @@ class AccountIn(BaseModel):
     bank_account_masked: str | None = Field(default=None, max_length=40, examples=["****4821"])
     ledger_account_id: UUID | None = Field(default=None, description="The Finance account this one posts to")
     environment: Literal["sandbox", "production"] = "sandbox"
-    provider: str = Field(default="daraja", max_length=40,
-                          description="A registered payment provider; 'fake' is for development only")
+    provider: str | None = Field(default=None, max_length=40,
+                                 description="A provider switched on for the business (GET /providers); "
+                                             "empty: 'manual', no integration")
     provider_config: dict[str, str] | None = Field(
-        default=None, description="Provider settings, e.g. {'till_type': 'till'} for Daraja")
+        default=None, description="The provider's own settings (its config_fields), e.g. a till type")
 
 
 class AccountUpdateIn(BaseModel):
@@ -33,10 +34,34 @@ class AccountUpdateIn(BaseModel):
     ledger_account_id: UUID | None = None
 
 
-class CredentialsIn(BaseModel):
-    consumer_key: str = Field(min_length=1, max_length=200)
-    consumer_secret: str = Field(min_length=1, max_length=200)
-    passkey: str = Field(min_length=1, max_length=400)
+class FormFieldOut(BaseModel):
+    key: str
+    label: str
+    secret: bool
+    required: bool
+    kind: str
+    options: list[str]
+    default: str | None
+    help: str
+
+
+class ProviderOut(BaseModel):
+    name: str
+    title: str
+    development_only: bool
+    supports_prompts: bool
+    credential_fields: list[FormFieldOut]
+    config_fields: list[FormFieldOut]
+
+
+class StatementFormatOut(BaseModel):
+    name: str
+    label: str
+
+
+class ProvidersOut(BaseModel):
+    providers: list[ProviderOut]
+    statement_formats: list[StatementFormatOut]
 
 
 class AccountOut(BaseModel):
@@ -66,7 +91,8 @@ class PaymentIn(BaseModel):
     amount: Money
     payment_account_id: UUID | None = None
     business_date: date | None = None
-    external_ref: str | None = Field(default=None, max_length=60, description="M-Pesa code, card or bank reference")
+    external_ref: str | None = Field(default=None, max_length=60,
+                                     description="Mobile-money code, card or bank reference")
     phone: str | None = Field(default=None, max_length=30)
     party_type: Literal["customer", "supplier", "employee", "other"] | None = None
     party_id: UUID | None = None
@@ -118,7 +144,7 @@ class ExternalOut(BaseModel):
 
 
 class StatementIn(BaseModel):
-    format: Literal["mpesa", "bank"]
+    format: str = Field(min_length=2, max_length=40, description="'bank', or a format from GET /providers")
     content: str = Field(min_length=1, description="The statement as CSV text")
     options: dict[str, str] = Field(default_factory=dict, description="Bank CSV column names, if not the usual ones")
 

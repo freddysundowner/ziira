@@ -1,4 +1,4 @@
-"""Use cases: reconciling a bank, M-Pesa or card account to its statement.
+"""Use cases: reconciling a bank, mobile money or card account to its statement.
 
     start (statement date and balance) --> tick the ledger lines that appear on the statement --> complete
 
@@ -92,7 +92,7 @@ def start_reconciliation(session: Session, *, company_id: UUID, account_id: UUID
     if account is None or account.company_id != company_id:
         raise ValidationFailed("Account not found in this company")
     if account.subtype not in ACCOUNT_SUBTYPES:
-        raise ValidationFailed(f"Only bank, M-Pesa and card accounts are reconciled to a statement, not "
+        raise ValidationFailed(f"Only bank, mobile money and card accounts are reconciled to a statement, not "
                                f"{account.code} {account.name}")
     if finance_repo.open_reconciliation(session, account_id) is not None:
         raise Conflict("This account already has a reconciliation in progress: complete or cancel it first")

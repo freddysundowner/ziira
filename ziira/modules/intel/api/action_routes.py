@@ -92,7 +92,8 @@ def get_action_log(company_id: UUID | None = None, action_type: str | None = Non
         finding_summary=r.finding_summary, company_id=r.company_id, branch_id=r.branch_id, action_type=r.action_type,
         action_title=available[r.action_type].title if r.action_type in available else r.action_type, mode=r.mode,
         actor_user_id=r.actor_user_id, actor_name=r.actor_name, rule_id=r.rule_id, level=r.level,
-        params=dict(r.params), outcome=r.outcome, message=r.message, result=_result(r.result)) for r in rows]
+        params=dict(r.params), outcome=r.outcome, message=r.message, result=_result(r.result),
+        channel=r.channel) for r in rows]
 
 
 @router.get("/actions", response_model=list[ProposalOut], dependencies=VIEW)

@@ -6,9 +6,11 @@ document through the `pos.receipt_extras` extension point (e.g. a tax-authority 
 
 import logging
 from collections import defaultdict
+from datetime import datetime
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 
@@ -94,10 +96,16 @@ def _customer_name(session: Session, customer_id: UUID | None) -> str | None:
     return customer.name if customer else None
 
 
+def local_time_text(session: Session, company_id: UUID, moment: datetime) -> str:
+    """A moment as the company's own clock shows it (its `timezone` setting), for printed documents."""
+    zone = ZoneInfo(str(company_setting(session, company_id, "timezone")))
+    return moment.astimezone(zone).strftime("%Y-%m-%d %H:%M")
+
+
 def sale_document(session: Session, sale_id: UUID, *, copy: bool = False) -> PrintDocument:
     view = sales.get_sale(session, sale_id)
     sale = view.sale
-    meta = [("Date", sale.sold_at.strftime("%Y-%m-%d %H:%M")),
+    meta = [("Date", local_time_text(session, sale.company_id, sale.sold_at)),
             ("Served by", _user_name(session, sale.cashier_id) or "")]
     customer = _customer_name(session, sale.customer_id)
     if customer:

@@ -11,20 +11,26 @@ send_notification(session, company_id=co, channel="sms", recipient="0712345678",
                   dedupe_key=f"reminder:{invoice.id}:{today}:sms")
 ```
 
-* **Channels** are email and SMS. Each business sets up its own (`PUT /api/v1/notifications/channels/{channel}`,
+* **Channels** exist only where a provider for them is enabled for the business: email and SMS from the `messaging` plugin, and others (chat
+  services, e.g. WhatsApp from the `leadsintel` plugin) from theirs. Templates, per-person channel choices, quiet hours and replies:
+  `docs/channels.md`). Each business sets up its own (`PUT /api/v1/notifications/channels/{channel}`,
   permission `settings.manage`): which provider, and the keys, which are stored encrypted and never shown again.
   `POST /api/v1/notifications/test` sends a test message.
 * **Providers** come from the `messaging` plugin: `smtp`, `brevo`, `resend` and `sendgrid` (email), `blessedtexts` (SMS, the one we use) and `africastalking` (SMS) and
-  `fake` (development). To support another gateway, write a class implementing `NotificationChannel` and register it with
+  `fake` (development), and, from the `leadsintel` plugin, WhatsApp through Lead Intel (`docs/channels.md`). To support another gateway, write a class implementing `NotificationChannel` and register it with
   `@provides("kernel.notification_channel")`. The SMS formats were written from the gateways' documentation and
   have not been run against the real services: test each in the gateway's sandbox first.
 * **Do not contact.** `POST /api/v1/notifications/opt-outs` (or a customer's `do-not-contact` in CRM) stops all messages, or
-  those on one channel, to a person. Such a message is recorded as skipped and never sent.
+  those on one channel, to a person; a customer replying STOP in a chat adds themselves. Such a message is recorded as skipped and never sent.
 * **Failures.** A failure that may pass (gateway unreachable, server error) is retried up to five times with growing delays;
   one that will not (wrong keys, a refused number) fails at once; either way the exceptions inbox is told. With no channel
   set up the message is skipped and flagged once.
 * **Record.** `GET /api/v1/notifications` shows what was sent and what became of it (recipients masked). Messages cannot be
   edited or deleted.
+
+* **More than one way.** A message can carry fallbacks (other channels for the same person) and, for a conversational channel, a template and
+  reply buttons; `send_templated` (customers) and `notify_user` (staff, with their channel choice and quiet hours) are the calls
+  units use. See `docs/channels.md`.
 
 ## Recurring tasks
 

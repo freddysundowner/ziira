@@ -94,7 +94,7 @@ class CashFlowReport:
 
 def cash_flow(session: Session, company_id: UUID, date_from: date, date_to: date, *,
               branch_id: UUID | None = None) -> CashFlowReport:
-    """Cash, bank, M-Pesa and card accounts: the balance at the start, what moved them, the balance at the end."""
+    """Cash, bank, mobile money and card accounts: the balance at the start, what moved them, the balance at the end."""
     _span(date_from, date_to)
     check_company(session, company_id, branch_id)
     scopes = _scopes(company_id)

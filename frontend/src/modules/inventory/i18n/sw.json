@@ -1,4 +1,6 @@
 {
+  "stockActions": "Vitendo vya bidhaa",
+  "stockLevels": "Viwango vya bidhaa",
   "stock": "Bidhaa dukani",
   "stockHint": "Ulichonacho, kilipo, na kinachoisha.",
   "movements": "Mienendo ya bidhaa",
@@ -199,5 +201,7 @@
   "countPosted": "Hesabu imerekodiwa. Bidhaa zimesahihishwa.",
   "cancelCount": "Ghairi hesabu",
   "cancelCountAsk": "Acha hesabu hii? Hakuna kitakachobadilika kwenye bidhaa.",
-  "countCancelled": "Hesabu imeghairiwa."
+  "countCancelled": "Hesabu imeghairiwa.",
+  "noLocationYet": "Bado hakuna bohari wala ghala, kwa hiyo hisa haiwezi kurekodiwa.",
+  "addLocationLink": "Ongeza bohari kwanza"
 }

@@ -81,6 +81,12 @@ class Unavailable(ZiiraError):
     code = "unavailable"
 
 
+class RegistrationFailed(Unavailable):
+    """The business could not be created and nothing was kept: the emailed link still works, so try again shortly."""
+
+    code = "registration_failed"
+
+
 class ChooseBusiness(ZiiraError):
     """The credentials are right for more than one business: say which one (the reply lists them)."""
 
@@ -100,3 +106,31 @@ class DependencyError(ZiiraError):
 
     status = 409
     code = "dependency_error"
+
+
+class SubscriptionInactive(ZiiraError):
+    """The business's subscription (or the instance's licence) does not allow this now: the account is suspended. Reads
+    of billing, the data export and offline sales still work. HTTP 402."""
+
+    status = 402
+    code = "subscription_suspended"
+
+
+class SubscriptionEnded(SubscriptionInactive):
+    """The subscription was cancelled or expired (or the licence ran out): the business is read-only. HTTP 402."""
+
+    code = "subscription_ended"
+
+
+class NotInPlan(ZiiraError):
+    """The plan (or licence) does not include this unit: upgrade to use it. HTTP 402."""
+
+    status = 402
+    code = "not_in_plan"
+
+
+class PlanLimitReached(ZiiraError):
+    """The plan's limit (users, branches or companies) is reached: nothing is deleted, nothing is added. HTTP 402."""
+
+    status = 402
+    code = "plan_limit_reached"

@@ -30,6 +30,7 @@ personal data sits in these places. "Free text" means staff typed it, so it can 
 | Kernel | `kernel.user_phone`, `kernel.user_mfa`, `kernel.user_session` | Verified phones, authenticator secret (encrypted), sign-in devices (id, name) | Deleted / closed and names removed |
 | Kernel | `kernel.notification` | Recipient (email or phone), subject, text of every message sent | Recipient masked, subject and text replaced; the fact of sending stays |
 | Kernel | `kernel.notification_optout` | Addresses that asked not to be contacted | **Kept**: it is how the business honours the request |
+| Kernel | `kernel.webhook_delivery` | The body of outgoing webhook deliveries (ids, codes, dates, amounts: no names or contact details) for a few days, then only its hash and first bytes | Content removed; the log line (time, event type, result) stays |
 | Kernel | `kernel.audit_log` | User ids, device ids, IP addresses, and what was typed when records were made (a name, an email) | **Kept**: immutable by design |
 | Kernel | `kernel.privacy_request` | The subject of each request and what it found | Subject masked once an erasure completes |
 | Master database | `master.login_directory` | A keyed hash of each user's email and phone (no raw values) | The user's entries are removed |

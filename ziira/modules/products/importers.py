@@ -6,7 +6,7 @@ from uuid import UUID
 
 from sqlalchemy import text
 
-from ziira.modules.imports.public import ImportColumn, Importer, ImportRow, attempt
+from ziira.modules.imports.public import ExistingRecord, ImportColumn, Importer, ImportRow, attempt
 from ziira.modules.products.domain import rules
 from ziira.modules.products.permissions import PRICES_MANAGE, PRODUCTS_MANAGE
 from ziira.modules.products.repository import products_repo
@@ -100,6 +100,13 @@ class ProductImporter(Importer):
     def existing(self, session: Session, company_id: UUID, row: ImportRow) -> str | None:
         sku = row.text("sku").strip().upper()
         return f"Product {sku} already exists" if products_repo.sku_exists(session, company_id, sku) else None
+
+    def find_match(self, session: Session, company_id: UUID, row: ImportRow) -> ExistingRecord | None:
+        """The product already in Ziira with this code (a move from another system)."""
+        sku = row.text("sku").strip().upper()
+        if sku and products_repo.sku_exists(session, company_id, sku):
+            return ExistingRecord(sku, f"Product {sku} has the same product code")
+        return None
 
     def import_row(self, session: Session, company_id: UUID, row: ImportRow, local_id: UUID) -> UUID:
         errors: list[str] = []

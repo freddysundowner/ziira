@@ -1,0 +1,2972 @@
+{
+ "groups": [
+  {
+   "key": "cash",
+   "title": "Cash, sales and payments",
+   "lead": "Is the money you should have received actually there?",
+   "count": 15,
+   "ziira": 11,
+   "connected": 4
+  },
+  {
+   "key": "cashier",
+   "title": "Cashiers, discounts and the till",
+   "lead": "Do the habits at the till look normal?",
+   "count": 12,
+   "ziira": 6,
+   "connected": 6
+  },
+  {
+   "key": "stock",
+   "title": "Stock and shrinkage",
+   "lead": "Is stock going missing, running out or going to waste?",
+   "count": 15,
+   "ziira": 12,
+   "connected": 3
+  },
+  {
+   "key": "customers",
+   "title": "Customers and credit",
+   "lead": "Who owes you, and are you lending to the wrong people?",
+   "count": 11,
+   "ziira": 8,
+   "connected": 3
+  },
+  {
+   "key": "suppliers",
+   "title": "Suppliers and purchasing",
+   "lead": "Are you paying more, paying twice or paying for goods that never came?",
+   "count": 12,
+   "ziira": 9,
+   "connected": 3
+  },
+  {
+   "key": "books",
+   "title": "Accounting and books",
+   "lead": "Do the entries in your books look ordinary?",
+   "count": 13,
+   "ziira": 11,
+   "connected": 2
+  },
+  {
+   "key": "people",
+   "title": "People and payroll",
+   "lead": "Is anyone being paid in a way that looks odd?",
+   "count": 8,
+   "ziira": 7,
+   "connected": 1
+  },
+  {
+   "key": "controls",
+   "title": "Controls and approvals",
+   "lead": "Is the system itself being used in a careful way?",
+   "count": 4,
+   "ziira": 4,
+   "connected": 0
+  }
+ ],
+ "totals": {
+  "checks": 90,
+  "ziira": 68,
+  "connected": 22,
+  "actions": 7,
+  "automatic_actions": 4,
+  "ask_tools": 16,
+  "baselines": 13,
+  "by_area": {
+   "books": 10,
+   "cash_sales": 10,
+   "controls": 35,
+   "customers": 10,
+   "people": 6,
+   "stock": 10,
+   "suppliers": 9
+  }
+ },
+ "checks": [
+  {
+   "code": "controls.after_hours_activity",
+   "area": "controls",
+   "group": "controls",
+   "title": "Activity at unusual hours",
+   "description": "A person made many changes outside working hours (read in the company's time zone).",
+   "plain": "Someone made many changes in the system outside working hours.",
+   "example": "One user made 31 changes between 23:00 and 02:00 on Sunday.",
+   "source": "ziira",
+   "unit": "Ziira itself (users, approvals, exceptions)",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "start_hour",
+     "label": "Hour working time starts (24-hour clock)",
+     "default": 6
+    },
+    {
+     "name": "end_hour",
+     "label": "Hour working time ends (24-hour clock)",
+     "default": 22
+    },
+    {
+     "name": "min_actions",
+     "label": "Fewest changes before it is flagged",
+     "default": 10
+    }
+   ]
+  },
+  {
+   "code": "controls.approval_by_requester",
+   "area": "controls",
+   "group": "controls",
+   "title": "Approved by the person who asked",
+   "description": "Something was approved by the same person who requested it, so nobody else looked at it.",
+   "plain": "Something was approved by the same person who asked for it, so nobody else looked.",
+   "example": "A stock write-off was requested and approved by the same manager.",
+   "source": "ziira",
+   "unit": "Ziira itself (users, approvals, exceptions)",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "controls.exceptions_backlog",
+   "area": "controls",
+   "group": "controls",
+   "title": "Exceptions nobody has reviewed",
+   "description": "Items in the exceptions inbox have waited too long without anyone reviewing them.",
+   "plain": "Problems the system put in its exceptions inbox (things it could not finish by itself) have waited too long for someone to look.",
+   "example": "11 items have been waiting for more than 7 days.",
+   "source": "ziira",
+   "unit": "Ziira itself (users, approvals, exceptions)",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days an item may wait before it counts as stuck",
+     "default": 7
+    },
+    {
+     "name": "min_items",
+     "label": "Fewest stuck items before it is flagged",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "controls.new_wide_access",
+   "area": "controls",
+   "group": "controls",
+   "title": "Someone was given wide access",
+   "description": "A person was given a role over the whole business or a whole company in the last few days (not the owner's own role, made when the business was set up).",
+   "plain": "Someone was recently given a role that lets them act across the whole business or a whole company.",
+   "example": "A new user was given the Finance Manager role for all branches on Monday.",
+   "source": "ziira",
+   "unit": "Ziira itself (users, approvals, exceptions)",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "crm.credit_increase_waiting",
+   "area": "customers",
+   "group": "customers",
+   "title": "Credit increases waiting for approval",
+   "description": "A request to raise a customer's credit limit that has waited for approval longer than the limit.",
+   "plain": "A request to raise a customer's credit limit has been waiting for approval too long.",
+   "example": "A credit increase for Customer A has waited 9 days.",
+   "source": "ziira",
+   "unit": "Customers",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days a request may wait before it is flagged",
+     "default": 3
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 180
+    }
+   ]
+  },
+  {
+   "code": "crm.duplicate_customers",
+   "area": "controls",
+   "group": "customers",
+   "title": "Customers entered twice",
+   "description": "A customer created recently with the same phone number or tax number as another customer, which can be used to get more credit than one account allows.",
+   "plain": "A customer was created with the same phone number or tax number as an existing one, which can be used to get more credit than one account allows.",
+   "example": "Two accounts share one phone number, each with its own credit limit.",
+   "source": "ziira",
+   "unit": "Customers",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "crm.followups_overdue",
+   "area": "customers",
+   "group": "customers",
+   "title": "Overdue lead follow-ups",
+   "description": "A salesperson with follow-ups on open leads that are overdue by more than the limit.",
+   "plain": "A salesperson has follow-ups with possible customers that are overdue.",
+   "example": "A salesperson has 7 follow-ups that are more than 3 days overdue.",
+   "source": "ziira",
+   "unit": "Customers",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days overdue before a follow-up is flagged",
+     "default": 3
+    },
+    {
+     "name": "many",
+     "label": "Number of overdue follow-ups at which it becomes more serious",
+     "default": 5
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 180
+    }
+   ]
+  },
+  {
+   "code": "crm.over_credit_limit",
+   "area": "customers",
+   "group": "customers",
+   "title": "Customers over their credit limit",
+   "description": "A customer whose unpaid invoices, less money they hold on account, are above their credit limit. Customers with no credit limit set are not checked.",
+   "plain": "A customer's unpaid invoices, less any money they hold on account, are above their credit limit. Customers with no limit set are not checked.",
+   "example": "Customer B owes 140,000 against a limit of 100,000.",
+   "source": "ziira",
+   "unit": "Customers",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "high_over_pct",
+     "label": "How far over the limit (in %) makes it high priority",
+     "default": "50.0"
+    },
+    {
+     "name": "max_customers",
+     "label": "Most customers checked in one run",
+     "default": 1000
+    }
+   ]
+  },
+  {
+   "code": "finance.backdated_entries",
+   "area": "books",
+   "group": "books",
+   "title": "Entries posted long after their date",
+   "description": "A journal entry was posted to the books many days after the date it carries.",
+   "plain": "An entry was put into the books long after the date it carries, so the past was changed after the fact.",
+   "example": "On 3 October someone posted an expense dated 12 July.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 60
+    },
+    {
+     "name": "late_days",
+     "label": "Days between the entry date and when it was made that counts as late",
+     "default": 14
+    },
+    {
+     "name": "manual_only",
+     "label": "Look only at hand-made entries (1 = yes, 0 = all)",
+     "default": 1
+    }
+   ]
+  },
+  {
+   "code": "finance.large_manual_journal",
+   "area": "controls",
+   "group": "books",
+   "title": "Large manual journal",
+   "description": "A manual journal was written for more than the limit the business set for hand-made entries.",
+   "plain": "A hand-made accounting entry is bigger than the limit you set for such entries.",
+   "example": "A 240,000 manual entry when your limit is 100,000.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "limit",
+     "label": "Amount above which a hand-made entry is flagged",
+     "default": "100000.00"
+    }
+   ]
+  },
+  {
+   "code": "finance.low_gross_margin",
+   "area": "books",
+   "group": "books",
+   "title": "Gross margin well below normal",
+   "description": "The share of sales kept after the cost of what was sold is far below the last three months.",
+   "plain": "You are keeping a smaller share of each sale than you usually do, after paying for what you sold.",
+   "example": "Gross margin this month is 14%, against 26% over the last three months.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "drop_points",
+     "label": "How many points below normal the margin must fall",
+     "default": "10.0"
+    },
+    {
+     "name": "min_income",
+     "label": "Smallest sales for the month before it is judged",
+     "default": "1000.00"
+    },
+    {
+     "name": "min_day",
+     "label": "Earliest day of the month to judge (so the first days are not read too early)",
+     "default": 5
+    },
+    {
+     "name": "min_months",
+     "label": "Months of history needed",
+     "default": 2
+    }
+   ]
+  },
+  {
+   "code": "finance.odd_hours_manual_journal",
+   "area": "controls",
+   "group": "books",
+   "title": "Manual journal at unusual hours",
+   "description": "A manual journal was created or posted late at night or very early in the morning.",
+   "plain": "A hand-made accounting entry was created late at night or very early in the morning.",
+   "example": "A manual entry was posted at 02:15.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "start_hour",
+     "label": "Hour the odd period starts (24-hour clock)",
+     "default": 22
+    },
+    {
+     "name": "end_hour",
+     "label": "Hour the odd period ends (24-hour clock)",
+     "default": 5
+    }
+   ]
+  },
+  {
+   "code": "finance.period_reopened",
+   "area": "books",
+   "group": "books",
+   "title": "Closed month reopened",
+   "description": "A month that had been closed was opened again, so its figures could change.",
+   "plain": "A month that was closed and locked was opened again, so numbers you already relied on can change.",
+   "example": "June was closed on 5 July and reopened on 19 July.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "finance.posted_after_close",
+   "area": "books",
+   "group": "books",
+   "title": "Entries posted into a closed month",
+   "description": "A journal entry was posted into a month after that month had been closed.",
+   "plain": "Something was posted into a month after that month had been closed.",
+   "example": "A 12,000 entry dated May appeared after May was closed.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "finance.round_manual_journal",
+   "area": "controls",
+   "group": "books",
+   "title": "Round-number manual journal",
+   "description": "A manual journal was written for a perfectly round amount, which real transactions rarely are.",
+   "plain": "A hand-made accounting entry is a perfectly round amount, which real transactions rarely are.",
+   "example": "A manual entry for exactly 50,000.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "round_unit",
+     "label": "Round figures are multiples of this",
+     "default": "1000.00"
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest round figure worth flagging",
+     "default": "10000.00"
+    }
+   ]
+  },
+  {
+   "code": "finance.same_person_approval",
+   "area": "controls",
+   "group": "books",
+   "title": "Prepared and approved by the same person",
+   "description": "One person both prepared and approved a manual journal or an expense.",
+   "plain": "One person both prepared and approved a hand-made entry or an expense.",
+   "example": "The same user wrote and approved a 75,000 journal.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "finance.stale_reconciliation",
+   "area": "books",
+   "group": "books",
+   "title": "Bank reconciliation left open",
+   "description": "A bank reconciliation was started a while ago and has not been completed.",
+   "plain": "A bank reconciliation (ticking your records off against the bank statement) was started and never finished.",
+   "example": "The February reconciliation of the main account has been open for 41 days.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days_open",
+     "label": "Days a reconciliation may stay open before it is flagged",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "finance.unreconciled_bank_lines",
+   "area": "books",
+   "group": "books",
+   "title": "Old unreconciled bank lines",
+   "description": "Entries on a bank account are older than the limit and still not matched to a bank statement.",
+   "plain": "Money that moved through a bank account is still not matched to a line on the bank statement after a long time.",
+   "example": "6 entries on the main account are older than 45 days and still unmatched.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "age_days",
+     "label": "Days old before an unmatched entry is flagged",
+     "default": 45
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 180
+    }
+   ]
+  },
+  {
+   "code": "finance.unusual_expense",
+   "area": "books",
+   "group": "books",
+   "title": "Unusually large expense",
+   "description": "A branch spent far more on one kind of expense in a day than it normally does.",
+   "plain": "A branch spent much more on one kind of expense in a day than it normally does.",
+   "example": "Branch B spent 8,400 on repairs on Tuesday; it usually spends about 900 in a day.",
+   "source": "ziira",
+   "unit": "Accounting",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "500.00"
+    },
+    {
+     "name": "min_ratio",
+     "label": "How many times the usual daily spend counts as unusual",
+     "default": "2.0"
+    },
+    {
+     "name": "min_samples",
+     "label": "Days of history needed to know what is usual",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "inventory.adjustment_spike",
+   "area": "controls",
+   "group": "stock",
+   "title": "Unusually large stock removals by one person",
+   "description": "A person has taken far more value of stock out by hand today than is normal for them.",
+   "plain": "One person took far more stock out by hand today (write-offs, corrections) than is normal for them.",
+   "example": "A storekeeper wrote off 4,200 of stock today; their usual is under 300.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "min_value",
+     "label": "Smallest total value worth flagging",
+     "default": "500"
+    }
+   ]
+  },
+  {
+   "code": "inventory.batch_expired",
+   "area": "stock",
+   "group": "stock",
+   "title": "Expired stock on hand",
+   "description": "A batch past its expiry date is still held as stock.",
+   "plain": "A batch of stock is past its expiry date and is still counted as stock.",
+   "example": "40 packs of syrup expired on 1 October and are still on the shelf record.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days_back",
+     "label": "How far back to look for expired batches",
+     "default": 365
+    }
+   ]
+  },
+  {
+   "code": "inventory.batch_expiring",
+   "area": "stock",
+   "group": "stock",
+   "title": "Batches expiring soon",
+   "description": "A batch with stock still on hand will expire within the next few weeks.",
+   "plain": "A batch with stock still on hand will expire within the next few weeks.",
+   "example": "60 units of a medicine expire in 12 days.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days_ahead",
+     "label": "Days ahead to warn",
+     "default": 30
+    },
+    {
+     "name": "urgent_days",
+     "label": "Days left at which it becomes more serious",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "inventory.count_variance",
+   "area": "controls",
+   "group": "stock",
+   "title": "Large stock count differences",
+   "description": "A stock count that was posted found stock worth more than the limit missing or extra.",
+   "plain": "A stock count found a lot more or less than the records said was there.",
+   "example": "The Branch B count came out 7,900 short.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "value_limit",
+     "label": "Value of the difference above which a count is flagged",
+     "default": "1000"
+    }
+   ]
+  },
+  {
+   "code": "inventory.large_write_down",
+   "area": "controls",
+   "group": "stock",
+   "title": "Large stock write-downs",
+   "description": "A manual stock adjustment or write-off removed stock worth more than the limit.",
+   "plain": "Stock worth a large amount was written off or corrected downwards by hand.",
+   "example": "3,600 of paint was written off as damaged.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "value_limit",
+     "label": "Value above which a write-off is flagged",
+     "default": "1000"
+    }
+   ]
+  },
+  {
+   "code": "inventory.low_stock",
+   "area": "stock",
+   "group": "stock",
+   "title": "Products below their reorder level",
+   "description": "A product's stock at a branch has fallen to its reorder level or under.",
+   "plain": "A product's stock at a branch has fallen to its reorder level or below.",
+   "example": "Branch A has 6 bags of cement left and the reorder level is 10.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": []
+  },
+  {
+   "code": "inventory.negative_stock",
+   "area": "stock",
+   "group": "stock",
+   "title": "Negative stock",
+   "description": "A branch shows less than zero of a product, so a delivery or a transfer was probably not recorded.",
+   "plain": "The system shows less than zero of a product at a branch, so a delivery or transfer was probably not recorded.",
+   "example": "Branch B shows minus 12 bags of sugar.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": []
+  },
+  {
+   "code": "inventory.out_of_stock",
+   "area": "stock",
+   "group": "stock",
+   "title": "Products out of stock",
+   "description": "A product you normally stock or sell at a branch has run out there.",
+   "plain": "A product you normally sell at a branch has run out.",
+   "example": "Branch A has no cooking oil, and it sold 40 litres last month.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look for products you normally sell",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "inventory.shrinkage_rate",
+   "area": "controls",
+   "group": "stock",
+   "title": "Stock lost against stock moved",
+   "description": "At a branch, a product lost through adjustments, write-offs and counts is a large share of what was sold and received.",
+   "plain": "At a branch, a product is being lost (write-offs, short counts) at a high rate compared with what is sold and received.",
+   "example": "Branch A lost 14% of the sugar it handled this month.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "percent",
+     "label": "Loss rate (in %) above which a product is flagged",
+     "default": "10.0"
+    },
+    {
+     "name": "min_loss_value",
+     "label": "Smallest total loss worth flagging",
+     "default": "100"
+    }
+   ]
+  },
+  {
+   "code": "inventory.slow_stock",
+   "area": "stock",
+   "group": "stock",
+   "title": "Slow or dead stock",
+   "description": "A branch holds stock of real value that has not been sold or moved out for months.",
+   "plain": "A branch holds a lot of stock that has not sold or moved for months.",
+   "example": "Branch C has 14,000 of paint that has not sold in 120 days.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days without a sale before stock counts as slow",
+     "default": 90
+    },
+    {
+     "name": "min_value",
+     "label": "Smallest value of stock worth flagging",
+     "default": "1000"
+    }
+   ]
+  },
+  {
+   "code": "inventory.transfer_not_received",
+   "area": "stock",
+   "group": "stock",
+   "title": "Transfers not received",
+   "description": "Stock sent between branches has been on the road for days without being received.",
+   "plain": "Stock sent from one branch to another has been on its way for days without being received.",
+   "example": "A transfer of 20 cartons left Branch A six days ago and Branch B has not received it.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days in transit before it is flagged",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "inventory.unusual_stock_moves",
+   "area": "controls",
+   "group": "stock",
+   "title": "Stock moves at odd hours or back-dated",
+   "description": "A stock adjustment or transfer was made outside working hours or dated well before it was entered.",
+   "plain": "A stock correction or transfer was made outside working hours, or dated well before it was entered.",
+   "example": "A stock correction made at 23:10 and dated four days earlier.",
+   "source": "ziira",
+   "unit": "Stock",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "hours_from",
+     "label": "Hour working time starts (24-hour clock)",
+     "default": 6
+    },
+    {
+     "name": "hours_to",
+     "label": "Hour working time ends (24-hour clock)",
+     "default": 21
+    },
+    {
+     "name": "backdate_days",
+     "label": "Days earlier than entry date that counts as back-dated",
+     "default": 3
+    },
+    {
+     "name": "min_value",
+     "label": "Smallest value worth flagging",
+     "default": "100"
+    }
+   ]
+  },
+  {
+   "code": "payments.close_variance",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Daily close with a variance",
+   "description": "A branch closed its day with more or less money than the records say it should have.",
+   "plain": "A branch closed its day with more or less money than the records say it should have.",
+   "example": "Branch A closed the day 1,350 short.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "variance_limit",
+     "label": "Difference above which a close is flagged",
+     "default": "100.00"
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "payments.failing_prompts",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Payment prompts failing",
+   "description": "Many payment requests sent to customers' phones failed or timed out on the same day.",
+   "plain": "Many payment requests sent to customers' phones failed or timed out on the same day, which usually means a fault with the payment service.",
+   "example": "9 of 12 payment requests failed on Saturday.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "min_attempts",
+     "label": "Fewest requests in a day before it is judged",
+     "default": 5
+    },
+    {
+     "name": "failure_percent",
+     "label": "Share of requests that must fail (in %)",
+     "default": "50.0"
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "payments.manual_without_evidence",
+   "area": "controls",
+   "group": "cash",
+   "title": "Payment with no provider evidence",
+   "description": "A large mobile money, bank or card payment was recorded but no provider transaction supports it.",
+   "plain": "A large mobile-money, bank or card payment was typed in, but your payment provider has no record of it.",
+   "example": "A 9,500 mobile-money payment was recorded at the till and the provider shows nothing.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "amount_limit",
+     "label": "Amount above which a payment needs proof",
+     "default": "1000.00"
+    },
+    {
+     "name": "hours",
+     "label": "Hours to wait for the provider's record",
+     "default": 24
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "payments.missing_close",
+   "area": "controls",
+   "group": "cash",
+   "title": "Day with takings but no close",
+   "description": "A branch received money on a day but its daily close was never submitted.",
+   "plain": "A branch took money on a day but nobody closed that day.",
+   "example": "Branch B has takings on Wednesday and no daily close.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "grace_days",
+     "label": "Days a close may be late before it is flagged",
+     "default": 1
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "payments.possible_duplicates",
+   "area": "controls",
+   "group": "cash",
+   "title": "Possible duplicate payments",
+   "description": "Two payments of the same amount from the same payer were recorded within minutes of each other.",
+   "plain": "Two payments of the same amount from the same payer were recorded within minutes of each other.",
+   "example": "Two payments of 2,400 from one phone number, four minutes apart.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "window_minutes",
+     "label": "How many minutes apart counts as a possible duplicate",
+     "default": 10
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "payments.reversed_after_match",
+   "area": "controls",
+   "group": "cash",
+   "title": "Payment reversed after it was matched",
+   "description": "A payment confirmed by the provider's records was undone and then reversed.",
+   "plain": "A payment that had been confirmed and matched to a sale was later undone.",
+   "example": "A 6,000 payment, matched to a sale on Monday, was reversed on Wednesday.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "payments.settlement_mismatch",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Settlement missing or different",
+   "description": "What a mobile money account received does not agree with what was settled to the bank.",
+   "plain": "What your mobile-money account received does not agree with what was paid across to your bank.",
+   "example": "The account received 220,000 this week but only 205,000 reached the bank.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "grace_days",
+     "label": "Days a transfer may take before it counts as missing",
+     "default": 3
+    },
+    {
+     "name": "tolerance_percent",
+     "label": "How big a difference (in %) is allowed before flagging",
+     "default": "2.0"
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "payments.unlinked_receipts",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Money received that matches nothing",
+   "description": "Money was received but is not linked to any sale, invoice or customer.",
+   "plain": "Money was received but is not linked to any sale, invoice or customer.",
+   "example": "A 3,200 payment came in on Monday and nothing explains what it was for.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "hours",
+     "label": "Hours to wait before it counts as unlinked",
+     "default": 24
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "payments.unmatched_transactions",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Provider transactions nobody matched",
+   "description": "The mobile money provider or bank reported money in that no recorded payment accounts for.",
+   "plain": "Your mobile-money provider or bank reported money coming in that none of your recorded payments accounts for.",
+   "example": "The provider shows 7 receipts last week that Ziira cannot tie to any sale.",
+   "source": "ziira",
+   "unit": "Payments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "unmatched_days",
+     "label": "Days a transaction may stay unmatched before it is flagged",
+     "default": 2
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "people.changes_before_payroll",
+   "area": "controls",
+   "group": "people",
+   "title": "New people or pay changes just before payroll",
+   "description": "An employee who was added, had their pay raised or changed, or had their bank or mobile money details changed shortly before a payroll run that paid them.",
+   "plain": "Someone was added, had their pay raised, or had their bank or mobile-money details changed shortly before a payroll that paid them.",
+   "example": "A new employee was added two days before payroll and paid in full.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days before a payroll run that count as just before",
+     "default": 14
+    },
+    {
+     "name": "lookback_days",
+     "label": "How far back to look for payroll runs",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "people.leave_waiting",
+   "area": "people",
+   "group": "people",
+   "title": "Leave requests waiting too long",
+   "description": "A leave request that has been waiting for a decision for more days than the limit.",
+   "plain": "A leave request has waited too long for a decision.",
+   "example": "A leave request has waited 8 days for approval.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days a request may wait before it is flagged",
+     "default": 5
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 180
+    }
+   ]
+  },
+  {
+   "code": "people.paid_without_attendance",
+   "area": "people",
+   "group": "people",
+   "title": "Paid with no attendance or leave",
+   "description": "An employee paid in a payroll run who has no attendance and no approved leave for that period, while most other people paid in the same run do. Assumes the business uses attendance when at least the stated share of those paid have records.",
+   "plain": "An employee was paid in a payroll run with no attendance and no approved leave for that period, while most others paid in the same run do have records.",
+   "example": "Employee C was paid a full month with no attendance recorded, though 9 of 10 colleagues have it.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "usage_pct",
+     "label": "Share (in %) of people who must have attendance for this check to apply",
+     "default": "50.0"
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "people.pay_jump_unexplained",
+   "area": "people",
+   "group": "people",
+   "title": "Pay changed with no recorded reason",
+   "description": "An employee's gross pay changed by more than the set percentage from the previous run, with no pay-terms change, pay-item change, part-month, unpaid leave or overtime recorded to explain it.",
+   "plain": "An employee's pay changed by a lot from the last payroll, and nothing recorded (a pay change, overtime, unpaid leave, a part month) explains it.",
+   "example": "Employee B's gross pay rose 38% with no recorded reason.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "percent",
+     "label": "How big a change (in %) is flagged",
+     "default": "20.0"
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "people.pay_self_approved",
+   "area": "controls",
+   "group": "people",
+   "title": "Pay changes approved by the person who proposed them",
+   "description": "Pay terms or salary payment details where the person who proposed them is also the one who approved.",
+   "plain": "A person's pay terms or payment details were approved by the same person who proposed them.",
+   "example": "A salary increase was proposed and approved by the same payroll clerk.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "people.payroll_overdue",
+   "area": "people",
+   "group": "people",
+   "title": "Payroll not finished after the pay date",
+   "description": "A payroll run that is still unapproved, or approved but unpaid, several days after its pay date.",
+   "plain": "A payroll run is still not approved, or approved but not paid, days after its pay date.",
+   "example": "Payroll for September was due on the 28th and is still unapproved on the 3rd.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "Days after the pay date before it is flagged",
+     "default": 3
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 120
+    }
+   ]
+  },
+  {
+   "code": "people.unusual_overtime",
+   "area": "people",
+   "group": "people",
+   "title": "Unusual overtime",
+   "description": "Overtime hours on a recent day that are far above the employee's or the branch's own normal.",
+   "plain": "Overtime on a recent day is far above what that employee, or their branch, normally works.",
+   "example": "Employee A worked 9 hours of overtime on Saturday; their usual is under 2.",
+   "source": "ziira",
+   "unit": "People and payroll",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "recent_days",
+     "label": "How many recent days to look at",
+     "default": 3
+    },
+    {
+     "name": "min_hours",
+     "label": "Fewest extra overtime hours worth flagging",
+     "default": "2.0"
+    }
+   ]
+  },
+  {
+   "code": "pos.branch_sales_low",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "A branch sold far less than usual",
+   "description": "A branch's sales yesterday were far below what it normally sells on that day of the week.",
+   "plain": "A branch sold far less than it normally sells on that day of the week.",
+   "example": "Branch C sold 18,000 on Saturday; a normal Saturday is about 52,000.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "drop_percent",
+     "label": "How far below normal (in %) counts as a big drop",
+     "default": 50
+    },
+    {
+     "name": "deviations",
+     "label": "How many times the usual swing counts as unusual",
+     "default": "2.0"
+    },
+    {
+     "name": "min_history",
+     "label": "Fewest days of history needed to know what is normal",
+     "default": 6
+    }
+   ]
+  },
+  {
+   "code": "pos.cashier_discount_rate",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A cashier gave more discounts than usual",
+   "description": "A cashier gave away a much bigger share of the list price in discounts and price changes than usual.",
+   "plain": "A cashier gave away a much bigger share of the list price in discounts and price changes than they usually do.",
+   "example": "Cashier B discounted 9% of what they sold yesterday; their usual is 2%.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many recent days to judge",
+     "default": 2
+    },
+    {
+     "name": "min_sales",
+     "label": "Fewest sales needed before a cashier is judged",
+     "default": 5
+    },
+    {
+     "name": "min_rate",
+     "label": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+     "default": "0.05"
+    }
+   ]
+  },
+  {
+   "code": "pos.cashier_refund_rate",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A cashier processed more refunds than usual",
+   "description": "A cashier returned a much bigger share of what they sold than they normally do.",
+   "plain": "A cashier gave back money (refunds) on a much bigger share of their sales than they usually do.",
+   "example": "Cashier A refunded 11% of their sales yesterday; their usual is 1%.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many recent days to judge",
+     "default": 2
+    },
+    {
+     "name": "min_sales",
+     "label": "Fewest sales needed before a cashier is judged",
+     "default": 5
+    },
+    {
+     "name": "min_rate",
+     "label": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+     "default": "0.05"
+    }
+   ]
+  },
+  {
+   "code": "pos.cashier_void_rate",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A cashier voided more sales than usual",
+   "description": "A cashier cancelled a much bigger share of their sales than they normally do.",
+   "plain": "A cashier cancelled (voided) a much bigger share of their sales than they usually do.",
+   "example": "Cashier B cancelled 14 sales after 9pm; they usually cancel one or two a day.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many recent days to judge",
+     "default": 2
+    },
+    {
+     "name": "min_sales",
+     "label": "Fewest sales needed before a cashier is judged",
+     "default": 5
+    },
+    {
+     "name": "min_rate",
+     "label": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+     "default": "0.05"
+    }
+   ]
+  },
+  {
+   "code": "pos.credit_to_overdue_customer",
+   "area": "customers",
+   "group": "customers",
+   "title": "Credit given to a customer who was overdue",
+   "description": "A new invoice or credit sale was made to a customer who already had an overdue invoice unpaid.",
+   "plain": "A new credit sale or invoice was made to a customer who already had an overdue invoice unpaid.",
+   "example": "Customer C received a 22,000 invoice while a 31,000 invoice was 47 days overdue.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look for new credit sales",
+     "default": 7
+    },
+    {
+     "name": "grace_days",
+     "label": "Days of overdue allowed before it counts",
+     "default": 0
+    },
+    {
+     "name": "high_days_overdue",
+     "label": "Days overdue at which it becomes high priority",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "pos.customer_over_credit_limit",
+   "area": "customers",
+   "group": "customers",
+   "title": "A customer is over their credit limit",
+   "description": "A customer owes more than the credit limit set for them.",
+   "plain": "A customer owes more than the credit limit set for them.",
+   "example": "Customer B owes 140,000 against a limit of 100,000.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "tolerance_percent",
+     "label": "How far over the limit (in %) is allowed before flagging",
+     "default": 0
+    },
+    {
+     "name": "high_percent",
+     "label": "How far over the limit (in %) makes it high priority",
+     "default": 150
+    }
+   ]
+  },
+  {
+   "code": "pos.customer_overdue",
+   "area": "customers",
+   "group": "customers",
+   "title": "A customer is overdue",
+   "description": "A customer has an invoice that is more than the set number of days past its due date.",
+   "plain": "A customer has an invoice that is past its due date by more than the number of days you set.",
+   "example": "Customer A owes 680,000, and the oldest invoice is 45 days late.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_days_overdue",
+     "label": "Days past the due date before a customer is flagged",
+     "default": 30
+    },
+    {
+     "name": "high_days_overdue",
+     "label": "Days overdue at which it becomes high priority",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "pos.customer_paying_slower",
+   "area": "customers",
+   "group": "customers",
+   "title": "A customer is paying slower",
+   "description": "A customer takes much longer to pay their invoices than they did in the period before.",
+   "plain": "A customer now takes much longer to pay than they used to.",
+   "example": "Customer D used to pay in 18 days and now takes 41.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "window_days",
+     "label": "How many days of invoices to compare with the period before",
+     "default": 90
+    },
+    {
+     "name": "increase_percent",
+     "label": "How much slower (in %) counts as slower",
+     "default": 50
+    },
+    {
+     "name": "min_increase_days",
+     "label": "Fewest extra days to take longer to pay before flagging",
+     "default": 5
+    },
+    {
+     "name": "min_invoices",
+     "label": "Fewest invoices needed to judge how a customer pays",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "pos.large_exception",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A large void, refund or price override",
+   "description": "One sale was voided, one return refunded, or one sale discounted for a large amount.",
+   "plain": "A single sale was cancelled, a single refund was given or a single sale was discounted for a large amount.",
+   "example": "A 6,800 sale was cancelled after payment was taken.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "min_void",
+     "label": "Smallest cancelled sale worth flagging",
+     "default": "2000.00"
+    },
+    {
+     "name": "min_refund",
+     "label": "Smallest refund worth flagging",
+     "default": "2000.00"
+    },
+    {
+     "name": "min_override",
+     "label": "Smallest price reduction worth flagging",
+     "default": "1000.00"
+    }
+   ]
+  },
+  {
+   "code": "pos.late_recorded_sales",
+   "area": "controls",
+   "group": "cashier",
+   "title": "Sales recorded long after their business date",
+   "description": "A sale was entered, or synced from an offline till, days after the day it is dated.",
+   "plain": "A sale was entered, or arrived from an offline till, days after the day it is dated.",
+   "example": "A sale dated Monday was entered on Friday.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "min_days_late",
+     "label": "Fewest days late before it is flagged",
+     "default": 2
+    },
+    {
+     "name": "high_days_late",
+     "label": "Days late at which it becomes high priority",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "pos.out_of_hours_sales",
+   "area": "controls",
+   "group": "cashier",
+   "title": "Sales outside trading hours",
+   "description": "Sales were made at a branch before it normally opens or after it normally closes.",
+   "plain": "Sales were made at a branch before it normally opens or after it normally closes.",
+   "example": "Four sales were rung up at 01:30 at Branch A.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "open_hour",
+     "label": "Hour the branch opens (24-hour clock)",
+     "default": 6
+    },
+    {
+     "name": "close_hour",
+     "label": "Hour the branch closes (24-hour clock)",
+     "default": 22
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "pos.till_cash_variance",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Till closed with a cash difference",
+   "description": "A cashier closed their till and the cash counted was far from what the sales say it should be.",
+   "plain": "A cashier closed the till and the cash counted was far from what the sales say it should be.",
+   "example": "Till 2 closed 640 short.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "limit",
+     "label": "Cash difference above which a closed till is flagged",
+     "default": "500.00"
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "purchasing.bill_mismatch_waiting",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "Supplier bill waiting on a mismatch",
+   "description": "A supplier bill differs from its order or receipt and nobody has decided yet.",
+   "plain": "A supplier's bill does not match what was ordered or received, and nobody has decided what to do.",
+   "example": "A bill for 50 units, when only 42 were received, has waited 6 days.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days a mismatch may wait before it is flagged",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "purchasing.duplicate_supplier_bill",
+   "area": "controls",
+   "group": "suppliers",
+   "title": "Possible duplicate supplier bill",
+   "description": "Two bills from one supplier have the same amount close together, or the same invoice number.",
+   "plain": "Two bills from the same supplier have the same amount close together, or the same invoice number.",
+   "example": "Two bills of 18,400 from one supplier, entered three days apart.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 60
+    },
+    {
+     "name": "within_days",
+     "label": "How many days apart counts as close together",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "purchasing.duplicate_supplier_payment",
+   "area": "controls",
+   "group": "suppliers",
+   "title": "Possible duplicate supplier payment",
+   "description": "A supplier was paid the same amount twice within a few days, or two payments share a reference.",
+   "plain": "A supplier was paid the same amount twice within a few days, or two payments share a reference.",
+   "example": "Supplier X was paid 18,400 on Monday and again on Wednesday.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 60
+    },
+    {
+     "name": "within_days",
+     "label": "How many days apart counts as close together",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "purchasing.margin_squeeze",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "Cost rise squeezes the margin",
+   "description": "A product's cost went up and its selling price now leaves very little profit.",
+   "plain": "A product costs more now, and your selling price has not moved, so little profit is left.",
+   "example": "Cement cost rose 17% and the margin fell from 12% to 3%.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 60
+    },
+    {
+     "name": "cost_rise_percent",
+     "label": "How big a cost rise (in %) is flagged",
+     "default": "5.0"
+    },
+    {
+     "name": "min_margin_percent",
+     "label": "Profit margin (in %) below which the squeeze is flagged",
+     "default": "10.0"
+    },
+    {
+     "name": "min_earlier",
+     "label": "Fewest earlier records needed to compare with",
+     "default": 1
+    }
+   ]
+  },
+  {
+   "code": "purchasing.order_above_usual_price",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "Purchase order priced above usual",
+   "description": "An open purchase order has a unit price well above what this supplier charged for the product.",
+   "plain": "An open purchase order has a price well above what this supplier charged before.",
+   "example": "An order prices rice at 142 a bag; this supplier's earlier price was 120.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "history_days",
+     "label": "How many days of earlier history to compare with",
+     "default": 180
+    },
+    {
+     "name": "above_percent",
+     "label": "How far above the usual price (in %) is flagged",
+     "default": "10.0"
+    },
+    {
+     "name": "min_earlier",
+     "label": "Fewest earlier records needed to compare with",
+     "default": 2
+    }
+   ]
+  },
+  {
+   "code": "purchasing.overdue_supplier_bills",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "Overdue supplier bills",
+   "description": "A supplier has bills that are still unpaid well after their due date.",
+   "plain": "Supplier bills are still unpaid well after they were due, which can damage trust or bring late fees.",
+   "example": "Supplier Z has 3 bills, the oldest 38 days overdue.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "overdue_days",
+     "label": "Days past the due date before it is flagged",
+     "default": 14
+    },
+    {
+     "name": "serious_days",
+     "label": "Days past the due date at which it becomes serious",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "purchasing.paid_without_receipt",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "Paid for goods not received",
+   "description": "A paid supplier bill charges for goods that were not received, were sent back, or arrived short.",
+   "plain": "A paid supplier bill charges for goods that never arrived, were sent back, or arrived short.",
+   "example": "Bill 1043 was paid for 100 units; 80 were received.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "purchasing.supplier_bank_changed",
+   "area": "controls",
+   "group": "suppliers",
+   "title": "Supplier payment details changed",
+   "description": "A supplier's bank or mobile money details were replaced recently.",
+   "plain": "A supplier's bank or mobile-money details were replaced recently, a common step in payment fraud.",
+   "example": "Supplier Y's bank account changed on Thursday, before a payment on Friday.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "purchasing.supplier_price_rise",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "Supplier price went up",
+   "description": "A supplier's latest price for a product is well above what they charged in earlier deliveries.",
+   "plain": "A supplier's latest price for a product is well above what they charged in earlier deliveries.",
+   "example": "The price of cement rose from 700 to 820 a bag between deliveries.",
+   "source": "ziira",
+   "unit": "Purchasing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 90
+    },
+    {
+     "name": "rise_percent",
+     "label": "How big a rise (in %) is flagged",
+     "default": "10.0"
+    },
+    {
+     "name": "min_earlier",
+     "label": "Fewest earlier records needed to compare with",
+     "default": 2
+    }
+   ]
+  },
+  {
+   "code": "standalone.branch_sales_low",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "A branch sold far less than usual",
+   "description": "A branch's sales yesterday were far below what it normally sells on that day of the week.",
+   "plain": "A branch sold far less than it normally sells on that day of the week.",
+   "example": "Branch C sold 18,000 on Saturday; a normal Saturday is about 52,000.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "drop_percent",
+     "label": "How far below normal (in %) counts as a big drop",
+     "default": 50
+    },
+    {
+     "name": "deviations",
+     "label": "How many times the usual swing counts as unusual",
+     "default": "2.0"
+    },
+    {
+     "name": "min_history",
+     "label": "Fewest days of history needed to know what is normal",
+     "default": 6
+    }
+   ]
+  },
+  {
+   "code": "standalone.cash_deposit_gap",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Cash sales not matched by cash deposits",
+   "description": "Cash sales over the last days are well above the cash deposits on the bank statement (compared per branch when deposits say which branch, else for the whole business).",
+   "plain": "The cash your tills took is well above the cash that reached the bank.",
+   "example": "Branch A recorded 310,000 cash sales this week but only 255,000 was deposited.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales and bank statement lines",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days of sales to compare",
+     "default": 7
+    },
+    {
+     "name": "grace_days",
+     "label": "Days a deposit may take to reach the bank",
+     "default": 2
+    },
+    {
+     "name": "tolerance_percent",
+     "label": "How big a gap (in %) is allowed before flagging",
+     "default": 10
+    },
+    {
+     "name": "min_gap",
+     "label": "Smallest gap worth flagging",
+     "default": "100.00"
+    }
+   ]
+  },
+  {
+   "code": "standalone.cashier_discount_rate",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A cashier gave more discounts than usual",
+   "description": "A cashier gave away a much bigger share of the list price in discounts and price changes than usual.",
+   "plain": "A cashier gave away a much bigger share of the list price in discounts than they usually do.",
+   "example": "Cashier B discounted 9% of what they sold yesterday; their usual is 2%.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales with discounts recorded",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many recent days to judge",
+     "default": 2
+    },
+    {
+     "name": "min_sales",
+     "label": "Fewest sales needed before a cashier is judged",
+     "default": 5
+    },
+    {
+     "name": "min_rate",
+     "label": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+     "default": "0.05"
+    }
+   ]
+  },
+  {
+   "code": "standalone.cashier_refund_rate",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A cashier processed more refunds than usual",
+   "description": "A cashier refunded a much bigger share of what they sold than they normally do.",
+   "plain": "A cashier refunded a much bigger share of what they sold than they usually do.",
+   "example": "Cashier A refunded 11% of their sales yesterday; their usual is 1%.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales with refunds recorded",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many recent days to judge",
+     "default": 2
+    },
+    {
+     "name": "min_sales",
+     "label": "Fewest sales needed before a cashier is judged",
+     "default": 5
+    },
+    {
+     "name": "min_rate",
+     "label": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+     "default": "0.05"
+    }
+   ]
+  },
+  {
+   "code": "standalone.cashier_void_rate",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A cashier voided more sales than usual",
+   "description": "A cashier cancelled a much bigger share of their sales than they normally do.",
+   "plain": "A cashier cancelled a much bigger share of their sales than they usually do.",
+   "example": "Cashier B cancelled 14 sales after 9pm; they usually cancel one or two a day.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales with cancellations recorded",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many recent days to judge",
+     "default": 2
+    },
+    {
+     "name": "min_sales",
+     "label": "Fewest sales needed before a cashier is judged",
+     "default": 5
+    },
+    {
+     "name": "min_rate",
+     "label": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+     "default": "0.05"
+    }
+   ]
+  },
+  {
+   "code": "standalone.credit_to_overdue_customer",
+   "area": "customers",
+   "group": "customers",
+   "title": "Credit given to a customer who was overdue",
+   "description": "A new invoice was made out to a customer who already had an overdue invoice unpaid.",
+   "plain": "A new invoice was made out to a customer who already had an overdue invoice unpaid.",
+   "example": "Customer C was invoiced 22,000 while a 31,000 invoice was 47 days overdue.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Customer invoices",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look for new invoices",
+     "default": 7
+    },
+    {
+     "name": "grace_days",
+     "label": "Days of overdue allowed before it counts",
+     "default": 0
+    },
+    {
+     "name": "high_days_overdue",
+     "label": "Days overdue at which it becomes high priority",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "standalone.customer_overdue",
+   "area": "customers",
+   "group": "customers",
+   "title": "A customer is overdue",
+   "description": "A customer has an invoice that is more than the set number of days past its due date.",
+   "plain": "A customer has an invoice that is past its due date by more than the number of days you set.",
+   "example": "Customer A owes 680,000, and the oldest invoice is 45 days late.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Customer invoices",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_days_overdue",
+     "label": "Days past the due date before a customer is flagged",
+     "default": 30
+    },
+    {
+     "name": "high_days_overdue",
+     "label": "Days overdue at which it becomes high priority",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "standalone.customer_paying_slower",
+   "area": "customers",
+   "group": "customers",
+   "title": "A customer is paying slower",
+   "description": "A customer takes much longer to pay their invoices than they did in the period before.",
+   "plain": "A customer now takes much longer to pay than they used to.",
+   "example": "Customer D used to pay in 18 days and now takes 41.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Invoices and payments that name the invoice they pay",
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "window_days",
+     "label": "How many days of invoices to compare with the period before",
+     "default": 90
+    },
+    {
+     "name": "increase_percent",
+     "label": "How much slower (in %) counts as slower",
+     "default": 50
+    },
+    {
+     "name": "min_increase_days",
+     "label": "Fewest extra days to take longer to pay before flagging",
+     "default": 5
+    },
+    {
+     "name": "min_invoices",
+     "label": "Fewest invoices needed to judge how a customer pays",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "standalone.duplicate_payment",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "A payment may have been made twice",
+   "description": "Two payments out of the same amount to the same payee within a short time.",
+   "plain": "The same amount was paid out twice to the same payee within a short time.",
+   "example": "18,400 was paid to Supplier X on Monday and again on Wednesday.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Payments out",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "hours_apart",
+     "label": "How many hours apart counts as a possible duplicate",
+     "default": 48
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "1.00"
+    }
+   ]
+  },
+  {
+   "code": "standalone.duplicate_supplier_invoice",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "A supplier invoice may have been entered twice",
+   "description": "Two supplier invoices for the same supplier and amount have the same number or nearly the same date.",
+   "plain": "Two invoices from the same supplier have the same number or amount and nearly the same date.",
+   "example": "Two invoices of 18,400 from Supplier X, two days apart.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Supplier invoices",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 90
+    },
+    {
+     "name": "days_apart",
+     "label": "How many days apart counts as close",
+     "default": 3
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "1.00"
+    }
+   ]
+  },
+  {
+   "code": "standalone.expense_unusually_high",
+   "area": "books",
+   "group": "books",
+   "title": "An expense far above its category's normal",
+   "description": "One expense is much larger than the usual expense in the same category.",
+   "plain": "One expense is much bigger than the usual expense in the same category.",
+   "example": "A 45,000 vehicle repair, when vehicle repairs usually cost 6,000.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Expenses",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "1000.00"
+    }
+   ]
+  },
+  {
+   "code": "standalone.large_exception",
+   "area": "controls",
+   "group": "cashier",
+   "title": "A large void, refund or discount",
+   "description": "One sale was voided, one refunded, or one sale discounted for a large amount.",
+   "plain": "A single sale was cancelled, refunded or discounted for a large amount.",
+   "example": "A 6,800 sale was cancelled after payment was taken.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales with cancellations, refunds or discounts recorded",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "min_void",
+     "label": "Smallest cancelled sale worth flagging",
+     "default": "2000.00"
+    },
+    {
+     "name": "min_refund",
+     "label": "Smallest refund worth flagging",
+     "default": "2000.00"
+    },
+    {
+     "name": "min_discount",
+     "label": "Smallest discount worth flagging",
+     "default": "1000.00"
+    }
+   ]
+  },
+  {
+   "code": "standalone.late_entered_sales",
+   "area": "controls",
+   "group": "cashier",
+   "title": "Sales entered long after their date",
+   "description": "A sale was entered into the system days after the day it is dated.",
+   "plain": "A sale was entered into the system days after the day it is dated.",
+   "example": "A sale dated Monday was entered on Friday.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales from a source that records when each entry was made",
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "min_days_late",
+     "label": "Fewest days late before it is flagged",
+     "default": 2
+    },
+    {
+     "name": "high_days_late",
+     "label": "Days late at which it becomes high priority",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "standalone.manual_journal",
+   "area": "books",
+   "group": "books",
+   "title": "A manual journal entry worth a look",
+   "description": "A journal entry made by hand is large, a round number, made at odd hours, dated back, or created and approved by the same person.",
+   "plain": "An entry typed into the books by hand looks worth a second look: it is large, a perfectly round figure, made at night, dated in the past, or created and approved by the same person.",
+   "example": "A round 500,000 journal made at 23:40 and approved by the person who wrote it.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Journal entries",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "large_amount",
+     "label": "Amount above which a hand-made entry counts as large",
+     "default": "100000.00"
+    },
+    {
+     "name": "round_step",
+     "label": "Round figures are multiples of this",
+     "default": "10000"
+    },
+    {
+     "name": "round_min",
+     "label": "Smallest round figure worth flagging",
+     "default": "10000"
+    },
+    {
+     "name": "open_hour",
+     "label": "Hour work normally starts (24-hour clock)",
+     "default": 6
+    },
+    {
+     "name": "close_hour",
+     "label": "Hour work normally ends (24-hour clock)",
+     "default": 22
+    },
+    {
+     "name": "backdate_days",
+     "label": "Days earlier than entry date that counts as back-dated",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "standalone.negative_stock",
+   "area": "stock",
+   "group": "stock",
+   "title": "Negative stock",
+   "description": "A product's movements add up to less than nothing: more went out than ever came in. Judged on the movements you connected, so it needs the history from the start (or an opening count).",
+   "plain": "More of a product went out than ever came in, judged on the stock movements you connected.",
+   "example": "Sugar shows minus 30 units, so a delivery or opening count is probably missing.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Stock movements, including opening stock or history from the start",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_units",
+     "label": "Smallest shortfall (in units) worth flagging",
+     "default": "1"
+    }
+   ]
+  },
+  {
+   "code": "standalone.new_user",
+   "area": "people",
+   "group": "people",
+   "title": "A new user in the connected system",
+   "description": "A user was added to the system you connected recently. Role and pay-type changes are not seen, because the canonical record keeps only the current role.",
+   "plain": "A new user was added to the connected system recently.",
+   "example": "A new user called User X appeared in the ERP on Tuesday.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "The list of users",
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "standalone.out_of_hours_sales",
+   "area": "controls",
+   "group": "cashier",
+   "title": "Sales outside trading hours",
+   "description": "Sales were made at a branch before it normally opens or after it normally closes.",
+   "plain": "Sales were made at a branch before it normally opens or after it normally closes.",
+   "example": "Four sales were rung up at 01:30 at Branch A.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales with the time of sale",
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "open_hour",
+     "label": "Hour the branch opens (24-hour clock)",
+     "default": 6
+    },
+    {
+     "name": "close_hour",
+     "label": "Hour the branch closes (24-hour clock)",
+     "default": 22
+    },
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    }
+   ]
+  },
+  {
+   "code": "standalone.sale_without_payment",
+   "area": "cash_sales",
+   "group": "cash",
+   "title": "Sales paid electronically with no payment to show for it",
+   "description": "Sales recorded as paid by mobile money or bank transfer where no payment of the same code, or the same amount at about the same time, appears in the statements you connected.",
+   "plain": "A sale was recorded as paid by mobile money or bank transfer, but no matching payment shows on the statements.",
+   "example": "A 4,800 sale says mobile money, and no payment of that code or amount appears around that time.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Sales and payments (statements or an ERP)",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "grace_hours",
+     "label": "Hours to wait for the payment to appear",
+     "default": 24
+    },
+    {
+     "name": "window_minutes",
+     "label": "How many minutes apart a payment and a sale can be and still match",
+     "default": 120
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "1.00"
+    },
+    {
+     "name": "methods",
+     "label": "Which payment methods are checked",
+     "default": "mobile_money,bank"
+    },
+    {
+     "name": "high_count",
+     "label": "Number of such sales at which the alert becomes high priority",
+     "default": 5
+    }
+   ]
+  },
+  {
+   "code": "standalone.shrinkage_by_product",
+   "area": "stock",
+   "group": "stock",
+   "title": "Stock is going missing",
+   "description": "A product has lost a lot of stock to write-offs and short counts over the last weeks.",
+   "plain": "A product has lost a lot of stock to write-offs and short counts over the last weeks.",
+   "example": "Cooking oil lost 85 litres to write-offs and short counts this month.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Stock movements",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days of movements to add up",
+     "default": 30
+    },
+    {
+     "name": "min_loss",
+     "label": "Smallest loss in value worth flagging",
+     "default": "5000.00"
+    },
+    {
+     "name": "min_units",
+     "label": "Smallest loss in units worth flagging",
+     "default": "10"
+    }
+   ]
+  },
+  {
+   "code": "standalone.stock_adjustment",
+   "area": "stock",
+   "group": "stock",
+   "title": "A stock adjustment worth a look",
+   "description": "Stock was written off or adjusted for a large value, at odd hours, or entered days after its date.",
+   "plain": "Stock was written off or corrected for a large amount, at odd hours, or entered days after its date.",
+   "example": "A 90,000 stock write-off was entered at 23:50.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Stock movements",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "min_value",
+     "label": "Smallest value worth flagging",
+     "default": "5000.00"
+    },
+    {
+     "name": "min_quantity",
+     "label": "Smallest number of units worth flagging",
+     "default": "100"
+    },
+    {
+     "name": "open_hour",
+     "label": "Hour work normally starts (24-hour clock)",
+     "default": 6
+    },
+    {
+     "name": "close_hour",
+     "label": "Hour work normally ends (24-hour clock)",
+     "default": 22
+    },
+    {
+     "name": "backdate_days",
+     "label": "How many days earlier than the entry date counts as back-dated",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "standalone.supplier_price_rise",
+   "area": "suppliers",
+   "group": "suppliers",
+   "title": "A product costs more than it used to",
+   "description": "The latest purchase of a product was at a price well above the average of earlier purchases.",
+   "plain": "The latest purchase of a product was at a price well above the average of earlier purchases.",
+   "example": "Rice cost 142 a bag in the latest purchase, and 120 on average before.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Stock movements with cost",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "history_days",
+     "label": "How many days of earlier history to compare with",
+     "default": 180
+    },
+    {
+     "name": "rise_percent",
+     "label": "How big a rise (in %) is flagged",
+     "default": 10
+    },
+    {
+     "name": "min_earlier",
+     "label": "Fewest earlier records needed to compare with",
+     "default": 2
+    }
+   ]
+  },
+  {
+   "code": "standalone.unmatched_receipt",
+   "area": "books",
+   "group": "cash",
+   "title": "Money received that matches nothing",
+   "description": "Payments received (mobile money, bank) that match no sale and no invoice by code, invoice or amount. Needs sales or invoices connected to compare with; cash deposits are left out.",
+   "plain": "Money arrived (on a mobile-money or bank statement) that matches no sale and no invoice.",
+   "example": "A 12,500 receipt from last Friday that no sale or invoice accounts for.",
+   "source": "connected",
+   "unit": "A connected system or uploaded file",
+   "needs": "Payments, plus sales or invoices to compare with",
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "grace_days",
+     "label": "Days to wait before it counts as unmatched",
+     "default": 2
+    },
+    {
+     "name": "window_minutes",
+     "label": "How many minutes apart a payment and a sale can be and still match",
+     "default": 120
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "1.00"
+    }
+   ]
+  }
+ ],
+ "actions": [
+  {
+   "type": "finance.ask_for_reconciliation",
+   "title": "Ask for the reconciliation to be finished",
+   "description": "Sends a short message, by the business's alert channel, to the people who can reconcile the bank, asking them to finish the reconciliation that has been open too long.",
+   "plain": "Asks the people who can reconcile the bank to finish a reconciliation that has been open too long.",
+   "example": "The main account's reconciliation has been open 41 days. The finance team gets a reminder.",
+   "kind": "Sends a message",
+   "level": 4,
+   "for_checks": [
+    {
+     "code": "finance.stale_reconciliation",
+     "title": "Bank reconciliation left open"
+    }
+   ],
+   "permission": "findings.manage",
+   "who_approves": "Someone allowed to manage alerts (for example the owner or a finance manager)",
+   "automatic": true,
+   "rule_conditions": []
+  },
+  {
+   "type": "intel.nudge_exceptions_reviewers",
+   "title": "Remind the reviewers",
+   "description": "Sends a short message to the people who can work through the exceptions inbox.",
+   "plain": "Reminds the people who work through the exceptions inbox that items have been waiting too long.",
+   "example": "11 items have waited more than a week. The reviewers get a reminder.",
+   "kind": "Sends a message",
+   "level": 4,
+   "for_checks": [
+    {
+     "code": "controls.exceptions_backlog",
+     "title": "Exceptions nobody has reviewed"
+    }
+   ],
+   "permission": "findings.manage",
+   "who_approves": "Someone allowed to manage alerts (for example the owner or a finance manager)",
+   "automatic": true,
+   "rule_conditions": []
+  },
+  {
+   "type": "people.nudge_approver",
+   "title": "Remind whoever can decide",
+   "description": "Sends a short message, by the business's alert channel, to the people who can approve the leave request or the payroll run that has been waiting too long.",
+   "plain": "Reminds the person who can decide that a leave request or a payroll run has been waiting too long. It sends a short message and decides nothing.",
+   "example": "A leave request has waited 8 days. The branch's approver gets a reminder.",
+   "kind": "Sends a message",
+   "level": 4,
+   "for_checks": [
+    {
+     "code": "people.leave_waiting",
+     "title": "Leave requests waiting too long"
+    },
+    {
+     "code": "people.payroll_overdue",
+     "title": "Payroll not finished after the pay date"
+    }
+   ],
+   "permission": "findings.manage",
+   "who_approves": "Someone allowed to manage alerts (for example the owner or a finance manager)",
+   "automatic": true,
+   "rule_conditions": []
+  },
+  {
+   "type": "pos.hold_credit",
+   "title": "Hold the customer's credit",
+   "description": "Lowers the customer's credit limit to what they owe now, through the customers' credit-change flow, so no more can be sold to them on account until they pay. Always needs a person.",
+   "plain": "Lowers a late customer's credit limit to what they already owe, so nothing more can be sold to them on account until they pay. It always needs a person, because credit is money.",
+   "example": "Customer C is 60 days late. Ziira proposes dropping the limit from 200,000 to the 150,000 they owe.",
+   "kind": "Prepares a change",
+   "level": 3,
+   "for_checks": [
+    {
+     "code": "pos.credit_to_overdue_customer",
+     "title": "Credit given to a customer who was overdue"
+    },
+    {
+     "code": "pos.customer_overdue",
+     "title": "A customer is overdue"
+    }
+   ],
+   "permission": "customers.manage",
+   "who_approves": "Someone allowed to change customers' credit",
+   "automatic": false,
+   "rule_conditions": []
+  },
+  {
+   "type": "pos.send_payment_reminder",
+   "title": "Remind the customer to pay",
+   "description": "Sends the business's usual payment reminder (by SMS, email or a chat channel, as set in the company's reminder channel) about the customer's oldest overdue invoices. Customers who asked not to be contacted are not messaged.",
+   "plain": "Sends your usual payment reminder to a customer who is late, about their oldest overdue invoices (at most three). Customers who asked not to be contacted are never messaged.",
+   "example": "Customer A is 45 days late on two invoices. A reminder goes out by SMS or email, the way you normally remind customers.",
+   "kind": "Sends a message",
+   "level": 4,
+   "for_checks": [
+    {
+     "code": "pos.customer_overdue",
+     "title": "A customer is overdue"
+    }
+   ],
+   "permission": "receivables.manage",
+   "who_approves": "Someone allowed to manage what customers owe (for example a branch manager or an accountant)",
+   "automatic": true,
+   "rule_conditions": [
+    "channel",
+    "min_days_overdue"
+   ]
+  },
+  {
+   "type": "purchasing.draft_purchase_request",
+   "title": "Draft a purchase request",
+   "description": "Makes a draft request to buy the product for the branch, for the usual supplier, in the quantity needed to get back to the reorder level or a month's sales, whichever is more. A person sends it.",
+   "plain": "When a product has run out or is low at a branch, Ziira writes a draft purchase request: enough to get back to your reorder level or cover a month of sales, whichever is more. Your usual suppliers are noted on it. Nothing is ordered until a person sends it.",
+   "example": "Cement is out of stock at Branch A. Ziira drafts a request for 120 bags and notes the two suppliers you buy from most.",
+   "kind": "Prepares a draft",
+   "level": 3,
+   "for_checks": [
+    {
+     "code": "inventory.out_of_stock",
+     "title": "Products out of stock"
+    },
+    {
+     "code": "inventory.low_stock",
+     "title": "Products below their reorder level"
+    }
+   ],
+   "permission": "po.create",
+   "who_approves": "Someone allowed to create purchase requests for that branch",
+   "automatic": false,
+   "rule_conditions": []
+  },
+  {
+   "type": "purchasing.propose_price_update",
+   "title": "Update the selling price",
+   "description": "Sets a new tax-inclusive selling price on the default price list, from tomorrow, that gives the new cost the margin the product had before. Always needs a person: a price is money.",
+   "plain": "When a supplier raises a cost and your margin shrinks, Ziira works out a new selling price that gives the new cost the same margin the old cost had. It takes effect from tomorrow, and only after a person approves.",
+   "example": "Cement now costs 17% more. Ziira proposes raising the price from 850 to 975 so the margin stays at 12%.",
+   "kind": "Prepares a change",
+   "level": 3,
+   "for_checks": [
+    {
+     "code": "purchasing.margin_squeeze",
+     "title": "Cost rise squeezes the margin"
+    },
+    {
+     "code": "purchasing.supplier_price_rise",
+     "title": "Supplier price went up"
+    }
+   ],
+   "permission": "prices.manage",
+   "who_approves": "Someone allowed to change selling prices",
+   "automatic": false,
+   "rule_conditions": []
+  }
+ ],
+ "ask_tools": [
+  {
+   "name": "command_figures",
+   "description": "The business's key figures for a period (sales, voids, refunds, stock value, overdue balances), each against the period of the same length just before it, company-wide and by branch. These are the figures shown in the Command Center; money and counts are added over the days, percentages averaged.",
+   "plain": "Your key figures for a period (sales, voids, refunds, stock value, overdue balances), compared with the period before, for the business and by branch."
+  },
+  {
+   "name": "crm_customer_balance",
+   "description": "What customers whose name contains the given text owe on open invoices: balance, how much of it is overdue, and their credit limit. Counts only invoices at branches the person may see.",
+   "plain": "What a named customer owes, how much of it is late, and their credit limit."
+  },
+  {
+   "name": "crm_overdue_customers",
+   "description": "Customers with invoices past their due date, largest overdue amount first: the amount, how many invoices and how long the oldest has been overdue.",
+   "plain": "Customers who are late paying, the biggest amount first."
+  },
+  {
+   "name": "finance_cash_position",
+   "description": "Cash, bank, mobile-money and card balances: the balance at the start and at the end of the period and what moved it, from the books.",
+   "plain": "Cash, bank and mobile-money balances, and what moved them."
+  },
+  {
+   "name": "finance_profit_and_loss",
+   "description": "Income, cost of sales, gross profit, expenses and net profit between two dates, from the books, for all branches the person may see or one branch; with the largest income and expense accounts.",
+   "plain": "Income, cost of sales, profit and expenses between two dates, from your books."
+  },
+  {
+   "name": "intel_finding_detail",
+   "description": "One finding in full: its summary, figures and the records behind it. Use a finding_id from a list.",
+   "plain": "One alert in full: the facts, the figures and the records behind it."
+  },
+  {
+   "name": "intel_list_findings",
+   "description": "List findings (things the automated checks flagged for attention) the person may see, most serious first: severity, area, a plain summary, the recommended action and the money at stake. Open findings unless a status is given.",
+   "plain": "The alerts you are allowed to see, the most serious first."
+  },
+  {
+   "name": "inventory_low_stock",
+   "description": "Products at or below their reorder level at each branch, the most short first.",
+   "plain": "Products at or below their reorder level, the most short first."
+  },
+  {
+   "name": "inventory_stock_on_hand",
+   "description": "How much of a product is in stock at each branch: products whose name or code contains the given text. Shows what the stock is worth only to people allowed to see costs.",
+   "plain": "How much of a product is in stock at each branch you can see."
+  },
+  {
+   "name": "people_headcount",
+   "description": "How many employees are active, on leave or have left, for each branch the person may see.",
+   "plain": "How many employees are active, on leave or have left, by branch."
+  },
+  {
+   "name": "people_leave_pending",
+   "description": "Leave requests waiting for approval: who asked, the dates and the number of days (latest first).",
+   "plain": "Leave requests waiting for a decision."
+  },
+  {
+   "name": "pos_sales_summary",
+   "description": "Sales between two dates: how many sales and their total, and how many were voided, for each branch (or each day). Counts only branches the person may see.",
+   "plain": "How many sales and their total between two dates, and how many were cancelled, by branch or by day."
+  },
+  {
+   "name": "pos_top_products",
+   "description": "The best-selling products between two dates, by sales value, with the quantity sold.",
+   "plain": "Your best-selling products between two dates."
+  },
+  {
+   "name": "pos_voids",
+   "description": "Voided sales between two dates: how many and their value, with the latest (number, date, total).",
+   "plain": "Cancelled sales between two dates: how many, their value and the latest."
+  },
+  {
+   "name": "purchasing_bills_due",
+   "description": "Unpaid supplier bills that are overdue or fall due within the next days (default 7), earliest due first: supplier, bill number, due date and amount still owed.",
+   "plain": "Supplier bills that are late or due soon, the earliest first."
+  },
+  {
+   "name": "purchasing_supplier_balance",
+   "description": "What the business owes suppliers whose name contains the given text on posted, unpaid bills: the balance and how much is past its due date.",
+   "plain": "What you owe a named supplier and how much of it is late."
+  }
+ ]
+}

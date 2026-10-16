@@ -1,0 +1,60 @@
+---
+// Docs-style frame for every Help page: sidebar of all guides grouped by journey (left), the page (middle), "On this page" (right, wide screens).
+import { helpJourneys, helpGuides, guidesIn, helpGuideId, guidePath, journeyOf } from "../lib/help";
+import { urlFor } from "../lib/registry";
+import type { HelpGuide } from "../content/help/types";
+
+interface Props { currentGuide?: HelpGuide; currentJourney?: string; toc?: { id: string; label: string }[] }
+const { currentGuide, currentJourney, toc = [] } = Astro.props;
+const openJourney = currentGuide?.journey ?? currentJourney;
+void guidePath; void journeyOf; void helpGuides;
+---
+<div class="container help-frame">
+  <nav class="help-side" aria-label="Help guides">
+    <details class="help-side-all" open>
+      <summary>All guides</summary>
+      <a class="help-side-home" href={urlFor("help", "en")}>Help home</a>
+      <ul class="help-side-list">
+        {helpJourneys.map((j) => (
+          <li>
+            <details open={openJourney === j.id}>
+              <summary>{j.n}. {j.title}</summary>
+              <ul>
+                <li><a href={urlFor(`helpj-${j.id}`, "en")} aria-current={currentJourney === j.id ? "page" : undefined}>Overview of this part</a></li>
+                {guidesIn(j.id).map((g) => (
+                  <li><a href={urlFor(helpGuideId(g.slug), "en")} aria-current={currentGuide?.slug === g.slug ? "page" : undefined}>{g.h1}</a></li>
+                ))}
+              </ul>
+            </details>
+          </li>
+        ))}
+      </ul>
+      <a class="help-side-az" href={urlFor("help-a-z", "en")}>All guides A to Z</a>
+    </details>
+  </nav>
+  <div class="help-main"><slot /></div>
+  {toc.length > 0 && (
+    <nav class="help-toc" aria-label="On this page">
+      <details class="help-toc-d" open>
+        <summary>On this page</summary>
+        <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+      </details>
+    </nav>
+  )}
+</div>
+<script>
+  // Progressive: on phones the "All guides" drawer and "On this page" start closed; a tap on a step screenshot enlarges it.
+  const small = matchMedia("(max-width: 1099px)").matches;
+  if (small) document.querySelectorAll<HTMLDetailsElement>(".help-side-all, .help-toc-d").forEach((d) => (d.open = false));
+  document.querySelectorAll<HTMLElement>(".help-shot").forEach((f) => {
+    const img = f.querySelector("img");
+    if (!img) return;
+    f.classList.add("can-zoom");
+    img.tabIndex = 0;
+    img.setAttribute("role", "button");
+    img.setAttribute("aria-label", (img.alt || "Screenshot") + ". Tap to enlarge or shrink.");
+    const toggle = () => { f.classList.toggle("zoomed"); document.body.classList.toggle("noscroll", f.classList.contains("zoomed")); };
+    img.addEventListener("click", toggle);
+    img.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } if (e.key === "Escape" && f.classList.contains("zoomed")) toggle(); });
+  });
+</script>

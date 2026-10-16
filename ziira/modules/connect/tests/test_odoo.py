@@ -451,9 +451,12 @@ def test_unknown_entity_malformed_reply_and_timeout() -> None:
 
 
 @settings(max_examples=30, deadline=None)
-@given(key=st.text("abcdefghijklmnopqrstuvwxyz0123456789", min_size=8, max_size=30))
+@given(key=st.text("abcdefghijklmnopqrstuvwxyz0123456789", min_size=16, max_size=40))
 def test_api_key_never_leaks_through_errors(key: str) -> None:
-    """Odoo may echo the key in a fault message; it must not reach the owner."""
+    """Odoo may echo the key in a fault message; it must not reach the owner.
+
+    Keys are as long as real ones (16+), so a random key cannot collide with a word of our own wording.
+    """
     echo = {"jsonrpc": "2.0", "error": {"code": 200, "message": "x", "data": {
         "name": "odoo.exceptions.UserError", "message": f"bad call with key {key} in it"}}}
     system = FakeSystem(lambda r: json_reply(echo))

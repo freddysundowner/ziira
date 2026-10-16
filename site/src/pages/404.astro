@@ -1,0 +1,17 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { ui } from "../i18n/ui";
+import { absUrl } from "../lib/siteConfig";
+import { urlFor, titleFor } from "../lib/registry";
+const t = ui.en;
+const head = {
+  lang: "en" as const, title: "Page Not Found", description: "That page does not exist or has moved. Use the links on this page to find what you were looking for.", canonical: absUrl("/404/"), robots: "noindex,follow",
+  ogImage: absUrl("/og/en/home.png"), ogType: "website" as const,
+};
+const ids = ["product", "intelligence-how", "solutions", "integrations", "guides", "pricing", "get-started"];
+---
+<Base head={head} graph={{ "@context": "https://schema.org", "@graph": [] }} path="/404/">
+  <PageHead lang="en" crumbs={[]} h1={t.notFoundTitle} lead={t.notFoundText} />
+  <section class="section"><div class="container"><ul>{ids.map((id) => <li><a href={urlFor(id, "en")}>{titleFor(id, "en")}</a></li>)}</ul></div></section>
+</Base>

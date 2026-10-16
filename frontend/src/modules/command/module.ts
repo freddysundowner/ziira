@@ -10,7 +10,8 @@ export default defineModule({
     { path: "/command/briefs", page: () => import("./pages/BriefsPage"), permission: "command.view" },
   ],
   menu: [
-    { label: "command:menu", to: "/command", permission: "command.view", order: 1, icon: "dashboard" },
+    { label: "command:menu", tab: "nav.tabs.overview", to: "/command", permission: "command.view", order: 1, area: "command", icon: "dashboard" },
+    { label: "command:briefsTitle", to: "/command/briefs", permission: "command.view", order: 30, area: "command", icon: "document" },
   ],
   slots: {
     "dashboard.widgets": [

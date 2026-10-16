@@ -2,7 +2,7 @@
 
 When goods are sent back and credited *after* the bill was paid, the supplier owes the business the difference: the bill
 has been paid and credited for more than it was worth. The refund is recorded when that money arrives (through
-Payments, so bank and M-Pesa money can be matched like any other), and Finance clears what the supplier owed
+Payments, so bank and mobile money money can be matched like any other), and Finance clears what the supplier owed
 (`supplier.refunded`). A refund can be reversed (in Payments or here); a payment that a refund relied on cannot be
 reversed until the refund is.
 """

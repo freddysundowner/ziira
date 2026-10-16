@@ -1,0 +1,348 @@
+{
+ "published": true,
+ "settings": {
+  "company": {
+   "legal_name": "Acme Systems Ltd",
+   "trading_name": "Ziira",
+   "tagline": {
+    "en": "Run the whole business",
+    "sw": "Endesha biashara yote"
+   },
+   "registration_number": "REG 12345",
+   "tax_id": "TAX 98765",
+   "postal_address": "1 High Street\nSomewhere"
+  },
+  "contact": {
+   "support_email": "help@acme-systems.test",
+   "sales_email": "sales@acme-systems.test",
+   "phones": [
+    "+44 20 7946 0958"
+   ],
+   "whatsapp": {
+    "number": "+44 20 7946 0958",
+    "link": "https://wa.me/442079460958"
+   },
+   "form_target": "https://forms.acme-systems.test/contact"
+  },
+  "social": {
+   "x": {
+    "handle": "@ziira_hq",
+    "url": "https://x.com/ziira_hq"
+   },
+   "linkedin": {
+    "handle": "ziira",
+    "url": "https://www.linkedin.com/company/ziira"
+   }
+  },
+  "seo": {
+   "title_template": {
+    "en": "{title} | Ziira",
+    "sw": "{title} | Ziira"
+   },
+   "description": {
+    "en": "Business software for shops and distributors.",
+    "sw": "Programu za biashara kwa maduka na wasambazaji."
+   },
+   "og_image": null
+  },
+  "branding": {
+   "logo": null,
+   "favicon": null
+  },
+  "analytics": null,
+  "cookie_notice": {},
+  "links": {
+   "app_url": "https://app.acme-systems.test",
+   "status_page_url": null
+  },
+  "banner": {
+   "text": {
+    "en": "New: daily owner brief",
+    "sw": "Mpya: muhtasari wa kila siku"
+   },
+   "link": "/guides/daily-owner-brief/",
+   "starts_at": null,
+   "ends_at": null
+  },
+  "locales": [
+   "en",
+   "sw"
+  ],
+  "default_locale": "en"
+ },
+ "pages": [
+  {
+   "slug": "privacy",
+   "locale": "en",
+   "kind": "legal",
+   "title": "Privacy policy",
+   "html": "<h2>Privacy policy</h2>\n<p>We collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Privacy policy\n\nWe collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "privacy",
+   "locale": "sw",
+   "kind": "legal",
+   "title": "Sera ya faragha",
+   "html": "<h2>Sera ya faragha</h2>\n<p>Tunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Sera ya faragha\n\nTunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "terms",
+   "locale": "en",
+   "kind": "legal",
+   "title": "Terms of service",
+   "html": "<h2>Terms of service</h2>\n<p>We collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Terms of service\n\nWe collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "terms",
+   "locale": "sw",
+   "kind": "legal",
+   "title": "Masharti ya huduma",
+   "html": "<h2>Masharti ya huduma</h2>\n<p>Tunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Masharti ya huduma\n\nTunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "cookies",
+   "locale": "en",
+   "kind": "legal",
+   "title": "Cookie policy",
+   "html": "<h2>Cookie policy</h2>\n<p>We collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Cookie policy\n\nWe collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "cookies",
+   "locale": "sw",
+   "kind": "legal",
+   "title": "Sera ya vidakuzi",
+   "html": "<h2>Sera ya vidakuzi</h2>\n<p>Tunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Sera ya vidakuzi\n\nTunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "refunds",
+   "locale": "en",
+   "kind": "legal",
+   "title": "Refund and cancellation policy",
+   "html": "<h2>Refund and cancellation policy</h2>\n<p>We collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Refund and cancellation policy\n\nWe collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "refunds",
+   "locale": "sw",
+   "kind": "legal",
+   "title": "Sera ya kurejesha pesa na kughairi",
+   "html": "<h2>Sera ya kurejesha pesa na kughairi</h2>\n<p>Tunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Sera ya kurejesha pesa na kughairi\n\nTunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "acceptable-use",
+   "locale": "en",
+   "kind": "legal",
+   "title": "Acceptable use policy",
+   "html": "<h2>Acceptable use policy</h2>\n<p>We collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Acceptable use policy\n\nWe collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "acceptable-use",
+   "locale": "sw",
+   "kind": "legal",
+   "title": "Sera ya matumizi yanayokubalika",
+   "html": "<h2>Sera ya matumizi yanayokubalika</h2>\n<p>Tunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Sera ya matumizi yanayokubalika\n\nTunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "data-processing",
+   "locale": "en",
+   "kind": "legal",
+   "title": "Data processing terms",
+   "html": "<h2>Data processing terms</h2>\n<p>We collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Data processing terms\n\nWe collect only what we need to run the service and reply to you. This page explains what we keep, why we keep it, how long we keep it and how you can ask us to correct or remove it. Write to us at the support address on this site for any request about your information.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "data-processing",
+   "locale": "sw",
+   "kind": "legal",
+   "title": "Masharti ya usindikaji wa data",
+   "html": "<h2>Masharti ya usindikaji wa data</h2>\n<p>Tunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.</p>\n<ul>\n<li>Contact: <a href=\"mailto:help@acme-systems.test\">support</a></li>\n</ul>\n",
+   "markdown": "## Masharti ya usindikaji wa data\n\nTunakusanya tu kinachohitajika kuendesha huduma na kukujibu. Ukurasa huu unaeleza tunachohifadhi, kwa nini, kwa muda gani na jinsi unavyoweza kuomba kirekebishwe au kiondolewe. Tuandikie kwa anwani ya msaada kwenye tovuti hii kwa ombi lolote kuhusu taarifa zako.\n\n- Contact: [support](mailto:help@acme-systems.test)\n",
+   "seo": {
+    "title": null,
+    "description": null
+   },
+   "updated_at": "2026-10-10T08:00:00+00:00",
+   "version": 2
+  },
+  {
+   "slug": "partners",
+   "locale": "en",
+   "kind": "content",
+   "title": "Partners",
+   "html": "<p>We work with accountants and implementation partners who help businesses move to Ziira. Get in touch to become a partner and to hear how the programme works for your firm.</p>",
+   "markdown": "We work with accountants and implementation partners.",
+   "seo": {
+    "title": "Partner with Ziira",
+    "description": "Accountants and implementation partners who help businesses move to Ziira, and how to join the partner programme."
+   },
+   "updated_at": "2026-10-11T08:00:00+00:00",
+   "version": 1
+  },
+  {
+   "slug": "partners",
+   "locale": "sw",
+   "kind": "content",
+   "title": "Washirika",
+   "html": "<p>Tunafanya kazi na wahasibu na washirika wa utekelezaji wanaosaidia biashara kuhamia Ziira. Wasiliana nasi kuwa mshirika na kusikia jinsi mpango unavyofanya kazi kwa kampuni yako.</p>",
+   "markdown": "Tunafanya kazi na wahasibu.",
+   "seo": {
+    "title": "Kuwa mshirika wa Ziira",
+    "description": "Wahasibu na washirika wa utekelezaji wanaosaidia biashara kuhamia Ziira, na jinsi ya kujiunga na mpango wa washirika."
+   },
+   "updated_at": "2026-10-11T08:00:00+00:00",
+   "version": 1
+  }
+ ],
+ "plans": [
+  {
+   "code": "growth",
+   "name": "Growth",
+   "description": "For shops with a few branches.",
+   "highlights": [
+    "Point of sale and stock",
+    "Daily owner brief"
+   ],
+   "limits": {
+    "max_users": 10,
+    "max_branches": 3,
+    "max_companies": null
+   },
+   "trial_days": 14,
+   "prices": [
+    {
+     "currency": "USD",
+     "interval": "month",
+     "amount": "30.00",
+     "tax_inclusive": false
+    },
+    {
+     "currency": "USD",
+     "interval": "year",
+     "amount": "300.00",
+     "tax_inclusive": false
+    },
+    {
+     "currency": "EUR",
+     "interval": "month",
+     "amount": "28.00",
+     "tax_inclusive": false
+    }
+   ]
+  },
+  {
+   "code": "scale",
+   "name": "Scale",
+   "description": "For growing distributors.",
+   "highlights": [
+    "Everything in Growth",
+    "Payroll"
+   ],
+   "limits": {
+    "max_users": 50
+   },
+   "prices": [
+    {
+     "currency": "USD",
+     "interval": "month",
+     "amount": "90.00",
+     "tax_inclusive": false
+    },
+    {
+     "currency": "USD",
+     "interval": "year",
+     "amount": "900.00",
+     "tax_inclusive": false
+    }
+   ]
+  },
+  {
+   "code": "enterprise",
+   "name": "Enterprise",
+   "description": "Custom needs.",
+   "highlights": [
+    "Dedicated support"
+   ],
+   "contact_only": true,
+   "prices": []
+  }
+ ],
+ "addons": [],
+ "assets": [],
+ "published_at": "2026-10-12T09:00:00+00:00",
+ "version_hash": "fixture0001"
+}

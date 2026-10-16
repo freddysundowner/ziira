@@ -2,6 +2,7 @@
 name = "people"
 title = "People, HR and Payroll"
 description = "Employees, attendance, leave, advances and payroll."
+category = "people"
 kind = "module"
 version = "1.0.0"
 sdk = ">=1.0,<2.0"
@@ -12,9 +13,10 @@ optional = ["finance", "payments", "pos", "intel", "command", "imports"]
 api_prefix = "/api/v1/people"
 publishes = ["employee.pay_changed", "employee.bank_changed", "payroll.approved", "payroll.paid"]
 subscribes = ["till.opened", "till.closed"]
+extension_points = ["people.statutory_table_seed"]
 
 [extends]
-implements = ["intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool"]
+implements = ["intel.check", "intel.baseline_metric", "intel.action", "command.pulse_source", "imports.importer", "kernel.personal_data", "intel.ask_tool", "kernel.country_seeder"]
 
 [permissions]
 "employees.view" = "View employees"

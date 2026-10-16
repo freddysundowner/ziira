@@ -1,0 +1,370 @@
+---
+import type { GetStaticPaths } from "astro";
+import { allEntries, getEntry, breadcrumbsFor, childrenOf, homeOf, urlFor, titleFor, pathFor } from "../lib/registry";
+import { headFor } from "../lib/seo";
+import { graphFor } from "../lib/schema";
+import { ui } from "../i18n/ui";
+import { guides } from "../lib/guides";
+import { guideForId } from "../lib/help";
+import { howToNode } from "../lib/helpSchema";
+import HelpPage from "../components/HelpPage.astro";
+import CompleteGuide from "../components/CompleteGuide.astro";
+import { guideWords } from "../content/completeGuide";
+import { BUILD_DATE, GUIDE_PUBLISHED } from "../lib/buildDate";
+import { glossary } from "../content/glossary";
+import { legalTemplates, legalBanner } from "../content/legal";
+import { home } from "../content/home";
+import { inline, legalMarkdown } from "../lib/md";
+import { screenAlt } from "../lib/screens";
+import { absUrl, appLinks, siteConfig } from "../lib/siteConfig";
+import type { Lang } from "../content/types";
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import Blocks from "../components/Blocks.astro";
+import Cards from "../components/Cards.astro";
+import Faq from "../components/Faq.astro";
+import Cta from "../components/Cta.astro";
+import Screenshot from "../components/Screenshot.astro";
+import PricingPlans from "../components/PricingPlans.astro";
+import ContactDetails from "../components/ContactDetails.astro";
+import Icon from "../components/Icon.astro";
+import Home from "../components/Home.astro";
+import { catalog, totals } from "../lib/catalog";
+import { integrationsPage } from "../content/integrations";
+
+export const getStaticPaths = (() =>
+  allEntries().map((e) => ({
+    params: { path: e.path.replace(/^\/|\/$/g, "") || undefined },
+    props: { id: e.id, lang: e.lang },
+  }))) satisfies GetStaticPaths;
+
+const { id, lang } = Astro.props as { id: string; lang: Lang };
+const entry = getEntry(lang, id)!;
+const def = entry.def;
+const t = ui[lang];
+const i = (s: string) => inline(s, lang, urlFor);
+const crumbs = breadcrumbsFor(entry);
+const schemaCrumbs = id === "home" ? [] : [{ name: t.home, path: homeOf(lang) }, ...crumbs];
+
+const guide = entry.guideSlug ? guides.find((g) => g.slug === entry.guideSlug)! : undefined;
+const h = id === "home" ? home[lang] : undefined;
+const faq = h ? h.faq : guide ? guide.faq : def.faq ?? [];
+const software = id === "home" || !!def.schema;
+const head = headFor(entry);
+if (guide) { head.published = guide.date; head.modified = guide.updated; }
+const ip = def.kind === "integrations" ? integrationsPage[lang] : undefined;
+const itemList = ip?.groups.flatMap((g) => g.cards.map((c) => ({ name: c.name, path: urlFor(c.page, lang) + (c.hash ? `#${c.hash}` : "") })));
+const completeWords = def.kind === "complete" ? guideWords() : 0;
+const completeProse = def.kind === "complete" ? guideWords(true) : 0;
+const graph = graphFor(
+  {
+    entry, itemList, crumbs: schemaCrumbs, faq, software, article: guide ? { published: guide.date, modified: guide.updated, words: guide.words } : undefined,
+    tech: def.kind === "complete" ? { published: GUIDE_PUBLISHED, modified: BUILD_DATE, words: completeWords, about: ["Business intelligence for small and medium businesses", "Fraud and leak detection", "Daily business checks", "Read-only integration with ERP and accounting systems"] } : undefined,
+  },
+  () => urlFor("home", lang),
+);
+if (def.how) {
+  const url = absUrl(entry.path);
+  (graph["@graph"] as Record<string, unknown>[]).push({
+    "@type": "HowTo", "@id": `${url}#howto`, name: def.h1, description: def.description, inLanguage: "en", totalTime: `PT${def.how.minutes}M`,
+    step: def.how.steps.map((st, k) => ({ "@type": "HowToStep", position: k + 1, name: st.title, text: `${st.text.join(" ")} Result: ${st.result}`, url: `${url}#step-${k + 1}` })),
+  });
+}
+const helpGuideData = guideForId(id);
+if (helpGuideData) (graph["@graph"] as Record<string, unknown>[]).push(howToNode(helpGuideData, entry.path));
+const kids = childrenOf(id, lang);
+const hasCardsBlock = def.blocks.some((b) => b.cards);
+const heroAlt = def.hero ? screenAlt[lang][def.hero] : undefined;
+const related = (def.related ?? []).filter((r) => { try { urlFor(r, lang); return true; } catch { return false; } });
+const kind = guide ? "guide" : def.kind ?? "page";
+const slugOf = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+/** Section headings of the page as in-page links: "On this page". */
+const toc = def.blocks.map((b) => ({ t: b.h2, href: `#h-${b.id ?? slugOf(b.h2)}` }));
+const handGlance = def.glance?.map((t) => ({ t }));
+
+const legalMd = kind === "legal" && !def.cmsHtml ? ((id === "privacy" ? siteConfig.legal.privacyMd : siteConfig.legal.termsMd) ?? legalTemplates[id === "privacy" ? "privacy" : "terms"]) : "";
+const legalIsTemplate = kind === "legal" && !def.cmsHtml && !siteConfig.legal.reviewed;
+const minutes = guide ? Math.max(1, Math.round(guide.words / 200)) : 0;
+const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+---
+<Base head={head} graph={graph} path={entry.path}>
+  {kind === "help" && <HelpPage entry={entry} crumbs={crumbs} />}
+
+  {kind === "home" && h && <Home lang={lang} h={h} />}
+
+  {kind === "complete" && <CompleteGuide lang={lang} entry={entry} crumbs={crumbs} words={completeProse} />}
+
+  {kind === "integrations" && ip && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={def.lead} glance={handGlance ?? ip.groups.map((g) => ({ t: g.h2, href: `#g-${g.id}` }))} glanceTitle={handGlance ? undefined : "On this page"} />
+      <section class="section int-page">
+        <div class="container">
+          <p class="int-note note">{ip.note}</p>
+          {ip.groups.map((g) => (
+            <section class="int-group" aria-labelledby={`g-${g.id}`}>
+              <div class="int-head"><h2 id={`g-${g.id}`}>{g.h2}</h2><p>{g.lead}</p></div>
+              <ul class="int-grid">
+                {g.cards.map((c) => (
+                  <li>
+                    <a class="int-card" href={urlFor(c.page, lang) + (c.hash ? `#${c.hash}` : "")}>
+                      <span class="int-top"><span class="int-icon"><Icon name={c.icon} /></span><span class="int-name">{c.name}{c.extra && <span class="int-extra"> · {c.extra}</span>}</span></span>
+                      <h3>{c.title}</h3>
+                      <p>{c.text}</p>
+                      <span class="int-foot"><span class={`chip ${c.tone}`}>{c.chip}</span><span class="more">{t.readMore} &rarr;</span></span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </section>
+      <section class="section tint" aria-labelledby="int-how">
+        <div class="container">
+          <div class="int-head"><h2 id="int-how">{ip.howH2}</h2></div>
+          <ol class="steps three">{ip.steps.map((st, n) => <li><span class="n" aria-hidden="true">{n + 1}</span><h3>{st.t}</h3><p>{st.d}</p></li>)}</ol>
+        </div>
+      </section>
+      <section class="cta-section" aria-labelledby="int-cta">
+        <div class="container">
+          <div class="cta-band">
+            <div><h2 id="int-cta">{ip.ctaH2}</h2><p>{ip.ctaText}</p></div>
+            <div class="cta-row"><a class="btn btn-primary btn-lg" href={urlFor("get-started", lang)}>{ip.ctaButton}</a></div>
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {kind === "steps" && def.how && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} leadHtml={i(def.lead)} glance={handGlance} glanceTitle={def.glanceTitle} />
+      <section class="section">
+        <div class="container how">
+          <ol class="how-steps">
+            {def.how.steps.map((st, k) => (
+              <li id={`step-${k + 1}`}>
+                <span class="n" aria-hidden="true">{k + 1}</span>
+                <div class="how-text">
+                  <h2>{st.title}</h2>
+                  {st.text.map((x) => <p set:html={i(x)} />)}
+                  <p class="how-result"><strong>Result:</strong> <span set:html={i(st.result)} /></p>
+                </div>
+                {st.img && <div class="how-shot"><Screenshot name={st.img.key} alt={st.img.alt} caption={st.img.caption} sizes="(min-width: 1100px) 520px, (min-width: 700px) 80vw, calc(100vw - 32px)" /></div>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section class="section tint" aria-labelledby="what-it-checks">
+        <div class="container how">
+          <h2 id="what-it-checks">What it checks</h2>
+          <p>{totals.checks} checks in {catalog.groups.length} areas. {totals.ziira} run on Ziira itself and {totals.connected} on a system you already use.</p>
+          <ul class="how-areas">
+            {catalog.groups.map((g) => <li><strong>{g.title}</strong> <span class="count">{g.count}</span><span class="lead">{g.lead}</span></li>)}
+          </ul>
+          <p><a class="btn btn-ghost" href={urlFor("intelligence-complete", lang)}>Want the full detail? Read the full reference</a></p>
+        </div>
+      </section>
+      <section class="section">
+        <div class="container how">
+          <Blocks lang={lang} blocks={def.blocks} />
+          <Faq lang={lang} items={faq} />
+        </div>
+      </section>
+      <Cta lang={lang} variant={def.cta ?? "general"} />
+    </>
+  )}
+
+  {kind === "hub" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} leadHtml={i(def.lead)} glance={handGlance ?? (def.tiles ?? []).slice(0, 5).map((tl) => ({ t: tl.name ?? tl.title }))} glanceTitle={handGlance ? undefined : "In this part of Ziira"} />
+      <section class="section" aria-labelledby="hub-tiles">
+        <div class="container">
+          <h2 id="hub-tiles" class="sr-only">{def.short ?? def.title}</h2>
+          <ul class="tiles feature">
+            {(def.tiles ?? []).map((tl) => (
+              <li>
+                <a class="int-card" href={urlFor(tl.page, lang) + (tl.hash ? `#${tl.hash}` : "")}>
+                  <span class="int-top"><span class="int-icon"><Icon name={tl.icon} /></span>{tl.name && <span class="int-name">{tl.name}</span>}</span>
+                  <h3>{tl.title}</h3>
+                  <p>{tl.text}</p>
+                  <span class="int-foot"><span class="more">{t.readMore} &rarr;</span></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+      <section class="section white">
+        <div class="container">
+          <div class="rows">
+            {def.blocks.map((b) => (
+              <section class="row" aria-labelledby={`h-${b.id ?? slugOf(b.h2)}`}>
+                <h2 id={`h-${b.id ?? slugOf(b.h2)}`}>{b.h2}</h2>
+                <div class="body">
+                  {b.p?.map((x) => <p set:html={i(x)} />)}
+                  {b.ul && <ul>{b.ul.map((x) => <li set:html={i(x)} />)}</ul>}
+                  {b.after?.map((x) => <p set:html={i(x)} />)}
+                </div>
+              </section>
+            ))}
+          </div>
+        </div>
+      </section>
+      {faq.length > 0 && <section class="section tint"><div class="container"><div class="faq-split"><div class="faq-intro"><h2 id="faq-h">{t.faq}</h2></div><Faq lang={lang} items={faq} bare /></div></div></section>}
+      <Cta lang={lang} variant={def.cta ?? "general"} />
+    </>
+  )}
+
+  {(kind === "page" || kind === "sources") && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} leadHtml={i(def.lead)} hero={def.hero && heroAlt ? def.hero : undefined}
+        glance={handGlance ?? (toc.length > 1 ? toc : [])} glanceTitle={handGlance ? undefined : "On this page"} />
+      <section class="section">
+        <div class="container layout with-aside">
+          <article class="prose">
+            <Blocks lang={lang} blocks={def.blocks} kids={kids} />
+            {def.children && !hasCardsBlock && kids.length > 0 && <Cards lang={lang} items={kids} />}
+            <Faq lang={lang} items={faq} />
+          </article>
+          <aside class="aside" aria-label={t.keepReading}>
+            {related.length > 0 && (
+              <div class="card"><h2>{t.keepReading}</h2><ul>{related.map((r) => <li><a href={urlFor(r, lang)}>{t.labels[r] ?? titleFor(r, lang)}</a></li>)}</ul></div>
+            )}
+            <div class="card status"><h2>{t.statusTitle}</h2><p class="note" style="margin:0">{t.statusText}</p></div>
+          </aside>
+        </div>
+      </section>
+      <Cta lang={lang} variant={def.cta ?? "general"} />
+    </>
+  )}
+
+  {kind === "guide" && guide && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={guide.topic} h1={def.h1} read />
+      <section class="section">
+        <div class="container read">
+          <p class="byline" style="margin-top:0">
+            {t.published} <time datetime={guide.date}>{fmt(guide.date)}</time>
+            {guide.updated !== guide.date && <> · {t.updated} <time datetime={guide.updated}>{fmt(guide.updated)}</time></>}
+            · {minutes} {t.minRead} · {siteConfig.orgName}
+          </p>
+          <article class="article"><guide.Content /></article>
+          <div class="article" style="margin-top:3.5em"><Faq lang={lang} items={faq} /></div>
+          {related.length > 0 && (
+            <div class="article card" style="margin-top:2em"><h2 style="font-size:1.2rem">{t.keepReading}</h2><ul>{related.map((r) => <li><a href={urlFor(r, lang)}>{titleFor(r, lang)}</a></li>)}</ul></div>
+          )}
+        </div>
+      </section>
+      <Cta lang={lang} variant="general" />
+    </>
+  )}
+
+  {kind === "guides" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={t.guidesIntro} />
+      <section class="section">
+        <div class="container">
+          <div class="grid three">
+            {guides.map((g) => (
+              <a class="card card-link guide-card" href={pathFor("en", `guides/${g.slug}`)}>
+                <span class="tag">{g.topic}</span>
+                <h2 style="font-size:1.2rem">{g.h1}</h2>
+                <p>{g.description}</p>
+                <span class="meta"><time datetime={g.date}>{fmt(g.date)}</time> · {Math.max(1, Math.round(g.words / 200))} {t.minRead}</span>
+              </a>
+            ))}
+          </div>
+          <p class="note" style="margin-top:24px"><a href="/guides/feed.xml">Atom feed</a> · <a href={urlFor("glossary", lang)}>{titleFor("glossary", lang)}</a></p>
+        </div>
+      </section>
+      <Cta lang={lang} variant="general" />
+    </>
+  )}
+
+  {kind === "glossary" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={t.glossaryIntro} />
+      <section class="section">
+        <div class="container">
+          <dl class="glossary">
+            {glossary[lang].map((g) => <div class="g"><dt id={g.term.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}>{g.term}</dt><dd>{g.def}</dd></div>)}
+          </dl>
+        </div>
+      </section>
+      <Cta lang={lang} variant="general" />
+    </>
+  )}
+
+  {kind === "legal" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={def.lead} />
+      <section class="section">
+        <div class="container prose">
+          {legalIsTemplate && <div class="callout warn" role="note"><strong class="t">{legalBanner[lang].title}</strong><p>{legalBanner[lang].text}</p></div>}
+          <div set:html={def.cmsHtml ?? legalMarkdown(legalMd, lang, urlFor)} />
+          {def.cmsHtml ? <p class="note">{t.updated}: <time datetime={entry.lastmod}>{entry.lastmod}</time></p> : siteConfig.legal.effectiveDate && <p class="note">{siteConfig.legal.effectiveDate}</p>}
+        </div>
+      </section>
+    </>
+  )}
+
+  {kind === "pricing" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={def.lead} glance={handGlance} />
+      <section class="section">
+        <div class="container">
+          {siteConfig.pricing.length > 0 ? (
+            <>
+              <h2>{t.pricingPlans}</h2>
+              <PricingPlans lang={lang} />
+            </>
+          ) : (
+            <div class="card" style="max-width:640px"><h2 style="font-size:1.3rem">{t.pricingPlans}</h2><p>{t.pricingEmpty}</p><a class="btn btn-primary" href={urlFor("get-started", lang)}>{t.talk}</a></div>
+          )}
+          <div class="prose" style="margin-top:3em"><Blocks lang={lang} blocks={def.blocks} /><Faq lang={lang} items={faq} /></div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {kind === "contact" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={def.lead} glance={handGlance} />
+      <section class="section">
+        <div class="container">
+          <div class="grid two">
+            <div class="card">
+              <h2 style="font-size:1.3rem">{h?.ctaPrimary ?? t.getStarted}</h2>
+              <p>{t.ctaGeneralText}</p>
+              <a class="btn btn-primary" href={appLinks.register}>{t.getStarted}</a>
+              <p class="note" style="margin-top:12px"><a href={appLinks.signIn}>{t.signIn}</a></p>
+            </div>
+            <div class="card">
+              <h2 style="font-size:1.3rem">{t.talk}</h2>
+              <ContactDetails lang={lang} skipEmail={!siteConfig.contact.formUrl} />
+              {siteConfig.contact.formUrl ? (
+                <form class="form" method="post" action={siteConfig.contact.formUrl}>
+                  <label>{t.contactName}<input name="name" type="text" required autocomplete="name" /></label>
+                  <label>{t.contactEmail}<input name="email" type="email" required autocomplete="email" /></label>
+                  <label>{t.contactCompany}<input name="company" type="text" autocomplete="organization" /></label>
+                  <label>{t.contactMessage}<textarea name="message" required></textarea></label>
+                  <div class="hp" aria-hidden="true"><label>{t.honeypot}<input name="website" type="text" tabindex="-1" autocomplete="off" /></label></div>
+                  <input type="hidden" name="language" value={lang} />
+                  <button class="btn btn-primary" type="submit">{t.contactSend}</button>
+                  <p class="note">{t.contactPrivacyNote}</p>
+                </form>
+              ) : (
+                <div class="callout warn" role="note">
+                  <p>{t.contactNotConfigured}{siteConfig.contact.email && <> {t.contactEmailLine} <strong>{siteConfig.contact.email}</strong>.</>}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          <div class="prose" style="margin-top:3em"><Blocks lang={lang} blocks={def.blocks} /><Faq lang={lang} items={faq} /></div>
+        </div>
+      </section>
+    </>
+  )}
+</Base>

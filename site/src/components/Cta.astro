@@ -1,0 +1,22 @@
+---
+import type { Lang } from "../content/types";
+import { ui } from "../i18n/ui";
+import { appLinks } from "../lib/siteConfig";
+import { urlFor } from "../lib/registry";
+interface Props { lang: Lang; variant?: "core" | "intelligence" | "general"; title?: string; text?: string }
+const { lang, variant = "general", title, text } = Astro.props;
+const t = ui[lang];
+const h = title ?? { core: t.ctaCoreTitle, intelligence: t.ctaIntelTitle, general: t.ctaGeneralTitle }[variant];
+const p = text ?? { core: t.ctaCoreText, intelligence: t.ctaIntelText, general: t.ctaGeneralText }[variant];
+---
+<section class="cta-section" aria-labelledby="cta-h">
+  <div class="container">
+    <div class="cta-band">
+      <div><h2 id="cta-h">{h}</h2><p>{p}</p></div>
+      <div class="cta-row">
+        <a class="btn btn-primary btn-lg" href={appLinks.register}>{t.getStarted}</a>
+        <a class="btn btn-ghost btn-lg" href={urlFor("get-started", lang)}>{t.talk}</a>
+      </div>
+    </div>
+  </div>
+</section>

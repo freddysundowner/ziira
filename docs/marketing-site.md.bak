@@ -1,0 +1,80 @@
+# Marketing website (`site/`)
+
+A static, SEO-first website for the whole system, **in English only** (Swahili was removed from the site by owner decision; the web app
+keeps its own Swahili). It presents **one product, Ziira**, with Intelligence as its smart part: pages are Product (`/product/` and seven
+capability pages), Intelligence (`/intelligence/`, how it works, and "use it with your existing system" with the source pages),
+Solutions, Integrations (a card grid), Pricing and Get started (editions in plain words: Retail, Distribution, Books, Intelligence only,
+Full), About, Security, Articles (`/guides/`) and a glossary. The term "Ziira Core" is not used on the site (a test fails if it appears).
+Words are for business owners: no jargon (add-on, not plugin; alert, not finding), explained where unavoidable (API, webhook).
+It is separate from the product web app (`frontend/`), which is a client-rendered SPA. Full documentation:
+`site/README.md` (build, settings, structure) and `site/SEO.md` (intent map, technical checklist, post-launch steps).
+
+```bash
+make site-setup | site | site-build | site-check     # npm ci | dev :4321 | build to site/dist | tests + build + seo:check + links
+cd site && npm run a11y | lhci | screens
+```
+
+* Hosting: serve the built `site/dist` folder as static files (headers template `site/public/_headers`, 301 map `site/redirects.json`).
+* `PUBLIC_SITE_URL` must be the real origin before deploying; the build warns, `seo:check --production` fails.
+* Editable facts live in `site/src/lib/siteConfig.ts` (planned source: the platform's public site endpoint).
+* Copy rule: nothing on the site may be unverifiable against these docs; integrations not yet run live say so.
+
+## Design system ("Daybook")
+
+One stylesheet, `site/src/styles/global.css` (an external, hashed file; Astro inlines only tiny sheets; the audit caps CSS at 56 KB, raised from 40 KB when styles stopped being inlined into every page). Brand colours are the product app's tokens as
+space-separated RGB (`rgb(var(--brand-strong) / .5)`); light and dark follow `prefers-color-scheme`. Pages reuse these classes, so a new page needs no new CSS.
+
+* **Tokens**: `--bg --surface --sunken --line --ink --muted`, brand (`--brand --brand-strong --brand-deep --brand-soft`), the dark band (`--night`, `--on-night`, `--glow`),
+  `--accent` (amber: highlights and the "example" badge only), status colours, `--radius`, `--max` (1200px), `--gutter` (20-64px), `--header`.
+* **Type**: headings use *Bricolage Grotesque* (variable, Latin subset, 41 KB, self-hosted in `public/fonts/`, OFL licence beside it, preloaded in `Base.astro`);
+  body text uses the system UI stack. Display sizes are fluid (`clamp`), body is 17px / 1.65.
+* **Layout rules**: every section is full-bleed (`.section`, variants `.tint`, `.white`, `.dark`, `.tight`) and its content sits in `.container` (max 1200px).
+  Running text keeps a 60-75ch measure (`.prose`, `.measure`, `.article`, `.container.read` for articles). Never put text directly in a full-width element.
+* **Components**: `.btn` (`-primary`, `-ghost`, `-lg`), `.card` / `.card-link`, `.int-card` (icon tiles), `.pick` (big selector links), `.steps` / `.steps.three`, `.loop`
+  (daily timeline), `.parts` (three dark cards), `.alerts` (example alert cards), `.bento` (screenshots), `.mini` (CSS-only illustration panels), `.table-wrap`,
+  `.faq-split`, `.rows` (heading left, text right), `.glance` (what the page gives the reader), `.cta-band` (dark band that overlaps the footer), `.float` (hero callouts).
+* **Header**: `src/content/nav.ts` is the one list of menus (labels in the words owners use: *What Ziira does*, *Who it is for*, *How it works*, *Pricing*, *Help*).
+  `src/lib/nav.ts` resolves page ids to URLs and silently drops a link whose page does not exist. Menus open on hover and keyboard focus (`:hover`, `:focus-within`, no JavaScript);
+  below 1040px the same lists show in a checkbox-toggled panel. The footer groups the same pages. `tests/nav.test.ts` checks every link.
+* **App launcher**: `appTiles` in `content/nav.ts` is the list of coloured tiles (two-word label, icon, one line, colour 1-8 = `--t1..--t8`). The home page shows them as a grid and as the nodes of the
+  "one platform" SVG diagram; the mega menu uses the same icons and colours. Tile colours are decoration only: text never sits on them except white icons.
+* **Hero areas**: the home hero is a centred headline plus a composed product stage (screenshot in a frame, an *example* finding card and a summary card, all labelled demo data).
+  Inner pages show either the page's screenshot (`hero`) or a "What you get on this page" card (`glance` in the page definition, else the page's own section headings as links).
+* **Motion**: CSS only (hover lifts, a slow float on the hero cards); everything stops under `prefers-reduced-motion`.
+* **Honesty**: the hero's trust line contains only true statements (offline till, read-only on an existing system, built for several branches); the example finding is labelled.
+
+## Claims to verify (flagged by the author)
+
+- "Around 90 checks inside Ziira, about 20 on connected systems": from `docs/PROGRESS.md` (~90) and the standalone check table (22 listed).
+- Product screenshots show the demo business (Kenyan shop, KES). One screen, the finding page, is cropped because it shows the
+  untranslated label `source.undefined` in its Details card (a small bug in the web app, not fixed here).
+- Retail/Distribution editions are described from `docs/registration.md`; `?edition=` links are not used because Register.tsx does not read it.
+- Sales-document, offline-till and webhook statements follow `docs/offline-pos.md` and `docs/webhooks.md`.
+- "No certifications, no independent penetration test yet": from `docs/security.md`; update when that changes.
+- SAP Business One is in the Intelligence spec but has no connector: the site says it is not supported yet.
+- The unsupported claim risks avoided on purpose: eTIMS (parked), AI against the live provider, WhatsApp/SMS/M-Pesa live (all marked "not yet run live").
+
+## English only, and adding a language later
+
+* Old Swahili URLs (`/sw/...`) and the old `/ziira-core/...`, `/ziira-intelligence/...` paths are 301-redirected to their English
+  equivalents in `site/redirects.json` (written to `dist/_redirects`, `/sw/*` falls back to `/`). Keep these rows.
+* The pages are still written per language (`Lang` type, `LANGS`, `LANG_PREFIX`, `Record<Lang, ...>` content), so adding one is:
+  widen `Lang`/`LANGS` in `src/content/types.ts`, add `LANG_PREFIX`, page files (`*.xx.ts`, `home.ts`, `glossary.ts`, `integrations.ts`,
+  `i18n/ui.ts`, `screens.ts`, legal banner), a language switch in `Header`/`Footer`, `alternates`/`x-default` in `src/lib/seo.ts` and the
+  sitemap (the audit's `hreflang-*` rules are kept and become active as soon as alternates exist), and re-add the language to the tests.
+
+## Help centre (`/help/`)
+
+A step-by-step user guide, separate from the SEO articles (`/guides/`, nav label "Articles"). Ten journeys and about fifty guides, English only.
+How it is built and how to add a guide: `site/README.md` ("Help centre"). Rules the guides follow:
+
+* Every step was performed in the running app (demo business, plus a scratch business for the create-and-sell screens) and uses the labels on screen.
+  Where a flow could not be completed or a label is guessed, the guide says so in a "Status" note. The audit lists bugs found in the app in the session report.
+* Features that were never run against a live service (SMS, email, M-Pesa-type mobile money prompts, ERP connectors, Ask Ziira's AI provider, photo reading of statements)
+  carry a **Status** note and are not described as working. Mobile money is a payment method with a provider, never country code (rule 15); M-Pesa is not named in step text.
+* Pictures are crops of the web app with numbered circles, captioned "Demo data". They are regenerated with `npm run help:screens`.
+* Help centre pages are in the sitemap, `llms.txt` and the nav ("Help"); the home page, Get started page and the web app (`VITE_HELP_URL`) link to it.
+  Swahili: not provided (the website is English only; the web app's own Swahili is untouched).
+* Claims to re-check before launch: the exact wording of the app's labels (they change), "Matched" and approval behaviour with approval rules switched on
+  (tested only with no rules), credit increase approval, payroll steps after Calculate (read from the app's text, not run), and the two-step setup dialog (it
+  stayed on "Loading" in the author's test run).

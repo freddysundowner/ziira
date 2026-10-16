@@ -215,6 +215,9 @@ Implement `Importer` (`ziira/modules/imports/public.py`) inside the unit that ow
 - `import_row(session, company_id, row, local_id)`: call the unit's service and return the new record's id; raise on any
   problem (the row becomes `failed`). `local_id` is the staged row's id, stable across retries.
 - `key(row)`: what makes a row unique in the file; `existing(...)`: a message when the record is already in Ziira.
+- `find_match(...)` (optional): the record already in Ziira that is the same real-world thing (same phone or tax number, not only the same
+  code), as an `ExistingRecord(code, reason)`. Used by a move from a connected system so it does not make a second copy and can point a
+  customer's open invoices at the existing record.
 - `totals(rows)` and `imported_totals(session, company_id, ids)`: the file's sums and the same figures read back from
   the records; name money figures in `money_totals`. (`read_back(session, company_id, rows, ids)` replaces `imported_totals` when
   the figures depend on the rows themselves.)
@@ -224,6 +227,18 @@ Implement `Importer` (`ziira/modules/imports/public.py`) inside the unit that ow
   is imported with it or none is. The file is checked again just before the import.
 - Undoable imports: `reversible = True` and `reverse(session, company_id, record_ids, reason)`, which reverses through the owning
   unit's own service and raises, changing nothing, when later activity makes that unsafe.
+
+## Staging rows from another unit (not a file)
+
+Connectors' **Move to Ziira Core** (`docs/standalone-mode.md`) feeds the same machinery without a file. `ziira.modules.imports.public`
+offers, to units that hold data to bring in: `available_importers`, `check_rows` (the dry run of rows that are not stored: values,
+duplicates inside the rows, records already in Ziira), `find_existing` (the same real-world record already in Ziira, by more than its
+code: `Importer.find_match`, implemented for products by SKU and for customers and suppliers by code, tax number or phone),
+`stage_rows` (a batch whose columns are the importer's own field names, tagged with `source=(kind, id)`), `validate_staged`,
+`start_import`, `discard_staged`, `batch_summary` and `reverse_import`. The same permissions apply as for an uploaded file (`imports.manage`
+plus the kind's own permission), the batch appears in the import list with its source (`source_kind`, `source_id`), is reconciled by its
+report and, for opening balances, reversed by the ordinary reverse. Only a kind's importer decides what it creates: the caller never
+writes the target tables.
 
 ## Not yet verified
 

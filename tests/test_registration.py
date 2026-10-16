@@ -187,7 +187,7 @@ def test_a_failed_provisioning_leaves_the_link_usable(client, registry, monkeypa
 
     monkeypatch.setattr(registration, "create_tenant", boom)
     broken = verify(client, token)
-    assert broken.status_code == 503 and broken.json()["error"] == "unavailable"
+    assert broken.status_code == 503 and broken.json()["error"] == "registration_failed"
     monkeypatch.undo()
     assert verify(client, token).status_code == 200                                            # try again: it works
 

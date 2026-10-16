@@ -3,7 +3,7 @@
 Two kinds of socket, both owned by a unit and declared in its manifest:
 
 1. Extension points: a named contract (an abstract base class) that other units implement,
-   e.g. "payments.provider" implemented by an Airtel Money plugin.
+   e.g. "payments.provider" implemented by an mobile-money plugin.
 
        # owner, in hooks.py:     PROVIDERS = define_extension_point("payments.provider", PaymentProvider)
        # implementer, hooks.py:  @provides("payments.provider")
@@ -169,6 +169,13 @@ def provider_named(point: str, name: str) -> type | None:
     if found is None:
         return None
     return next((impl for _, impl in found.implementations if getattr(impl, "name", None) == name), None)
+
+
+def implementations_of(point: str) -> list[type]:
+    """Every implementation class of an extension point, whichever units are enabled anywhere (platform-level code,
+    such as the payment gateways, has no business to look at)."""
+    found = _points.get(point)
+    return [] if found is None else [impl for _, impl in found.implementations]
 
 
 def run_validators(session: Session, name: str, subject: Any) -> None:

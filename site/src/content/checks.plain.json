@@ -1,0 +1,533 @@
+{
+  "_comment": "Plain-language text for every Intelligence check, keyed by check code. The check's own code (ziira/modules/*/ ... IntelCheck) holds the title, limits and technical description; this file adds what a business owner needs: what it means, a made-up example, and the limits in plain words. tests/test_check_catalog.py fails if a check has no entry here, or an entry has no check. Regenerate the catalogue with `make site-catalog`.",
+  "_groups": {
+    "cash": { "title": "Cash, sales and payments", "lead": "Is the money you should have received actually there?" },
+    "cashier": { "title": "Cashiers, discounts and the till", "lead": "Do the habits at the till look normal?" },
+    "stock": { "title": "Stock and shrinkage", "lead": "Is stock going missing, running out or going to waste?" },
+    "customers": { "title": "Customers and credit", "lead": "Who owes you, and are you lending to the wrong people?" },
+    "suppliers": { "title": "Suppliers and purchasing", "lead": "Are you paying more, paying twice or paying for goods that never came?" },
+    "books": { "title": "Accounting and books", "lead": "Do the entries in your books look ordinary?" },
+    "people": { "title": "People and payroll", "lead": "Is anyone being paid in a way that looks odd?" },
+    "controls": { "title": "Controls and approvals", "lead": "Is the system itself being used in a careful way?" }
+  },
+  "_units": {
+    "pos": "Sales and tills",
+    "inventory": "Stock",
+    "finance": "Accounting",
+    "payments": "Payments",
+    "purchasing": "Purchasing",
+    "people": "People and payroll",
+    "crm": "Customers",
+    "controls": "Ziira itself (users, approvals, exceptions)",
+    "standalone": "A connected system or uploaded file"
+  },
+  "_params": {
+    "days": "How many days back to look",
+    "lookback_days": "How many days back to look",
+    "min_amount": "Smallest amount worth flagging",
+    "min_value": "Smallest value worth flagging",
+    "min_sales": "Fewest sales needed before a cashier is judged",
+    "min_rate": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+    "grace_days": "Days to wait before it counts as a problem",
+    "open_hour": "Hour the branch opens (24-hour clock)",
+    "close_hour": "Hour the branch closes (24-hour clock)",
+    "min_earlier": "Fewest earlier records needed to compare with",
+    "high_days_overdue": "Days overdue at which it becomes high priority",
+    "min_days_overdue": "Days past the due date before a customer is flagged",
+    "window_minutes": "How many minutes apart still counts as the same event",
+    "tolerance_percent": "How big a difference (in %) is allowed before flagging",
+    "backdate_days": "How many days earlier than the entry date counts as back-dated",
+    "within_days": "How many days apart counts as close together",
+    "window_days": "How many days of history to compare",
+    "value_limit": "Value above which it is flagged",
+    "min_days_late": "Fewest days late before it is flagged",
+    "high_days_late": "Days late at which it becomes high priority",
+    "min_units": "Fewest units worth flagging",
+    "min_void": "Smallest cancelled sale worth flagging",
+    "min_refund": "Smallest refund worth flagging",
+    "min_override": "Smallest price reduction worth flagging",
+    "min_discount": "Smallest discount worth flagging",
+    "min_history": "Fewest days of history needed to know what is normal",
+    "drop_percent": "How far below normal (in %) counts as a big drop",
+    "deviations": "How many times the usual swing counts as unusual",
+    "rise_percent": "How big a price rise (in %) is flagged",
+    "percent": "Share (in %) above which it is flagged",
+    "limit": "Amount above which it is flagged",
+    "hours": "Hours to wait before it counts as a problem",
+    "history_days": "How many days of earlier history to compare with",
+    "min_invoices": "Fewest invoices needed to judge how a customer pays",
+    "increase_percent": "How much slower (in %) counts as slower",
+    "min_increase_days": "Fewest extra days to take longer to pay before flagging",
+    "min_items": "Fewest items before it is flagged",
+    "min_loss": "Smallest loss worth flagging",
+    "min_loss_value": "Smallest loss worth flagging",
+    "min_quantity": "Smallest number of units worth flagging",
+    "min_gap": "Smallest gap worth flagging",
+    "min_actions": "Fewest changes in a day before it is flagged",
+    "min_hours": "Fewest extra overtime hours worth flagging",
+    "min_samples": "Fewest earlier days needed to know what is normal",
+    "min_ratio": "How many times the usual amount counts as unusual",
+    "min_margin_percent": "Profit margin (in %) below which the squeeze is flagged"
+  },
+  "finance.backdated_entries": {
+    "group": "books", "plain": "An entry was put into the books long after the date it carries, so the past was changed after the fact.",
+    "example": "On 3 October someone posted an expense dated 12 July.",
+    "limits": { "late_days": "Days between the entry date and when it was made that counts as late", "manual_only": "Look only at hand-made entries (1 = yes, 0 = all)" }
+  },
+  "finance.low_gross_margin": {
+    "group": "books", "plain": "You are keeping a smaller share of each sale than you usually do, after paying for what you sold.",
+    "example": "Gross margin this month is 14%, against 26% over the last three months.",
+    "limits": { "drop_points": "How many points below normal the margin must fall", "min_income": "Smallest sales for the month before it is judged", "min_day": "Earliest day of the month to judge (so the first days are not read too early)", "min_months": "Months of history needed" }
+  },
+  "finance.period_reopened": {
+    "group": "books", "plain": "A month that was closed and locked was opened again, so numbers you already relied on can change.",
+    "example": "June was closed on 5 July and reopened on 19 July.",
+    "limits": {}
+  },
+  "finance.posted_after_close": {
+    "group": "books", "plain": "Something was posted into a month after that month had been closed.",
+    "example": "A 12,000 entry dated May appeared after May was closed.",
+    "limits": {}
+  },
+  "finance.stale_reconciliation": {
+    "group": "books", "plain": "A bank reconciliation (ticking your records off against the bank statement) was started and never finished.",
+    "example": "The February reconciliation of the main account has been open for 41 days.",
+    "limits": { "days_open": "Days a reconciliation may stay open before it is flagged" }
+  },
+  "finance.unreconciled_bank_lines": {
+    "group": "books", "plain": "Money that moved through a bank account is still not matched to a line on the bank statement after a long time.",
+    "example": "6 entries on the main account are older than 45 days and still unmatched.",
+    "limits": { "age_days": "Days old before an unmatched entry is flagged", "days": "How many days back to look" }
+  },
+  "finance.unusual_expense": {
+    "group": "books", "plain": "A branch spent much more on one kind of expense in a day than it normally does.",
+    "example": "Branch B spent 8,400 on repairs on Tuesday; it usually spends about 900 in a day.",
+    "limits": { "min_ratio": "How many times the usual daily spend counts as unusual", "min_samples": "Days of history needed to know what is usual" }
+  },
+  "standalone.expense_unusually_high": {
+    "group": "books", "plain": "One expense is much bigger than the usual expense in the same category.",
+    "example": "A 45,000 vehicle repair, when vehicle repairs usually cost 6,000.",
+    "needs": "Expenses", "limits": {}
+  },
+  "standalone.manual_journal": {
+    "group": "books", "plain": "An entry typed into the books by hand looks worth a second look: it is large, a perfectly round figure, made at night, dated in the past, or created and approved by the same person.",
+    "example": "A round 500,000 journal made at 23:40 and approved by the person who wrote it.",
+    "needs": "Journal entries",
+    "limits": { "large_amount": "Amount above which a hand-made entry counts as large", "round_step": "Round figures are multiples of this", "round_min": "Smallest round figure worth flagging", "open_hour": "Hour work normally starts (24-hour clock)", "close_hour": "Hour work normally ends (24-hour clock)", "backdate_days": "Days earlier than entry date that counts as back-dated" }
+  },
+  "standalone.unmatched_receipt": {
+    "group": "cash", "plain": "Money arrived (on a mobile-money or bank statement) that matches no sale and no invoice.",
+    "example": "A 12,500 receipt from last Friday that no sale or invoice accounts for.",
+    "needs": "Payments, plus sales or invoices to compare with",
+    "limits": { "days": "How many days back to look", "grace_days": "Days to wait before it counts as unmatched", "window_minutes": "How many minutes apart a payment and a sale can be and still match" }
+  },
+  "payments.close_variance": {
+    "group": "cash", "plain": "A branch closed its day with more or less money than the records say it should have.",
+    "example": "Branch A closed the day 1,350 short.",
+    "limits": { "variance_limit": "Difference above which a close is flagged" }
+  },
+  "payments.failing_prompts": {
+    "group": "cash", "plain": "Many payment requests sent to customers' phones failed or timed out on the same day, which usually means a fault with the payment service.",
+    "example": "9 of 12 payment requests failed on Saturday.",
+    "limits": { "min_attempts": "Fewest requests in a day before it is judged", "failure_percent": "Share of requests that must fail (in %)" }
+  },
+  "payments.settlement_mismatch": {
+    "group": "cash", "plain": "What your mobile-money account received does not agree with what was paid across to your bank.",
+    "example": "The account received 220,000 this week but only 205,000 reached the bank.",
+    "limits": { "grace_days": "Days a transfer may take before it counts as missing" }
+  },
+  "payments.unlinked_receipts": {
+    "group": "cash", "plain": "Money was received but is not linked to any sale, invoice or customer.",
+    "example": "A 3,200 payment came in on Monday and nothing explains what it was for.",
+    "limits": { "hours": "Hours to wait before it counts as unlinked" }
+  },
+  "payments.unmatched_transactions": {
+    "group": "cash", "plain": "Your mobile-money provider or bank reported money coming in that none of your recorded payments accounts for.",
+    "example": "The provider shows 7 receipts last week that Ziira cannot tie to any sale.",
+    "limits": { "unmatched_days": "Days a transaction may stay unmatched before it is flagged" }
+  },
+  "pos.branch_sales_low": {
+    "group": "cash", "plain": "A branch sold far less than it normally sells on that day of the week.",
+    "example": "Branch C sold 18,000 on Saturday; a normal Saturday is about 52,000.",
+    "limits": {}
+  },
+  "pos.till_cash_variance": {
+    "group": "cash", "plain": "A cashier closed the till and the cash counted was far from what the sales say it should be.",
+    "example": "Till 2 closed 640 short.",
+    "limits": { "limit": "Cash difference above which a closed till is flagged" }
+  },
+  "standalone.branch_sales_low": {
+    "group": "cash", "plain": "A branch sold far less than it normally sells on that day of the week.",
+    "example": "Branch C sold 18,000 on Saturday; a normal Saturday is about 52,000.",
+    "needs": "Sales", "limits": {}
+  },
+  "standalone.cash_deposit_gap": {
+    "group": "cash", "plain": "The cash your tills took is well above the cash that reached the bank.",
+    "example": "Branch A recorded 310,000 cash sales this week but only 255,000 was deposited.",
+    "needs": "Sales and bank statement lines",
+    "limits": { "days": "How many days of sales to compare", "grace_days": "Days a deposit may take to reach the bank", "tolerance_percent": "How big a gap (in %) is allowed before flagging", "min_gap": "Smallest gap worth flagging" }
+  },
+  "standalone.sale_without_payment": {
+    "group": "cash", "plain": "A sale was recorded as paid by mobile money or bank transfer, but no matching payment shows on the statements.",
+    "example": "A 4,800 sale says mobile money, and no payment of that code or amount appears around that time.",
+    "needs": "Sales and payments (statements or an ERP)",
+    "limits": { "days": "How many days back to look", "grace_hours": "Hours to wait for the payment to appear", "window_minutes": "How many minutes apart a payment and a sale can be and still match", "methods": "Which payment methods are checked", "high_count": "Number of such sales at which the alert becomes high priority" }
+  },
+  "controls.after_hours_activity": {
+    "group": "controls", "plain": "Someone made many changes in the system outside working hours.",
+    "example": "One user made 31 changes between 23:00 and 02:00 on Sunday.",
+    "limits": { "start_hour": "Hour working time starts (24-hour clock)", "end_hour": "Hour working time ends (24-hour clock)", "min_actions": "Fewest changes before it is flagged" }
+  },
+  "controls.approval_by_requester": {
+    "group": "controls", "plain": "Something was approved by the same person who asked for it, so nobody else looked.",
+    "example": "A stock write-off was requested and approved by the same manager.",
+    "limits": {}
+  },
+  "controls.exceptions_backlog": {
+    "group": "controls", "plain": "Problems the system put in its exceptions inbox (things it could not finish by itself) have waited too long for someone to look.",
+    "example": "11 items have been waiting for more than 7 days.",
+    "limits": { "days": "Days an item may wait before it counts as stuck", "min_items": "Fewest stuck items before it is flagged" }
+  },
+  "controls.new_wide_access": {
+    "group": "controls", "plain": "Someone was recently given a role that lets them act across the whole business or a whole company.",
+    "example": "A new user was given the Finance Manager role for all branches on Monday.",
+    "limits": {}
+  },
+  "crm.duplicate_customers": {
+    "group": "customers", "plain": "A customer was created with the same phone number or tax number as an existing one, which can be used to get more credit than one account allows.",
+    "example": "Two accounts share one phone number, each with its own credit limit.",
+    "limits": {}
+  },
+  "finance.large_manual_journal": {
+    "group": "books", "plain": "A hand-made accounting entry is bigger than the limit you set for such entries.",
+    "example": "A 240,000 manual entry when your limit is 100,000.",
+    "limits": { "limit": "Amount above which a hand-made entry is flagged" }
+  },
+  "finance.odd_hours_manual_journal": {
+    "group": "books", "plain": "A hand-made accounting entry was created late at night or very early in the morning.",
+    "example": "A manual entry was posted at 02:15.",
+    "limits": { "start_hour": "Hour the odd period starts (24-hour clock)", "end_hour": "Hour the odd period ends (24-hour clock)" }
+  },
+  "finance.round_manual_journal": {
+    "group": "books", "plain": "A hand-made accounting entry is a perfectly round amount, which real transactions rarely are.",
+    "example": "A manual entry for exactly 50,000.",
+    "limits": { "round_unit": "Round figures are multiples of this", "min_amount": "Smallest round figure worth flagging" }
+  },
+  "finance.same_person_approval": {
+    "group": "books", "plain": "One person both prepared and approved a hand-made entry or an expense.",
+    "example": "The same user wrote and approved a 75,000 journal.",
+    "limits": {}
+  },
+  "inventory.adjustment_spike": {
+    "group": "stock", "plain": "One person took far more stock out by hand today (write-offs, corrections) than is normal for them.",
+    "example": "A storekeeper wrote off 4,200 of stock today; their usual is under 300.",
+    "limits": { "min_value": "Smallest total value worth flagging" }
+  },
+  "inventory.count_variance": {
+    "group": "stock", "plain": "A stock count found a lot more or less than the records said was there.",
+    "example": "The Branch B count came out 7,900 short.",
+    "limits": { "value_limit": "Value of the difference above which a count is flagged" }
+  },
+  "inventory.large_write_down": {
+    "group": "stock", "plain": "Stock worth a large amount was written off or corrected downwards by hand.",
+    "example": "3,600 of paint was written off as damaged.",
+    "limits": { "value_limit": "Value above which a write-off is flagged" }
+  },
+  "inventory.shrinkage_rate": {
+    "group": "stock", "plain": "At a branch, a product is being lost (write-offs, short counts) at a high rate compared with what is sold and received.",
+    "example": "Branch A lost 14% of the sugar it handled this month.",
+    "limits": { "percent": "Loss rate (in %) above which a product is flagged", "min_loss_value": "Smallest total loss worth flagging" }
+  },
+  "inventory.unusual_stock_moves": {
+    "group": "stock", "plain": "A stock correction or transfer was made outside working hours, or dated well before it was entered.",
+    "example": "A stock correction made at 23:10 and dated four days earlier.",
+    "limits": { "hours_from": "Hour working time starts (24-hour clock)", "hours_to": "Hour working time ends (24-hour clock)", "backdate_days": "Days earlier than entry date that counts as back-dated", "min_value": "Smallest value worth flagging" }
+  },
+  "payments.manual_without_evidence": {
+    "group": "cash", "plain": "A large mobile-money, bank or card payment was typed in, but your payment provider has no record of it.",
+    "example": "A 9,500 mobile-money payment was recorded at the till and the provider shows nothing.",
+    "limits": { "amount_limit": "Amount above which a payment needs proof", "hours": "Hours to wait for the provider's record" }
+  },
+  "payments.missing_close": {
+    "group": "cash", "plain": "A branch took money on a day but nobody closed that day.",
+    "example": "Branch B has takings on Wednesday and no daily close.",
+    "limits": { "grace_days": "Days a close may be late before it is flagged" }
+  },
+  "payments.possible_duplicates": {
+    "group": "cash", "plain": "Two payments of the same amount from the same payer were recorded within minutes of each other.",
+    "example": "Two payments of 2,400 from one phone number, four minutes apart.",
+    "limits": { "window_minutes": "How many minutes apart counts as a possible duplicate" }
+  },
+  "payments.reversed_after_match": {
+    "group": "cash", "plain": "A payment that had been confirmed and matched to a sale was later undone.",
+    "example": "A 6,000 payment, matched to a sale on Monday, was reversed on Wednesday.",
+    "limits": {}
+  },
+  "people.changes_before_payroll": {
+    "group": "people", "plain": "Someone was added, had their pay raised, or had their bank or mobile-money details changed shortly before a payroll that paid them.",
+    "example": "A new employee was added two days before payroll and paid in full.",
+    "limits": { "days": "Days before a payroll run that count as just before", "lookback_days": "How far back to look for payroll runs" }
+  },
+  "people.pay_self_approved": {
+    "group": "people", "plain": "A person's pay terms or payment details were approved by the same person who proposed them.",
+    "example": "A salary increase was proposed and approved by the same payroll clerk.",
+    "limits": {}
+  },
+  "pos.cashier_discount_rate": {
+    "group": "cashier", "plain": "A cashier gave away a much bigger share of the list price in discounts and price changes than they usually do.",
+    "example": "Cashier B discounted 9% of what they sold yesterday; their usual is 2%.",
+    "limits": { "days": "How many recent days to judge" }
+  },
+  "pos.cashier_refund_rate": {
+    "group": "cashier", "plain": "A cashier gave back money (refunds) on a much bigger share of their sales than they usually do.",
+    "example": "Cashier A refunded 11% of their sales yesterday; their usual is 1%.",
+    "limits": { "days": "How many recent days to judge" }
+  },
+  "pos.cashier_void_rate": {
+    "group": "cashier", "plain": "A cashier cancelled (voided) a much bigger share of their sales than they usually do.",
+    "example": "Cashier B cancelled 14 sales after 9pm; they usually cancel one or two a day.",
+    "limits": { "days": "How many recent days to judge" }
+  },
+  "pos.large_exception": {
+    "group": "cashier", "plain": "A single sale was cancelled, a single refund was given or a single sale was discounted for a large amount.",
+    "example": "A 6,800 sale was cancelled after payment was taken.",
+    "limits": { "days": "How many days back to look" }
+  },
+  "pos.late_recorded_sales": {
+    "group": "cashier", "plain": "A sale was entered, or arrived from an offline till, days after the day it is dated.",
+    "example": "A sale dated Monday was entered on Friday.",
+    "limits": {}
+  },
+  "pos.out_of_hours_sales": {
+    "group": "cashier", "plain": "Sales were made at a branch before it normally opens or after it normally closes.",
+    "example": "Four sales were rung up at 01:30 at Branch A.",
+    "limits": {}
+  },
+  "purchasing.duplicate_supplier_bill": {
+    "group": "suppliers", "plain": "Two bills from the same supplier have the same amount close together, or the same invoice number.",
+    "example": "Two bills of 18,400 from one supplier, entered three days apart.",
+    "limits": { "within_days": "How many days apart counts as close together" }
+  },
+  "purchasing.duplicate_supplier_payment": {
+    "group": "suppliers", "plain": "A supplier was paid the same amount twice within a few days, or two payments share a reference.",
+    "example": "Supplier X was paid 18,400 on Monday and again on Wednesday.",
+    "limits": { "within_days": "How many days apart counts as close together" }
+  },
+  "purchasing.supplier_bank_changed": {
+    "group": "suppliers", "plain": "A supplier's bank or mobile-money details were replaced recently, a common step in payment fraud.",
+    "example": "Supplier Y's bank account changed on Thursday, before a payment on Friday.",
+    "limits": {}
+  },
+  "standalone.cashier_discount_rate": {
+    "group": "cashier", "plain": "A cashier gave away a much bigger share of the list price in discounts than they usually do.",
+    "example": "Cashier B discounted 9% of what they sold yesterday; their usual is 2%.",
+    "needs": "Sales with discounts recorded", "limits": { "days": "How many recent days to judge" }
+  },
+  "standalone.cashier_refund_rate": {
+    "group": "cashier", "plain": "A cashier refunded a much bigger share of what they sold than they usually do.",
+    "example": "Cashier A refunded 11% of their sales yesterday; their usual is 1%.",
+    "needs": "Sales with refunds recorded", "limits": { "days": "How many recent days to judge" }
+  },
+  "standalone.cashier_void_rate": {
+    "group": "cashier", "plain": "A cashier cancelled a much bigger share of their sales than they usually do.",
+    "example": "Cashier B cancelled 14 sales after 9pm; they usually cancel one or two a day.",
+    "needs": "Sales with cancellations recorded", "limits": { "days": "How many recent days to judge" }
+  },
+  "standalone.large_exception": {
+    "group": "cashier", "plain": "A single sale was cancelled, refunded or discounted for a large amount.",
+    "example": "A 6,800 sale was cancelled after payment was taken.",
+    "needs": "Sales with cancellations, refunds or discounts recorded", "limits": { "days": "How many days back to look" }
+  },
+  "standalone.late_entered_sales": {
+    "group": "cashier", "plain": "A sale was entered into the system days after the day it is dated.",
+    "example": "A sale dated Monday was entered on Friday.",
+    "needs": "Sales from a source that records when each entry was made", "limits": {}
+  },
+  "standalone.out_of_hours_sales": {
+    "group": "cashier", "plain": "Sales were made at a branch before it normally opens or after it normally closes.",
+    "example": "Four sales were rung up at 01:30 at Branch A.",
+    "needs": "Sales with the time of sale", "limits": {}
+  },
+  "crm.credit_increase_waiting": {
+    "group": "customers", "plain": "A request to raise a customer's credit limit has been waiting for approval too long.",
+    "example": "A credit increase for Customer A has waited 9 days.",
+    "limits": { "days": "Days a request may wait before it is flagged" }
+  },
+  "crm.followups_overdue": {
+    "group": "customers", "plain": "A salesperson has follow-ups with possible customers that are overdue.",
+    "example": "A salesperson has 7 follow-ups that are more than 3 days overdue.",
+    "limits": { "days": "Days overdue before a follow-up is flagged", "many": "Number of overdue follow-ups at which it becomes more serious" }
+  },
+  "crm.over_credit_limit": {
+    "group": "customers", "plain": "A customer's unpaid invoices, less any money they hold on account, are above their credit limit. Customers with no limit set are not checked.",
+    "example": "Customer B owes 140,000 against a limit of 100,000.",
+    "limits": { "high_over_pct": "How far over the limit (in %) makes it high priority", "max_customers": "Most customers checked in one run" }
+  },
+  "pos.credit_to_overdue_customer": {
+    "group": "customers", "plain": "A new credit sale or invoice was made to a customer who already had an overdue invoice unpaid.",
+    "example": "Customer C received a 22,000 invoice while a 31,000 invoice was 47 days overdue.",
+    "limits": { "days": "How many days back to look for new credit sales", "grace_days": "Days of overdue allowed before it counts" }
+  },
+  "pos.customer_over_credit_limit": {
+    "group": "customers", "plain": "A customer owes more than the credit limit set for them.",
+    "example": "Customer B owes 140,000 against a limit of 100,000.",
+    "limits": { "tolerance_percent": "How far over the limit (in %) is allowed before flagging", "high_percent": "How far over the limit (in %) makes it high priority" }
+  },
+  "pos.customer_overdue": {
+    "group": "customers", "plain": "A customer has an invoice that is past its due date by more than the number of days you set.",
+    "example": "Customer A owes 680,000, and the oldest invoice is 45 days late.",
+    "limits": {}
+  },
+  "pos.customer_paying_slower": {
+    "group": "customers", "plain": "A customer now takes much longer to pay than they used to.",
+    "example": "Customer D used to pay in 18 days and now takes 41.",
+    "limits": { "window_days": "How many days of invoices to compare with the period before" }
+  },
+  "standalone.credit_to_overdue_customer": {
+    "group": "customers", "plain": "A new invoice was made out to a customer who already had an overdue invoice unpaid.",
+    "example": "Customer C was invoiced 22,000 while a 31,000 invoice was 47 days overdue.",
+    "needs": "Customer invoices", "limits": { "days": "How many days back to look for new invoices", "grace_days": "Days of overdue allowed before it counts" }
+  },
+  "standalone.customer_overdue": {
+    "group": "customers", "plain": "A customer has an invoice that is past its due date by more than the number of days you set.",
+    "example": "Customer A owes 680,000, and the oldest invoice is 45 days late.",
+    "needs": "Customer invoices", "limits": {}
+  },
+  "standalone.customer_paying_slower": {
+    "group": "customers", "plain": "A customer now takes much longer to pay than they used to.",
+    "example": "Customer D used to pay in 18 days and now takes 41.",
+    "needs": "Invoices and payments that name the invoice they pay",
+    "limits": { "window_days": "How many days of invoices to compare with the period before" }
+  },
+  "people.leave_waiting": {
+    "group": "people", "plain": "A leave request has waited too long for a decision.",
+    "example": "A leave request has waited 8 days for approval.",
+    "limits": { "days": "Days a request may wait before it is flagged" }
+  },
+  "people.paid_without_attendance": {
+    "group": "people", "plain": "An employee was paid in a payroll run with no attendance and no approved leave for that period, while most others paid in the same run do have records.",
+    "example": "Employee C was paid a full month with no attendance recorded, though 9 of 10 colleagues have it.",
+    "limits": { "usage_pct": "Share (in %) of people who must have attendance for this check to apply" }
+  },
+  "people.pay_jump_unexplained": {
+    "group": "people", "plain": "An employee's pay changed by a lot from the last payroll, and nothing recorded (a pay change, overtime, unpaid leave, a part month) explains it.",
+    "example": "Employee B's gross pay rose 38% with no recorded reason.",
+    "limits": { "percent": "How big a change (in %) is flagged" }
+  },
+  "people.payroll_overdue": {
+    "group": "people", "plain": "A payroll run is still not approved, or approved but not paid, days after its pay date.",
+    "example": "Payroll for September was due on the 28th and is still unapproved on the 3rd.",
+    "limits": { "days": "Days after the pay date before it is flagged" }
+  },
+  "people.unusual_overtime": {
+    "group": "people", "plain": "Overtime on a recent day is far above what that employee, or their branch, normally works.",
+    "example": "Employee A worked 9 hours of overtime on Saturday; their usual is under 2.",
+    "limits": { "recent_days": "How many recent days to look at" }
+  },
+  "standalone.new_user": {
+    "group": "people", "plain": "A new user was added to the connected system recently.",
+    "example": "A new user called User X appeared in the ERP on Tuesday.",
+    "needs": "The list of users", "limits": {}
+  },
+  "inventory.batch_expired": {
+    "group": "stock", "plain": "A batch of stock is past its expiry date and is still counted as stock.",
+    "example": "40 packs of syrup expired on 1 October and are still on the shelf record.",
+    "limits": { "days_back": "How far back to look for expired batches" }
+  },
+  "inventory.batch_expiring": {
+    "group": "stock", "plain": "A batch with stock still on hand will expire within the next few weeks.",
+    "example": "60 units of a medicine expire in 12 days.",
+    "limits": { "days_ahead": "Days ahead to warn", "urgent_days": "Days left at which it becomes more serious" }
+  },
+  "inventory.low_stock": {
+    "group": "stock", "plain": "A product's stock at a branch has fallen to its reorder level or below.",
+    "example": "Branch A has 6 bags of cement left and the reorder level is 10.",
+    "limits": {}
+  },
+  "inventory.negative_stock": {
+    "group": "stock", "plain": "The system shows less than zero of a product at a branch, so a delivery or transfer was probably not recorded.",
+    "example": "Branch B shows minus 12 bags of sugar.",
+    "limits": {}
+  },
+  "inventory.out_of_stock": {
+    "group": "stock", "plain": "A product you normally sell at a branch has run out.",
+    "example": "Branch A has no cooking oil, and it sold 40 litres last month.",
+    "limits": { "days": "How many days back to look for products you normally sell" }
+  },
+  "inventory.slow_stock": {
+    "group": "stock", "plain": "A branch holds a lot of stock that has not sold or moved for months.",
+    "example": "Branch C has 14,000 of paint that has not sold in 120 days.",
+    "limits": { "days": "Days without a sale before stock counts as slow", "min_value": "Smallest value of stock worth flagging" }
+  },
+  "inventory.transfer_not_received": {
+    "group": "stock", "plain": "Stock sent from one branch to another has been on its way for days without being received.",
+    "example": "A transfer of 20 cartons left Branch A six days ago and Branch B has not received it.",
+    "limits": { "days": "Days in transit before it is flagged" }
+  },
+  "standalone.negative_stock": {
+    "group": "stock", "plain": "More of a product went out than ever came in, judged on the stock movements you connected.",
+    "example": "Sugar shows minus 30 units, so a delivery or opening count is probably missing.",
+    "needs": "Stock movements, including opening stock or history from the start",
+    "limits": { "min_units": "Smallest shortfall (in units) worth flagging" }
+  },
+  "standalone.shrinkage_by_product": {
+    "group": "stock", "plain": "A product has lost a lot of stock to write-offs and short counts over the last weeks.",
+    "example": "Cooking oil lost 85 litres to write-offs and short counts this month.",
+    "needs": "Stock movements",
+    "limits": { "days": "How many days of movements to add up", "min_loss": "Smallest loss in value worth flagging", "min_units": "Smallest loss in units worth flagging" }
+  },
+  "standalone.stock_adjustment": {
+    "group": "stock", "plain": "Stock was written off or corrected for a large amount, at odd hours, or entered days after its date.",
+    "example": "A 90,000 stock write-off was entered at 23:50.",
+    "needs": "Stock movements",
+    "limits": { "min_value": "Smallest value worth flagging", "min_quantity": "Smallest number of units worth flagging", "open_hour": "Hour work normally starts (24-hour clock)", "close_hour": "Hour work normally ends (24-hour clock)" }
+  },
+  "purchasing.bill_mismatch_waiting": {
+    "group": "suppliers", "plain": "A supplier's bill does not match what was ordered or received, and nobody has decided what to do.",
+    "example": "A bill for 50 units, when only 42 were received, has waited 6 days.",
+    "limits": { "waiting_days": "Days a mismatch may wait before it is flagged" }
+  },
+  "purchasing.margin_squeeze": {
+    "group": "suppliers", "plain": "A product costs more now, and your selling price has not moved, so little profit is left.",
+    "example": "Cement cost rose 17% and the margin fell from 12% to 3%.",
+    "limits": { "cost_rise_percent": "How big a cost rise (in %) is flagged", "min_margin_percent": "Profit margin (in %) below which the squeeze is flagged" }
+  },
+  "purchasing.order_above_usual_price": {
+    "group": "suppliers", "plain": "An open purchase order has a price well above what this supplier charged before.",
+    "example": "An order prices rice at 142 a bag; this supplier's earlier price was 120.",
+    "limits": { "above_percent": "How far above the usual price (in %) is flagged" }
+  },
+  "purchasing.overdue_supplier_bills": {
+    "group": "suppliers", "plain": "Supplier bills are still unpaid well after they were due, which can damage trust or bring late fees.",
+    "example": "Supplier Z has 3 bills, the oldest 38 days overdue.",
+    "limits": { "overdue_days": "Days past the due date before it is flagged", "serious_days": "Days past the due date at which it becomes serious" }
+  },
+  "purchasing.paid_without_receipt": {
+    "group": "suppliers", "plain": "A paid supplier bill charges for goods that never arrived, were sent back, or arrived short.",
+    "example": "Bill 1043 was paid for 100 units; 80 were received.",
+    "limits": {}
+  },
+  "purchasing.supplier_price_rise": {
+    "group": "suppliers", "plain": "A supplier's latest price for a product is well above what they charged in earlier deliveries.",
+    "example": "The price of cement rose from 700 to 820 a bag between deliveries.",
+    "limits": { "rise_percent": "How big a rise (in %) is flagged" }
+  },
+  "standalone.duplicate_payment": {
+    "group": "suppliers", "plain": "The same amount was paid out twice to the same payee within a short time.",
+    "example": "18,400 was paid to Supplier X on Monday and again on Wednesday.",
+    "needs": "Payments out",
+    "limits": { "hours_apart": "How many hours apart counts as a possible duplicate" }
+  },
+  "standalone.duplicate_supplier_invoice": {
+    "group": "suppliers", "plain": "Two invoices from the same supplier have the same number or amount and nearly the same date.",
+    "example": "Two invoices of 18,400 from Supplier X, two days apart.",
+    "needs": "Supplier invoices",
+    "limits": { "lookback_days": "How many days back to look", "days_apart": "How many days apart counts as close" }
+  },
+  "standalone.supplier_price_rise": {
+    "group": "suppliers", "plain": "The latest purchase of a product was at a price well above the average of earlier purchases.",
+    "example": "Rice cost 142 a bag in the latest purchase, and 120 on average before.",
+    "needs": "Stock movements with cost",
+    "limits": { "rise_percent": "How big a rise (in %) is flagged" }
+  }
+}

@@ -163,7 +163,65 @@ codes; "complete up to" for a file is the time of its last record.
 
 Standalone checks look only at `connect.src_*`, never at a Core unit's tables, and Core units' checks never look at `connect.src_*`.
 A business that runs some Core units and also connects another system (for example a Core POS plus a bank statement) gets each
-set about its own data and nothing is counted twice; they are separate findings with different codes.
+set about its own data; they are separate findings with different codes.
+
+**Overlap protection.** When Core runs the *same ground* as an active connection (it sells at a branch the old till also reports, keeps
+stock the old ERP also reports), the old copy is a second, older view of the same business, so the standalone check for that area stays
+silent *for that branch* and Core's own check speaks. `connect.public.coverage_overlap(session, company_id)` says which areas that is:
+
+| Area | A connection supplies it with | Core covers it when (last 14 days, never opening balances) |
+|---|---|---|
+| `sales` | `sales` | POS has posted sales at the branch |
+| `receivables` | customer `invoices` | POS has issued customer invoices at the branch |
+| `payables` | supplier `invoices` | Purchasing has entered supplier bills at the branch |
+| `stock` | `stock_movements` | Inventory has stock movements at the branch other than `opening` |
+| `payments` | `payments` | Payments has posted payments at the branch |
+| `expenses`, `journals` | `expenses`, `journal_entries` | Finance has posted expenses at the branch / any manual journal |
+
+Core units say this through the `connect.core_coverage` extension point (`CoreCoverage.active(session, company_id, since)` returns
+area -> branches with real activity; `None` is "no branch named"). Each standalone check lists the `core_areas` that silence it; a company
+level finding (no mapped branch) is silenced when Core is active in that area anywhere. A **paused** connection is no longer checked at all.
+The Connected systems page, the Command Center and the Findings page show a banner ("Your business is being checked twice") with
+**Pause this connection** or **Keep both**. Keep-both is remembered on the connection (`overlap_choice`, `POST
+/connections/{id}/overlap-choice`; send `null` to be asked again) and its checks go on; every finding says where it comes from
+(`source`: `connected` for codes starting `standalone.`, else `ziira`; `GET /intel/findings?source=`), shown in the findings list
+(with a filter), the finding page, Home and the Command Center. Honest limits: the daily figures the Command Center collects
+(`connect.sales_total` and the like) are not de-duplicated, and "Core is in use" is judged from a 14-day window, so a quiet week at a
+branch can bring the old system's checks back for it.
+
+## Moving to Core
+
+A business that ran Intelligence on its old system can later move onto Core units. **Connected systems > (connection) > Move to
+Ziira Core** (also offered on Home and on Add-ons once Core units are on and a connection has data) is a guided flow over what the
+connection has already read; it needs `connect.manage`, `imports.manage` and the permission of each kind it brings
+(`products.manage`, `customers.manage`, ...). The code is in `ziira/modules/connect/services/move.py` and writes **nothing** to another
+unit's tables: it proposes rows, has the owning unit's importer check them (the Data Import dry run), and stages them as Data Import
+batches, so every rule, permission, audit entry and number series of the owning unit applies and each batch reconciles.
+
+| Kind | Proposed from | Needs |
+|---|---|---|
+| `products` | `src_product` (name, code, price; the unit and tax class are chosen once; categories are not brought) | Products |
+| `customers`, `suppliers` | `src_party` (name, phone, email, tax number; bank details never) | Customers / Purchasing |
+| `opening_stock` | the running balance of `src_stock_movement` per product and **mapped** branch as at the go-live date, at the average cost of what came in (else the product's cost price) | Inventory |
+| `customer_balances`, `supplier_balances` | open `src_invoice` rows issued on or before the go-live date: what is still unpaid, with its own dates | Sales (POS), Customers / Purchasing, Finance |
+
+1. **Preview** (`POST /connections/{id}/move/preview`, writes nothing): per kind the counts (found, to be created, already in Ziira,
+   left out), the reasons grouped with examples (no product code, branch not mapped, negative stock, no cost, invoice names no customer, ...),
+   warnings and a sample of the rows. Customers and suppliers are matched against what Core already has by code, tax number or phone
+   (`Importer.find_match`); a match is not created again and takes that record's code, which the balances then use. A phone, email or
+   tax number Ziira cannot read is dropped (with a warning) rather than losing the customer.
+2. **Commit** (`POST /connections/{id}/move`): products, customers and suppliers are staged, checked again, and imported in the
+   background; a job (`connect.move_advance`) then stages stock and balances once those are imported (they refer to those records).
+   The move can be left running; `GET /moves/{id}` shows each batch (its counts and a link to its Data Import report). **Nothing is created
+   twice**: records already in Ziira are skipped, customers and suppliers keep the code first given (`C-0001`, `S-0001`; remembered in
+   `connect.move_code`), and a kind with nothing new makes no batch. Every batch is tagged with the connection
+   (`imports.batch.source_kind/source_id`).
+3. **Undo** (`POST /moves/{id}/undo`, with a reason): reverses the opening balances through Data Import's reverse (all or nothing;
+   refused while any has been paid). Products, customers, suppliers and stock cannot be deleted in Core, so the move cannot take them back.
+4. Afterwards the screen offers **Pause this connection**. Nothing is ever deleted automatically.
+
+Users of the old system are counted but not brought over (the platform has no way to invite from a connector; no password is ever
+copied): invite people under Users. If a needed unit is off the step says which and links to Add-ons.
 
 ## By source type
 

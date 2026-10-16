@@ -16,3 +16,13 @@ frontend/node_modules/
 frontend/dist/
 build/
 .perf_tenant
+
+# Marketing site
+site/node_modules/
+site/.astro/
+site/dist/
+site/.env
+site/.lighthouse/
+site/.cache/
+site/public/media/
+.dev-operator.local

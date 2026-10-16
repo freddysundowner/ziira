@@ -6,7 +6,6 @@ import { api, Button, DataTable, formatDate, humanise, PageHeader, Pager, unwrap
 
 import { useBranches, useMoney } from "../hooks";
 import { DocStatus } from "./DocStatus";
-import { DocsTabs } from "./DocsTabs";
 import { CustomerName, CustomerPicker } from "./hooks";
 import { isPositive } from "./lib";
 import { ReceiptDetail } from "./ReceiptDetail";
@@ -24,8 +23,7 @@ export default function ReceiptsPage() {
 
   return (
     <>
-      <PageHeader title={t("docs.title")} description={t("docs.hint.receipt")} />
-      <DocsTabs />
+      <PageHeader title={t("docs.tabs.customerPayments")} description={t("docs.hint.receipt")} />
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()}
         rowKey={(r) => r.id} rowHref={(r) => `/pos/receipts?open=${r.id}`}

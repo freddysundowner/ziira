@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, Alert, Button, Drawer, Field, Select, toast, unwrap, useMutation, useQueryClient, useTranslation } from "@/sdk";
 
 import { usePaymentAccounts } from "./usePaymentAccounts";
+import { usePaymentProviders } from "./usePaymentProviders";
 
 /** Upload a provider's or bank's statement (CSV). Uploading the same one twice adds nothing. */
 export function UploadStatement({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -11,7 +12,8 @@ export function UploadStatement({ open, onClose }: { open: boolean; onClose: () 
   const accounts = usePaymentAccounts({ enabled: open });
   const fileInput = useRef<HTMLInputElement>(null);
   const [accountId, setAccountId] = useState("");
-  const [format, setFormat] = useState("mpesa");
+  const formats = usePaymentProviders(open).data?.statement_formats ?? [{ name: "bank", label: "" }];
+  const [format, setFormat] = useState("bank");
   const [content, setContent] = useState("");
   const [fileName, setFileName] = useState("");
   const [readError, setReadError] = useState("");
@@ -24,7 +26,7 @@ export function UploadStatement({ open, onClose }: { open: boolean; onClose: () 
 
   const upload = useMutation({
     meta: { silent: true },
-    mutationFn: () => unwrap(api.POST("/api/v1/payments/accounts/{account_id}/statements", { params: { path: { account_id: chosen } }, body: { format: format as "mpesa", content } })),
+    mutationFn: () => unwrap(api.POST("/api/v1/payments/accounts/{account_id}/statements", { params: { path: { account_id: chosen } }, body: { format, content } })),
     onSuccess: (r) => {
       setResult(r);
       void qc.invalidateQueries({ queryKey: ["transactions"] });
@@ -53,7 +55,9 @@ export function UploadStatement({ open, onClose }: { open: boolean; onClose: () 
           <Select value={chosen} onChange={(e) => setAccountId(e.target.value)}>{list.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}</Select>
         </Field>
         <Field label={t("statementFormat")}>
-          <Select value={format} onChange={(e) => setFormat(e.target.value)}><option value="mpesa">{t("formats.mobile")}</option><option value="bank">{t("formats.bank")}</option></Select>
+          <Select value={format} onChange={(e) => setFormat(e.target.value)}>
+            {formats.map((f) => <option key={f.name} value={f.name}>{f.name === "bank" ? t("formats.bank") : f.label}</option>)}
+          </Select>
         </Field>
         <Field label={t("statementFile")} hint={fileName || t("csvOnly")}>
           <input ref={fileInput} type="file" accept=".csv,text/csv,text/plain" className="block w-full text-sm file:mr-3 file:rounded-lg file:border file:border-line file:bg-surface file:px-3 file:py-1.5 file:text-sm" onChange={(e) => void pick(e.target.files?.[0])} />

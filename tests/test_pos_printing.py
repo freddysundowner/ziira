@@ -131,3 +131,16 @@ def test_rendering_rules() -> None:
         render_text(doc, 10)
     hostile = PrintDocument(title="<i>", number="&", header=['"><script>'], meta=[("a", "<u>")], totals=[])
     assert "<script>" not in render_html(hostile) and "<u>" not in render_html(hostile) and "<i>" not in render_html(hostile)
+
+
+def test_the_receipt_time_is_the_companys_clock_not_utc(client, shop) -> None:  # type: ignore[no-untyped-def]
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    sale = sell(client, shop).json()
+    data = client.get(f"{POS}/sales/{sale['id']}/receipt", headers=shop["cashier"]).json()
+    shown = dict(data["meta"])["Date"]
+    sold = datetime.fromisoformat(sale["sold_at"].replace("Z", "+00:00"))
+    assert shown == sold.astimezone(ZoneInfo("Africa/Nairobi")).strftime("%Y-%m-%d %H:%M")      # the fixture company's zone
+    assert shown != sold.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%d %H:%M")                 # three hours apart
+    assert client.get("/api/v1/companies", headers=shop["owner"]).json()[0]["timezone"] == "Africa/Nairobi"

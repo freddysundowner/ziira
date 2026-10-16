@@ -138,7 +138,7 @@ def parse_file(data: bytes, *, delimiter: str | None = None, header_hint: set[st
 
 # --------------------------------------------------------------------------- guessing which column is which
 def normalise(name: str) -> str:
-    """A header reduced to lower-case letters and digits ('Unit Price (KES)' and 'unit_price' compare alike)."""
+    """A header reduced to lower-case letters and digits ('Unit Price (USD)' and 'unit_price' compare alike)."""
     return re.sub(r"[^a-z0-9]", "", re.sub(r"\(.*?\)", "", name.lower()))
 
 

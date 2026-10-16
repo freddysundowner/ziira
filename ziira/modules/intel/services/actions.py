@@ -34,6 +34,7 @@ from ziira.modules.intel.public import (
 )
 from ziira.modules.intel.repository import actions_repo as repo
 from ziira.modules.intel.repository import findings_repo
+from ziira.modules.intel.services import approver_messages
 from ziira.sdk import (
     Assignment,
     Conflict,
@@ -67,6 +68,7 @@ class ActionRun:
     failed: int = 0
     expired: int = 0
     errors: list[str] = field(default_factory=list)
+    to_announce: list[tuple[ActionProvider, FindingInfo, UUID, str]] = field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- providers and levels
@@ -143,7 +145,18 @@ def after_checks(session: Session, company_id: UUID, reopened: list[UUID]) -> Ac
         _propose_for_new_findings(session, company_id, level, available, codes, run)
     if level >= rules.LEVEL_ACT:
         _run_automatic(session, company_id, level, available, run)
+    _announce(session, run)
     return run
+
+
+def _announce(session: Session, run: ActionRun) -> None:
+    """Tell the approvers about the suggestions made in this run that are still waiting for a person (one an owner's
+    rule has already carried out needs no decision)."""
+    for provider, info, proposal_id, description in run.to_announce:
+        row = repo.get_proposal(session, proposal_id)
+        if row is not None and row.status == "proposed":
+            approver_messages.tell_approvers(session, provider, info, proposal_id, description)
+    run.to_announce.clear()
 
 
 def _propose_for_new_findings(session: Session, company_id: UUID, level: int, available: dict[str, ActionProvider],
@@ -192,6 +205,7 @@ def _propose(session: Session, provider: ActionProvider, info: FindingInfo, leve
         if created is None:
             continue
         findings_repo.add_event(session, info.id, "action_proposed", note=proposal.description)
+        run.to_announce.append((provider, info, created, proposal.description))
         run.proposed += 1
     return True
 
@@ -238,6 +252,14 @@ def _execute(session: Session, provider: ActionProvider, row: Row[Any], params: 
     return result
 
 
+def decision_channel(mode: str = "manual") -> str:
+    """Where a decision is made: 'intelligence' for an automatic action, 'chat' for a reply in a chat channel,
+    otherwise 'app'."""
+    if mode == "automatic":
+        return "intelligence"
+    return "chat" if current_context().channel == "chat" else "app"
+
+
 def _record_outcome(session: Session, provider: ActionProvider, row: Row[Any], params: dict[str, Any],
                     result: ActionResult, *, mode: str, actor: UUID | None, rule_id: UUID | None) -> None:
     status = "executed" if result.ok else "failed"
@@ -248,14 +270,16 @@ def _record_outcome(session: Session, provider: ActionProvider, row: Row[Any], p
     level = action_level(session, row.company_id)
     repo.add_log(session, proposal_id=row.id, finding_id=row.finding_id, company_id=row.company_id,
                  branch_id=row.branch_id, action_type=provider.type, mode=mode, actor_user_id=actor, rule_id=rule_id,
-                 level=level, params=params, outcome=status, message=result.message, result=stored)
+                 level=level, params=params, outcome=status, message=result.message, result=stored,
+                 channel=decision_channel(mode))
     who = "Intelligence under a rule" if mode == "automatic" else "approved"
     findings_repo.add_event(
         session, row.finding_id, "action_taken" if result.ok else "action_failed", user_id=actor,
-        channel="intelligence" if mode == "automatic" else "app", note=f"{provider.title} ({who}): {result.message}")
+        channel=decision_channel(mode), note=f"{provider.title} ({who}): {result.message}")
     audit_record(session, "intel.action.executed" if result.ok else "intel.action.failed", "intel.action_proposal",
                  row.id, {"type": provider.type, "mode": mode, "rule": str(rule_id) if rule_id else None,
-                          "finding": str(row.finding_id), "message": result.message})
+                          "finding": str(row.finding_id), "message": result.message,
+                          "channel": decision_channel(mode)})
 
 
 def _load(session: Session, proposal_id: UUID, *, lock: bool = False) -> Row[Any]:
@@ -310,10 +334,10 @@ def reject(session: Session, proposal_id: UUID, reason: str) -> Row[Any]:
     if row.status not in ("proposed", "failed"):
         raise Conflict(f"This suggestion is {row.status}")
     repo.set_decision(session, row.id, status="rejected", user_id=ctx.user_id, note=reason.strip())
-    findings_repo.add_event(session, row.finding_id, "action_rejected", user_id=ctx.user_id, channel="app",
-                            note=f"{provider.title}: {reason.strip()}")
+    findings_repo.add_event(session, row.finding_id, "action_rejected", user_id=ctx.user_id,
+                            channel=decision_channel(), note=f"{provider.title}: {reason.strip()}")
     audit_record(session, "intel.action.rejected", "intel.action_proposal", row.id,
-                 {"type": row.action_type, "reason": reason.strip()})
+                 {"type": row.action_type, "reason": reason.strip(), "channel": decision_channel()})
     return _load(session, proposal_id)
 
 

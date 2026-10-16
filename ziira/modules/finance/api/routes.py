@@ -315,7 +315,7 @@ def get_balance_sheet(company_id: UUID, as_of: date, branch_id: UUID | None = No
             dependencies=REPORT)
 def get_cash_flow(company_id: UUID, date_from: date, date_to: date, branch_id: UUID | None = None,
                   format: str = Format, session: Session = DB_SESSION) -> object:
-    """Cash, bank, M-Pesa and card balances at the start and end, and what moved them."""
+    """Cash, bank, mobile money and card balances at the start and end, and what moved them."""
     r = statement_service.cash_flow(session, company_id, date_from, date_to, branch_id=branch_id)
     if format == "csv":
         return _csv(csv_export.cash_flow_csv(r.flow), f"cash-flow-{date_from}-{date_to}")
@@ -370,7 +370,7 @@ def delete_account_mapping(account_id: UUID, company_id: UUID, session: Session 
 # --------------------------------------------------------------------------- expenses
 @router.post("/expenses", response_model=sc.ExpenseOut, status_code=status.HTTP_201_CREATED, dependencies=EXPENSE_WRITE)
 def post_expense(body: sc.ExpenseIn, session: Session = DB_SESSION) -> object:
-    """Write a draft expense: a cost paid at once from cash, bank, M-Pesa or card, with its receipt reference."""
+    """Write a draft expense: a cost paid at once from cash, bank, mobile money or card, with its receipt reference."""
     return expenses.create_expense(
         session, company_id=body.company_id, branch_id=body.branch_id, expense_date=body.expense_date,
         description=body.description, account_id=body.account_id, amount=body.amount, tax_amount=body.tax_amount,
@@ -423,7 +423,7 @@ def _recon_out(d: bank_reconciliation.ReconciliationDetail) -> sc.Reconciliation
 @router.post("/bank-reconciliations", response_model=sc.ReconciliationOut, status_code=status.HTTP_201_CREATED,
              dependencies=RECON)
 def post_reconciliation(body: sc.ReconcileStartIn, session: Session = DB_SESSION) -> object:
-    """Start reconciling a bank, M-Pesa or card account to a statement (its date and closing balance)."""
+    """Start reconciling a bank, mobile money or card account to a statement (its date and closing balance)."""
     return _recon_out(bank_reconciliation.start_reconciliation(
         session, company_id=body.company_id, account_id=body.account_id, statement_date=body.statement_date,
         statement_balance=body.statement_balance))

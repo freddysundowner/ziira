@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
+from ziira.sdk import format_day
+
 
 @dataclass(frozen=True)
 class PulseLine:
@@ -52,7 +54,7 @@ def compose(*, business: str, day: date, kind: str, currency: str, pulse: list[P
             findings: list[FindingLine], more_findings: int = 0) -> Brief:
     """A brief in plain words. `short` is the SMS form (top items only); `body` is the full text (email, app)."""
     period = "Yesterday" if kind == "daily" else "Last 7 days"
-    title = f"{business}: {'daily' if kind == 'daily' else 'weekly'} brief, {day.isoformat()}"
+    title = f"{business}: {'daily' if kind == 'daily' else 'weekly'} brief, {format_day(day)}"
     lines = [title, ""]
     if pulse:
         lines.append(f"{period}")

@@ -20,11 +20,11 @@ export default defineModule({
   ],
   menu: [
     ...terminalMenu,
-    { label: "pos:sales", to: "/pos/sales", permission: "till.review", order: 21, group: "sell", icon: "sales" },
-    { label: "pos:returns", to: "/pos/returns", permission: "till.review", order: 22, group: "sell", icon: "receipt" },
-    { label: "pos:tills", to: "/pos/tills", permission: "till.review", order: 23, group: "sell", icon: "cash" },
-    { label: "pos:devices", to: "/pos/devices", permission: "devices.manage", order: 24, group: "sell", icon: "payments" },
-    { label: "pos:settingsMenu", to: "/pos/settings", permission: "settings.manage", order: 25, group: "sell", icon: "settings" },
+    { label: "pos:sales", to: "/pos/sales", permission: "till.review", order: 10, area: "sell", icon: "sales" },
+    { label: "pos:returns", to: "/pos/returns", permission: "till.review", order: 50, area: "sell", icon: "receipt" },
+    { label: "pos:tills", tab: "pos:tillsDevices", to: "/pos/tills", permission: "till.review", order: 80, area: "sell", icon: "cash" },
+    { label: "pos:devices", to: "/pos/devices", permission: "devices.manage", order: 81, area: "sell", under: "/pos/tills", icon: "payments" },
+    { label: "pos:settingsMenu", to: "/pos/settings", permission: "settings.manage", order: 12, area: "settings", section: "business", icon: "settings" },
     ...salesDocsMenu,
   ],
   slots: {

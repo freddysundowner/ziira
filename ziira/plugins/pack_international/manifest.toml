@@ -1,0 +1,14 @@
+[unit]
+name = "pack_international"
+title = "International defaults"
+description = "A minimal set of tax codes that fits any country; for businesses whose country has no pack of its own."
+category = "country"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["products", "finance", "people"]
+# no `countries`: worldwide. It applies to a company only when no pack that names the company's country is on.
+
+[extends]
+implements = ["products.tax_code_seed"]

@@ -1,0 +1,40 @@
+# Additions to the general chart of accounts for a Kenyan retail business. An account with a code the general chart has
+# takes this name for a NEW company's books; a new code is added to existing books too (nothing is renamed or removed in
+# books that already exist). It is a starting point: the owner edits it with their accountant.
+
+[[account]]
+code = "1030"
+name = "M-Pesa clearing"
+type = "asset"
+subtype = "mobile_money_clearing"
+is_control = true
+
+[[account]]
+code = "2311"
+name = "PAYE payable"
+type = "liability"
+subtype = "payroll_paye"
+
+[[account]]
+code = "2312"
+name = "NSSF payable"
+type = "liability"
+subtype = "payroll_nssf"
+
+[[account]]
+code = "2313"
+name = "SHIF payable"
+type = "liability"
+subtype = "payroll_shif"
+
+[[account]]
+code = "2314"
+name = "Affordable Housing Levy payable"
+type = "liability"
+subtype = "payroll_housing_levy"
+
+[[account]]
+code = "6120"
+name = "Employer NSSF and Housing Levy"
+type = "expense"
+subtype = "payroll_employer_statutory"

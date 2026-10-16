@@ -4,10 +4,11 @@ import { Link } from "react-router-dom";
 import { Alert, api, Button, Field, Modal, Textarea, toast, unwrap, useCan, useMutation, useQueryClient, useTranslation } from "@/sdk";
 import type { Schemas } from "@/sdk";
 
+import { refreshFindings } from "../refresh";
 import PersonPicker from "./PersonPicker";
 
 type Detail = Schemas["FindingDetailOut"];
-export type DialogKind = "acknowledge" | "explain" | "resolve" | "dismiss" | "assign" | "ask";
+export type DialogKind = "acknowledge" | "explain" | "resolve" | "assign" | "ask";
 
 /** One modal for every action on a finding; which fields it shows depends on the action. */
 export default function FindingDialog({ kind, finding, onClose }: { kind: DialogKind | null; finding: Detail; onClose: () => void }) {
@@ -26,15 +27,13 @@ export default function FindingDialog({ kind, finding, onClose }: { kind: Dialog
         case "acknowledge": return unwrap(api.POST("/api/v1/intel/findings/{finding_id}/acknowledge", { ...path, body: { note: text.trim() || null } }));
         case "explain": return unwrap(api.POST("/api/v1/intel/findings/{finding_id}/explain", { ...path, body: { note: text.trim() } }));
         case "resolve": return unwrap(api.POST("/api/v1/intel/findings/{finding_id}/resolve", { ...path, body: { note: text.trim() || null } }));
-        case "dismiss": return unwrap(api.POST("/api/v1/intel/findings/{finding_id}/dismiss", { ...path, body: { reason: text.trim() } }));
         case "assign": return unwrap(api.POST("/api/v1/intel/findings/{finding_id}/assign", { ...path, body: { user_id: person || null } }));
         default: return unwrap(api.POST("/api/v1/intel/findings/{finding_id}/ask", { ...path, body: { user_id: person, message: text.trim() } }));
       }
     },
     onSuccess: (updated) => {
       qc.setQueryData(["intel", "finding", finding.id], updated);
-      void qc.invalidateQueries({ queryKey: ["intel", "findings"] });
-      void qc.invalidateQueries({ queryKey: ["intel", "summary"] });
+      refreshFindings(qc, finding.id);
       toast(t(`done.${kind}`), "ok");
       close();
     },
@@ -44,7 +43,7 @@ export default function FindingDialog({ kind, finding, onClose }: { kind: Dialog
   function close() { setText(""); setProblem(null); setPerson(finding.owner_user_id ?? ""); onClose(); }
   if (!kind) return null;
 
-  const needsText = kind === "explain" || kind === "dismiss";
+  const needsText = kind === "explain";
   const needsPerson = kind === "assign" || kind === "ask";
   const ready = (!needsText || text.trim().length > 0) && (kind !== "ask" || person !== "");
   const askRefused = kind === "ask" && !!problem && /intel_action_level/.test(problem);
@@ -62,7 +61,7 @@ export default function FindingDialog({ kind, finding, onClose }: { kind: Dialog
       footer={
         <>
           <Button variant="secondary" onClick={close}>{t("cancel")}</Button>
-          <Button variant={kind === "dismiss" ? "danger" : "primary"} loading={run.isPending} disabled={!ready} form="finding-action" type="submit">{t(`confirm.${kind}`)}</Button>
+          <Button loading={run.isPending} disabled={!ready} form="finding-action" type="submit">{t(`confirm.${kind}`)}</Button>
         </>
       }>
       <form id="finding-action" className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (ready) run.mutate(); }}>

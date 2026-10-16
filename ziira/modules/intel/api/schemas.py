@@ -5,7 +5,9 @@ from decimal import Decimal
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import AliasPath, BaseModel, ConfigDict, Field, computed_field, field_validator
+
+from ziira.modules.intel.domain.source import is_connected_check
 
 
 class RecordOut(BaseModel):
@@ -15,7 +17,7 @@ class RecordOut(BaseModel):
 
 
 class FindingOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     id: UUID
     check_code: str | None
     area: str | None
@@ -40,6 +42,21 @@ class FindingOut(BaseModel):
     first_seen_at: datetime
     last_seen_at: datetime
     resolved_at: datetime | None
+    snoozed_until: datetime | None = Field(default=None, description="Put aside until then (null: not put aside)")
+    figures: dict[str, str] = Field(
+        default_factory=dict, validation_alias=AliasPath("evidence", "figures"),
+        description="The figures behind the finding (names are in GET /intel/plain)")
+
+    @field_validator("figures", mode="before")
+    @classmethod
+    def _figures_as_text(cls, value: object) -> dict[str, str]:
+        return {str(k): str(v) for k, v in value.items()} if isinstance(value, dict) else {}
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def source(self) -> Literal["connected", "ziira"]:
+        """Where the data behind this finding lives: `connected` (the system the business keeps) or `ziira`."""
+        return "connected" if is_connected_check(self.check_code) else "ziira"
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -59,9 +76,12 @@ class FindingEventOut(BaseModel):
 
 
 class FindingDetailOut(FindingOut):
+    check_title: str | None = Field(default=None, description="The check's plain title (the code is for support)")
+    value_kind: Literal["money", "percent", "count", "days", "number"] = Field(
+        default="number", description="What `value` and `expected_value` measure, so a screen can format them")
     records: list[RecordOut]
-    figures: dict[str, str]
     events: list[FindingEventOut]
+    owner_name: str | None = Field(default=None, description="Who the finding is given to")
 
 
 class FindingsSummaryOut(BaseModel):
@@ -70,6 +90,7 @@ class FindingsSummaryOut(BaseModel):
     by_area: dict[str, int]
     by_status: dict[str, int]
     amount_at_stake: Decimal
+    snoozed: int = Field(default=0, description="Open findings put aside for now (not counted in `open`)")
 
 
 class NoteIn(BaseModel):
@@ -103,6 +124,8 @@ class CheckOut(BaseModel):
     auto_resolves: bool
     defaults: dict[str, Any]
     params: dict[str, Any]
+    topic: Literal["cash", "stock", "customers", "suppliers", "staff", "books"] = "cash"
+    source: Literal["connected", "ziira"] = "ziira"
 
 
 class CheckUpdateIn(BaseModel):
@@ -360,3 +383,126 @@ class ActionLogOut(BaseModel):
     outcome: Literal["executed", "failed"]
     message: str
     result: ActionResultOut | None
+    channel: str = "app"
+
+
+# --------------------------------------------------------------------------- plain words, less noise
+class PlainCheckOut(BaseModel):
+    title: str = Field(description="What was noticed, as a short headline")
+    why: str = Field(description="Why it matters, one sentence")
+    todo: str = Field(description="The first practical step")
+    topic: str
+    sentence: str | None = Field(
+        default=None, description="The check's limits as a sentence with {limit_name} placeholders"
+    )
+    units: dict[str, str] = Field(
+        default_factory=dict, description="Placeholder name -> money, days, hours, percent, count, number, text"
+    )
+    fallback: bool = Field(
+        default=False, description="True when no plain text was written for this check (its own title is used)"
+    )
+
+
+class TopicTextOut(BaseModel):
+    key: str
+    title: str
+    lead: str
+
+
+class FigureMetaOut(BaseModel):
+    label: str
+    kind: str = Field(description="money, count, percent, days, date, yesno, number or text: how to show the value")
+
+
+class PlainOut(BaseModel):
+    topics: list[TopicTextOut]
+    checks: dict[str, PlainCheckOut]
+    figures: dict[str, FigureMetaOut]
+    params: dict[str, str]
+
+
+class TopicStateOut(BaseModel):
+    key: str
+    checks: int
+    enabled: int
+
+
+class TopicsOut(BaseModel):
+    configured: bool = Field(description="False until the business has chosen what to watch (Quick start)")
+    topics: list[TopicStateOut]
+
+
+class TopicsIn(BaseModel):
+    topics: dict[str, bool] = Field(description="Topic -> on or off: every check of the topic is switched")
+
+
+class FindingGroupOut(BaseModel):
+    key: str = Field(description="Same kind of thing, same branch, first noticed the same day")
+    check_code: str | None
+    area: str | None
+    company_id: UUID | None
+    branch_id: UUID | None
+    day: date
+    count: int
+    severity: str = Field(description="The most serious of the members")
+    amount: Decimal = Field(description="Money involved, all members together")
+    last_seen_at: datetime
+    members: list[FindingOut] = Field(description="The findings in the group, most serious first (at most 25)")
+
+
+class GroupedFindingsOut(BaseModel):
+    total_groups: int
+    total_findings: int
+    urgent_groups: int
+    groups: list[FindingGroupOut]
+
+
+class SnoozeIn(BaseModel):
+    days: int | None = Field(default=3, ge=1, le=90, description="Days to put it aside; null brings it back now")
+
+
+class NamedOut(BaseModel):
+    id: UUID
+    name: str
+
+
+class SubjectOut(BaseModel):
+    type: str
+    kind: str
+    id: UUID
+    label: str
+
+
+class IgnoreOptionsOut(BaseModel):
+    branch: NamedOut | None
+    subject: SubjectOut | None
+    tunable: bool = Field(
+        description="The check allows its limit to be raised a little when something is called normal"
+    )
+
+
+class IgnoreIn(BaseModel):
+    scope: Literal["branch", "person", "everywhere"]
+    days: int | None = Field(default=30, ge=1, le=3650, description="Days the rule lasts; null: always")
+    reason: str | None = Field(default=None, max_length=2000)
+    tune: bool = Field(default=False, description="Also raise the check's limit a little (only checks that allow it)")
+
+
+class IgnoreOut(BaseModel):
+    rule_id: UUID
+    closed: int = Field(description="Other open findings the rule closed")
+    tuned: dict[str, str] | None = None
+    finding: "FindingDetailOut"
+
+
+class SuppressionOut(BaseModel):
+    id: UUID
+    created_at: datetime
+    created_by_name: str | None
+    company_id: UUID
+    check_code: str
+    branch_id: UUID | None
+    entity_type: str | None
+    scope_label: str
+    until_date: date | None
+    reason: str | None

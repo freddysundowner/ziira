@@ -119,7 +119,7 @@ class Seeder:
         self.tenant_id, self.company_id, self.branch_ids = made.tenant_id, made.company_id, [made.branch_id]
         self.db_name = made.database
         reg = Registry()
-        for unit in ("pos", "crm", "finance", "purchasing", "people", "intel", "command"):
+        for unit in ("pos", "crm", "finance", "purchasing", "people", "intel", "command", "mpesa"):
             reg.enable(self.tenant_id, unit)                    # pos also enables products, inventory and payments
         system_context(self.tenant_id)
         from ziira.kernel.db import tenant_session

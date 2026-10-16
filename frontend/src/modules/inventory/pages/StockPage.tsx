@@ -16,7 +16,7 @@ export default function StockPage() {
   const [tab, setTab] = useState<Tab>("onhand");
   return (
     <>
-      <PageHeader title={t("stock")} description={t("stockHint")}
+      <PageHeader title={t("stockLevels")} description={t("stockHint")}
         actions={canAdjust && (
           <>
             <Link to="/stock/opening"><Button variant="secondary"><PackagePlus className="h-4 w-4" />{t("openingStock")}</Button></Link>

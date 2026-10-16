@@ -1,7 +1,7 @@
 """HTTP endpoints of the Payments module. Routes only convert HTTP to service calls.
 
-`public_router` holds the endpoints Safaricom calls (no user login): each authenticates itself with a secret in its
-address.
+`public_router` holds the endpoints payment providers call (no user login): each authenticates itself with a secret
+in its address.
 """
 
 import logging
@@ -70,6 +70,13 @@ MATCH = [Depends(any_of(RECON_MATCH))]
 
 
 # --------------------------------------------------------------------------- accounts
+@router.get("/providers", response_model=sc.ProvidersOut, dependencies=VIEW)
+def get_providers(session: Session = DB_SESSION) -> object:
+    """The payment providers and statement formats switched on for this business, each described as data: the credential
+    and settings forms the web app draws."""
+    return accounts.describe_providers(session)
+
+
 @router.post("/accounts", response_model=sc.AccountOut, status_code=status.HTTP_201_CREATED, dependencies=MANAGE)
 def post_account(body: sc.AccountIn, session: Session = DB_SESSION) -> object:
     return accounts.create_account(session, company_id=body.company_id, branch_id=body.branch_id, kind=body.kind,
@@ -98,15 +105,16 @@ def patch_account(account_id: UUID, body: sc.AccountUpdateIn, session: Session =
 
 
 @router.put("/accounts/{account_id}/credentials", status_code=NO_CONTENT, dependencies=MANAGE)
-def put_credentials(account_id: UUID, body: sc.CredentialsIn, session: Session = DB_SESSION) -> Response:
-    """Store the account's Daraja credentials, encrypted. They cannot be read back."""
-    accounts.set_credentials(session, account_id, body.model_dump())
+def put_credentials(account_id: UUID, body: dict[str, str], session: Session = DB_SESSION) -> Response:
+    """Store the account's provider credentials (the fields its provider describes), encrypted. They cannot be read
+    back."""
+    accounts.set_credentials(session, account_id, body)
     return Response(status_code=NO_CONTENT)
 
 
 @router.post("/accounts/{account_id}/callback-token", response_model=sc.CallbackTokenOut, dependencies=MANAGE)
 def post_callback_token(account_id: UUID, session: Session = DB_SESSION) -> object:
-    """Make a new secret for the account's callback addresses; register the returned URLs with Safaricom. The old
+    """Make a new secret for the account's callback addresses; register the returned URLs with the provider. The old
     ones stop working."""
     token = accounts.rotate_callback_token(session, account_id)
     return sc.CallbackTokenOut(token=token, urls=accounts.callback_urls(token, settings_public_base_url()))
@@ -114,7 +122,7 @@ def post_callback_token(account_id: UUID, session: Session = DB_SESSION) -> obje
 
 @router.post("/accounts/{account_id}/statements", response_model=sc.StatementResultOut, dependencies=RECORD)
 def post_statement(account_id: UUID, body: sc.StatementIn, session: Session = DB_SESSION) -> object:
-    """Upload a statement (M-Pesa or bank CSV). Uploading it twice adds nothing."""
+    """Upload a statement (a bank CSV, or a format a provider plugin reads). Uploading it twice adds nothing."""
     result = external.import_statement(session, account_id, body.content, fmt=body.format,
                                        options=body.options or None)
     return sc.StatementResultOut(created=result.created, duplicates=result.duplicates, skipped=result.skipped[:200])
@@ -177,7 +185,7 @@ def post_unignore(txn_id: UUID, body: sc.ReasonIn, session: Session = DB_SESSION
 @router.post("/intents", response_model=sc.IntentOut, status_code=status.HTTP_201_CREATED, dependencies=COLLECT)
 def post_intent(body: sc.IntentIn, key: str | None = Depends(idempotency_key_header),
                 session: Session = DB_SESSION) -> object:
-    """Put an M-Pesa payment prompt on the customer's phone. Send an Idempotency-Key so a retry does not prompt
+    """Put a mobile-money payment prompt on the customer's phone. Send an Idempotency-Key so a retry does not prompt
     twice."""
 
     def create() -> object:
@@ -239,7 +247,7 @@ def post_undo_match(match_id: UUID, body: sc.ReasonIn, session: Session = DB_SES
 # --------------------------------------------------------------------------- moving money between accounts
 @router.post("/settlements", response_model=sc.IdOut, status_code=status.HTTP_201_CREATED, dependencies=RECORD)
 def post_settlement(body: sc.SettlementIn, session: Session = DB_SESSION) -> object:
-    """M-Pesa paid its takings (less charges) into the bank."""
+    """Mobile-money takings (less charges) reached the bank."""
     return sc.IdOut(id=settlements.record_settlement(
         session, from_account_id=body.from_account_id, to_account_id=body.to_account_id, amount=body.amount,
         fee=body.fee, business_date=body.business_date, reference=body.reference))
@@ -286,9 +294,8 @@ def post_reopen(close_id: UUID, body: sc.ReasonIn, session: Session = DB_SESSION
     return closing.request_reopen(session, close_id, body.reason)
 
 
-# =========================================================================== public callbacks (Safaricom calls these)
+# =========================================================================== public callbacks (providers call these)
 public_router = APIRouter()
-ACCEPTED = {"ResultCode": 0, "ResultDesc": "Accepted"}
 
 
 def _tenant_of(hex_id: str) -> UUID:
@@ -300,27 +307,30 @@ def _tenant_of(hex_id: str) -> UUID:
 
 @public_router.post("/callbacks/{token}/c2b/validation", include_in_schema=False)
 def c2b_validation(token: str, payload: dict[str, object] | None = None) -> dict[str, object]:
-    """Safaricom asks whether we accept a payment before it is made. We accept every one; matching deals with it."""
+    """A provider asks whether we accept a payment before it is made. We accept every one; matching deals with it."""
     from ziira.modules.payments.api import callbacks
 
-    callbacks.with_account(token, lambda session, account: None)
-    return ACCEPTED
+    reply: dict[str, object] = callbacks.with_account(
+        token, lambda session, account: dict(accounts.provider_for(session, account.provider).callback_reply))
+    return reply
 
 
 @public_router.post("/callbacks/{token}/c2b/confirmation", include_in_schema=False)
 def c2b_confirmation(token: str, payload: dict[str, object]) -> dict[str, object]:
-    """Safaricom tells us a customer paid one of our tills or paybills."""
+    """A provider tells us a customer paid one of our tills or paybills."""
     from ziira.modules.payments.api import callbacks
 
-    callbacks.with_account(token, lambda session, account: external.process_c2b(session, account, dict(payload)))
-    return ACCEPTED
+    reply: dict[str, object] = callbacks.with_account(
+        token, lambda session, account: external.process_c2b(session, account, dict(payload)))
+    return reply
 
 
 @public_router.post("/callbacks/stk/{tenant_hex}/{intent_id}/{signature}", include_in_schema=False)
 def stk_callback(tenant_hex: str, intent_id: UUID, signature: str, payload: dict[str, object]) -> dict[str, object]:
-    """Safaricom tells us how a payment prompt ended."""
+    """A provider tells us how a payment prompt ended."""
     from ziira.modules.payments.api import callbacks
 
-    callbacks.with_intent(_tenant_of(tenant_hex), intent_id, signature,
-                          lambda session: intents.handle_callback(session, intent_id, dict(payload)))
-    return ACCEPTED
+    reply: dict[str, object] = callbacks.with_intent(
+        _tenant_of(tenant_hex), intent_id, signature,
+        lambda session: intents.handle_callback(session, intent_id, dict(payload)))
+    return reply

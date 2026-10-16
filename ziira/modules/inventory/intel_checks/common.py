@@ -31,7 +31,7 @@ def currency(session: Session, company_id: UUID) -> str:
 
 
 def money(amount: Decimal, code: str) -> str:
-    """'KES 1,250.00' style wording (the code is the company's own currency)."""
+    """'USD 1,250.00' style wording (the code is the company's own currency)."""
     return f"{code} {amount:,.2f}"
 
 

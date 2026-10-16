@@ -1,0 +1,7 @@
+# The installer must run on the Python the server already has (3.10+), so it lints against 3.10.
+line-length = 140
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "I", "B", "UP", "N", "SIM"]
+ignore = ["UP017", "N818", "SIM115", "SIM105"]   # UP017: datetime.UTC needs 3.11, the installer uses timezone.utc on purpose

@@ -39,7 +39,7 @@ export default function WaitingTab() {
                   <h2 className="text-sm font-semibold">{p.action_title}</h2>
                 </div>
                 <p className="text-xs text-muted">
-                  <Link to={`/findings/${p.finding_id}`} className="underline">{p.finding_summary ?? t("noSummary")}</Link>
+                  <Link to={`/intelligence/things/${p.finding_id}`} className="underline">{p.finding_summary ?? t("noSummary")}</Link>
                   {branchName(p.branch_id) ? ` · ${branchName(p.branch_id)}` : ""} · {t("actionsPage.age", { count: ageInDays(p.proposed_at) })}
                 </p>
                 <ProposalFacts proposal={p} />

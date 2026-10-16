@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import { type FormEvent, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   Alert, api, Button, Card, ErrorState, Field, FormGrid, IconButton, Input, NumberInput, PageHeader, quantity, Select, Skeleton, toast, today, unwrap,
@@ -12,7 +12,7 @@ import { LINE_ROW, useLines } from "../components/lines";
 import { ProductName, SupplierName } from "../components/names";
 import { ProductPicker, SupplierPicker } from "../components/pickers";
 import { useLocations } from "../hooks";
-import { dayToTimestamp, isPositive, stillToReceive } from "../lib";
+import { dayToTimestamp, isPositive, receiveLocationId, stillToReceive } from "../lib";
 
 interface Line { key: string; order_line_id: string; product_id: string; quantity: string; unit_cost: string; batch_no: string; expiry_date: string; expecting: string }
 
@@ -31,7 +31,7 @@ export default function ReceiptFormPage() {
 }
 
 function ReceiptForm({ order, initialLines, initialSupplier }: {
-  order?: { id: string; number: string; supplier_id: string; company_id: string; status: string }; initialLines: Line[]; initialSupplier: string;
+  order?: { id: string; number: string; supplier_id: string; company_id: string; status: string; deliver_to_location_id: string | null }; initialLines: Line[]; initialSupplier: string;
 }) {
   const { t } = useTranslation("purchasing");
   const navigate = useNavigate();
@@ -47,12 +47,16 @@ function ReceiptForm({ order, initialLines, initialSupplier }: {
   const supplier = useQuery({ enabled: !!supplierId && !order, queryKey: ["purchasing", "supplier", supplierId], queryFn: () => unwrap(api.GET("/api/v1/purchasing/suppliers/{supplier_id}", { params: { path: { supplier_id: supplierId } } })) });
   const locations = useLocations(order?.company_id ?? supplier.data?.company_id);
 
+  const places = locations.data?.filter((l) => l.is_active);
+  const noPlaces = Boolean(places) && places?.length === 0;
+  const where = location || receiveLocationId(places, order?.deliver_to_location_id);
+
   const receiving = lines.filter((l) => isPositive(l.quantity) && l.product_id);
-  const valid = receiving.length > 0 && (!!order || (!!supplierId && receiving.every((l) => l.unit_cost !== "")));
+  const valid = !!where && receiving.length > 0 && (!!order || (!!supplierId && receiving.every((l) => l.unit_cost !== "")));
   const save = useMutation({
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/purchasing/receipts", { body: {
-      order_id: order?.id ?? null, supplier_id: order ? null : supplierId, location_id: location || null, delivery_note_no: deliveryNote.trim() || null,
+      order_id: order?.id ?? null, supplier_id: order ? null : supplierId, location_id: where, delivery_note_no: deliveryNote.trim() || null,
       received_at: dayToTimestamp(day, today()) ?? null, landed_cost: landed || "0",
       lines: receiving.map((l) => ({ quantity: l.quantity, order_line_id: l.order_line_id || null, product_id: order ? null : l.product_id, unit_cost: order ? null : l.unit_cost,
         batch_no: l.batch_no.trim() || null, expiry_date: l.expiry_date || null })),
@@ -69,16 +73,16 @@ function ReceiptForm({ order, initialLines, initialSupplier }: {
         description={order ? <SupplierName id={order.supplier_id} /> : t("receiptFormHint")}
         actions={<Button type="submit" loading={save.isPending} disabled={!valid}>{t("confirmReceipt")}</Button>} />
       <div className="space-y-4">
+        {noPlaces && <Alert tone="warn">{t("noLocationYet")} <Link className="font-medium underline" to="/stock/locations">{t("addLocationLink")}</Link></Alert>}
         <Card title={t("deliveryDetails")}>
           <FormGrid cols={3}>
             {!order && <Field label={t("supplier")} required><SupplierPicker value={supplierId} onChange={(v) => change(() => setSupplierId(v))} /></Field>}
             <Field label={t("deliveryNote")} hint={t("deliveryNoteHint")}><Input value={deliveryNote} maxLength={60} onChange={(e) => change(() => setDeliveryNote(e.target.value))} /></Field>
             <Field label={t("receivedOn")}><Input type="date" max={today()} value={day} onChange={(e) => change(() => setDay(e.target.value))} /></Field>
-            {(locations.data?.length ?? 0) > 0 && (
-              <Field label={t("receiveInto")}>
-                <Select value={location} onChange={(e) => change(() => setLocation(e.target.value))}>
-                  <option value="">{t("defaultLocation")}</option>
-                  {locations.data?.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+            {places && places.length > 0 && (
+              <Field label={t("receiveInto")} required>
+                <Select value={where} required onChange={(e) => change(() => setLocation(e.target.value))}>
+                  {places.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </Select>
               </Field>
             )}

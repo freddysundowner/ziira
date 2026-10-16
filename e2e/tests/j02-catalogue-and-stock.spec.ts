@@ -55,16 +55,17 @@ test("J2 catalogue and stock", async ({ page }) => {
   await expect(page.getByText("Price saved.")).toBeVisible();
   await expect(page.getByText("12.50").first()).toBeVisible();
 
-  // --- opening stock: a location first
+  // --- opening stock: a new business already has one store per branch; add a second by hand
   await page.goto("/stock/locations");
-  await page.getByRole("button", { name: "New location" }).first().click();
-  await drawer(page).getByLabel(lbl("Code")).fill("MAIN");
-  await drawer(page).getByLabel(lbl("Name")).fill("Main store");
-  await drawer(page).getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("cell", { name: "Main store" })).toBeVisible();
+  await page.getByRole("button", { name: "New location" }).first().click();
+  await drawer(page).getByLabel(lbl("Code")).fill("BACK");
+  await drawer(page).getByLabel(lbl("Name")).fill("Back store");
+  await drawer(page).getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("cell", { name: "Back store" })).toBeVisible();
 
   await page.goto("/stock/opening");
-  await page.getByLabel(lbl("Location")).selectOption({ label: "MAIN · Main store" });
+  await page.getByLabel(lbl("Location")).selectOption({ label: "BACK · Back store" });
   await pick(page, page.getByRole("combobox", { name: /Choose a product/ }), `Hammer ${tag}`);
   await page.getByLabel(lbl("Quantity 1")).fill("40");
   await page.getByLabel(lbl("Unit cost")).fill("7");
@@ -79,7 +80,7 @@ test("J2 catalogue and stock", async ({ page }) => {
   // --- adjustment with a reason: remove 3 broken hammers
   await page.goto("/stock/adjustments");
   await page.getByRole("button", { name: "New adjustment" }).first().click();
-  await drawer(page).getByLabel(lbl("Location")).selectOption({ label: "MAIN · Main store" });
+  await drawer(page).getByLabel(lbl("Location")).selectOption({ label: "BACK · Back store" });
   await pick(page, drawer(page).getByRole("combobox", { name: /Choose a product/ }), `Hammer ${tag}`);
   await drawer(page).getByLabel(lbl("Direction")).selectOption("out");
   await drawer(page).getByLabel(lbl("Quantity 1")).fill("3");

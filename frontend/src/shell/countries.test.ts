@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { COUNTRIES, countryByCode, CURRENCIES } from "./countries";
+import { chooseCountries, COUNTRIES, countryByCode, CURRENCIES, currenciesOf, fromServer } from "./countries";
 
 describe("registration countries", () => {
   it("has well-formed, unique entries", () => {
@@ -27,5 +27,14 @@ describe("registration countries", () => {
     expect(countryByCode("KE")).toMatchObject({ calling: "254", currency: "KES" });
     expect(countryByCode("US")).toMatchObject({ calling: "1", currency: "USD" });
     expect(countryByCode("ZZ")).toBeUndefined();
+  });
+
+  it("uses the server's list (with its pack data) when it has one, else the static list", () => {
+    const ke = fromServer({ code: "KE", name: "Kenya", calling: "254", currency: "KES", zone: "Africa/Nairobi", pack: "pack_ke", tax_id_label: "KRA PIN", tax_id_pattern: "^[AP]" });
+    expect(ke).toMatchObject({ pack: "pack_ke", taxIdLabel: "KRA PIN" });
+    expect(chooseCountries([ke])).toEqual([ke]);
+    expect(chooseCountries(undefined)).toBe(COUNTRIES);
+    expect(chooseCountries([])).toBe(COUNTRIES);
+    expect(currenciesOf([ke, { ...ke, code: "TZ", currency: "TZS" }])).toEqual(["KES", "TZS"]);
   });
 });

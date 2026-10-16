@@ -1,0 +1,48 @@
+{
+ "channelGone": "{{channel}} (haipatikani)",
+ "channelGoneHint": "Njia hii haipatikani sasa, kwa hiyo ujumbe unaenda kwa njia inayofuata. Mpangilio unabaki na utafanya kazi tena ikirudi.",
+ "notif": {
+  "title": "Arifa",
+  "hint": "Jinsi na wakati Ziira inakutumia ujumbe. Mipangilio ya biashara inatumika kwa kila ulichoacha kwenye chaguo-msingi.",
+  "kind": {
+   "alerts": "Arifa za haraka",
+   "brief": "Muhtasari wa kila siku",
+   "approvals": "Mapendekezo ya kuidhinisha"
+  },
+  "kindHint": {
+   "alerts": "Mambo mazito na vikumbusho kwako.",
+   "brief": "Muhtasari wako wa kila siku na wa wiki.",
+   "approvals": "Mambo yanayosubiri uamuzi wako. Njia ya gumzo hukuruhusu kujibu ili kuidhinisha."
+  },
+  "choice": {
+   "default": "Chaguo-msingi la biashara",
+   "app": "Ndani ya programu tu"
+  },
+  "language": "Lugha ya ujumbe",
+  "languageHint": "Hutumika kwa maneno ya ujumbe unaotumiwa kwako.",
+  "quiet": "Saa za utulivu",
+  "quietHint": "Ujumbe unaofika wakati wa utulivu husubiri hadi uishe. Hautupwi kamwe. Saa husomwa kwa eneo la saa la kampuni.",
+  "quietFrom": "Utulivu kuanzia",
+  "quietTo": "Hadi",
+  "quietCritical": "Ruhusu arifa nzito sana zipite",
+  "save": "Hifadhi",
+  "saved": "Mipangilio ya arifa imehifadhiwa.",
+  "phone": "Namba unayojibu kutoka",
+  "phoneHint": "Pamoja na msimbo wa nchi, au namba kama unavyopiga hapa nchini.",
+  "sendCode": "Tuma msimbo",
+  "codeSent": "Msimbo umetumwa.",
+  "codeWaiting": "Msimbo umetumwa kwa {{phone}}. Unaisha baada ya dakika 15.",
+  "code": "Msimbo",
+  "verify": "Thibitisha",
+  "verified": "Namba imethibitishwa.",
+  "verifiedBadge": "Imethibitishwa",
+  "remove": "Ondoa namba",
+  "removed": "Namba imeondolewa.",
+  "startOver": "Tumia namba nyingine",
+  "removeAsk": "Ondoa namba hii? Hutatumiwa tena ujumbe wa gumzo, na majibu kutoka kwake yatapuuzwa.",
+  "numberTitle": "Namba yangu iliyothibitishwa",
+  "numberHint": "Ili kuidhinisha au kukataa kwa kujibu kwenye gumzo, thibitisha kwamba namba ni yako: msimbo hutumwa kwake (kwa njia ya kwanza ambayo biashara yako imeweka inayoifikia; barua pepe mwisho). Namba ambayo hakuna aliyeithibitisha haitumiwi ujumbe wa gumzo na majibu yake hupuuzwa."
+ },
+ "noChannels": "Hakuna njia za ujumbe",
+ "noChannelsHint": "Washa programu-jalizi ya ujumbe (Viongezi) ili kutuma ujumbe."
+}

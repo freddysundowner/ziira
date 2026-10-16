@@ -10,7 +10,7 @@ from uuid import UUID
 from sqlalchemy import text
 
 from ziira.modules.finance.public import party_amount_by_source
-from ziira.modules.imports.public import ImportColumn, Importer, ImportRow, attempt
+from ziira.modules.imports.public import ExistingRecord, ImportColumn, Importer, ImportRow, attempt
 from ziira.modules.purchasing.domain import rules
 from ziira.modules.purchasing.permissions import BILLS_MANAGE, SUPPLIERS_MANAGE
 from ziira.modules.purchasing.repository import purchasing_repo as repo
@@ -18,6 +18,8 @@ from ziira.modules.purchasing.repository.models import Supplier
 from ziira.modules.purchasing.services import opening_balances as opening
 from ziira.modules.purchasing.services.suppliers import create_supplier
 from ziira.sdk import Session, ValidationFailed
+
+PHONE_TAIL = 9          # phones are matched by their last digits: they are stored as typed
 
 
 class SupplierImporter(Importer):
@@ -58,6 +60,30 @@ class SupplierImporter(Importer):
         found = session.execute(text("select 1 from purchasing.supplier where company_id = :c and code = :k"),
                                 {"c": str(company_id), "k": code}).first()
         return f"Supplier {code} already exists" if found else None
+
+    def find_match(self, session: Session, company_id: UUID, row: ImportRow) -> ExistingRecord | None:
+        """The supplier already in Ziira with this code, tax number or phone (a move from another system). Phones are
+        stored as typed, so they are compared by their last digits."""
+        checks: list[tuple[str, str, str]] = []
+        if row.text("code"):
+            checks.append(("code = :v", "has the same supplier code", row.text("code").upper()))
+        try:
+            tax = rules.check_tax_id(row.text("tax_id"))
+        except ValidationFailed:
+            tax = None
+        if tax:
+            checks.append(("upper(tax_id) = :v", "has the same tax number", tax))
+        digits = "".join(ch for ch in row.text("phone") if ch.isdigit())
+        if len(digits) >= PHONE_TAIL:
+            checks.append((f"right(regexp_replace(coalesce(phone, ''), '[^0-9]', '', 'g'), {PHONE_TAIL}) = :v",
+                           "has the same phone number", digits[-PHONE_TAIL:]))
+        for condition, why, value in checks:
+            found = session.execute(text(
+                f"select code, name from purchasing.supplier where company_id = :c and {condition} "
+                "order by created_at limit 1"), {"c": str(company_id), "v": value}).first()
+            if found:
+                return ExistingRecord(found.code, f"{found.name} ({found.code}) {why}")
+        return None
 
     def import_row(self, session: Session, company_id: UUID, row: ImportRow, local_id: UUID) -> UUID:
         errors: list[str] = []

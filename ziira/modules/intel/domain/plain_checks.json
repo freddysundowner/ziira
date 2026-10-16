@@ -1,0 +1,3151 @@
+{
+ "_comment": "Single source of plain text for Intelligence checks (English and Swahili); tested by tests/test_intel_plain.py.",
+ "_topics": {
+  "cash": {
+   "title": {
+    "en": "Cash and sales",
+    "sw": "Pesa na mauzo"
+   },
+   "lead": {
+    "en": "Money in and out of your tills and payment accounts, and how sales and cashiers are behaving.",
+    "sw": "Pesa zinazoingia na kutoka kwenye kaunta na akaunti za malipo, na hali ya mauzo na keshia."
+   }
+  },
+  "stock": {
+   "title": {
+    "en": "Stock",
+    "sw": "Bidhaa (hisa)"
+   },
+   "lead": {
+    "en": "Products running out, going missing, expiring or sitting unsold.",
+    "sw": "Bidhaa zinazoisha, zinazopotea, zinazoisha muda au zinazokaa bila kuuzwa."
+   }
+  },
+  "customers": {
+   "title": {
+    "en": "Customers",
+    "sw": "Wateja"
+   },
+   "lead": {
+    "en": "Customers who owe you, pay late or have too much credit.",
+    "sw": "Wateja wanaokudai, wanaochelewa kulipa au wenye mkopo mkubwa mno."
+   }
+  },
+  "suppliers": {
+   "title": {
+    "en": "Suppliers",
+    "sw": "Wasambazaji"
+   },
+   "lead": {
+    "en": "Supplier invoices, payments, prices and orders.",
+    "sw": "Ankara za wasambazaji, malipo, bei na oda."
+   }
+  },
+  "staff": {
+   "title": {
+    "en": "Staff",
+    "sw": "Wafanyakazi"
+   },
+   "lead": {
+    "en": "Wages, leave, overtime, and who did what in Ziira.",
+    "sw": "Mishahara, likizo, saa za ziada, na nani alifanya nini kwenye Ziira."
+   }
+  },
+  "books": {
+   "title": {
+    "en": "Your books",
+    "sw": "Hesabu za biashara"
+   },
+   "lead": {
+    "en": "Entries, expenses, closed months, bank matching and profit margins.",
+    "sw": "Rekodi za hesabu, matumizi, miezi iliyofungwa, kulinganisha na benki na faida."
+   }
+  }
+ },
+ "_params": {
+  "above_percent": {
+   "en": "How much above the usual price (in %) before it is flagged",
+   "sw": "Bei ya juu kuliko kawaida kwa asilimia ngapi kabla ya kuonyeshwa"
+  },
+  "age_days": {
+   "en": "Days old before an unmatched bank line is flagged",
+   "sw": "Siku ngapi ndipo mstari wa benki usiolinganishwa uonyeshwe"
+  },
+  "amount_limit": {
+   "en": "Smallest payment worth checking",
+   "sw": "Malipo madogo kabisa yanayostahili kukaguliwa"
+  },
+  "backdate_days": {
+   "en": "How many days earlier than the entry day counts as back-dated",
+   "sw": "Siku ngapi kabla ya siku ya kuandikwa ndipo ihesabiwe kuwa imeandikwa kwa tarehe ya nyuma"
+  },
+  "close_hour": {
+   "en": "Hour the branch closes (24-hour clock)",
+   "sw": "Saa tawi hufunga (saa 24)"
+  },
+  "cost_rise_percent": {
+   "en": "How much the cost must rise (in %)",
+   "sw": "Gharama lazima ipande kwa asilimia ngapi"
+  },
+  "days": {
+   "en": "How many days back to look",
+   "sw": "Siku ngapi nyuma za kuangalia"
+  },
+  "days_ahead": {
+   "en": "How many days ahead to look for expiry",
+   "sw": "Siku ngapi mbele za kuangalia kuisha muda"
+  },
+  "days_apart": {
+   "en": "Days apart that still count as the same invoice",
+   "sw": "Siku ngapi kati yake zinazohesabiwa kuwa ankara ileile"
+  },
+  "days_back": {
+   "en": "How many days back to look for expired stock",
+   "sw": "Siku ngapi nyuma za kutafuta bidhaa zilizoisha muda"
+  },
+  "days_open": {
+   "en": "Days left unfinished before it is flagged",
+   "sw": "Siku ngapi bila kukamilika ndipo ionyeshwe"
+  },
+  "deviations": {
+   "en": "How many times the usual ups and downs counts as unusual",
+   "sw": "Mara ngapi ya mabadiliko ya kawaida ndipo ihesabiwe si ya kawaida"
+  },
+  "drop_percent": {
+   "en": "How far below normal (in %) counts as a big drop",
+   "sw": "Kushuka chini ya kawaida kwa asilimia ngapi ni kushuka kukubwa"
+  },
+  "drop_points": {
+   "en": "How many percentage points the margin must fall",
+   "sw": "Pointi ngapi za asilimia faida inapaswa kushuka"
+  },
+  "end_hour": {
+   "en": "Hour working time ends (24-hour clock)",
+   "sw": "Saa kazi huisha (saa 24)"
+  },
+  "failure_percent": {
+   "en": "Share of requests that failed (in %) before it is flagged",
+   "sw": "Asilimia ya maombi yaliyoshindwa kabla ya kuonyeshwa"
+  },
+  "grace_days": {
+   "en": "Days to wait before it counts as a problem",
+   "sw": "Siku za kusubiri kabla ya kuhesabiwa tatizo"
+  },
+  "grace_hours": {
+   "en": "Hours to wait before it counts as a problem",
+   "sw": "Saa za kusubiri kabla ya kuhesabiwa tatizo"
+  },
+  "high_count": {
+   "en": "Number of cases at which it becomes urgent",
+   "sw": "Idadi ya visa ambapo inakuwa ya haraka"
+  },
+  "high_days_late": {
+   "en": "Days late at which it becomes urgent",
+   "sw": "Siku za kuchelewa ambapo inakuwa ya haraka"
+  },
+  "high_days_overdue": {
+   "en": "Days overdue at which it becomes urgent",
+   "sw": "Siku za kuchelewa kulipa ambapo inakuwa ya haraka"
+  },
+  "high_over_pct": {
+   "en": "How far over the credit limit (in %) it becomes urgent",
+   "sw": "Kuvuka kikomo cha mkopo kwa asilimia ngapi ndipo iwe ya haraka"
+  },
+  "high_percent": {
+   "en": "How far over the credit limit (in %) it becomes urgent",
+   "sw": "Kuvuka kikomo cha mkopo kwa asilimia ngapi ndipo iwe ya haraka"
+  },
+  "history_days": {
+   "en": "How many days of earlier history to compare with",
+   "sw": "Siku ngapi za historia ya awali za kulinganisha"
+  },
+  "hours": {
+   "en": "Hours to wait before it counts as a problem",
+   "sw": "Saa za kusubiri kabla ya kuhesabiwa tatizo"
+  },
+  "hours_apart": {
+   "en": "Hours apart that still count as the same payment",
+   "sw": "Saa ngapi kati yake zinazohesabiwa kuwa malipo yaleyale"
+  },
+  "hours_from": {
+   "en": "Hour working time starts (24-hour clock)",
+   "sw": "Saa kazi huanza (saa 24)"
+  },
+  "hours_to": {
+   "en": "Hour working time ends (24-hour clock)",
+   "sw": "Saa kazi huisha (saa 24)"
+  },
+  "increase_percent": {
+   "en": "How much slower (in %) counts as slower",
+   "sw": "Kuchelewa zaidi kwa asilimia ngapi ndipo ihesabiwe kuchelewa"
+  },
+  "large_amount": {
+   "en": "Amount above which an entry counts as large",
+   "sw": "Kiasi ambacho kikizidi rekodi ihesabiwe kubwa"
+  },
+  "late_days": {
+   "en": "Days late before an entry is flagged",
+   "sw": "Siku za kuchelewa kabla ya rekodi kuonyeshwa"
+  },
+  "limit": {
+   "en": "Amount above which it is flagged",
+   "sw": "Kiasi kikizidi huonyeshwa"
+  },
+  "lookback_days": {
+   "en": "How many days back to look",
+   "sw": "Siku ngapi nyuma za kuangalia"
+  },
+  "manual_only": {
+   "en": "Only look at entries typed in by hand (1 = yes, 0 = no)",
+   "sw": "Angalia rekodi zilizoandikwa kwa mkono tu (1 = ndiyo, 0 = hapana)"
+  },
+  "many": {
+   "en": "Number of overdue follow-ups at which it becomes urgent",
+   "sw": "Idadi ya ufuatiliaji uliochelewa ambapo inakuwa ya haraka"
+  },
+  "max_customers": {
+   "en": "Most customers to check in one go",
+   "sw": "Wateja wengi zaidi wa kukagua kwa mara moja"
+  },
+  "methods": {
+   "en": "Payment types to check (for example mobile money, bank)",
+   "sw": "Aina za malipo za kukagua (mfano pesa za simu, benki)"
+  },
+  "min_actions": {
+   "en": "Fewest changes in a day before it is flagged",
+   "sw": "Mabadiliko machache zaidi kwa siku kabla ya kuonyeshwa"
+  },
+  "min_amount": {
+   "en": "Smallest amount worth flagging",
+   "sw": "Kiasi kidogo kabisa kinachostahili kuonyeshwa"
+  },
+  "min_attempts": {
+   "en": "Fewest requests in a day before it is judged",
+   "sw": "Maombi machache zaidi kwa siku kabla ya kuhukumiwa"
+  },
+  "min_day": {
+   "en": "Day of the month from which the margin is judged",
+   "sw": "Siku ya mwezi ambapo faida huanza kuhukumiwa"
+  },
+  "min_days_late": {
+   "en": "Fewest days late before it is flagged",
+   "sw": "Siku chache zaidi za kuchelewa kabla ya kuonyeshwa"
+  },
+  "min_days_overdue": {
+   "en": "Days past the due date before a customer is flagged",
+   "sw": "Siku baada ya tarehe ya kulipa kabla mteja kuonyeshwa"
+  },
+  "min_discount": {
+   "en": "Smallest discount worth flagging",
+   "sw": "Punguzo dogo kabisa linalostahili kuonyeshwa"
+  },
+  "min_earlier": {
+   "en": "Fewest earlier records needed to compare with",
+   "sw": "Rekodi chache zaidi za awali zinazohitajika kulinganisha"
+  },
+  "min_gap": {
+   "en": "Smallest gap worth flagging",
+   "sw": "Pengo dogo kabisa linalostahili kuonyeshwa"
+  },
+  "min_history": {
+   "en": "Fewest days of history needed to know what is normal",
+   "sw": "Siku chache zaidi za historia za kujua hali ya kawaida"
+  },
+  "min_hours": {
+   "en": "Fewest extra overtime hours worth flagging",
+   "sw": "Saa chache zaidi za ziada zinazostahili kuonyeshwa"
+  },
+  "min_income": {
+   "en": "Smallest monthly sales before the margin is judged",
+   "sw": "Mauzo madogo zaidi ya mwezi kabla ya faida kuhukumiwa"
+  },
+  "min_increase_days": {
+   "en": "Fewest extra days to pay before flagging",
+   "sw": "Siku chache zaidi za kuchelewa kulipa kabla ya kuonyeshwa"
+  },
+  "min_invoices": {
+   "en": "Fewest invoices needed to judge how a customer pays",
+   "sw": "Ankara chache zaidi za kuhukumu jinsi mteja anavyolipa"
+  },
+  "min_items": {
+   "en": "Fewest items before it is flagged",
+   "sw": "Vitu vichache zaidi kabla ya kuonyeshwa"
+  },
+  "min_loss": {
+   "en": "Smallest loss worth flagging",
+   "sw": "Hasara ndogo kabisa inayostahili kuonyeshwa"
+  },
+  "min_loss_value": {
+   "en": "Smallest loss worth flagging",
+   "sw": "Hasara ndogo kabisa inayostahili kuonyeshwa"
+  },
+  "min_margin_percent": {
+   "en": "Profit margin (in %) below which it is flagged",
+   "sw": "Faida (asilimia) ikiwa chini ya hii huonyeshwa"
+  },
+  "min_months": {
+   "en": "Fewest earlier months needed to know what is normal",
+   "sw": "Miezi michache zaidi ya awali ya kujua hali ya kawaida"
+  },
+  "min_override": {
+   "en": "Smallest price reduction worth flagging",
+   "sw": "Punguzo dogo kabisa la bei linalostahili kuonyeshwa"
+  },
+  "min_quantity": {
+   "en": "Smallest number of units worth flagging",
+   "sw": "Idadi ndogo kabisa ya vipande inayostahili kuonyeshwa"
+  },
+  "min_rate": {
+   "en": "Smallest share of sales worth flagging (0.05 means 5 in every 100)",
+   "sw": "Sehemu ndogo kabisa ya mauzo inayostahili kuonyeshwa (0.05 ni 5 kati ya 100)"
+  },
+  "min_ratio": {
+   "en": "How many times the usual amount counts as unusual",
+   "sw": "Mara ngapi ya kiasi cha kawaida ndipo ihesabiwe si ya kawaida"
+  },
+  "min_refund": {
+   "en": "Smallest refund worth flagging",
+   "sw": "Marejesho madogo kabisa yanayostahili kuonyeshwa"
+  },
+  "min_sales": {
+   "en": "Fewest sales needed before a cashier is judged",
+   "sw": "Mauzo machache zaidi kabla keshia kuhukumiwa"
+  },
+  "min_samples": {
+   "en": "Fewest earlier days needed to know what is normal",
+   "sw": "Siku chache zaidi za awali za kujua hali ya kawaida"
+  },
+  "min_units": {
+   "en": "Fewest units worth flagging",
+   "sw": "Vipande vichache zaidi vinavyostahili kuonyeshwa"
+  },
+  "min_value": {
+   "en": "Smallest value worth flagging",
+   "sw": "Thamani ndogo kabisa inayostahili kuonyeshwa"
+  },
+  "min_void": {
+   "en": "Smallest cancelled sale worth flagging",
+   "sw": "Mauzo madogo kabisa yaliyofutwa yanayostahili kuonyeshwa"
+  },
+  "open_hour": {
+   "en": "Hour the branch opens (24-hour clock)",
+   "sw": "Saa tawi hufunguliwa (saa 24)"
+  },
+  "overdue_days": {
+   "en": "Days past due before a supplier invoice is flagged",
+   "sw": "Siku baada ya tarehe ya kulipa kabla ankara ya msambazaji kuonyeshwa"
+  },
+  "percent": {
+   "en": "Share (in %) above which it is flagged",
+   "sw": "Asilimia ikizidi huonyeshwa"
+  },
+  "recent_days": {
+   "en": "How many recent days to look at",
+   "sw": "Siku ngapi za karibuni za kuangalia"
+  },
+  "rise_percent": {
+   "en": "How big a price rise (in %) is flagged",
+   "sw": "Kupanda kwa bei kwa asilimia ngapi ndipo ionyeshwe"
+  },
+  "round_min": {
+   "en": "Smallest round entry worth flagging",
+   "sw": "Rekodi ndogo kabisa ya namba ya pande zote inayostahili kuonyeshwa"
+  },
+  "round_step": {
+   "en": "What counts as a round figure (for example a multiple of 10,000)",
+   "sw": "Nini kinahesabiwa namba ya pande zote (mfano mara 10,000)"
+  },
+  "round_unit": {
+   "en": "What counts as a round figure (for example a multiple of 1,000)",
+   "sw": "Nini kinahesabiwa namba ya pande zote (mfano mara 1,000)"
+  },
+  "serious_days": {
+   "en": "Days past due at which it becomes urgent",
+   "sw": "Siku baada ya tarehe ya kulipa ambapo inakuwa ya haraka"
+  },
+  "start_hour": {
+   "en": "Hour working time starts (24-hour clock)",
+   "sw": "Saa kazi huanza (saa 24)"
+  },
+  "tolerance_percent": {
+   "en": "How big a difference (in %) is allowed before flagging",
+   "sw": "Tofauti ya asilimia ngapi inaruhusiwa kabla ya kuonyeshwa"
+  },
+  "unmatched_days": {
+   "en": "Days a payment may stay unmatched before it is flagged",
+   "sw": "Siku ngapi malipo yanaweza kukaa bila kulinganishwa kabla ya kuonyeshwa"
+  },
+  "urgent_days": {
+   "en": "Days left at which it becomes urgent",
+   "sw": "Siku zilizobaki ambapo inakuwa ya haraka"
+  },
+  "usage_pct": {
+   "en": "Share of colleagues with attendance records (in %) before it is flagged",
+   "sw": "Asilimia ya wenzake wenye rekodi za kuhudhuria kabla ya kuonyeshwa"
+  },
+  "value_limit": {
+   "en": "Value above which it is flagged",
+   "sw": "Thamani ikizidi huonyeshwa"
+  },
+  "variance_limit": {
+   "en": "Difference in money above which it is flagged",
+   "sw": "Tofauti ya pesa ikizidi huonyeshwa"
+  },
+  "waiting_days": {
+   "en": "Days waiting before it is flagged",
+   "sw": "Siku za kusubiri kabla ya kuonyeshwa"
+  },
+  "window_days": {
+   "en": "How many days of history to compare",
+   "sw": "Siku ngapi za historia za kulinganisha"
+  },
+  "window_minutes": {
+   "en": "How many minutes apart still counts as the same event",
+   "sw": "Dakika ngapi kati yake zinazohesabiwa kuwa tukio lilelile"
+  },
+  "within_days": {
+   "en": "How many days apart counts as close together",
+   "sw": "Siku ngapi kati yake zinazohesabiwa kuwa karibu"
+  }
+ },
+ "_figures": {
+  "above_percent": {
+   "label": {
+    "en": "Above the usual price (%)",
+    "sw": "Juu ya bei ya kawaida (%)"
+   },
+   "kind": "percent"
+  },
+  "account": {
+   "label": {
+    "en": "Account",
+    "sw": "Akaunti"
+   },
+   "kind": "text"
+  },
+  "added": {
+   "label": {
+    "en": "Added on",
+    "sw": "Aliongezwa tarehe"
+   },
+   "kind": "date"
+  },
+  "adjustments": {
+   "label": {
+    "en": "Stock corrections",
+    "sw": "Marekebisho ya hisa"
+   },
+   "kind": "count"
+  },
+  "amount": {
+   "label": {
+    "en": "Amount",
+    "sw": "Kiasi"
+   },
+   "kind": "money"
+  },
+  "approved_by": {
+   "label": {
+    "en": "Approved by",
+    "sw": "Aliyeidhinisha"
+   },
+   "kind": "text"
+  },
+  "approver": {
+   "label": {
+    "en": "Approved by",
+    "sw": "Aliyeidhinisha"
+   },
+   "kind": "text"
+  },
+  "attempts": {
+   "label": {
+    "en": "Requests sent",
+    "sw": "Maombi yaliyotumwa"
+   },
+   "kind": "count"
+  },
+  "balance": {
+   "label": {
+    "en": "Stock shown",
+    "sw": "Hisa inayoonyeshwa"
+   },
+   "kind": "number"
+  },
+  "basic_pay": {
+   "label": {
+    "en": "Basic pay",
+    "sw": "Mshahara wa msingi"
+   },
+   "kind": "money"
+  },
+  "basic_pay_after": {
+   "label": {
+    "en": "Basic pay now",
+    "sw": "Mshahara wa msingi sasa"
+   },
+   "kind": "money"
+  },
+  "basic_pay_before": {
+   "label": {
+    "en": "Basic pay before",
+    "sw": "Mshahara wa msingi awali"
+   },
+   "kind": "money"
+  },
+  "bills": {
+   "label": {
+    "en": "Unpaid invoices",
+    "sw": "Ankara ambazo hazijalipwa"
+   },
+   "kind": "count"
+  },
+  "branch": {
+   "label": {
+    "en": "Branch",
+    "sw": "Tawi"
+   },
+   "kind": "text"
+  },
+  "by": {
+   "label": {
+    "en": "Done by",
+    "sw": "Aliyefanya"
+   },
+   "kind": "text"
+  },
+  "cash": {
+   "label": {
+    "en": "Cash",
+    "sw": "Pesa taslimu"
+   },
+   "kind": "money"
+  },
+  "cash_sales": {
+   "label": {
+    "en": "Cash sales",
+    "sw": "Mauzo ya pesa taslimu"
+   },
+   "kind": "money"
+  },
+  "change_percent": {
+   "label": {
+    "en": "Change (%)",
+    "sw": "Mabadiliko (%)"
+   },
+   "kind": "percent"
+  },
+  "changed_on": {
+   "label": {
+    "en": "Changed on",
+    "sw": "Ilibadilishwa tarehe"
+   },
+   "kind": "date"
+  },
+  "changes": {
+   "label": {
+    "en": "Changes made",
+    "sw": "Mabadiliko yaliyofanywa"
+   },
+   "kind": "count"
+  },
+  "cost": {
+   "label": {
+    "en": "Cost",
+    "sw": "Gharama"
+   },
+   "kind": "money"
+  },
+  "cost_now": {
+   "label": {
+    "en": "Cost of goods sold now",
+    "sw": "Gharama ya bidhaa zilizouzwa sasa"
+   },
+   "kind": "money"
+  },
+  "counted_by": {
+   "label": {
+    "en": "Counted by",
+    "sw": "Aliyehesabu"
+   },
+   "kind": "text"
+  },
+  "counted_cash": {
+   "label": {
+    "en": "Cash counted",
+    "sw": "Pesa zilizohesabiwa"
+   },
+   "kind": "money"
+  },
+  "credit_limit": {
+   "label": {
+    "en": "Credit limit",
+    "sw": "Kikomo cha mkopo"
+   },
+   "kind": "money"
+  },
+  "currency": {
+   "label": {
+    "en": "Currency",
+    "sw": "Sarafu"
+   },
+   "kind": "text"
+  },
+  "current_limit": {
+   "label": {
+    "en": "Current limit",
+    "sw": "Kikomo cha sasa"
+   },
+   "kind": "money"
+  },
+  "customers": {
+   "label": {
+    "en": "Customers",
+    "sw": "Wateja"
+   },
+   "kind": "count"
+  },
+  "dated": {
+   "label": {
+    "en": "Dated",
+    "sw": "Tarehe ya rekodi"
+   },
+   "kind": "date"
+  },
+  "days_late": {
+   "label": {
+    "en": "Days late",
+    "sw": "Siku za kuchelewa"
+   },
+   "kind": "days"
+  },
+  "days_left": {
+   "label": {
+    "en": "Days left",
+    "sw": "Siku zilizobaki"
+   },
+   "kind": "days"
+  },
+  "days_observed": {
+   "label": {
+    "en": "Days compared",
+    "sw": "Siku zilizolinganishwa"
+   },
+   "kind": "count"
+  },
+  "days_open": {
+   "label": {
+    "en": "Days open",
+    "sw": "Siku zilizokaa wazi"
+   },
+   "kind": "days"
+  },
+  "days_waiting": {
+   "label": {
+    "en": "Days waiting",
+    "sw": "Siku za kusubiri"
+   },
+   "kind": "days"
+  },
+  "days_without_outflow": {
+   "label": {
+    "en": "Days without a sale or move",
+    "sw": "Siku bila mauzo wala kuhamishwa"
+   },
+   "kind": "days"
+  },
+  "deposits": {
+   "label": {
+    "en": "Banked",
+    "sw": "Zilizowekwa benki"
+   },
+   "kind": "money"
+  },
+  "document_type": {
+   "label": {
+    "en": "Type of document",
+    "sw": "Aina ya hati"
+   },
+   "kind": "text"
+  },
+  "draft": {
+   "label": {
+    "en": "Draft",
+    "sw": "Rasimu"
+   },
+   "kind": "text"
+  },
+  "earlier_average": {
+   "label": {
+    "en": "Earlier average price",
+    "sw": "Wastani wa bei ya awali"
+   },
+   "kind": "money"
+  },
+  "earlier_days": {
+   "label": {
+    "en": "Days to pay before",
+    "sw": "Siku za kulipa awali"
+   },
+   "kind": "number"
+  },
+  "earlier_invoices": {
+   "label": {
+    "en": "Earlier invoices",
+    "sw": "Ankara za awali"
+   },
+   "kind": "count"
+  },
+  "entered": {
+   "label": {
+    "en": "Entered on",
+    "sw": "Iliandikwa tarehe"
+   },
+   "kind": "date"
+  },
+  "entries_posted_since": {
+   "label": {
+    "en": "Entries made since",
+    "sw": "Rekodi zilizofanywa tangu hapo"
+   },
+   "kind": "count"
+  },
+  "entry_date": {
+   "label": {
+    "en": "Entry date",
+    "sw": "Tarehe ya rekodi"
+   },
+   "kind": "date"
+  },
+  "expected_cash": {
+   "label": {
+    "en": "Cash expected",
+    "sw": "Pesa zilizotarajiwa"
+   },
+   "kind": "money"
+  },
+  "expired_on": {
+   "label": {
+    "en": "Expired on",
+    "sw": "Iliisha muda tarehe"
+   },
+   "kind": "date"
+  },
+  "failed": {
+   "label": {
+    "en": "Failed",
+    "sw": "Zilizoshindwa"
+   },
+   "kind": "count"
+  },
+  "gap": {
+   "label": {
+    "en": "Gap",
+    "sw": "Pengo"
+   },
+   "kind": "money"
+  },
+  "granted_by": {
+   "label": {
+    "en": "Given by",
+    "sw": "Aliyempa"
+   },
+   "kind": "text"
+  },
+  "gross": {
+   "label": {
+    "en": "Total of differences",
+    "sw": "Jumla ya tofauti"
+   },
+   "kind": "money"
+  },
+  "gross_pay": {
+   "label": {
+    "en": "Pay before deductions",
+    "sw": "Mshahara kabla ya makato"
+   },
+   "kind": "money"
+  },
+  "invoices": {
+   "label": {
+    "en": "Invoices",
+    "sw": "Ankara"
+   },
+   "kind": "count"
+  },
+  "items": {
+   "label": {
+    "en": "Items waiting",
+    "sw": "Vitu vinavyosubiri"
+   },
+   "kind": "count"
+  },
+  "kind": {
+   "label": {
+    "en": "Kind",
+    "sw": "Aina"
+   },
+   "kind": "text"
+  },
+  "latest": {
+   "label": {
+    "en": "Latest price",
+    "sw": "Bei ya mwisho"
+   },
+   "kind": "money"
+  },
+  "latest_cost": {
+   "label": {
+    "en": "Latest price",
+    "sw": "Bei ya mwisho"
+   },
+   "kind": "money"
+  },
+  "leave_days": {
+   "label": {
+    "en": "Days of leave asked",
+    "sw": "Siku za likizo zilizoombwa"
+   },
+   "kind": "number"
+  },
+  "limit": {
+   "label": {
+    "en": "Limit",
+    "sw": "Kikomo"
+   },
+   "kind": "money"
+  },
+  "lines": {
+   "label": {
+    "en": "Lines",
+    "sw": "Mistari"
+   },
+   "kind": "count"
+  },
+  "lost": {
+   "label": {
+    "en": "Lost",
+    "sw": "Zilizopotea"
+   },
+   "kind": "number"
+  },
+  "margin": {
+   "label": {
+    "en": "Margin (%)",
+    "sw": "Faida (%)"
+   },
+   "kind": "percent"
+  },
+  "margin_before": {
+   "label": {
+    "en": "Margin before (%)",
+    "sw": "Faida ya awali (%)"
+   },
+   "kind": "percent"
+  },
+  "margin_now": {
+   "label": {
+    "en": "Margin now (%)",
+    "sw": "Faida sasa (%)"
+   },
+   "kind": "percent"
+  },
+  "margin_percent": {
+   "label": {
+    "en": "Margin now (%)",
+    "sw": "Faida sasa (%)"
+   },
+   "kind": "percent"
+  },
+  "method": {
+   "label": {
+    "en": "Paid by",
+    "sw": "Njia ya malipo"
+   },
+   "kind": "text"
+  },
+  "net": {
+   "label": {
+    "en": "Net difference",
+    "sw": "Tofauti halisi"
+   },
+   "kind": "money"
+  },
+  "offline": {
+   "label": {
+    "en": "Entered offline",
+    "sw": "Iliandikwa bila mtandao"
+   },
+   "kind": "yesno"
+  },
+  "oldest": {
+   "label": {
+    "en": "Oldest",
+    "sw": "Ya zamani zaidi"
+   },
+   "kind": "date"
+  },
+  "oldest_days": {
+   "label": {
+    "en": "Oldest is late by (days)",
+    "sw": "Ya zamani zaidi imechelewa (siku)"
+   },
+   "kind": "days"
+  },
+  "oldest_days_overdue": {
+   "label": {
+    "en": "Oldest is late by (days)",
+    "sw": "Ya zamani zaidi imechelewa (siku)"
+   },
+   "kind": "days"
+  },
+  "oldest_due": {
+   "label": {
+    "en": "Oldest was due on",
+    "sw": "Ya zamani zaidi ilitakiwa tarehe"
+   },
+   "kind": "date"
+  },
+  "on_hand": {
+   "label": {
+    "en": "In stock",
+    "sw": "Iliyo dukani"
+   },
+   "kind": "number"
+  },
+  "order_cost": {
+   "label": {
+    "en": "Price on the order",
+    "sw": "Bei kwenye oda"
+   },
+   "kind": "money"
+  },
+  "owed": {
+   "label": {
+    "en": "Customer owes",
+    "sw": "Mteja anadaiwa"
+   },
+   "kind": "money"
+  },
+  "over_by": {
+   "label": {
+    "en": "Over the limit by",
+    "sw": "Zaidi ya kikomo kwa"
+   },
+   "kind": "money"
+  },
+  "overdue_balance": {
+   "label": {
+    "en": "Overdue amount",
+    "sw": "Kiasi kilichochelewa"
+   },
+   "kind": "money"
+  },
+  "overdue_before": {
+   "label": {
+    "en": "Overdue before",
+    "sw": "Kilichokuwa kimechelewa"
+   },
+   "kind": "money"
+  },
+  "overdue_follow_ups": {
+   "label": {
+    "en": "Overdue follow-ups",
+    "sw": "Ufuatiliaji uliochelewa"
+   },
+   "kind": "count"
+  },
+  "overtime_hours": {
+   "label": {
+    "en": "Overtime hours",
+    "sw": "Saa za ziada"
+   },
+   "kind": "number"
+  },
+  "p95": {
+   "label": {
+    "en": "Highest usual amount",
+    "sw": "Kiasi cha juu cha kawaida"
+   },
+   "kind": "money"
+  },
+  "paid": {
+   "label": {
+    "en": "Paid",
+    "sw": "Kilicholipwa"
+   },
+   "kind": "money"
+  },
+  "paid_with_records": {
+   "label": {
+    "en": "Paid colleagues with records",
+    "sw": "Wenzake waliolipwa wenye rekodi"
+   },
+   "kind": "text"
+  },
+  "pay_date": {
+   "label": {
+    "en": "Pay date",
+    "sw": "Tarehe ya malipo"
+   },
+   "kind": "date"
+  },
+  "payment_details_changed": {
+   "label": {
+    "en": "Payment details changed on",
+    "sw": "Maelezo ya malipo yalibadilishwa tarehe"
+   },
+   "kind": "date"
+  },
+  "payments": {
+   "label": {
+    "en": "Payments",
+    "sw": "Malipo"
+   },
+   "kind": "count"
+  },
+  "payments_since": {
+   "label": {
+    "en": "Payments made since",
+    "sw": "Malipo yaliyofanywa tangu hapo"
+   },
+   "kind": "count"
+  },
+  "percent": {
+   "label": {
+    "en": "Share (%)",
+    "sw": "Asilimia (%)"
+   },
+   "kind": "percent"
+  },
+  "period_status": {
+   "label": {
+    "en": "Month status",
+    "sw": "Hali ya mwezi"
+   },
+   "kind": "text"
+  },
+  "person": {
+   "label": {
+    "en": "Person",
+    "sw": "Mtu"
+   },
+   "kind": "text"
+  },
+  "phone_number": {
+   "label": {
+    "en": "Phone number",
+    "sw": "Namba ya simu"
+   },
+   "kind": "text"
+  },
+  "posted_on": {
+   "label": {
+    "en": "Entered on",
+    "sw": "Iliandikwa tarehe"
+   },
+   "kind": "date"
+  },
+  "previous_gross_pay": {
+   "label": {
+    "en": "Pay last time",
+    "sw": "Mshahara wa mara iliyopita"
+   },
+   "kind": "money"
+  },
+  "problems": {
+   "label": {
+    "en": "Problems",
+    "sw": "Matatizo"
+   },
+   "kind": "count"
+  },
+  "quantity": {
+   "label": {
+    "en": "Quantity",
+    "sw": "Kiasi"
+   },
+   "kind": "number"
+  },
+  "rate": {
+   "label": {
+    "en": "Share of their sales",
+    "sw": "Sehemu ya mauzo yao"
+   },
+   "kind": "text"
+  },
+  "reason": {
+   "label": {
+    "en": "Reason",
+    "sw": "Sababu"
+   },
+   "kind": "text"
+  },
+  "received": {
+   "label": {
+    "en": "Received",
+    "sw": "Kilichopokelewa"
+   },
+   "kind": "money"
+  },
+  "recent_days": {
+   "label": {
+    "en": "Days to pay lately",
+    "sw": "Siku za kulipa hivi karibuni"
+   },
+   "kind": "number"
+  },
+  "recent_invoices": {
+   "label": {
+    "en": "Recent invoices",
+    "sw": "Ankara za karibuni"
+   },
+   "kind": "count"
+  },
+  "reopened_by": {
+   "label": {
+    "en": "Reopened by",
+    "sw": "Aliyefungua tena"
+   },
+   "kind": "text"
+  },
+  "reopened_on": {
+   "label": {
+    "en": "Reopened on",
+    "sw": "Ilifunguliwa tena tarehe"
+   },
+   "kind": "date"
+  },
+  "reorder_level": {
+   "label": {
+    "en": "Reorder level",
+    "sw": "Kiwango cha kuagiza"
+   },
+   "kind": "number"
+  },
+  "requested_limit": {
+   "label": {
+    "en": "Limit asked for",
+    "sw": "Kikomo kilichoombwa"
+   },
+   "kind": "money"
+  },
+  "rise_percent": {
+   "label": {
+    "en": "Price rise (%)",
+    "sw": "Kupanda kwa bei (%)"
+   },
+   "kind": "percent"
+  },
+  "role": {
+   "label": {
+    "en": "Role",
+    "sw": "Wadhifa"
+   },
+   "kind": "text"
+  },
+  "sales": {
+   "label": {
+    "en": "Sales",
+    "sw": "Mauzo"
+   },
+   "kind": "text"
+  },
+  "sales_now": {
+   "label": {
+    "en": "Sales now",
+    "sw": "Mauzo sasa"
+   },
+   "kind": "money"
+  },
+  "scope": {
+   "label": {
+    "en": "Covers",
+    "sw": "Inahusu"
+   },
+   "kind": "text"
+  },
+  "selling_price": {
+   "label": {
+    "en": "Selling price",
+    "sw": "Bei ya kuuza"
+   },
+   "kind": "money"
+  },
+  "serious": {
+   "label": {
+    "en": "Serious ones",
+    "sw": "Mazito"
+   },
+   "kind": "count"
+  },
+  "settled": {
+   "label": {
+    "en": "Reached the bank",
+    "sw": "Zilizofika benki"
+   },
+   "kind": "money"
+  },
+  "sold_or_received": {
+   "label": {
+    "en": "Sold or received",
+    "sw": "Zilizouzwa au kupokelewa"
+   },
+   "kind": "number"
+  },
+  "started": {
+   "label": {
+    "en": "Started on",
+    "sw": "Ilianza tarehe"
+   },
+   "kind": "date"
+  },
+  "status": {
+   "label": {
+    "en": "Status",
+    "sw": "Hali"
+   },
+   "kind": "text"
+  },
+  "tax_number": {
+   "label": {
+    "en": "Tax number",
+    "sw": "Namba ya kodi"
+   },
+   "kind": "text"
+  },
+  "time": {
+   "label": {
+    "en": "Time",
+    "sw": "Muda"
+   },
+   "kind": "text"
+  },
+  "total": {
+   "label": {
+    "en": "Total",
+    "sw": "Jumla"
+   },
+   "kind": "money"
+  },
+  "transaction": {
+   "label": {
+    "en": "Reference",
+    "sw": "Namba ya rejea"
+   },
+   "kind": "text"
+  },
+  "transactions": {
+   "label": {
+    "en": "Transactions",
+    "sw": "Miamala"
+   },
+   "kind": "count"
+  },
+  "unreceived_value": {
+   "label": {
+    "en": "Value not received",
+    "sw": "Thamani ambayo haijapokelewa"
+   },
+   "kind": "money"
+  },
+  "units": {
+   "label": {
+    "en": "Units",
+    "sw": "Vipande"
+   },
+   "kind": "number"
+  },
+  "usual": {
+   "label": {
+    "en": "Usual",
+    "sw": "Kawaida"
+   },
+   "kind": "money"
+  },
+  "usual_cost": {
+   "label": {
+    "en": "Usual price",
+    "sw": "Bei ya kawaida"
+   },
+   "kind": "money"
+  },
+  "usual_hours": {
+   "label": {
+    "en": "Usual hours",
+    "sw": "Saa za kawaida"
+   },
+   "kind": "number"
+  },
+  "usual_rate": {
+   "label": {
+    "en": "Their usual share",
+    "sw": "Sehemu yao ya kawaida"
+   },
+   "kind": "text"
+  },
+  "variance": {
+   "label": {
+    "en": "Difference",
+    "sw": "Tofauti"
+   },
+   "kind": "money"
+  },
+  "weekday": {
+   "label": {
+    "en": "Day of the week",
+    "sw": "Siku ya wiki"
+   },
+   "kind": "text"
+  },
+  "why": {
+   "label": {
+    "en": "Why",
+    "sw": "Kwa nini"
+   },
+   "kind": "text"
+  }
+ },
+ "controls.after_hours_activity": {
+  "topic": "staff",
+  "title": {
+   "en": "Many changes made at odd hours",
+   "sw": "Mabadiliko mengi yamefanywa saa zisizo za kawaida"
+  },
+  "why": {
+   "en": "Work done late at night or very early may be a mistake, or someone using another person's login.",
+   "sw": "Kazi ya usiku sana au alfajiri inaweza kuwa kosa, au mtu anatumia jina la mwingine kuingia."
+  },
+  "todo": {
+   "en": "Ask the person if it was them and why. Change their password if it was not.",
+   "sw": "Muulize mhusika kama ni yeye na kwa nini. Kama si yeye, mbadilishie nenosiri."
+  },
+  "sentence": {
+   "en": "Tell me when someone makes {min_actions} or more changes outside {start_hour}:00 to {end_hour}:00.",
+   "sw": "Niambie mtu akifanya mabadiliko {min_actions} au zaidi nje ya saa {start_hour}:00 hadi {end_hour}:00."
+  },
+  "units": {
+   "min_actions": "count",
+   "start_hour": "number",
+   "end_hour": "number"
+  }
+ },
+ "controls.approval_by_requester": {
+  "topic": "staff",
+  "title": {
+   "en": "Someone approved their own request",
+   "sw": "Mtu ameidhinisha ombi lake mwenyewe"
+  },
+  "why": {
+   "en": "When one person asks and approves, nobody else has looked, so a mistake or misuse can slip through.",
+   "sw": "Mtu mmoja akiomba na kuidhinisha, hakuna mwingine aliyeangalia, hivyo kosa linaweza kupita."
+  },
+  "todo": {
+   "en": "Look at what was approved. Ask someone else to review it.",
+   "sw": "Angalia kilichoidhinishwa. Mwombe mtu mwingine akipitie."
+  },
+  "sentence": {
+   "en": "Look at approvals from the last {days} days.",
+   "sw": "Angalia idhini za siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "controls.exceptions_backlog": {
+  "topic": "staff",
+  "title": {
+   "en": "Problems in the inbox nobody has looked at",
+   "sw": "Matatizo kwenye kikasha ambayo hakuna aliyeyaangalia"
+  },
+  "why": {
+   "en": "Problems Ziira could not finish by itself keep piling up and may hold up sales or stock.",
+   "sw": "Matatizo ambayo Ziira haikuweza kuyamaliza yanazidi kurundikana na yanaweza kuchelewesha mauzo au hisa."
+  },
+  "todo": {
+   "en": "Open the exceptions inbox and clear the oldest items first.",
+   "sw": "Fungua kikasha cha matatizo na ushughulikie ya zamani zaidi kwanza."
+  },
+  "sentence": {
+   "en": "Tell me when {min_items} or more items have waited {days} days.",
+   "sw": "Niambie vitu {min_items} au zaidi vikisubiri siku {days}."
+  },
+  "units": {
+   "min_items": "count",
+   "days": "days"
+  }
+ },
+ "controls.new_wide_access": {
+  "topic": "staff",
+  "title": {
+   "en": "Someone was given wide access",
+   "sw": "Mtu amepewa ruhusa pana"
+  },
+  "why": {
+   "en": "A person who can act across the whole business can see and change a lot, so it should be on purpose.",
+   "sw": "Mtu anayeweza kufanya kazi kwenye biashara nzima anaweza kuona na kubadilisha mengi, kwa hiyo iwe kwa makusudi."
+  },
+  "todo": {
+   "en": "Confirm the person needs this access. Reduce it if they do not.",
+   "sw": "Hakikisha mtu huyo anahitaji ruhusa hii. Ipunguze kama hahitaji."
+  },
+  "sentence": {
+   "en": "Tell me about wide access given in the last {days} days.",
+   "sw": "Niambie kuhusu ruhusa pana zilizotolewa siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "crm.credit_increase_waiting": {
+  "topic": "customers",
+  "title": {
+   "en": "A credit limit increase is waiting for approval",
+   "sw": "Ombi la kuongeza mkopo wa mteja linasubiri idhini"
+  },
+  "why": {
+   "en": "The customer may be held up or sold to anyway, while the request sits unanswered.",
+   "sw": "Mteja anaweza kuchelewa kuhudumiwa au kuuziwa hata hivyo, huku ombi halijajibiwa."
+  },
+  "todo": {
+   "en": "Approve or decline the request, then tell the customer.",
+   "sw": "Idhinisha au kataa ombi, kisha mjulishe mteja."
+  },
+  "sentence": {
+   "en": "Tell me when a request has waited more than {days} days.",
+   "sw": "Niambie ombi likisubiri zaidi ya siku {days}."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "crm.duplicate_customers": {
+  "topic": "customers",
+  "title": {
+   "en": "Two customers share a phone or tax number",
+   "sw": "Wateja wawili wana namba ya simu au ya kodi ileile"
+  },
+  "why": {
+   "en": "One person with two accounts can end up with more credit than you meant to give.",
+   "sw": "Mtu mmoja mwenye akaunti mbili anaweza kupata mkopo mkubwa kuliko ulivyokusudia."
+  },
+  "todo": {
+   "en": "Open both accounts. Merge them, or fix the number if it is a mistake.",
+   "sw": "Fungua akaunti zote mbili. Ziunganishe, au sahihisha namba kama ni kosa."
+  },
+  "sentence": {
+   "en": "Look at customers added in the last {days} days.",
+   "sw": "Angalia wateja walioongezwa siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "crm.followups_overdue": {
+  "topic": "customers",
+  "title": {
+   "en": "Follow-ups with possible customers are overdue",
+   "sw": "Kuwafuatilia wateja watarajiwa kumechelewa"
+  },
+  "why": {
+   "en": "Sales you could win are going cold because nobody called back.",
+   "sw": "Mauzo ambayo ungeweza kupata yanapoa kwa sababu hakuna aliyepiga simu tena."
+  },
+  "todo": {
+   "en": "Ask the salesperson to call these people, or give the work to someone else.",
+   "sw": "Mwombe muuzaji awapigie watu hawa simu, au mpe mtu mwingine kazi hiyo."
+  },
+  "sentence": {
+   "en": "Tell me when someone has {many} or more follow-ups late by {days} days.",
+   "sw": "Niambie mtu akiwa na ufuatiliaji {many} au zaidi uliochelewa kwa siku {days}."
+  },
+  "units": {
+   "many": "count",
+   "days": "days"
+  }
+ },
+ "crm.over_credit_limit": {
+  "topic": "customers",
+  "title": {
+   "en": "A customer is over their credit limit",
+   "sw": "Mteja amevuka kikomo cha mkopo wake"
+  },
+  "why": {
+   "en": "The more a customer owes beyond their limit, the harder it is to get the money back.",
+   "sw": "Kadiri mteja anavyodaiwa kupita kikomo, ndivyo inavyokuwa vigumu kurudisha pesa."
+  },
+  "todo": {
+   "en": "Ask the customer to pay something before selling more on credit.",
+   "sw": "Mwombe mteja alipe kiasi fulani kabla ya kumuuzia tena kwa mkopo."
+  },
+  "sentence": {
+   "en": "Make it urgent when a customer is {high_over_pct}% over their limit.",
+   "sw": "Iwe ya haraka mteja akivuka kikomo kwa {high_over_pct}%."
+  },
+  "units": {
+   "high_over_pct": "percent"
+  }
+ },
+ "finance.backdated_entries": {
+  "topic": "books",
+  "title": {
+   "en": "Entries were made long after their date",
+   "sw": "Rekodi ziliandikwa muda mrefu baada ya tarehe yake"
+  },
+  "why": {
+   "en": "Changing the past after the fact can alter reports you already used.",
+   "sw": "Kubadilisha yaliyopita baadaye kunaweza kubadilisha ripoti ulizokwisha kutumia."
+  },
+  "todo": {
+   "en": "Ask who made the entry and why. Check the reports for that date.",
+   "sw": "Uliza nani aliandika na kwa nini. Angalia ripoti za tarehe hiyo."
+  },
+  "sentence": {
+   "en": "Tell me when an entry is made more than {late_days} days after its date.",
+   "sw": "Niambie rekodi ikiandikwa zaidi ya siku {late_days} baada ya tarehe yake."
+  },
+  "units": {
+   "late_days": "days"
+  }
+ },
+ "finance.large_manual_journal": {
+  "topic": "books",
+  "title": {
+   "en": "A large hand-made entry in your books",
+   "sw": "Rekodi kubwa iliandikwa kwenye hesabu kwa mkono"
+  },
+  "why": {
+   "en": "Hand-made entries skip the normal checks, so large ones deserve a second look.",
+   "sw": "Rekodi za mkono hazipitii ukaguzi wa kawaida, kwa hiyo kubwa zinastahili kuangaliwa tena."
+  },
+  "todo": {
+   "en": "Open the entry and check the reason and the papers behind it.",
+   "sw": "Fungua rekodi na uangalie sababu na nyaraka zake."
+  },
+  "sentence": {
+   "en": "Tell me when a hand-made entry is bigger than {limit}.",
+   "sw": "Niambie rekodi ya mkono ikizidi {limit}."
+  },
+  "units": {
+   "limit": "money"
+  }
+ },
+ "finance.low_gross_margin": {
+  "topic": "books",
+  "title": {
+   "en": "You are keeping less profit from each sale",
+   "sw": "Unabaki na faida ndogo kwenye kila mauzo"
+  },
+  "why": {
+   "en": "If the cost of goods rises faster than prices, you earn less on every sale.",
+   "sw": "Gharama ya bidhaa ikipanda kuliko bei, unapata kidogo kwenye kila mauzo."
+  },
+  "todo": {
+   "en": "Check recent supplier prices and your selling prices.",
+   "sw": "Angalia bei za wasambazaji za karibuni na bei zako za kuuza."
+  },
+  "sentence": {
+   "en": "Tell me when the margin falls by {drop_points} points below normal.",
+   "sw": "Niambie faida ikishuka pointi {drop_points} chini ya kawaida."
+  },
+  "units": {
+   "drop_points": "number"
+  }
+ },
+ "finance.odd_hours_manual_journal": {
+  "topic": "books",
+  "title": {
+   "en": "A hand-made entry was made late at night",
+   "sw": "Rekodi ya mkono iliandikwa usiku sana"
+  },
+  "why": {
+   "en": "Entries made when nobody is around are harder to explain and may be mistakes.",
+   "sw": "Rekodi zinazoandikwa wakati hakuna mtu ni ngumu kuelezwa na zinaweza kuwa makosa."
+  },
+  "todo": {
+   "en": "Ask who made it and check the reason given.",
+   "sw": "Uliza nani aliiandika na uangalie sababu iliyotolewa."
+  },
+  "sentence": {
+   "en": "Tell me about hand-made entries made before {end_hour}:00 or after {start_hour}:00.",
+   "sw": "Niambie kuhusu rekodi za mkono zilizoandikwa kabla ya saa {end_hour}:00 au baada ya saa {start_hour}:00."
+  },
+  "units": {
+   "end_hour": "number",
+   "start_hour": "number"
+  }
+ },
+ "finance.period_reopened": {
+  "topic": "books",
+  "title": {
+   "en": "A closed month was opened again",
+   "sw": "Mwezi uliofungwa umefunguliwa tena"
+  },
+  "why": {
+   "en": "Figures you already relied on for that month can now change.",
+   "sw": "Namba ulizokwisha kutegemea za mwezi huo sasa zinaweza kubadilika."
+  },
+  "todo": {
+   "en": "Ask who reopened it and why. Close the month again when done.",
+   "sw": "Uliza nani aliufungua na kwa nini. Ufunge tena baada ya kumaliza."
+  },
+  "sentence": {
+   "en": "Look at months reopened in the last {days} days.",
+   "sw": "Angalia miezi iliyofunguliwa tena siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "finance.posted_after_close": {
+  "topic": "books",
+  "title": {
+   "en": "Something was added to a month already closed",
+   "sw": "Kitu kimeongezwa kwenye mwezi uliokwisha kufungwa"
+  },
+  "why": {
+   "en": "A closed month should not change, or your reports no longer match what you were told.",
+   "sw": "Mwezi uliofungwa haupaswi kubadilika, la sivyo ripoti hazilingani na ulichoambiwa."
+  },
+  "todo": {
+   "en": "Look at the entry and ask why it was added after closing.",
+   "sw": "Angalia rekodi na uulize kwa nini iliongezwa baada ya kufunga."
+  },
+  "sentence": {
+   "en": "Look at entries from the last {days} days.",
+   "sw": "Angalia rekodi za siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "finance.round_manual_journal": {
+  "topic": "books",
+  "title": {
+   "en": "A hand-made entry has a perfectly round amount",
+   "sw": "Rekodi ya mkono ina kiasi cha namba ya pande zote"
+  },
+  "why": {
+   "en": "Real transactions are rarely perfectly round, so it may be an estimate or a mistake.",
+   "sw": "Miamala halisi huwa mara chache kamili ya pande zote, kwa hiyo inaweza kuwa makadirio au kosa."
+  },
+  "todo": {
+   "en": "Ask what the entry is for and ask to see the papers.",
+   "sw": "Uliza rekodi ni ya nini na uombe kuona nyaraka."
+  },
+  "sentence": {
+   "en": "Tell me about round hand-made entries of {min_amount} or more.",
+   "sw": "Niambie kuhusu rekodi za mkono za namba ya pande zote za {min_amount} au zaidi."
+  },
+  "units": {
+   "min_amount": "money"
+  }
+ },
+ "finance.same_person_approval": {
+  "topic": "books",
+  "title": {
+   "en": "One person wrote and approved the same entry",
+   "sw": "Mtu mmoja ameandika na kuidhinisha rekodi ileile"
+  },
+  "why": {
+   "en": "Nobody else checked it, so a mistake or misuse would not be caught.",
+   "sw": "Hakuna mwingine aliyeikagua, kwa hiyo kosa au matumizi mabaya yasingegunduliwa."
+  },
+  "todo": {
+   "en": "Ask a second person to review the entry.",
+   "sw": "Mwombe mtu wa pili akague rekodi hiyo."
+  },
+  "sentence": {
+   "en": "Look at entries from the last {days} days.",
+   "sw": "Angalia rekodi za siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "finance.stale_reconciliation": {
+  "topic": "books",
+  "title": {
+   "en": "Matching your bank statement was never finished",
+   "sw": "Kulinganisha na taarifa ya benki hakukukamilika"
+  },
+  "why": {
+   "en": "Until it is finished you cannot be sure the bank and your books agree.",
+   "sw": "Hadi ikamilike huwezi kuwa na uhakika benki na hesabu zako zinakubaliana."
+  },
+  "todo": {
+   "en": "Open it and finish matching, or cancel it if it was started by mistake.",
+   "sw": "Ifungue na umalize kulinganisha, au ifute kama ilianzishwa kwa makosa."
+  },
+  "sentence": {
+   "en": "Tell me when it has stayed open more than {days_open} days.",
+   "sw": "Niambie ikikaa wazi zaidi ya siku {days_open}."
+  },
+  "units": {
+   "days_open": "days"
+  }
+ },
+ "finance.unreconciled_bank_lines": {
+  "topic": "books",
+  "title": {
+   "en": "Old money movements not matched to your bank statement",
+   "sw": "Miamala ya zamani haijalinganishwa na taarifa ya benki"
+  },
+  "why": {
+   "en": "Unmatched money can hide missing payments or mistakes.",
+   "sw": "Pesa zisizolinganishwa zinaweza kuficha malipo yanayokosekana au makosa."
+  },
+  "todo": {
+   "en": "Match them against the bank statement and find out any that do not appear.",
+   "sw": "Zilinganishe na taarifa ya benki na ufuatilie zisizoonekana."
+  },
+  "sentence": {
+   "en": "Tell me when a line is older than {age_days} days and still not matched.",
+   "sw": "Niambie mstari ukiwa na zaidi ya siku {age_days} na bado haujalinganishwa."
+  },
+  "units": {
+   "age_days": "days"
+  }
+ },
+ "finance.unusual_expense": {
+  "topic": "books",
+  "title": {
+   "en": "A branch spent far more than usual",
+   "sw": "Tawi limetumia zaidi kuliko kawaida kwenye tumizi moja"
+  },
+  "why": {
+   "en": "A big one-off cost can be a mistake, a double entry or something to question.",
+   "sw": "Gharama kubwa ya mara moja inaweza kuwa kosa, rekodi mara mbili au kitu cha kuulizia."
+  },
+  "todo": {
+   "en": "Check the receipt and ask the branch what it was for.",
+   "sw": "Angalia risiti na uulize tawi ilikuwa ya nini."
+  },
+  "sentence": {
+   "en": "Tell me when an expense is at least {min_ratio} times the usual and over {min_amount}.",
+   "sw": "Niambie tumizi likiwa mara {min_ratio} ya kawaida au zaidi na juu ya {min_amount}."
+  },
+  "units": {
+   "min_ratio": "number",
+   "min_amount": "money"
+  }
+ },
+ "inventory.adjustment_spike": {
+  "topic": "stock",
+  "title": {
+   "en": "One person removed a lot of stock by hand",
+   "sw": "Mtu mmoja ameondoa hisa nyingi kwa mkono"
+  },
+  "why": {
+   "en": "Large write-offs by one person may be a mistake or stock leaving without a sale.",
+   "sw": "Hasara kubwa kutoka kwa mtu mmoja inaweza kuwa kosa au bidhaa kutoka bila mauzo."
+  },
+  "todo": {
+   "en": "Ask the person why, and check the stock on the shelf.",
+   "sw": "Muulize mhusika kwa nini, na uangalie bidhaa zilizopo kwenye rafu."
+  },
+  "sentence": {
+   "en": "Tell me when someone writes off more than {min_value} of stock in a day.",
+   "sw": "Niambie mtu akiondoa hisa ya zaidi ya {min_value} kwa siku."
+  },
+  "units": {
+   "min_value": "money"
+  }
+ },
+ "inventory.batch_expired": {
+  "topic": "stock",
+  "title": {
+   "en": "Expired stock is still on your records",
+   "sw": "Bidhaa zilizoisha muda bado zimo kwenye rekodi"
+  },
+  "why": {
+   "en": "Expired goods cannot be sold safely, and your stock value is overstated.",
+   "sw": "Bidhaa zilizoisha muda haziuzwi kwa usalama, na thamani ya hisa yako imezidishwa."
+  },
+  "todo": {
+   "en": "Remove them from the shelf and write them off with a reason.",
+   "sw": "Ziondoe kwenye rafu na uziandike kama hasara pamoja na sababu."
+  },
+  "sentence": {
+   "en": "Look back {days_back} days for expired stock.",
+   "sw": "Angalia nyuma siku {days_back} kutafuta bidhaa zilizoisha muda."
+  },
+  "units": {
+   "days_back": "days"
+  }
+ },
+ "inventory.batch_expiring": {
+  "topic": "stock",
+  "title": {
+   "en": "Some stock will expire soon",
+   "sw": "Baadhi ya bidhaa zitaisha muda hivi karibuni"
+  },
+  "why": {
+   "en": "Goods that expire before they sell turn into a loss.",
+   "sw": "Bidhaa zinazoisha muda kabla ya kuuzwa huwa hasara."
+  },
+  "todo": {
+   "en": "Sell these first. Think about a discount or moving them to a busier branch.",
+   "sw": "Ziuze kwanza. Fikiria punguzo au kuzihamishia tawi lenye wateja wengi."
+  },
+  "sentence": {
+   "en": "Warn me {days_ahead} days before stock expires, and urgently at {urgent_days} days.",
+   "sw": "Nionye siku {days_ahead} kabla bidhaa kuisha muda, na kwa haraka siku {urgent_days}."
+  },
+  "units": {
+   "days_ahead": "days",
+   "urgent_days": "days"
+  }
+ },
+ "inventory.count_variance": {
+  "topic": "stock",
+  "title": {
+   "en": "A stock count was far off the records",
+   "sw": "Hesabu ya hisa imekuta zaidi au pungufu sana ya kinachotarajiwa"
+  },
+  "why": {
+   "en": "Big differences mean stock is going missing, or records are wrong.",
+   "sw": "Tofauti kubwa humaanisha bidhaa zinapotea, au rekodi si sahihi."
+  },
+  "todo": {
+   "en": "Count the products again and find the cause before you correct the records.",
+   "sw": "Hesabu bidhaa tena na ujue sababu kabla ya kusahihisha rekodi."
+  },
+  "sentence": {
+   "en": "Tell me when a count is out by more than {value_limit}.",
+   "sw": "Niambie hesabu ikiwa na tofauti ya zaidi ya {value_limit}."
+  },
+  "units": {
+   "value_limit": "money"
+  }
+ },
+ "inventory.large_write_down": {
+  "topic": "stock",
+  "title": {
+   "en": "A large amount of stock was written off",
+   "sw": "Kiasi kikubwa cha hisa kimeandikwa kama hasara"
+  },
+  "why": {
+   "en": "Large write-offs reduce your profit, and they may hide losses.",
+   "sw": "Hasara kubwa hupunguza faida yako, na zinaweza kuficha upotevu."
+  },
+  "todo": {
+   "en": "Check the reason given and look at the goods if you can.",
+   "sw": "Angalia sababu iliyotolewa na uone bidhaa kama inawezekana."
+  },
+  "sentence": {
+   "en": "Tell me when a write-off is worth more than {value_limit}.",
+   "sw": "Niambie hasara ya hisa ikiwa na thamani ya zaidi ya {value_limit}."
+  },
+  "units": {
+   "value_limit": "money"
+  }
+ },
+ "inventory.low_stock": {
+  "topic": "stock",
+  "title": {
+   "en": "Stock is running low",
+   "sw": "Bidhaa zinaisha"
+  },
+  "why": {
+   "en": "If it runs out, you lose sales while you wait for a delivery.",
+   "sw": "Ikiisha, unapoteza mauzo ukisubiri bidhaa mpya."
+  },
+  "todo": {
+   "en": "Order more of these products now.",
+   "sw": "Agiza bidhaa hizi zaidi sasa."
+  }
+ },
+ "inventory.negative_stock": {
+  "topic": "stock",
+  "title": {
+   "en": "Stock shows less than zero",
+   "sw": "Hisa inaonyesha chini ya sifuri"
+  },
+  "why": {
+   "en": "A delivery or transfer was probably not recorded, so stock figures are wrong.",
+   "sw": "Huenda mzigo au uhamishaji haukuandikwa, kwa hiyo namba za hisa si sahihi."
+  },
+  "todo": {
+   "en": "Record the missing delivery or do a stock count.",
+   "sw": "Andika mzigo uliokosekana au fanya hesabu ya hisa."
+  }
+ },
+ "inventory.out_of_stock": {
+  "topic": "stock",
+  "title": {
+   "en": "A product you sell has run out",
+   "sw": "Bidhaa unayouza imeisha"
+  },
+  "why": {
+   "en": "Customers who cannot find it will buy elsewhere.",
+   "sw": "Wateja wasiopata watanunua kwingine."
+  },
+  "todo": {
+   "en": "Order it now, or move some from another branch.",
+   "sw": "Iagize sasa, au ihamishe kutoka tawi lingine."
+  },
+  "sentence": {
+   "en": "Look at what sold in the last {days} days.",
+   "sw": "Angalia kilichouzwa siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "inventory.shrinkage_rate": {
+  "topic": "stock",
+  "title": {
+   "en": "A lot of stock is being lost",
+   "sw": "Bidhaa nyingi zinapotea"
+  },
+  "why": {
+   "en": "When too much is lost compared with what you handle, money is leaking away.",
+   "sw": "Zikipotea nyingi sana ukilinganisha na unachoshughulikia, pesa zinavuja."
+  },
+  "todo": {
+   "en": "Count the product, then look at who handles it and how it is stored.",
+   "sw": "Hesabu bidhaa, kisha angalia nani anaishughulikia na inavyohifadhiwa."
+  },
+  "sentence": {
+   "en": "Tell me when more than {percent}% of a product is lost over {days} days.",
+   "sw": "Niambie zaidi ya {percent}% ya bidhaa ikipotea ndani ya siku {days}."
+  },
+  "units": {
+   "percent": "percent",
+   "days": "days"
+  }
+ },
+ "inventory.slow_stock": {
+  "topic": "stock",
+  "title": {
+   "en": "Stock that has not sold for a long time",
+   "sw": "Bidhaa ambazo hazijauzwa kwa muda mrefu"
+  },
+  "why": {
+   "en": "Money is stuck in goods that do not sell, and some may spoil or go out of date.",
+   "sw": "Pesa zimekwama kwenye bidhaa zisizouzwa, na nyingine zinaweza kuharibika au kuisha muda."
+  },
+  "todo": {
+   "en": "Consider a discount, a bundle or moving it to another branch.",
+   "sw": "Fikiria punguzo, kuuza pamoja na nyingine, au kuhamishia tawi lingine."
+  },
+  "sentence": {
+   "en": "Tell me about stock worth {min_value} or more that has not sold for {days} days.",
+   "sw": "Niambie kuhusu bidhaa za thamani ya {min_value} au zaidi ambazo hazijauzwa kwa siku {days}."
+  },
+  "units": {
+   "min_value": "money",
+   "days": "days"
+  }
+ },
+ "inventory.transfer_not_received": {
+  "topic": "stock",
+  "title": {
+   "en": "Stock sent to a branch has not arrived",
+   "sw": "Bidhaa zilizotumwa tawini hazijafika"
+  },
+  "why": {
+   "en": "Goods may be lost on the way, or arrived and were never recorded.",
+   "sw": "Bidhaa zinaweza kupotea njiani, au zimefika na hazikuandikwa."
+  },
+  "todo": {
+   "en": "Call the receiving branch and record the delivery or find the goods.",
+   "sw": "Piga simu tawi linalopokea na uandike mzigo au utafute bidhaa."
+  },
+  "sentence": {
+   "en": "Tell me when a transfer has not arrived after {days} days.",
+   "sw": "Niambie uhamishaji ukiwa haujafika baada ya siku {days}."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "inventory.unusual_stock_moves": {
+  "topic": "stock",
+  "title": {
+   "en": "Stock changed at odd hours or back-dated",
+   "sw": "Hisa ilibadilishwa saa zisizo za kawaida au kwa tarehe ya zamani"
+  },
+  "why": {
+   "en": "Changes when the shop is closed or dated earlier can hide stock leaving unnoticed.",
+   "sw": "Mabadiliko duka likiwa limefungwa au kwa tarehe ya nyuma yanaweza kuficha bidhaa kutoka bila kuonekana."
+  },
+  "todo": {
+   "en": "Ask who made the change and why.",
+   "sw": "Uliza nani alifanya mabadiliko na kwa nini."
+  },
+  "sentence": {
+   "en": "Tell me about stock changes outside {hours_from}:00 to {hours_to}:00, or dated {backdate_days}+ days earlier.",
+   "sw": "Niambie kuhusu mabadiliko ya hisa nje ya saa {hours_from}:00 hadi {hours_to}:00, au yenye tarehe ya siku {backdate_days}+ nyuma."
+  },
+  "units": {
+   "hours_from": "number",
+   "hours_to": "number",
+   "backdate_days": "days"
+  }
+ },
+ "payments.close_variance": {
+  "topic": "cash",
+  "title": {
+   "en": "A branch closed its day with the wrong cash",
+   "sw": "Tawi limefunga siku na pesa isiyolingana"
+  },
+  "why": {
+   "en": "The money in hand does not match the sales, so cash may be missing or a sale was wrongly recorded.",
+   "sw": "Pesa zilizopo hazilingani na mauzo, kwa hiyo pesa zinaweza kukosekana au mauzo yaliandikwa vibaya."
+  },
+  "todo": {
+   "en": "Count the cash again and compare it with the day's sales.",
+   "sw": "Hesabu pesa tena na uzilinganishe na mauzo ya siku."
+  },
+  "sentence": {
+   "en": "Tell me when the day's cash is out by more than {variance_limit}.",
+   "sw": "Niambie pesa za siku zikiwa na tofauti ya zaidi ya {variance_limit}."
+  },
+  "units": {
+   "variance_limit": "money"
+  }
+ },
+ "payments.failing_prompts": {
+  "topic": "cash",
+  "title": {
+   "en": "Many payment requests to customers' phones are failing",
+   "sw": "Maombi mengi ya malipo kwa simu za wateja yanashindwa"
+  },
+  "why": {
+   "en": "Customers cannot pay and sales are lost. The payment service may have a fault.",
+   "sw": "Wateja hawawezi kulipa na mauzo yanapotea. Huduma ya malipo inaweza kuwa na hitilafu."
+  },
+  "todo": {
+   "en": "Check with your payment provider and take another payment method meanwhile.",
+   "sw": "Wasiliana na mtoa huduma wako wa malipo na upokee njia nyingine kwa sasa."
+  },
+  "sentence": {
+   "en": "Tell me when {failure_percent}% or more of at least {min_attempts} requests fail.",
+   "sw": "Niambie {failure_percent}% au zaidi ya maombi angalau {min_attempts} yakishindwa."
+  },
+  "units": {
+   "failure_percent": "percent",
+   "min_attempts": "count"
+  }
+ },
+ "payments.manual_without_evidence": {
+  "topic": "cash",
+  "title": {
+   "en": "A large typed-in payment has no provider record",
+   "sw": "Malipo makubwa yaliandikwa kwa mkono, hakuna rekodi kutoka kwa mtoa huduma"
+  },
+  "why": {
+   "en": "A payment that your provider has no record of may never have arrived.",
+   "sw": "Malipo ambayo mtoa huduma hana rekodi nayo huenda hayakufika kamwe."
+  },
+  "todo": {
+   "en": "Check your provider's statement. Ask the cashier for the payment message.",
+   "sw": "Angalia taarifa ya mtoa huduma. Mwombe keshia ujumbe wa malipo."
+  },
+  "sentence": {
+   "en": "Tell me about typed-in payments over {amount_limit} with no provider record after {hours} hours.",
+   "sw": "Niambie kuhusu malipo ya mkono yanayozidi {amount_limit} bila rekodi ya mtoa huduma baada ya saa {hours}."
+  },
+  "units": {
+   "amount_limit": "money",
+   "hours": "hours"
+  }
+ },
+ "payments.missing_close": {
+  "topic": "cash",
+  "title": {
+   "en": "A day has takings but was never closed",
+   "sw": "Siku ina mapato lakini haikufungwa"
+  },
+  "why": {
+   "en": "Without a close, nobody has checked the day's cash against the sales.",
+   "sw": "Bila kufunga siku, hakuna aliyelinganisha pesa za siku na mauzo."
+  },
+  "todo": {
+   "en": "Ask the branch to count the cash and close the day.",
+   "sw": "Mwombe tawi lihesabu pesa na kufunga siku."
+  },
+  "sentence": {
+   "en": "Tell me when a day is still not closed {grace_days} days after takings.",
+   "sw": "Niambie siku ikiwa bado haijafungwa siku {grace_days} baada ya mapato."
+  },
+  "units": {
+   "grace_days": "days"
+  }
+ },
+ "payments.possible_duplicates": {
+  "topic": "cash",
+  "title": {
+   "en": "The same payment may have been recorded twice",
+   "sw": "Malipo yaleyale yanaweza kuwa yameandikwa mara mbili"
+  },
+  "why": {
+   "en": "A double payment makes your sales or cash look bigger than they are.",
+   "sw": "Malipo mara mbili hufanya mauzo au pesa zako zionekane kubwa kuliko zilivyo."
+  },
+  "todo": {
+   "en": "Look at both payments and cancel one if it is a copy.",
+   "sw": "Angalia malipo yote mawili na ufute moja kama ni nakala."
+  },
+  "sentence": {
+   "en": "Tell me about equal payments from one payer within {window_minutes} minutes.",
+   "sw": "Niambie kuhusu malipo sawa kutoka kwa mlipaji mmoja ndani ya dakika {window_minutes}."
+  },
+  "units": {
+   "window_minutes": "number"
+  }
+ },
+ "payments.reversed_after_match": {
+  "topic": "cash",
+  "title": {
+   "en": "A payment was undone after matching a sale",
+   "sw": "Malipo yalifutwa baada ya kulinganishwa na mauzo"
+  },
+  "why": {
+   "en": "The customer may have paid nothing, even though the sale looks paid.",
+   "sw": "Mteja huenda hakulipa chochote, ingawa mauzo yanaonekana yamelipwa."
+  },
+  "todo": {
+   "en": "Check the sale and ask the customer to pay again if needed.",
+   "sw": "Angalia mauzo na umwombe mteja alipe tena kama inahitajika."
+  },
+  "sentence": {
+   "en": "Look at payments undone in the last {days} days.",
+   "sw": "Angalia malipo yaliyofutwa siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "payments.settlement_mismatch": {
+  "topic": "cash",
+  "title": {
+   "en": "Money received differs from money banked",
+   "sw": "Pesa zilizopokelewa hazilingani na zilizopelekwa benki"
+  },
+  "why": {
+   "en": "Some money may be held back, lost or charged as fees you did not expect.",
+   "sw": "Pesa nyingine zinaweza kuzuiliwa, kupotea au kukatwa ada ambazo hukuzitarajia."
+  },
+  "todo": {
+   "en": "Compare your provider's statement with your bank statement.",
+   "sw": "Linganisha taarifa ya mtoa huduma na taarifa ya benki."
+  },
+  "sentence": {
+   "en": "Tell me when they differ by more than {tolerance_percent}% after {grace_days} days.",
+   "sw": "Niambie zikitofautiana kwa zaidi ya {tolerance_percent}% baada ya siku {grace_days}."
+  },
+  "units": {
+   "tolerance_percent": "percent",
+   "grace_days": "days"
+  }
+ },
+ "payments.unlinked_receipts": {
+  "topic": "cash",
+  "title": {
+   "en": "Money came in with nothing to explain it",
+   "sw": "Pesa zimeingia na hakuna kinachoeleza ni za nini"
+  },
+  "why": {
+   "en": "You cannot tell if it is a sale, a customer payment or a mistake.",
+   "sw": "Huwezi kujua kama ni mauzo, malipo ya mteja au kosa."
+  },
+  "todo": {
+   "en": "Find the payer and link the money to a sale or invoice.",
+   "sw": "Tafuta aliyetuma na uunganishe pesa hizo na mauzo au ankara."
+  },
+  "sentence": {
+   "en": "Tell me when money is unlinked after {hours} hours.",
+   "sw": "Niambie pesa zikiwa hazijaunganishwa baada ya saa {hours}."
+  },
+  "units": {
+   "hours": "hours"
+  }
+ },
+ "payments.unmatched_transactions": {
+  "topic": "cash",
+  "title": {
+   "en": "Provider shows money matching none of your payments",
+   "sw": "Mtoa huduma wako anaonyesha pesa ambazo hazilingani na malipo yako yoyote"
+  },
+  "why": {
+   "en": "Money may have arrived and not been recorded, so sales or customer accounts are wrong.",
+   "sw": "Pesa zinaweza kuwa zimefika na hazikuandikwa, kwa hiyo mauzo au akaunti za wateja si sahihi."
+  },
+  "todo": {
+   "en": "Find out who sent each one and record it against the right sale.",
+   "sw": "Tafuta nani alituma kila moja na uiandike kwenye mauzo sahihi."
+  },
+  "sentence": {
+   "en": "Tell me when money has stayed unmatched for {unmatched_days} days.",
+   "sw": "Niambie pesa zikikaa bila kulinganishwa kwa siku {unmatched_days}."
+  },
+  "units": {
+   "unmatched_days": "days"
+  }
+ },
+ "people.changes_before_payroll": {
+  "topic": "staff",
+  "title": {
+   "en": "New person or pay change just before payroll",
+   "sw": "Mtu mpya au badiliko la mshahara limetokea kabla tu ya malipo ya mishahara"
+  },
+  "why": {
+   "en": "Wages could be going to someone who should not be paid, or to the wrong account.",
+   "sw": "Mishahara inaweza kwenda kwa mtu ambaye hapaswi kulipwa, au akaunti isiyo sahihi."
+  },
+  "todo": {
+   "en": "Confirm the person and the new details are real before paying.",
+   "sw": "Hakikisha mtu huyo na maelezo mapya ni halisi kabla ya kulipa."
+  },
+  "sentence": {
+   "en": "Look at changes made {days} days before payroll.",
+   "sw": "Angalia mabadiliko yaliyofanywa siku {days} kabla ya malipo ya mishahara."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "people.leave_waiting": {
+  "topic": "staff",
+  "title": {
+   "en": "A leave request has waited too long",
+   "sw": "Ombi la likizo limesubiri kwa muda mrefu"
+  },
+  "why": {
+   "en": "Your staff cannot plan, and may feel ignored.",
+   "sw": "Wafanyakazi wako hawawezi kupanga, na wanaweza kuhisi hawajajaliwa."
+  },
+  "todo": {
+   "en": "Approve or decline the request and tell the employee.",
+   "sw": "Idhinisha au kataa ombi na umjulishe mfanyakazi."
+  },
+  "sentence": {
+   "en": "Tell me when a request has waited more than {days} days.",
+   "sw": "Niambie ombi likisubiri zaidi ya siku {days}."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "people.paid_without_attendance": {
+  "topic": "staff",
+  "title": {
+   "en": "Someone was paid but has no attendance or leave",
+   "sw": "Mtu amelipwa lakini hana rekodi ya kuhudhuria wala likizo"
+  },
+  "why": {
+   "en": "Wages may have been paid for work that was not done.",
+   "sw": "Mshahara huenda umelipwa kwa kazi ambayo haikufanywa."
+  },
+  "todo": {
+   "en": "Check with the manager that the person worked that period.",
+   "sw": "Thibitisha na meneja kwamba mtu huyo alifanya kazi kipindi hicho."
+  },
+  "sentence": {
+   "en": "Tell me when most colleagues ({usage_pct}% or more) have records and one does not.",
+   "sw": "Niambie wenzake wengi ({usage_pct}% au zaidi) wakiwa na rekodi na mmoja hana."
+  },
+  "units": {
+   "usage_pct": "percent"
+  }
+ },
+ "people.pay_jump_unexplained": {
+  "topic": "staff",
+  "title": {
+   "en": "Someone's pay changed a lot with no reason shown",
+   "sw": "Mshahara wa mtu umebadilika sana bila sababu inayoonekana"
+  },
+  "why": {
+   "en": "It may be a mistake in the payroll or a pay change nobody approved.",
+   "sw": "Huenda ni kosa kwenye mishahara au badiliko la mshahara ambalo hakuna aliyeliidhinisha."
+  },
+  "todo": {
+   "en": "Open the payslip and find out what changed before paying.",
+   "sw": "Fungua hati ya mshahara na ujue nini kimebadilika kabla ya kulipa."
+  },
+  "sentence": {
+   "en": "Tell me when pay changes by {percent}% or more.",
+   "sw": "Niambie mshahara ukibadilika kwa {percent}% au zaidi."
+  },
+  "units": {
+   "percent": "percent"
+  }
+ },
+ "people.pay_self_approved": {
+  "topic": "staff",
+  "title": {
+   "en": "Someone approved a change to pay that they proposed",
+   "sw": "Mtu ameidhinisha badiliko la mshahara alilopendekeza yeye mwenyewe"
+  },
+  "why": {
+   "en": "No second person checked it, so a pay rise or a change of account could be wrong.",
+   "sw": "Hakuna mtu wa pili aliyeikagua, kwa hiyo nyongeza ya mshahara au akaunti mpya inaweza kuwa si sahihi."
+  },
+  "todo": {
+   "en": "Ask another manager to review the change.",
+   "sw": "Mwombe meneja mwingine apitie badiliko hilo."
+  },
+  "sentence": {
+   "en": "Look at pay changes from the last {lookback_days} days.",
+   "sw": "Angalia mabadiliko ya mshahara ya siku {lookback_days} zilizopita."
+  },
+  "units": {
+   "lookback_days": "days"
+  }
+ },
+ "people.payroll_overdue": {
+  "topic": "staff",
+  "title": {
+   "en": "Payroll is late and not finished",
+   "sw": "Malipo ya mishahara yamechelewa na hayajakamilika"
+  },
+  "why": {
+   "en": "Staff are waiting for their wages, and late pay may upset them or break rules.",
+   "sw": "Wafanyakazi wanasubiri mishahara yao, na kuchelewa kunaweza kuwakwaza au kukiuka sheria."
+  },
+  "todo": {
+   "en": "Approve and pay the payroll today.",
+   "sw": "Idhinisha na ulipe mishahara leo."
+  },
+  "sentence": {
+   "en": "Tell me when payroll is more than {days} days past its pay date.",
+   "sw": "Niambie mishahara ikiwa imepita siku {days} baada ya tarehe ya malipo."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "people.unusual_overtime": {
+  "topic": "staff",
+  "title": {
+   "en": "Someone worked far more overtime than usual",
+   "sw": "Mtu amefanya saa za ziada nyingi kuliko kawaida"
+  },
+  "why": {
+   "en": "Extra hours cost money, and may be a mistake or a sign of too little staff.",
+   "sw": "Saa za ziada zinagharimu pesa, na zinaweza kuwa kosa au ishara ya wafanyakazi kuwa wachache."
+  },
+  "todo": {
+   "en": "Ask the manager if the hours were needed and approved.",
+   "sw": "Muulize meneja kama saa hizo zilihitajika na ziliidhinishwa."
+  },
+  "sentence": {
+   "en": "Tell me about overtime of {min_hours} or more hours in the last {recent_days} days.",
+   "sw": "Niambie kuhusu saa za ziada {min_hours} au zaidi katika siku {recent_days} zilizopita."
+  },
+  "units": {
+   "min_hours": "hours",
+   "recent_days": "days"
+  }
+ },
+ "pos.branch_sales_low": {
+  "topic": "cash",
+  "title": {
+   "en": "A branch sold far less than usual",
+   "sw": "Tawi limeuza kidogo sana kuliko kawaida"
+  },
+  "why": {
+   "en": "Something may be wrong: stock out, a closed till, a quiet day or sales not recorded.",
+   "sw": "Kuna kitu kinaweza kuwa kibaya: bidhaa zimeisha, kaunta imefungwa, siku tulivu au mauzo hayakuandikwa."
+  },
+  "todo": {
+   "en": "Call the branch and ask what happened.",
+   "sw": "Piga simu tawi na uulize kilichotokea."
+  },
+  "sentence": {
+   "en": "Tell me when a branch sells {drop_percent}% below its normal for that day.",
+   "sw": "Niambie tawi likiuza chini ya kawaida ya siku hiyo kwa {drop_percent}%."
+  },
+  "units": {
+   "drop_percent": "percent"
+  }
+ },
+ "pos.cashier_discount_rate": {
+  "topic": "cash",
+  "title": {
+   "en": "A cashier gave more discounts than usual",
+   "sw": "Keshia ametoa punguzo nyingi kuliko kawaida"
+  },
+  "why": {
+   "en": "Too many discounts cut your profit. It may also be a habit worth looking at.",
+   "sw": "Punguzo nyingi hupunguza faida yako. Pia inaweza kuwa tabia inayostahili kuangaliwa."
+  },
+  "todo": {
+   "en": "Talk to the cashier and look at the discounted sales.",
+   "sw": "Zungumza na keshia na uangalie mauzo yenye punguzo."
+  },
+  "sentence": {
+   "en": "Tell me when a cashier's discounts are above usual, judged over {days} days and at least {min_sales} sales.",
+   "sw": "Niambie punguzo za keshia zikiwa juu ya kawaida, kwa siku {days} na mauzo angalau {min_sales}."
+  },
+  "units": {
+   "days": "days",
+   "min_sales": "count"
+  }
+ },
+ "pos.cashier_refund_rate": {
+  "topic": "cash",
+  "title": {
+   "en": "A cashier gave more refunds than usual",
+   "sw": "Keshia amerejesha pesa nyingi kuliko kawaida"
+  },
+  "why": {
+   "en": "Refunds take money out of the till, so many of them are worth a look.",
+   "sw": "Marejesho hutoa pesa kwenye kaunta, kwa hiyo mengi yanastahili kuangaliwa."
+  },
+  "todo": {
+   "en": "Look at the refunded sales and ask the cashier about them.",
+   "sw": "Angalia mauzo yaliyorejeshwa na umuulize keshia."
+  },
+  "sentence": {
+   "en": "Tell me when a cashier's refunds are above usual, judged over {days} days and at least {min_sales} sales.",
+   "sw": "Niambie marejesho ya keshia yakiwa juu ya kawaida, kwa siku {days} na mauzo angalau {min_sales}."
+  },
+  "units": {
+   "days": "days",
+   "min_sales": "count"
+  }
+ },
+ "pos.cashier_void_rate": {
+  "topic": "cash",
+  "title": {
+   "en": "A cashier cancelled more sales than usual",
+   "sw": "Keshia amefuta mauzo mengi kuliko kawaida"
+  },
+  "why": {
+   "en": "Cancelled sales can hide money taken and not recorded, or simply be mistakes.",
+   "sw": "Mauzo yaliyofutwa yanaweza kuficha pesa zilizochukuliwa bila kuandikwa, au kuwa makosa tu."
+  },
+  "todo": {
+   "en": "Look at the cancelled sales and ask the cashier why.",
+   "sw": "Angalia mauzo yaliyofutwa na umuulize keshia kwa nini."
+  },
+  "sentence": {
+   "en": "Tell me when a cashier's cancelled sales are above usual, judged over {days} days and at least {min_sales} sales.",
+   "sw": "Niambie mauzo yaliyofutwa na keshia yakiwa juu ya kawaida, kwa siku {days} na mauzo angalau {min_sales}."
+  },
+  "units": {
+   "days": "days",
+   "min_sales": "count"
+  }
+ },
+ "pos.credit_to_overdue_customer": {
+  "topic": "customers",
+  "title": {
+   "en": "Credit given to a customer already late paying",
+   "sw": "Mkopo umetolewa kwa mteja ambaye tayari alikuwa amechelewa kulipa"
+  },
+  "why": {
+   "en": "Selling more to someone who is not paying makes the unpaid amount bigger.",
+   "sw": "Kumuuzia zaidi mtu asiyelipa kunaongeza deni ambalo halijalipwa."
+  },
+  "todo": {
+   "en": "Ask the customer to pay the old amount before more credit.",
+   "sw": "Mwombe mteja alipe deni la zamani kabla ya mkopo mwingine."
+  },
+  "sentence": {
+   "en": "Look at sales to customers late by more than {grace_days} days, and make it urgent at {high_days_overdue} days.",
+   "sw": "Angalia mauzo kwa wateja waliochelewa zaidi ya siku {grace_days}, na iwe ya haraka siku {high_days_overdue}."
+  },
+  "units": {
+   "grace_days": "days",
+   "high_days_overdue": "days"
+  }
+ },
+ "pos.customer_over_credit_limit": {
+  "topic": "customers",
+  "title": {
+   "en": "A customer owes more than their credit limit",
+   "sw": "Mteja anadaiwa zaidi ya kikomo cha mkopo wake"
+  },
+  "why": {
+   "en": "The more they owe beyond the limit, the harder it is to collect.",
+   "sw": "Kadiri wanavyodaiwa kupita kikomo, ndivyo inavyokuwa vigumu kukusanya."
+  },
+  "todo": {
+   "en": "Ask the customer to pay before selling more on credit.",
+   "sw": "Mwombe mteja alipe kabla ya kumuuzia tena kwa mkopo."
+  },
+  "sentence": {
+   "en": "Allow {tolerance_percent}% over the limit; make it urgent at {high_percent}%.",
+   "sw": "Ruhusu {tolerance_percent}% juu ya kikomo; iwe ya haraka kwa {high_percent}%."
+  },
+  "units": {
+   "tolerance_percent": "percent",
+   "high_percent": "percent"
+  }
+ },
+ "pos.customer_overdue": {
+  "topic": "customers",
+  "title": {
+   "en": "A customer is late paying",
+   "sw": "Mteja amechelewa kulipa"
+  },
+  "why": {
+   "en": "The longer a bill stays unpaid, the less likely you are to be paid.",
+   "sw": "Kadiri deni linavyokaa bila kulipwa, ndivyo uwezekano wa kulipwa unavyopungua."
+  },
+  "todo": {
+   "en": "Call the customer and agree a payment date.",
+   "sw": "Mpigie mteja simu na mkubaliane tarehe ya kulipa."
+  },
+  "sentence": {
+   "en": "Tell me when a customer is more than {min_days_overdue} days late, and urgent at {high_days_overdue} days.",
+   "sw": "Niambie mteja akichelewa zaidi ya siku {min_days_overdue}, na iwe ya haraka siku {high_days_overdue}."
+  },
+  "units": {
+   "min_days_overdue": "days",
+   "high_days_overdue": "days"
+  }
+ },
+ "pos.customer_paying_slower": {
+  "topic": "customers",
+  "title": {
+   "en": "A customer is taking longer to pay",
+   "sw": "Mteja anachukua muda mrefu zaidi kulipa"
+  },
+  "why": {
+   "en": "A customer who starts paying slower may be having money trouble.",
+   "sw": "Mteja anayeanza kulipa polepole anaweza kuwa na matatizo ya pesa."
+  },
+  "todo": {
+   "en": "Talk to the customer before the debt grows.",
+   "sw": "Zungumza na mteja kabla deni halijakua."
+  },
+  "sentence": {
+   "en": "Tell me when a customer takes {increase_percent}% longer to pay than before.",
+   "sw": "Niambie mteja akichukua muda mrefu zaidi kwa {increase_percent}% kulipa kuliko hapo awali."
+  },
+  "units": {
+   "increase_percent": "percent"
+  }
+ },
+ "pos.large_exception": {
+  "topic": "cash",
+  "title": {
+   "en": "A large cancelled sale, refund or price cut",
+   "sw": "Mauzo makubwa yamefutwa, kurejeshwa au bei kupunguzwa"
+  },
+  "why": {
+   "en": "Big changes to a sale move a lot of money, so they should have a clear reason.",
+   "sw": "Mabadiliko makubwa ya mauzo huhamisha pesa nyingi, kwa hiyo yanapaswa kuwa na sababu wazi."
+  },
+  "todo": {
+   "en": "Look at the sale and ask the cashier or manager why.",
+   "sw": "Angalia mauzo na umuulize keshia au meneja kwa nini."
+  },
+  "sentence": {
+   "en": "Tell me about a cancelled sale over {min_void}, a refund over {min_refund} or a price cut over {min_override}.",
+   "sw": "Niambie kuhusu mauzo yaliyofutwa juu ya {min_void}, marejesho juu ya {min_refund} au punguzo la bei juu ya {min_override}."
+  },
+  "units": {
+   "min_void": "money",
+   "min_refund": "money",
+   "min_override": "money"
+  }
+ },
+ "pos.late_recorded_sales": {
+  "topic": "cash",
+  "title": {
+   "en": "Sales were entered days after they happened",
+   "sw": "Mauzo yaliandikwa siku kadhaa baada ya kutokea"
+  },
+  "why": {
+   "en": "Late entries can hide mistakes or sales that were changed later.",
+   "sw": "Rekodi za kuchelewa zinaweza kuficha makosa au mauzo yaliyobadilishwa baadaye."
+  },
+  "todo": {
+   "en": "Ask why the sale was not entered on the day.",
+   "sw": "Uliza kwa nini mauzo hayakuandikwa siku yenyewe."
+  },
+  "sentence": {
+   "en": "Tell me when a sale is entered {min_days_late} or more days late, and urgent at {high_days_late} days.",
+   "sw": "Niambie mauzo yakiandikwa siku {min_days_late} au zaidi baadaye, na iwe ya haraka siku {high_days_late}."
+  },
+  "units": {
+   "min_days_late": "days",
+   "high_days_late": "days"
+  }
+ },
+ "pos.out_of_hours_sales": {
+  "topic": "cash",
+  "title": {
+   "en": "Sales were made when the branch should be closed",
+   "sw": "Mauzo yalifanywa wakati tawi linapaswa kuwa limefungwa"
+  },
+  "why": {
+   "en": "Sales outside working hours may be a login being used by someone else.",
+   "sw": "Mauzo nje ya saa za kazi yanaweza kuwa jina la kuingia likitumiwa na mtu mwingine."
+  },
+  "todo": {
+   "en": "Ask the branch who was at the till then.",
+   "sw": "Uliza tawi nani alikuwa kwenye kaunta wakati huo."
+  },
+  "sentence": {
+   "en": "The branch is open from {open_hour}:00 to {close_hour}:00.",
+   "sw": "Tawi hufunguliwa saa {open_hour}:00 hadi saa {close_hour}:00."
+  },
+  "units": {
+   "open_hour": "number",
+   "close_hour": "number"
+  }
+ },
+ "pos.till_cash_variance": {
+  "topic": "cash",
+  "title": {
+   "en": "A till is out by more than usual",
+   "sw": "Kaunta ina tofauti ya pesa kubwa kuliko kawaida"
+  },
+  "why": {
+   "en": "Missing cash may be a mistake in change given, or money taken.",
+   "sw": "Pesa zinazokosekana zinaweza kuwa kosa la chenji, au pesa zilichukuliwa."
+  },
+  "todo": {
+   "en": "Count the till again and ask the cashier.",
+   "sw": "Hesabu kaunta tena na umuulize keshia."
+  },
+  "sentence": {
+   "en": "Warn me when a till is out by more than {limit}.",
+   "sw": "Nionye kaunta ikiwa na tofauti ya zaidi ya {limit}."
+  },
+  "units": {
+   "limit": "money"
+  }
+ },
+ "purchasing.bill_mismatch_waiting": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier invoice does not match what you ordered",
+   "sw": "Ankara ya msambazaji hailingani na ulichoagiza"
+  },
+  "why": {
+   "en": "You may pay for goods you did not get or at the wrong price.",
+   "sw": "Unaweza kulipa bidhaa ambazo hukupata au kwa bei isiyo sahihi."
+  },
+  "todo": {
+   "en": "Check the invoice against your order and delivery, then fix or query it.",
+   "sw": "Linganisha ankara na oda na mzigo, kisha sahihisha au muulize msambazaji."
+  },
+  "sentence": {
+   "en": "Tell me when an invoice mismatch has waited {waiting_days} days.",
+   "sw": "Niambie tofauti ya ankara ikisubiri siku {waiting_days}."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "purchasing.duplicate_supplier_bill": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier bill may have been entered twice",
+   "sw": "Ankara ya msambazaji huenda imeandikwa mara mbili"
+  },
+  "why": {
+   "en": "If both are paid, you pay the same bill twice.",
+   "sw": "Zote mbili zikilipwa, unalipa ankara ileile mara mbili."
+  },
+  "todo": {
+   "en": "Compare the two. Delete the copy before paying.",
+   "sw": "Zilinganishe. Futa nakala kabla ya kulipa."
+  },
+  "sentence": {
+   "en": "Tell me about invoices with the same amount within {within_days} days.",
+   "sw": "Niambie kuhusu ankara za kiasi kilekile ndani ya siku {within_days}."
+  },
+  "units": {
+   "within_days": "days"
+  }
+ },
+ "purchasing.duplicate_supplier_payment": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier may have been paid twice",
+   "sw": "Msambazaji huenda amelipwa mara mbili"
+  },
+  "why": {
+   "en": "Paying twice is money out of your pocket.",
+   "sw": "Kulipa mara mbili ni pesa kutoka mfukoni mwako."
+  },
+  "todo": {
+   "en": "Check both payments and ask the supplier to refund one.",
+   "sw": "Angalia malipo yote mawili na umwombe msambazaji akurudishie moja."
+  },
+  "sentence": {
+   "en": "Tell me about equal payments within {within_days} days.",
+   "sw": "Niambie kuhusu malipo sawa ndani ya siku {within_days}."
+  },
+  "units": {
+   "within_days": "days"
+  }
+ },
+ "purchasing.margin_squeeze": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A product costs more but price stayed same",
+   "sw": "Bidhaa inagharimu zaidi lakini inauzwa kwa bei ileile"
+  },
+  "why": {
+   "en": "Your profit on it shrinks or disappears.",
+   "sw": "Faida yako juu yake inapungua au kuisha."
+  },
+  "todo": {
+   "en": "Raise the selling price or ask the supplier for a better price.",
+   "sw": "Ongeza bei ya kuuza au mwombe msambazaji bei nzuri zaidi."
+  },
+  "sentence": {
+   "en": "Tell me when cost rises {cost_rise_percent}% and the margin falls below {min_margin_percent}%.",
+   "sw": "Niambie gharama ikipanda kwa {cost_rise_percent}% na faida ikishuka chini ya {min_margin_percent}%."
+  },
+  "units": {
+   "cost_rise_percent": "percent",
+   "min_margin_percent": "percent"
+  }
+ },
+ "purchasing.order_above_usual_price": {
+  "topic": "suppliers",
+  "title": {
+   "en": "An order costs more than this supplier charged before",
+   "sw": "Oda ina bei ya juu kuliko msambazaji huyu alivyotoza awali"
+  },
+  "why": {
+   "en": "You may be about to overpay.",
+   "sw": "Unaweza kuwa karibu kulipa zaidi ya inavyostahili."
+  },
+  "todo": {
+   "en": "Ask the supplier why before confirming the order.",
+   "sw": "Muulize msambazaji kwa nini kabla ya kuthibitisha oda."
+  },
+  "sentence": {
+   "en": "Tell me when an order price is more than {above_percent}% above the usual.",
+   "sw": "Niambie bei ya oda ikizidi ile ya kawaida kwa {above_percent}%."
+  },
+  "units": {
+   "above_percent": "percent"
+  }
+ },
+ "purchasing.overdue_supplier_bills": {
+  "topic": "suppliers",
+  "title": {
+   "en": "Supplier invoices are overdue",
+   "sw": "Ankara za msambazaji zimechelewa kulipwa"
+  },
+  "why": {
+   "en": "Late payment can cost you trust, discounts or late fees.",
+   "sw": "Kuchelewa kulipa kunaweza kukugharimu uaminifu, punguzo au ada za kuchelewa."
+  },
+  "todo": {
+   "en": "Pay the oldest ones first, or agree a date with the supplier.",
+   "sw": "Lipa za zamani zaidi kwanza, au kubaliana tarehe na msambazaji."
+  },
+  "sentence": {
+   "en": "Tell me when an invoice is {overdue_days} days overdue, and urgent at {serious_days} days.",
+   "sw": "Niambie ankara ikichelewa siku {overdue_days}, na iwe ya haraka siku {serious_days}."
+  },
+  "units": {
+   "overdue_days": "days",
+   "serious_days": "days"
+  }
+ },
+ "purchasing.paid_without_receipt": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier was paid for goods not received",
+   "sw": "Ankara ya msambazaji ililipwa kwa bidhaa ambazo hukupokea"
+  },
+  "why": {
+   "en": "You paid for goods that never came, came short or were sent back.",
+   "sw": "Ulilipa bidhaa ambazo hazikuja, zilikuja pungufu au zilirudishwa."
+  },
+  "todo": {
+   "en": "Ask the supplier for a refund or the missing goods.",
+   "sw": "Mwombe msambazaji marejesho au bidhaa zilizokosekana."
+  },
+  "sentence": {
+   "en": "Look at invoices paid in the last {days} days.",
+   "sw": "Angalia ankara zilizolipwa siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "purchasing.supplier_bank_changed": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier's payment details were changed",
+   "sw": "Maelezo ya malipo ya msambazaji yamebadilishwa"
+  },
+  "why": {
+   "en": "Changed bank details are a common way to send your money to the wrong person.",
+   "sw": "Kubadilisha maelezo ya benki ni njia ya kawaida ya kupeleka pesa zako kwa mtu asiyestahili."
+  },
+  "todo": {
+   "en": "Call the supplier on a number you already know to confirm the change.",
+   "sw": "Mpigie msambazaji kwa namba unayoijua tayari ili kuthibitisha mabadiliko."
+  },
+  "sentence": {
+   "en": "Look at changes made in the last {days} days.",
+   "sw": "Angalia mabadiliko ya siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "purchasing.supplier_price_rise": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier raised the price of a product",
+   "sw": "Msambazaji amepandisha bei ya bidhaa"
+  },
+  "why": {
+   "en": "Higher costs eat your profit unless you change your prices.",
+   "sw": "Gharama kubwa zinakula faida yako usipobadilisha bei zako."
+  },
+  "todo": {
+   "en": "Ask the supplier to explain it, and check your selling price.",
+   "sw": "Mwombe msambazaji aeleze, na uangalie bei yako ya kuuza."
+  },
+  "sentence": {
+   "en": "Tell me when a price rises {rise_percent}% above earlier deliveries.",
+   "sw": "Niambie bei ikipanda kwa {rise_percent}% juu ya mizigo ya awali."
+  },
+  "units": {
+   "rise_percent": "percent"
+  }
+ },
+ "standalone.branch_sales_low": {
+  "topic": "cash",
+  "like": "pos.branch_sales_low"
+ },
+ "standalone.cashier_discount_rate": {
+  "topic": "cash",
+  "like": "pos.cashier_discount_rate"
+ },
+ "standalone.cashier_refund_rate": {
+  "topic": "cash",
+  "like": "pos.cashier_refund_rate"
+ },
+ "standalone.cashier_void_rate": {
+  "topic": "cash",
+  "like": "pos.cashier_void_rate"
+ },
+ "standalone.credit_to_overdue_customer": {
+  "topic": "customers",
+  "like": "pos.credit_to_overdue_customer"
+ },
+ "standalone.customer_overdue": {
+  "topic": "customers",
+  "like": "pos.customer_overdue"
+ },
+ "standalone.customer_paying_slower": {
+  "topic": "customers",
+  "like": "pos.customer_paying_slower"
+ },
+ "standalone.late_entered_sales": {
+  "topic": "cash",
+  "like": "pos.late_recorded_sales"
+ },
+ "standalone.out_of_hours_sales": {
+  "topic": "cash",
+  "like": "pos.out_of_hours_sales"
+ },
+ "standalone.cash_deposit_gap": {
+  "topic": "cash",
+  "title": {
+   "en": "Cash taken is more than cash banked",
+   "sw": "Pesa zilizopokelewa ni nyingi kuliko zilizowekwa benki"
+  },
+  "why": {
+   "en": "Some takings may not have reached the bank.",
+   "sw": "Baadhi ya mapato huenda hayajafika benki."
+  },
+  "todo": {
+   "en": "Compare tills and bank deposits for each day and ask the branch.",
+   "sw": "Linganisha kaunta na pesa zilizowekwa benki kila siku na uulize tawi."
+  },
+  "sentence": {
+   "en": "Tell me when over {tolerance_percent}% of cash sales (at least {min_gap}) is not banked after {grace_days} days.",
+   "sw": "Niambie zaidi ya {tolerance_percent}% ya mauzo ya pesa taslimu (angalau {min_gap}) isipowekwa benki baada ya siku {grace_days}."
+  },
+  "units": {
+   "tolerance_percent": "percent",
+   "min_gap": "money",
+   "grace_days": "days"
+  }
+ },
+ "standalone.duplicate_payment": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A payment may have been made twice",
+   "sw": "Malipo huenda yamefanywa mara mbili"
+  },
+  "why": {
+   "en": "Paying the same person twice is money lost.",
+   "sw": "Kumlipa mtu yuleyule mara mbili ni pesa iliyopotea."
+  },
+  "todo": {
+   "en": "Check both payments and ask for one back.",
+   "sw": "Angalia malipo yote mawili na uombe moja irudishwe."
+  },
+  "sentence": {
+   "en": "Tell me about equal payments to one person within {hours_apart} hours, over {min_amount}.",
+   "sw": "Niambie kuhusu malipo sawa kwa mtu mmoja ndani ya saa {hours_apart}, juu ya {min_amount}."
+  },
+  "units": {
+   "hours_apart": "hours",
+   "min_amount": "money"
+  }
+ },
+ "standalone.duplicate_supplier_invoice": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A supplier invoice may have been entered twice",
+   "sw": "Ankara ya msambazaji huenda imeandikwa mara mbili"
+  },
+  "why": {
+   "en": "If both are paid, the supplier gets paid twice.",
+   "sw": "Zote zikilipwa, msambazaji analipwa mara mbili."
+  },
+  "todo": {
+   "en": "Compare the two invoices and remove the copy.",
+   "sw": "Linganisha ankara hizo mbili na uondoe nakala."
+  },
+  "sentence": {
+   "en": "Tell me about invoices of the same amount within {days_apart} days of each other.",
+   "sw": "Niambie kuhusu ankara za kiasi kilekile zilizo ndani ya siku {days_apart} kati yake."
+  },
+  "units": {
+   "days_apart": "days"
+  }
+ },
+ "standalone.expense_unusually_high": {
+  "topic": "books",
+  "title": {
+   "en": "An expense is far above the usual",
+   "sw": "Tumizi liko juu sana ya kawaida ya aina yake"
+  },
+  "why": {
+   "en": "It may be a mistake, a double entry or a cost to question.",
+   "sw": "Linaweza kuwa kosa, rekodi mara mbili au gharama ya kuulizia."
+  },
+  "todo": {
+   "en": "Check the receipt and ask what it was for.",
+   "sw": "Angalia risiti na uulize ilikuwa ya nini."
+  },
+  "sentence": {
+   "en": "Tell me about expenses over {min_amount} that are much higher than usual.",
+   "sw": "Niambie kuhusu matumizi yanayozidi {min_amount} na yaliyo juu sana ya kawaida."
+  },
+  "units": {
+   "min_amount": "money"
+  }
+ },
+ "standalone.large_exception": {
+  "topic": "cash",
+  "title": {
+   "en": "A large sale was cancelled, refunded or discounted",
+   "sw": "Mauzo makubwa yamefutwa, kurejeshwa au kupunguzwa bei"
+  },
+  "why": {
+   "en": "Big changes to a sale move a lot of money, so they need a clear reason.",
+   "sw": "Mabadiliko makubwa ya mauzo huhamisha pesa nyingi, kwa hiyo yanahitaji sababu wazi."
+  },
+  "todo": {
+   "en": "Look at the sale and ask who did it and why.",
+   "sw": "Angalia mauzo na uulize nani alifanya na kwa nini."
+  },
+  "sentence": {
+   "en": "Tell me about a cancelled sale over {min_void}, a refund over {min_refund} or a discount over {min_discount}.",
+   "sw": "Niambie kuhusu mauzo yaliyofutwa juu ya {min_void}, marejesho juu ya {min_refund} au punguzo juu ya {min_discount}."
+  },
+  "units": {
+   "min_void": "money",
+   "min_refund": "money",
+   "min_discount": "money"
+  }
+ },
+ "standalone.manual_journal": {
+  "topic": "books",
+  "title": {
+   "en": "A hand-made entry in the books looks odd",
+   "sw": "Rekodi ya mkono kwenye hesabu inaonekana ya kushangaza"
+  },
+  "why": {
+   "en": "It may be large, round, made at night, back-dated or approved by its writer.",
+   "sw": "Inaweza kuwa kubwa, ya namba ya pande zote, ya usiku, ya tarehe ya nyuma au imeidhinishwa na aliyeiandika."
+  },
+  "todo": {
+   "en": "Ask who made it and check the papers behind it.",
+   "sw": "Uliza nani aliiandika na uangalie nyaraka zake."
+  },
+  "sentence": {
+   "en": "Tell me about hand-made entries over {large_amount} or round amounts of {round_min} or more.",
+   "sw": "Niambie kuhusu rekodi za mkono zinazozidi {large_amount} au za namba ya pande zote za {round_min} au zaidi."
+  },
+  "units": {
+   "large_amount": "money",
+   "round_min": "money"
+  }
+ },
+ "standalone.negative_stock": {
+  "topic": "stock",
+  "title": {
+   "en": "A product shows less than zero in stock",
+   "sw": "Bidhaa inaonyesha chini ya sifuri kwenye hisa"
+  },
+  "why": {
+   "en": "A delivery or opening count is probably missing.",
+   "sw": "Huenda mzigo au hesabu ya mwanzo haijaandikwa."
+  },
+  "todo": {
+   "en": "Record the missing delivery or count the product.",
+   "sw": "Andika mzigo uliokosekana au hesabu bidhaa."
+  },
+  "sentence": {
+   "en": "Tell me when stock is below zero by {min_units} or more units.",
+   "sw": "Niambie hisa ikiwa chini ya sifuri kwa vipande {min_units} au zaidi."
+  },
+  "units": {
+   "min_units": "count"
+  }
+ },
+ "standalone.new_user": {
+  "topic": "staff",
+  "title": {
+   "en": "A new person was added to your other system",
+   "sw": "Mtu mpya ameongezwa kwenye mfumo wako mwingine"
+  },
+  "why": {
+   "en": "A new login gives someone access to your business data.",
+   "sw": "Jina jipya la kuingia humpa mtu ufikiaji wa taarifa za biashara yako."
+  },
+  "todo": {
+   "en": "Check you know this person and that they need access.",
+   "sw": "Hakikisha unamjua mtu huyu na kwamba anahitaji ufikiaji."
+  },
+  "sentence": {
+   "en": "Look at new people added in the last {days} days.",
+   "sw": "Angalia watu wapya walioongezwa siku {days} zilizopita."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "standalone.sale_without_payment": {
+  "topic": "cash",
+  "title": {
+   "en": "A sale marked paid electronically has no payment",
+   "sw": "Mauzo yanasema yalilipwa kielektroniki, lakini hakuna malipo yanayoonekana"
+  },
+  "why": {
+   "en": "The customer may not have paid, or the sale was recorded with the wrong payment type.",
+   "sw": "Mteja huenda hakulipa, au mauzo yaliandikwa na aina isiyo sahihi ya malipo."
+  },
+  "todo": {
+   "en": "Check the statement for that sale and ask the cashier.",
+   "sw": "Angalia taarifa kwa mauzo hayo na umuulize keshia."
+  },
+  "sentence": {
+   "en": "Tell me when a sale has no payment after {grace_hours} hours, and urgent at {high_count} sales.",
+   "sw": "Niambie mauzo yakikosa malipo baada ya saa {grace_hours}, na iwe ya haraka kwa mauzo {high_count}."
+  },
+  "units": {
+   "grace_hours": "hours",
+   "high_count": "count"
+  }
+ },
+ "standalone.shrinkage_by_product": {
+  "topic": "stock",
+  "title": {
+   "en": "A product keeps losing stock",
+   "sw": "Bidhaa inaendelea kupoteza hisa"
+  },
+  "why": {
+   "en": "Repeated losses mean stock is leaking away.",
+   "sw": "Hasara za mara kwa mara zinamaanisha bidhaa zinavuja."
+  },
+  "todo": {
+   "en": "Count the product and see who handles it.",
+   "sw": "Hesabu bidhaa na uangalie nani anaishughulikia."
+  },
+  "sentence": {
+   "en": "Tell me when a product loses at least {min_units} units or {min_loss} in {days} days.",
+   "sw": "Niambie bidhaa ikipoteza angalau vipande {min_units} au {min_loss} ndani ya siku {days}."
+  },
+  "units": {
+   "min_units": "count",
+   "min_loss": "money",
+   "days": "days"
+  }
+ },
+ "standalone.stock_adjustment": {
+  "topic": "stock",
+  "title": {
+   "en": "A stock write-off or correction looks odd",
+   "sw": "Hasara au marekebisho ya hisa yanaonekana ya kushangaza"
+  },
+  "why": {
+   "en": "It may be large, made at night or dated days earlier.",
+   "sw": "Inaweza kuwa kubwa, ya usiku au ya tarehe ya siku kadhaa nyuma."
+  },
+  "todo": {
+   "en": "Ask who made it and why.",
+   "sw": "Uliza nani alifanya na kwa nini."
+  },
+  "sentence": {
+   "en": "Tell me about corrections worth {min_value} or more, or {min_quantity} units or more.",
+   "sw": "Niambie kuhusu marekebisho ya thamani ya {min_value} au zaidi, au vipande {min_quantity} au zaidi."
+  },
+  "units": {
+   "min_value": "money",
+   "min_quantity": "count"
+  }
+ },
+ "standalone.supplier_price_rise": {
+  "topic": "suppliers",
+  "title": {
+   "en": "A product costs more than it used to",
+   "sw": "Bidhaa inagharimu zaidi kuliko zamani"
+  },
+  "why": {
+   "en": "Higher costs eat your profit unless you change your prices.",
+   "sw": "Gharama kubwa zinakula faida yako usipobadilisha bei zako."
+  },
+  "todo": {
+   "en": "Ask the supplier to explain, and check your selling price.",
+   "sw": "Mwombe msambazaji aeleze, na uangalie bei yako ya kuuza."
+  },
+  "sentence": {
+   "en": "Tell me when the latest price is {rise_percent}% above the earlier average.",
+   "sw": "Niambie bei ya mwisho ikizidi wastani wa awali kwa {rise_percent}%."
+  },
+  "units": {
+   "rise_percent": "percent"
+  }
+ },
+ "standalone.unmatched_receipt": {
+  "topic": "cash",
+  "title": {
+   "en": "Money came in that matches no sale or invoice",
+   "sw": "Pesa zimeingia ambazo hazilingani na mauzo wala ankara"
+  },
+  "why": {
+   "en": "You cannot tell what the money was for.",
+   "sw": "Huwezi kujua pesa hizo zilikuwa za nini."
+  },
+  "todo": {
+   "en": "Find who sent it and link it to the right sale.",
+   "sw": "Tafuta nani alituma na uiunganishe na mauzo sahihi."
+  },
+  "sentence": {
+   "en": "Tell me about money over {min_amount} not matched after {grace_days} days.",
+   "sw": "Niambie kuhusu pesa zinazozidi {min_amount} zisizolinganishwa baada ya siku {grace_days}."
+  },
+  "units": {
+   "min_amount": "money",
+   "grace_days": "days"
+  }
+ }
+}

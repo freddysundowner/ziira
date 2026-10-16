@@ -10,7 +10,7 @@ from sqlalchemy import text
 
 from tests.payments_helpers import PAY, due_now, fresh_ref, make_payments_shop, one, work
 from tests.stock_helpers import system
-from ziira.modules.payments.providers import FakeProvider
+from ziira.plugins.mpesa.daraja import SimulatedDarajaProvider as FakeProvider
 
 
 @pytest.fixture(scope="module")
@@ -70,7 +70,7 @@ def test_a_prompt_is_sent_by_the_worker_and_completed_by_the_callback(client, sh
     work(shop)
     [request] = FakeProvider.sent
     assert request.msisdn == "254712345678" and request.amount == 116 and request.shortcode == "600638"
-    assert request.till_type == "till" and request.account_reference == "POS-1"
+    assert request.settings["till_type"] == "till" and request.account_reference == "POS-1"
     assert request.credentials["passkey"] == "pk-789" and request.environment == "sandbox"
     tenant_hex = shop["tenant_id"].hex
     assert f"/callbacks/stk/{tenant_hex}/{intent['id']}/" in request.callback_url
@@ -142,9 +142,7 @@ def test_a_refused_prompt_fails_and_is_flagged_and_an_outage_is_retried(client, 
     items = client.get("/api/v1/exceptions", headers=shop["owner"], params={"kind": "stk_refused"}).json()
     assert any("Invalid PhoneNumber" in i["message"] for i in items)
 
-    from ziira.modules.payments import providers
-
-    real = providers.FakeProvider.stk_push
+    real = FakeProvider.stk_push
     calls: list[int] = []
 
     def flaky(self, request):  # type: ignore[no-untyped-def]
@@ -153,7 +151,7 @@ def test_a_refused_prompt_fails_and_is_flagged_and_an_outage_is_retried(client, 
             raise ConnectionError("Safaricom is down")
         return real(self, request)
 
-    providers.FakeProvider.stk_push = flaky  # type: ignore[method-assign]
+    FakeProvider.stk_push = flaky  # type: ignore[method-assign]
     try:
         retried = push(client, shop).json()
         due_now(shop)
@@ -165,7 +163,7 @@ def test_a_refused_prompt_fails_and_is_flagged_and_an_outage_is_retried(client, 
         work(shop)
         assert len(calls) == 2 and len(FakeProvider.sent) == 1
     finally:
-        providers.FakeProvider.stk_push = real  # type: ignore[method-assign]
+        FakeProvider.stk_push = real  # type: ignore[method-assign]
 
 
 def test_without_a_callback_a_status_check_settles_the_prompt(client, shop) -> None:  # type: ignore[no-untyped-def]
@@ -220,7 +218,7 @@ def test_a_prompt_is_validated(client, shop) -> None:  # type: ignore[no-untyped
     assert push(client, shop, phone="").status_code == 422
     r = client.post(f"{PAY}/intents", headers=shop["owner"], json={"payment_account_id": shop["bank"], "amount": "100",
                                                                    "phone": "0712345678"})
-    assert r.status_code == 422 and "M-Pesa" in r.json()["message"]
+    assert r.status_code == 422 and "mobile money" in r.json()["message"]
     r = client.post(f"{PAY}/intents", headers=shop["owner"], json={"payment_account_id": str(uuid4()), "amount": "100",
                                                                    "phone": "0712345678"})
     assert r.status_code == 404
@@ -235,7 +233,7 @@ def test_an_account_without_credentials_cannot_prompt(client, shop) -> None:  # 
         "name": "No keys", "shortcode": "888880", "provider": "fake"}).json()
     r = client.post(f"{PAY}/intents", headers=shop["owner"], json={"payment_account_id": other["id"], "amount": "10",
                                                                    "phone": "0712345678"})
-    assert r.status_code == 422 and "no M-Pesa credentials" in r.json()["message"]
+    assert r.status_code == 422 and "no provider credentials" in r.json()["message"]
 
 
 def test_a_retried_request_prompts_the_customer_once(client, shop) -> None:  # type: ignore[no-untyped-def]

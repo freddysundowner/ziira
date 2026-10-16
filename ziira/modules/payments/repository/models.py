@@ -39,7 +39,7 @@ class PaymentAccount(Audited, Base):
     credential_id: Mapped[UUID | None]
     ledger_account_id: Mapped[UUID | None]
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
-    provider: Mapped[str] = mapped_column(server_default=text("'daraja'"))
+    provider: Mapped[str] = mapped_column(server_default=text("'manual'"))
     callback_token_hash: Mapped[str | None]
     config: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default=text("'{}'"))
 

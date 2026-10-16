@@ -1,0 +1,17 @@
+# Tax codes that mean the same in every country. None of them charges a tax: a business adds its own rate (Products,
+# Tax codes) because Ziira does not guess a country's rate. Source: none needed, these are placeholders by design.
+
+[[tax_code]]
+code = "NONE"
+name = "No tax"
+vat_rate = "0"
+
+[[tax_code]]
+code = "ZERO"
+name = "Zero-rated"
+vat_rate = "0"
+
+[[tax_code]]
+code = "EXEMPT"
+name = "Exempt"
+vat_rate = "0"

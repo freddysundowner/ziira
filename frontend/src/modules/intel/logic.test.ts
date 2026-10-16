@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { actionsFor, ageInDays, atDefaults, type Check, draftChanges, groupChecks, paramKind, resetChanges, statusesFor } from "./logic";
+import { actionsFor, ageInDays, atDefaults, type Check, draftChanges, formatByKind, groupChecks, paramKind, resetChanges, statusesFor } from "./logic";
 
 const check = (over: Partial<Check>): Check => ({ code: "x.y", title: "T", area: "stock", description: "", severity: "low", enabled: true, auto_resolves: true, defaults: {}, params: {}, ...over });
 
@@ -94,5 +94,20 @@ describe("the AI assistant", () => {
     expect(sourcePeriod({ params: { date_from: "2026-10-01", date_to: "2026-10-07" } })).toBe("2026-10-01 – 2026-10-07");
     expect(sourcePeriod({ params: { date_from: "2026-10-01", date_to: "2026-10-01" } })).toBe("2026-10-01");
     expect(sourcePeriod({ params: { limit: 5 } })).toBeNull();
+  });
+});
+
+describe("formatByKind", () => {
+  it("shows money with two decimals, counts whole, percentages with one decimal", () => {
+    expect(formatByKind("750.0000", "money", "KES")).toMatch(/750\.00/);
+    expect(formatByKind("4.0000", "count")).toBe("4");
+    expect(formatByKind("12.0000", "days")).toBe("12");
+    expect(formatByKind("12.5", "percent")).toBe("12.5%");
+    expect(formatByKind("12", "percent")).toBe("12.0%");
+    expect(formatByKind("3.14159", "number")).toBe("3.14");
+  });
+  it("shows a dash for nothing", () => {
+    expect(formatByKind(null, "money", "KES")).toBe("—");
+    expect(formatByKind("", "count")).toBe("—");
   });
 });

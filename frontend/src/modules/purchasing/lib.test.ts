@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addDays, allocateOldestFirst, amountDue, dayToTimestamp, isOpenBill, isOverdue, previewSubtotal, remaining, stillToReceive, sumAmounts } from "./lib";
+import { addDays, allocateOldestFirst, amountDue, dayToTimestamp, isOpenBill, isOverdue, previewSubtotal, receiveLocationId, remaining, stillToReceive, sumAmounts } from "./lib";
 
 describe("bill amounts", () => {
   it("works out what is still owed and never goes below zero", () => {
@@ -54,5 +54,17 @@ describe("dates", () => {
   it("sends a timestamp only for a day other than today", () => {
     expect(dayToTimestamp("2025-01-05", "2025-01-05")).toBeUndefined();
     expect(dayToTimestamp("2025-01-04", "2025-01-05")).toMatch(/^2025-01-04T/);
+  });
+});
+
+describe("receiveLocationId", () => {
+  const loc = (id: string, kind = "store", is_active = true) => ({ id, kind, is_active });
+  it("prefers the order's own location, else the first active store", () => {
+    expect(receiveLocationId([loc("a"), loc("b")], "b")).toBe("b");
+    expect(receiveLocationId([loc("w", "warehouse"), loc("s")], null)).toBe("s");
+  });
+  it("ignores an inactive preferred location and is empty with none", () => {
+    expect(receiveLocationId([loc("a"), loc("b", "store", false)], "b")).toBe("a");
+    expect(receiveLocationId([], null)).toBe("");
   });
 });

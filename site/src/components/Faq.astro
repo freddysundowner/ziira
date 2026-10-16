@@ -1,0 +1,19 @@
+---
+import type { Lang, Faq } from "../content/types";
+import { inline } from "../lib/md";
+import { urlFor } from "../lib/registry";
+import { ui } from "../i18n/ui";
+interface Props { lang: Lang; items: Faq[]; heading?: string; bare?: boolean }
+const { lang, items, heading, bare = false } = Astro.props;
+---
+{items.length > 0 && (
+  <section class="faq" aria-labelledby="faq-h">
+    {!bare && <h2 id="faq-h">{heading ?? ui[lang].faq}</h2>}
+    {items.map((f) => (
+      <details>
+        <summary>{f.q}</summary>
+        <div class="answer"><p set:html={inline(f.a, lang, urlFor)} /></div>
+      </details>
+    ))}
+  </section>
+)}

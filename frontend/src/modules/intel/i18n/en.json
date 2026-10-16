@@ -1,6 +1,8 @@
 {
+ "howItWorks": "How Intelligence works",
  "menu": "Findings",
  "checksMenu": "Check settings",
+ "checksTab": "Checks",
  "title": "Findings",
  "hint": "Things Intelligence noticed in your business that are worth a look. Each is a question to answer, not a verdict.",
  "openFindings": "Open findings",
@@ -93,6 +95,7 @@
  "assignedSomeone": "Someone else",
  "unassigned": "Nobody yet",
  "closedOn": "Closed on",
+ "checkCode": "Check code",
  "check": "Check",
  "checksTitle": "Check settings",
  "checksHint": "The checks Intelligence runs for your business. Switch off the ones you do not need, or change their limits.",
@@ -311,5 +314,13 @@
   "outcome": "Result",
   "outcomes": { "executed": "Done", "failed": "Did not work" },
   "message": "Message"
- }
+ },
+  "source": {
+    "label": "Source",
+    "filter": "Source",
+    "all": "All sources",
+    "connected": "From your connected system",
+    "ziira": "From Ziira",
+    "connectedShort": "connected system"
+  }
 }

@@ -1,4 +1,5 @@
 {
+  "tillsDevices": "Tills and devices",
   "sales": "Sales",
   "returns": "Returns",
   "tills": "Tills",
@@ -204,5 +205,11 @@
   "noReasons": "No reasons yet.",
   "noReasonsHint": "Add the reasons your staff will choose from.",
   "salesToday": "{{count}} sales today",
-  "noOpenTills": "No till is open."
+  "noOpenTills": "No till is open.",
+  "changeStore": "Change store",
+  "changeStoreOf": "Store for {{name}}",
+  "changeStoreHint": "The store this till's sales take stock from. You cannot change it while a till is open on this device.",
+  "storeChanged": "{{name}} now sells from the new store.",
+  "noStoreYet": "This branch has no store yet, so a till here cannot sell.",
+  "addStoreLink": "Add a store first"
 }

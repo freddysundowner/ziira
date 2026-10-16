@@ -15,7 +15,7 @@ from ziira.modules.intel.public import (
     nudge_people,
 )
 from ziira.modules.people.permissions import LEAVE_APPROVE, PAYROLL_APPROVE, PAYROLL_PAY
-from ziira.sdk import Session, company_setting, recipients_with_permission
+from ziira.sdk import Session, can_reach, company_setting, recipients_with_permission
 
 LEAVE = "people.leave_request"
 RUN = "people.payroll_run"
@@ -32,10 +32,12 @@ def decider_permission(kind: str, status: str | None) -> str:
 
 def reachable(session: Session, company_id: UUID, branch_id: UUID | None, permission: str) -> list[str]:
     channel = str(company_setting(session, company_id, "intel_alert_channel"))
-    if channel not in ("sms", "email"):
+    if channel == "off":
         return []
+    ways = [channel]
     return [p.full_name for p in recipients_with_permission(session, permission)
-            if p.covers(permission, company_id, branch_id) and (p.phone if channel == "sms" else p.email)]
+            if p.covers(permission, company_id, branch_id)
+            and can_reach(session, company_id, p.user_id, "alerts", ways)]
 
 
 class NudgeApprover(ActionProvider):

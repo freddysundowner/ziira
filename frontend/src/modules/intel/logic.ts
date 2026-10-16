@@ -1,5 +1,5 @@
 /** Pure rules for the findings screens: the status filter, which actions a person has, and tuning a check's limits. */
-import type { Schemas } from "@/sdk";
+import { money, percent, quantity, type Schemas } from "@/sdk";
 
 export type Finding = Schemas["FindingOut"];
 export type Check = Schemas["CheckOut"];
@@ -28,6 +28,7 @@ export interface ActionRights {
   dismiss: boolean;
   assign: boolean;
   ask: boolean;
+  snooze: boolean;
 }
 
 /**
@@ -35,7 +36,7 @@ export interface ActionRights {
  * acknowledge and explain a finding assigned to them. The server checks scope again.
  */
 export function actionsFor(finding: Pick<Finding, "status" | "owner_user_id">, can: { manage: boolean; respond: boolean }, userId: string | null): ActionRights {
-  const none: ActionRights = { acknowledge: false, explain: false, resolve: false, dismiss: false, assign: false, ask: false };
+  const none: ActionRights = { acknowledge: false, explain: false, resolve: false, dismiss: false, assign: false, ask: false, snooze: false };
   if (!isOpen(finding.status)) return none;
   const mine = can.respond && !!userId && finding.owner_user_id === userId;
   const answers = can.manage || mine;
@@ -46,6 +47,7 @@ export function actionsFor(finding: Pick<Finding, "status" | "owner_user_id">, c
     dismiss: can.manage,
     assign: can.manage,
     ask: can.manage,
+    snooze: answers,
   };
 }
 
@@ -103,7 +105,7 @@ export type AskAnswer = Schemas["AskAnswerOut"];
 export type AskSource = Schemas["AskSourceOut"];
 
 /** Example questions offered in an empty conversation (their words are in the translations). */
-export const EXAMPLE_KEYS = ["sales", "lowStock", "overdue", "profit", "bills"] as const;
+export const EXAMPLE_KEYS = ["sales", "overdue", "lowStock", "profit"] as const;
 
 const KNOWN_REASONS: readonly string[] = ["not_enabled", "no_consent", "purpose_off", "budget", "not_configured", "terms_unconfirmed"];
 /** Why the assistant cannot be used, as a translation key; a reason this screen does not know reads as the generic one. */
@@ -151,4 +153,15 @@ export interface Turn {
   question: string;
   answer?: AskAnswer;
   error?: string;
+}
+
+export type ValueKind = Schemas["FindingDetailOut"]["value_kind"];
+
+/** A finding's figure the way its check measures it: money with the company's currency, counts and days whole, percentages with one decimal. */
+export function formatByKind(value: string | null | undefined, kind: ValueKind, currency?: string): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (kind === "money") return money(value, currency);
+  if (kind === "percent") return percent(value, 1);
+  if (kind === "count" || kind === "days") return quantity(value, 0);
+  return quantity(value, 2);
 }

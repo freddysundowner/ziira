@@ -1,0 +1,60 @@
+---
+import "../styles/global.css";
+import type { HeadMeta } from "../lib/seo";
+import { OG_LOCALE } from "../lib/seo";
+import { ui } from "../i18n/ui";
+import { siteConfig } from "../lib/siteConfig";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props { head: HeadMeta; graph: Record<string, unknown>; path: string }
+const { head, graph, path } = Astro.props;
+const lang = head.lang;
+const t = ui[lang];
+const twitter = siteConfig.seo.twitterHandle;
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="preload" href="/fonts/bricolage-grotesque-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
+    {path === "/" && <link rel="preload" href="/fonts/gochi-hand-hero.woff2" as="font" type="font/woff2" crossorigin />}
+    <title>{head.title}</title>
+    <meta name="description" content={head.description} />
+    <meta name="robots" content={head.robots} />
+    <link rel="canonical" href={head.canonical} />
+    <meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0e14" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    {siteConfig.company.favicon
+      ? <link rel="icon" href={siteConfig.company.favicon.path} type={siteConfig.company.favicon.content_type} />
+      : <><link rel="icon" href="/favicon.svg" type="image/svg+xml" /><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" /></>}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/atom+xml" title={`${siteConfig.orgName} guides`} href="/guides/feed.xml" />
+    <meta property="og:site_name" content={siteConfig.orgName} />
+    <meta property="og:type" content={head.ogType} />
+    <meta property="og:title" content={head.title} />
+    <meta property="og:description" content={head.description} />
+    <meta property="og:url" content={head.canonical} />
+    <meta property="og:image" content={head.ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    {head.ogType === "article" && head.published && <meta property="article:published_time" content={head.published} />}
+    {head.ogType === "article" && head.modified && <meta property="article:modified_time" content={head.modified} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={head.title} />
+    <meta name="twitter:description" content={head.description} />
+    <meta name="twitter:image" content={head.ogImage} />
+    {twitter && <meta name="twitter:site" content={twitter} />}
+    <script type="application/ld+json" set:html={JSON.stringify(graph)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">{t.skip}</a>
+    <Header lang={lang} path={path} />
+    <main id="main"><slot /></main>
+    <Footer lang={lang} />
+  </body>
+</html>

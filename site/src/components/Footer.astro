@@ -1,0 +1,63 @@
+---
+import type { Lang } from "../content/types";
+import { ui } from "../i18n/ui";
+import { urlFor, titleFor, homeOf, cmsPageIds } from "../lib/registry";
+import { navGroups } from "../content/nav";
+import { siteConfig } from "../lib/siteConfig";
+import Logo from "./Logo.astro";
+import ContactDetails from "./ContactDetails.astro";
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = ui[lang];
+// Footer labels reuse the header's plain-language words where a page has one.
+const plain = new Map<string, string>();
+for (const g of navGroups) for (const c of g.columns) for (const l of c.links) if (l.id && !plain.has(l.id) && !/^\d\./.test(l.label)) plain.set(l.id, l.label);
+const override: Record<string, string> = { product: "Everything Ziira does", "intelligence-how": "How the daily check works", solutions: "All kinds of business", integrations: "All connections", "get-started": "Talk to us or get started" };
+const label = (id: string) => override[id] ?? plain.get(id) ?? t.labels[id] ?? titleFor(id, lang);
+const exists = (id: string) => { try { urlFor(id, lang); return true; } catch { return false; } };
+type Section = { h: string; ids: string[] };
+const cols: Section[][] = [
+  [{ h: "What Ziira does", ids: ["product", "core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people"] }],
+  [{ h: "Watch it for you", ids: ["intelligence-how", "intelligence-complete", "intelligence-existing", "intelligence-source-erpnext", "intelligence-source-odoo", "intelligence-source-zoho-books", "intelligence-source-quickbooks", "intelligence-source-bank", "intelligence-source-mobile-money", "intelligence-source-files"] }],
+  [
+    { h: "Who it is for", ids: ["solutions", "solutions-retail", "solutions-distribution", "solutions-multi-branch"] },
+    { h: "Connect your tools", ids: ["integrations", "integrations-whatsapp", "integrations-mpesa", "integrations-api"] },
+  ],
+  [{ h: "Help", ids: ["help", "guides", "glossary", "security", "get-started"] }],
+  [{ h: t.company, ids: ["about", "pricing", "privacy", "terms"] }],
+];
+// Legal and content pages published in the platform's Super Admin, beyond the built-in privacy and terms.
+const known = new Set(cols.flat().flatMap((s) => s.ids));
+const extra = cmsPageIds(lang).filter((id) => !known.has(id));
+cols[cols.length - 1][0].ids.push(...extra);
+const year = new Date().getUTCFullYear();
+const social = siteConfig.social;
+const numbers = [siteConfig.company.registrationNumber, siteConfig.company.taxId].filter(Boolean).join(" · ");
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="logo" href={homeOf(lang)}><Logo />{siteConfig.orgName}</a>
+        <p class="note" style="margin-top:14px">{t.footerNote}</p>
+        <ContactDetails lang={lang} />
+        {social.length > 0 && <ul class="social-links">{social.map((u) => <li><a href={u} rel="me noopener">{new URL(u).hostname.replace(/^www\./, "")}</a></li>)}</ul>}
+        <div class="status-box"><strong>{t.statusTitle}.</strong> {t.statusText}</div>
+      </div>
+      {cols.map((sections) => (
+        <div>
+          {sections.map((c, k) => (
+            <nav aria-label={c.h} style={k > 0 ? "margin-top:28px" : undefined}>
+              <h2>{c.h}</h2>
+              <ul>{c.ids.filter(exists).map((id) => <li><a href={urlFor(id, lang)}>{label(id)}</a></li>)}</ul>
+            </nav>
+          ))}
+        </div>
+      ))}
+    </div>
+    <div class="foot-bottom">
+      <span>&copy; {year} {siteConfig.legalName || siteConfig.orgName}{numbers && <> · {numbers}</>}</span>
+    </div>
+  </div>
+</footer>

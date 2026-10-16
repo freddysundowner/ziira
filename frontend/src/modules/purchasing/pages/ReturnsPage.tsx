@@ -7,7 +7,7 @@ export default function ReturnsPage() {
   const list = usePagedList(["purchasing", "returns"], (limit, offset) => unwrap(api.GET("/api/v1/purchasing/returns", { params: { query: { limit, offset } } })));
   return (
     <>
-      <PageHeader title={t("returns")} description={t("returnsHint")} />
+      <PageHeader title={t("returnsCredits")} description={t("returnsHint")} />
       <DataTable rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()} rowKey={(r) => r.id} rowHref={(r) => `/returns/${r.id}`}
         empty={{ title: t("noReturns"), hint: t("noReturnsHint") }}
         columns={[

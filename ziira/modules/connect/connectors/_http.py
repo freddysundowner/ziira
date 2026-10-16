@@ -277,7 +277,7 @@ def validate_timezone(name: object) -> str | None:
     try:
         ZoneInfo(str(name))
     except Exception:
-        raise ConnectorError(f"'{name}' is not a time zone name. Use a name such as Africa/Nairobi or Europe/London.",
+        raise ConnectorError(f"'{name}' is not a time zone name. Use a name such as Europe/London or America/New_York.",
                              retryable=False) from None
     return str(name)
 

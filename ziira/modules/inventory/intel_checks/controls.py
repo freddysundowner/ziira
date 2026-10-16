@@ -34,6 +34,8 @@ class LargeWriteDown(IntelCheck):
     """One adjustment or write-off took a large value of stock out of the books."""
 
     code = "inventory.large_write_down"
+
+    value_kind = "money"
     title = "Large stock write-downs"
     area = "controls"
     description = "A manual stock adjustment or write-off removed stock worth more than the limit."
@@ -83,6 +85,8 @@ class ShrinkageRate(IntelCheck):
     """A product lost more through adjustments, write-offs and counts than a fair share of what moved."""
 
     code = "inventory.shrinkage_rate"
+
+    value_kind = "percent"
     title = "Stock lost against stock moved"
     area = "controls"
     description = ("At a branch, a product lost through adjustments, write-offs and counts is a large share of "
@@ -144,6 +148,8 @@ class CountVarianceAboveLimit(IntelCheck):
     """A posted stock count changed the books by a large value."""
 
     code = "inventory.count_variance"
+
+    value_kind = "money"
     title = "Large stock count differences"
     area = "controls"
     description = "A stock count that was posted found stock worth more than the limit missing or extra."
@@ -189,6 +195,8 @@ class UnusualStockMoves(IntelCheck):
     """Adjustments or transfers made in the middle of the night, or recorded for a day long past."""
 
     code = "inventory.unusual_stock_moves"
+
+    value_kind = "days"
     title = "Stock moves at odd hours or back-dated"
     area = "controls"
     description = "A stock adjustment or transfer was made outside working hours or dated well before it was entered."

@@ -2,24 +2,22 @@ import { API_URL } from "../lib/api";
 import { code, seedCatalogue } from "../lib/seed";
 import { checkAccessibility, expect, shared, signIn, signedInApi, test } from "../lib/test";
 import { drawer, lbl } from "../lib/ui";
-import { totp } from "../lib/totp";
 
 // J16: the owner gives support access and takes it back; a member of Ziira staff (created by `ziira operator create` in
-// run.sh, signing in with a code from its second factor) opens a session while a grant is active, the banner appears, and
+// run.sh, signing in with its email and password) opens a session while a grant is active, the banner appears, and
 // the session stops working when the grant is ended. Then a privacy request: recorded, searched, exported as a JSON file.
 
 async function operatorToken(): Promise<string> {
-  const email = process.env.E2E_OPERATOR_EMAIL!, password = process.env.E2E_OPERATOR_PASSWORD!, secret = process.env.E2E_OPERATOR_SECRET!;
-  expect(secret, "run.sh creates the operator and passes its secret").toBeTruthy();
+  const email = process.env.E2E_OPERATOR_EMAIL!, password = process.env.E2E_OPERATOR_PASSWORD!;
+  expect(email && password, "run.sh creates the operator").toBeTruthy();
   const post = async (path: string, body: unknown, token?: string) => {
     const res = await fetch(`${API_URL}/api/v1/operator${path}`, { method: "POST", headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(body) });
     return { status: res.status, body: (await res.json().catch(() => ({}))) as any };
   };
-  const first = await post("/sign-in", { email, password });
-  expect(first.status).toBe(200);
-  const second = await post("/mfa/verify", { challenge: first.body.challenge, code: totp(secret) });
-  expect(second.status, JSON.stringify(second.body)).toBe(200);
-  return second.body.access_token;
+  const signedIn = await post("/sign-in", { email, password });
+  expect(signedIn.status, JSON.stringify(signedIn.body)).toBe(200);
+  expect(signedIn.body.challenge).toBeUndefined();                          // a password alone, no code step
+  return signedIn.body.access_token;
 }
 
 test("J16 support access and privacy requests", async ({ page }) => {

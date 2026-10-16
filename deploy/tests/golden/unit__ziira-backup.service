@@ -1,0 +1,34 @@
+[Unit]
+Description=Nightly backup of the master and every business database
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ziira
+Group=ziira
+EnvironmentFile=/etc/ziira/ziira.env
+WorkingDirectory=/var/lib/ziira
+ExecStart=/opt/ziira/current/venv/bin/ziira backup --dir /var/backups/ziira --keep-daily 35 --keep-monthly 12
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0027
+ReadWritePaths=/var/lib/ziira /var/backups/ziira

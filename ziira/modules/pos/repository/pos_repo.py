@@ -62,6 +62,14 @@ def location_branch(session: Session, location_id: UUID) -> tuple[UUID, UUID] | 
     return (row.company_id, row.branch_id) if row else None
 
 
+def branch_stores(session: Session, company_id: UUID, branch_id: UUID) -> list[UUID]:
+    """The active stores of a branch, read through the inventory schema's own table."""
+    rows = session.execute(text(
+        "select id from inventory.location where company_id = :c and branch_id = :b and kind = 'store' and is_active "
+        "order by code"), {"c": str(company_id), "b": str(branch_id)})
+    return [r.id for r in rows]
+
+
 def lock_key(session: Session, key: str) -> None:
     """Serialise work on one key (a client-made id) until the transaction ends."""
     session.execute(text("select pg_advisory_xact_lock(hashtext(:k))"), {"k": key})

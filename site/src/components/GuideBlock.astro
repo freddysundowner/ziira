@@ -1,0 +1,109 @@
+---
+// One block of the complete guide (see content/completeGuide.ts for the block types). Recursive for "split" (text beside a figure).
+import type { GBlock } from "../content/completeGuide";
+import type { Lang } from "../content/types";
+import { inline } from "../lib/md";
+import { urlFor } from "../lib/registry";
+import { catalog, totals } from "../lib/catalog";
+import Screenshot from "./Screenshot.astro";
+import GuideDiagram from "./GuideDiagram.astro";
+import GuideCatalog from "./GuideCatalog.astro";
+import GuideActions from "./GuideActions.astro";
+interface Props { block: GBlock; lang?: Lang }
+const { block: b, lang = "en" } = Astro.props;
+const i = (s: string) => inline(s, lang, urlFor);
+---
+{b.t === "p" && b.text.map((x) => <p set:html={i(x)} />)}
+{b.t === "ul" && <ul>{b.items.map((x) => <li set:html={i(x)} />)}</ul>}
+{b.t === "ol" && <ol>{b.items.map((x) => <li set:html={i(x)} />)}</ol>}
+{b.t === "h3" && <h3 id={b.id}>{b.text}</h3>}
+{b.t === "callout" && (
+  <div class={`callout ${b.tone}`} role="note">
+    {b.title && <strong class="t">{b.title}</strong>}
+    <p set:html={i(b.text)} />
+  </div>
+)}
+{b.t === "table" && (
+  <div class="table-wrap" role="region" aria-label={b.caption} tabindex="0">
+    <table>
+      <caption>{b.caption}</caption>
+      <thead><tr>{b.head.map((h) => <th scope="col">{h}</th>)}</tr></thead>
+      <tbody>{b.rows.map((r) => <tr>{r.map((c, idx) => idx === 0 ? <th scope="row" set:html={i(c)} /> : <td set:html={i(c)} />)}</tr>)}</tbody>
+    </table>
+  </div>
+)}
+{b.t === "shot" && (
+  <div class="g-shot">
+    <div class="pinned">
+      <Screenshot name={b.key} alt={b.alt} sizes="(min-width: 1100px) 560px, (min-width: 700px) 80vw, calc(100vw - 32px)" />
+      {b.pins.map((p, k) => <span class="pin" style={`left:${p.x}%;top:${p.y}%`} aria-hidden="true">{k + 1}</span>)}
+    </div>
+    <ol class="legend">{b.legend.map((l) => <li>{l}</li>)}</ol>
+    <p class="cap">{b.caption}</p>
+  </div>
+)}
+{b.t === "diagram" && (
+  <figure class="g-fig">
+    <GuideDiagram name={b.name} label={b.label} />
+    <figcaption>{b.caption}</figcaption>
+  </figure>
+)}
+{b.t === "timeline" && (
+  <div class="g-timeline">
+    <h3>{b.title}</h3>
+    <ol>{b.items.map((x) => <li><span class="tm">{x.time}</span><div><strong>{x.title}</strong><p>{x.text}</p></div></li>)}</ol>
+  </div>
+)}
+{b.t === "steps" && (
+  <ol class="g-steps">
+    {b.items.map((x, k) => (
+      <li><span class="num" aria-hidden="true">{k + 1}</span><div><h3>{x.title}</h3><p>{x.text}</p><p class="ex"><span>Example</span> {x.example}</p></div></li>
+    ))}
+  </ol>
+)}
+{b.t === "terms" && (
+  <dl class="g-terms">{b.items.map((x) => <div><dt>{x.term}</dt><dd set:html={i(x.def)} /></div>)}</dl>
+)}
+{b.t === "stories" && (
+  <div class="g-stories">
+    {b.items.map((s) => (
+      <article class="card story" id={`story-${s.id}`} aria-labelledby={`story-${s.id}-h`}>
+        <span class="tag">Example: {s.kind}</span>
+        <h3 id={`story-${s.id}-h`}>{s.title}</h3>
+        <p>{s.setup}</p>
+        <p class="lab"><strong>What Ziira could raise</strong></p>
+        <ul>{s.finds.map((f) => <li set:html={i(f)} />)}</ul>
+        <p class="lab"><strong>What the owner might do</strong></p>
+        <p set:html={i(s.act)} />
+        {s.limit && <p class="note" set:html={i(`**Limit:** ${s.limit}`)} />}
+      </article>
+    ))}
+  </div>
+)}
+{b.t === "split" && (
+  <div class="g-split">
+    <div class="g-col">{b.left.map((x) => <Astro.self block={x} lang={lang} />)}</div>
+    <div class="g-col">{b.right.map((x) => <Astro.self block={x} lang={lang} />)}</div>
+  </div>
+)}
+{b.t === "counts" && (
+  <div class="table-wrap" role="region" aria-label="Number of checks by area" tabindex="0" data-counts>
+    <table>
+      <caption>Checks by area</caption>
+      <thead><tr><th scope="col">Area</th><th scope="col">In Ziira</th><th scope="col">On connected systems</th><th scope="col">Total</th></tr></thead>
+      <tbody>
+        {catalog.groups.map((g) => <tr data-group-count={g.key}><th scope="row"><a href={`#cat-${g.key}`}>{g.title}</a></th><td>{g.ziira}</td><td>{g.connected}</td><td data-n={g.count}>{g.count}</td></tr>)}
+      </tbody>
+      <tfoot><tr><th scope="row">All checks</th><td>{totals.ziira}</td><td>{totals.connected}</td><td data-total-checks>{totals.checks}</td></tr></tfoot>
+    </table>
+  </div>
+)}
+{b.t === "catalog" && <GuideCatalog />}
+{b.t === "actions" && <GuideActions />}
+{b.t === "asktools" && (
+  <>
+    <h3>What it can look up for you ({totals.ask_tools} lookups)</h3>
+    <p>When you ask a question, Ask Ziira can only use these lookups. Each reads your own records, filtered to what you are allowed to see, and changes nothing.</p>
+    <ul data-asktools>{catalog.ask_tools.map((t) => <li>{t.plain}</li>)}</ul>
+  </>
+)}

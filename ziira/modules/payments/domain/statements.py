@@ -1,14 +1,14 @@
-"""Reading statements people upload: M-Pesa business statements and bank CSV files. Pure Python."""
+"""Reading statements people upload: bank CSV files, and the helpers a provider plugin uses to read its own statement
+format (public.py re-exports them). Pure Python."""
 
 import csv
 import hashlib
 import io
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime, tzinfo
 from decimal import Decimal, InvalidOperation
 
-from ziira.modules.payments.domain.mpesa import EAT
 from ziira.sdk import ValidationFailed
 
 MAX_ROWS = 20000
@@ -34,8 +34,9 @@ class ParsedStatement:
     skipped: list[str]             # one line per row that could not be read, with its line number
 
 
-def _amount(value: str | None) -> Decimal:
-    text = (value or "").replace(",", "").replace("KES", "").replace("Ksh", "").strip()
+def statement_amount(value: str | None) -> Decimal:
+    """An amount cell: thousands separators and a leading currency word ("USD 1,200.50") are ignored; empty is 0."""
+    text = re.sub(r"^[A-Za-z]{1,4}\.?\s*(?=[\d.])", "", (value or "").replace(",", "").strip())
     if not text or text in ("-", "0", "0.00"):
         return Decimal(0)
     try:
@@ -47,30 +48,36 @@ def _amount(value: str | None) -> Decimal:
     return amount
 
 
-def _time(value: str) -> datetime:
+def statement_time(value: str, tz: tzinfo) -> datetime:
+    """A date or date-time cell, read in the time zone `tz` (the business's own, or the provider's)."""
     cleaned = value.strip()
     for fmt in DATE_FORMATS:
         try:
-            return datetime.strptime(cleaned, fmt).replace(tzinfo=EAT)
+            return datetime.strptime(cleaned, fmt).replace(tzinfo=tz)
         except ValueError:
             continue
     raise ValueError(f"'{value}' is not a date")
 
 
-def _key(name: str) -> str:
+def column_key(name: str) -> str:
+    """A header reduced to lower-case letters, so 'Receipt No.' and 'receipt_no' compare alike."""
     return re.sub(r"[^a-z]", "", name.lower())
 
 
-def _rows(text: str) -> tuple[list[str], list[tuple[int, dict[str, str]]]]:
-    """The header names and the data rows (with line numbers), after skipping any lines before the header."""
+GENERIC_HEADER_WORDS = frozenset({"date", "description", "amount", "debit", "credit", "reference"})
+
+
+def csv_rows(text: str, header_words: frozenset[str] = GENERIC_HEADER_WORDS) -> tuple[
+        list[str], list[tuple[int, dict[str, str]]]]:
+    """The header names and the data rows (with line numbers), after skipping any lines before the header (the first
+    line with at least two of `header_words`)."""
     if len(text) > 10_000_000:
         raise ValidationFailed("The statement is too large")
     reader = list(csv.reader(io.StringIO(text.lstrip("﻿"))))
     for index, row in enumerate(reader):
-        keys = {_key(c) for c in row}
-        if len(keys & {"receiptno", "completiontime", "paidin", "withdrawn", "date", "description", "amount",
-                       "debit", "credit", "reference"}) >= 2:
-            header = [_key(c) for c in row]
+        keys = {column_key(c) for c in row}
+        if len(keys & header_words) >= 2:
+            header = [column_key(c) for c in row]
             data = [(n + index + 2, dict(zip(header, r, strict=False))) for n, r in enumerate(reader[index + 1:])
                     if any(c.strip() for c in r)]
             if len(data) > MAX_ROWS:
@@ -79,45 +86,15 @@ def _rows(text: str) -> tuple[list[str], list[tuple[int, dict[str, str]]]]:
     raise ValidationFailed("No header row found: is this a statement in CSV form?")
 
 
-def parse_mpesa_statement(text: str) -> ParsedStatement:
-    """Safaricom's business statement: Receipt No., Completion Time, Details, Status, Paid In, Withdrawn."""
-    header, data = _rows(text)
-    if "receiptno" not in header:
-        raise ValidationFailed("This does not look like an M-Pesa statement (no 'Receipt No.' column)")
-    rows: list[StatementRow] = []
-    skipped: list[str] = []
-    for line, row in data:
-        try:
-            status = (row.get("transactionstatus") or "Completed").strip().lower()
-            if status not in ("completed", "complete", "success", "successful"):
-                continue                                       # failed or reversed items did not move money
-            paid_in, withdrawn = _amount(row.get("paidin")), _amount(row.get("withdrawn"))
-            if (paid_in > 0) == (withdrawn > 0):
-                raise ValueError("exactly one of Paid In and Withdrawn is expected")
-            details = (row.get("details") or "").strip()
-            phone = re.search(r"(2547\*{4}\d{3}|254[17]\d{8}|07\d{8})", details)
-            name = re.search(r"-\s*(.+)$", details)
-            rows.append(StatementRow(
-                ref=(row.get("receiptno") or "").strip().upper(), time=_time(row.get("completiontime") or ""),
-                amount=paid_in or withdrawn, direction="in" if paid_in > 0 else "out", description=details,
-                payer_name=name.group(1).strip() if name and paid_in > 0 else None,
-                payer_phone=phone.group(1) if phone else None))
-            if not rows[-1].ref:
-                raise ValueError("no receipt number")
-        except ValueError as exc:
-            skipped.append(f"line {line}: {exc}")
-            rows = [r for r in rows if r.ref]
-    return ParsedStatement(rows, skipped)
-
-
-def parse_bank_statement(text: str, *, date_column: str = "date", description_column: str = "description",
-                         reference_column: str | None = "reference", amount_column: str | None = None,
-                         debit_column: str | None = "debit", credit_column: str | None = "credit") -> ParsedStatement:
+def parse_bank_statement(text: str, *, tz: tzinfo = UTC, date_column: str = "date",
+                         description_column: str = "description", reference_column: str | None = "reference",
+                         amount_column: str | None = None, debit_column: str | None = "debit",
+                         credit_column: str | None = "credit") -> ParsedStatement:
     """A bank CSV. Either one signed `amount` column (negative = out) or separate debit and credit columns. Lines
     without a bank reference get a stable one made from their date, amount and description (so uploading twice adds
     nothing)."""
-    header, data = _rows(text)
-    columns = {name: _key(name) for name in (date_column, description_column) if name}
+    header, data = csv_rows(text)
+    columns = {name: column_key(name) for name in (date_column, description_column) if name}
     for needed, key in columns.items():
         if key not in header:
             raise ValidationFailed(f"The statement has no '{needed}' column")
@@ -125,20 +102,20 @@ def parse_bank_statement(text: str, *, date_column: str = "date", description_co
     skipped: list[str] = []
     for line, row in data:
         try:
-            when = _time(row.get(columns[date_column], ""))
+            when = statement_time(row.get(columns[date_column], ""), tz)
             description = (row.get(columns[description_column]) or "").strip()
-            if amount_column and _key(amount_column) in header:
-                signed = Decimal(str(row.get(_key(amount_column), "")).replace(",", "").strip() or "0")
+            if amount_column and column_key(amount_column) in header:
+                signed = Decimal(str(row.get(column_key(amount_column), "")).replace(",", "").strip() or "0")
                 amount, direction = abs(signed), ("in" if signed > 0 else "out")
             else:
-                credit = _amount(row.get(_key(credit_column or ""), ""))
-                debit = _amount(row.get(_key(debit_column or ""), ""))
+                credit = statement_amount(row.get(column_key(credit_column or ""), ""))
+                debit = statement_amount(row.get(column_key(debit_column or ""), ""))
                 if (credit > 0) == (debit > 0):
                     raise ValueError("exactly one of debit and credit is expected")
                 amount, direction = credit or debit, ("in" if credit > 0 else "out")
             if amount <= 0:
                 raise ValueError("no amount")
-            ref = (row.get(_key(reference_column or ""), "") or "").strip().upper()
+            ref = (row.get(column_key(reference_column or ""), "") or "").strip().upper()
             if not ref:
                 fingerprint = f"{when.date()}|{amount}|{direction}|{description}"
                 ref = "B" + hashlib.sha256(fingerprint.encode()).hexdigest()[:20]

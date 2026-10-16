@@ -1,10 +1,20 @@
 /**
  * Countries for registration: choosing one fills in the phone calling code (to read national phone numbers) and a default
- * currency. Plain reference data, not behaviour: nothing in the platform treats any country specially. Each entry is
- * [ISO 3166 code, name, calling code (digits, no +), ISO 4217 currency of the country].
+ * currency. Plain reference data, not behaviour: nothing in the platform treats any country specially. The list comes from
+ * the server (`GET /api/v1/countries`: its built-in list refined by the country packs installed there, which also say
+ * what a country calls its tax number); this static copy is the fallback when the server cannot be reached, so any
+ * country can still register. Each entry is [ISO 3166 code, name, calling code (digits, no +), ISO 4217 currency].
  * Countries that share a calling code (the +1 numbering plan) share it here.
  */
-export type Country = { code: string; name: string; calling: string; currency: string; zone: string };
+export type Country = {
+  code: string; name: string; calling: string; currency: string; zone: string;
+  /** The country pack (plugin) that names this country, when the server has one. */
+  pack?: string | null;
+  /** What the country calls a business tax number; empty or absent: "Tax number". */
+  taxIdLabel?: string;
+  /** A regular-expression hint for the tax number (not enforced by the server). */
+  taxIdPattern?: string;
+};
 
 /**
  * The main IANA time zone of each country (for countries with several, the most populated): a default for the business's
@@ -152,4 +162,18 @@ export const CURRENCIES: readonly string[] = [...new Set(COUNTRIES.map((c) => c.
 
 export function countryByCode(code: string): Country | undefined {
   return COUNTRIES.find((c) => c.code === code);
+}
+
+/** A server entry as the form uses it. */
+export function fromServer(c: { code: string; name: string; calling: string; currency: string; zone: string; pack: string | null; tax_id_label: string; tax_id_pattern: string }): Country {
+  return { code: c.code, name: c.name, calling: c.calling, currency: c.currency, zone: c.zone, pack: c.pack, taxIdLabel: c.tax_id_label, taxIdPattern: c.tax_id_pattern };
+}
+
+/** The server's list when it has one that looks usable, else the static one. */
+export function chooseCountries(fromApi: readonly Country[] | undefined): readonly Country[] {
+  return fromApi && fromApi.length > 0 ? fromApi : COUNTRIES;
+}
+
+export function currenciesOf(list: readonly Country[]): string[] {
+  return [...new Set(list.map((c) => c.currency))].sort();
 }

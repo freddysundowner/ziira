@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
 
+from ziira.modules.connect.api.move_routes import router as move_router
 from ziira.modules.connect.api.oauth_routes import public_router as oauth_public_router
 from ziira.modules.connect.api.oauth_routes import router as oauth_router
 from ziira.modules.connect.api.schemas import (
@@ -50,6 +51,7 @@ from ziira.sdk import (
 
 router = APIRouter()
 router.include_router(oauth_router)
+router.include_router(move_router)
 # the vendor's redirect carries no bearer token: its signed state is the proof
 public_router = oauth_public_router
 VIEW = [Depends(require_permission(CONNECT_VIEW))]

@@ -1,37 +1,39 @@
-import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
-  api, Button, Drawer, Field, FormGrid, IconButton, Input, orNull, Select, Switch, toast, unwrap, useCompany, useFormState, useMutation, useQueryClient,
+  api, Button, Drawer, Field, FormGrid, Input, orNull, Select, Switch, toast, unwrap, useCompany, useFormState, useMutation, useQueryClient,
   useTranslation,
 } from "@/sdk";
 
-import { settingsObject } from "../logic";
 import type { PaymentAccount } from "../types";
+import { ProviderFields } from "./ProviderFields";
+import { fieldValues, offeredProviders, usePaymentProviders } from "./usePaymentProviders";
 
 type Account = PaymentAccount;
 const KINDS = ["cash", "mobile_money", "bank", "card"] as const;
 
-/** Create (no `account`) or edit a payment account. `providers` are the providers already used here, offered as suggestions. */
-export function AccountForm({ open, onClose, account, providers }: { open: boolean; onClose: () => void; account?: Account; providers: string[] }) {
+/** Create (no `account`) or edit a payment account. The providers on offer, and each one's own settings form, come from the server. */
+export function AccountForm({ open, onClose, account }: { open: boolean; onClose: () => void; account?: Account }) {
   const { t } = useTranslation("payments");
   const qc = useQueryClient();
   const { company, companies } = useCompany();
   const editing = !!account;
   const f = useFormState({ kind: "mobile_money", name: "", shortcode: "", bank_account_masked: "", provider: "", environment: "sandbox", branch_id: "", company_id: "" });
-  const [rows, setRows] = useState<{ key: string; value: string }[]>([]);
+  const providers = usePaymentProviders(open && !account);
+  const offered = offeredProviders(providers.data?.providers ?? []);
+  const [settings, setSettings] = useState<Record<string, string>>({});
   const [active, setActive] = useState(true);
   const [name, setName] = useState("");
   const { reset } = f;
   useEffect(() => {
     if (!open) return;
-    reset(); setRows([]); setActive(account?.is_active ?? true); setName(account?.name ?? "");
-    if (!account && providers[0]) f.set("provider", providers[0]);
+    reset(); setSettings({}); setActive(account?.is_active ?? true); setName(account?.name ?? "");
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const companyId = f.values.company_id || company?.id || "";
   const branches = companies.find((c) => c.id === companyId)?.branches ?? [];
   const kind = f.values.kind;
+  const chosen = offered.find((p) => p.name === f.values.provider);
 
   const save = useMutation({
     meta: { silent: true },
@@ -42,8 +44,8 @@ export function AccountForm({ open, onClose, account, providers }: { open: boole
       const v = f.values;
       return unwrap(api.POST("/api/v1/payments/accounts", { body: {
         company_id: companyId, branch_id: orNull(v.branch_id), kind: kind as "cash", name: v.name.trim(), shortcode: orNull(v.shortcode),
-        bank_account_masked: orNull(v.bank_account_masked), environment: v.environment as "sandbox", provider: v.provider.trim(),
-        provider_config: settingsObject(rows) } }));
+        bank_account_masked: orNull(v.bank_account_masked), environment: v.environment as "sandbox", provider: orNull(v.provider),
+        provider_config: kind === "mobile_money" && chosen ? fieldValues(chosen.config_fields, settings) : null } }));
     },
     onSuccess: (a) => { void qc.invalidateQueries({ queryKey: ["payment-accounts"] }); toast(t(editing ? "accountUpdated" : "accountCreated", { name: a.name }), "ok"); onClose(); },
     onError: (e) => { f.fail(e); toast((e as Error).message, "bad"); },
@@ -75,24 +77,17 @@ export function AccountForm({ open, onClose, account, providers }: { open: boole
                     <Select {...f.bind("environment")}><option value="sandbox">{t("environments.sandbox")}</option><option value="production">{t("environments.production")}</option></Select>
                   </Field>
                 </FormGrid>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">{t("providerSettings")}</p>
-                  <p className="text-xs text-muted">{t("providerSettingsHint")}</p>
-                  {rows.map((r, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <Input aria-label={t("settingName")} placeholder={t("settingName")} value={r.key} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)))} />
-                      <Input aria-label={t("settingValue")} placeholder={t("settingValue")} value={r.value} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))} />
-                      <IconButton label={t("removeSetting")} onClick={() => setRows(rows.filter((_, j) => j !== i))}><X className="h-4 w-4" /></IconButton>
-                    </div>
-                  ))}
-                  <Button size="sm" variant="secondary" onClick={() => setRows([...rows, { key: "", value: "" }])}><Plus className="h-3.5 w-3.5" />{t("addSetting")}</Button>
-                </div>
+                <Field label={t("provider")} hint={t("providerHint")} error={f.error("provider")}>
+                  <Select {...f.bind("provider")}>
+                    <option value="">{t("providerManual")}</option>
+                    {offered.map((p) => <option key={p.name} value={p.name}>{p.title}{p.development_only ? ` (${t("developmentOnly")})` : ""}</option>)}
+                  </Select>
+                </Field>
+                {chosen && chosen.config_fields.length > 0 && (
+                  <FormGrid><ProviderFields fields={chosen.config_fields} values={settings} onChange={(k, v) => setSettings((x) => ({ ...x, [k]: v }))} /></FormGrid>
+                )}
               </>
             )}
-            <Field label={t("provider")} required hint={t("providerHint")} error={f.error("provider")}>
-              <Input {...f.bind("provider")} required list="payment-providers" maxLength={40} />
-            </Field>
-            <datalist id="payment-providers">{providers.map((p) => <option key={p} value={p} />)}</datalist>
             {(kind === "bank" || kind === "card") && (
               <Field label={t("accountNumberMasked")} hint={t("accountNumberHint")} error={f.error("bank_account_masked")}><Input {...f.bind("bank_account_masked")} maxLength={40} placeholder="****1234" /></Field>
             )}

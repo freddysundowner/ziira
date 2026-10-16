@@ -42,6 +42,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     # these tests are written in UTC hours: say so (test tenants are otherwise created in LOCALE["timezone"])
     client.patch(f"/api/v1/companies/{s['company_id']}/settings", headers=s["owner"], json={"timezone": "UTC"})
     registry.enable(s["tenant_id"], "intel")
+    registry.enable(s["tenant_id"], "messaging")
     registry.enable(s["tenant_id"], "command")
     PLAN["branches"] = {"hq": s["branch_id"], "juja": s["juja"]}
     yield s

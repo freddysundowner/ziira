@@ -88,7 +88,7 @@ def sale(net: Decimal, tax: Decimal, payments: list[tuple[str, Decimal]], *, par
          description: str | None = None) -> list[RecipeLine]:
     """Entry for a sale: the money received (or owed) against sales and VAT output.
 
-    Dr cash / mpesa / card / receivable (credit sales) / other   Cr sales   Cr VAT output
+    Dr cash / mobile_money / card / receivable (credit sales) / other   Cr sales   Cr VAT output
     """
     return _sale_lines(net, tax, payments, party, description, returned=False)
 
@@ -96,7 +96,7 @@ def sale(net: Decimal, tax: Decimal, payments: list[tuple[str, Decimal]], *, par
 def sale_return(net: Decimal, tax: Decimal, refunds: list[tuple[str, Decimal]], *, party: Any = None,
                 description: str | None = None) -> list[RecipeLine]:
     """Entry for a customer return: sales returns and VAT output reversed against the money given back (or the
-    reduced receivable). Dr sales returns, Dr VAT output  Cr cash / mpesa / card / receivable / other."""
+    reduced receivable). Dr sales returns, Dr VAT output  Cr cash / mobile_money / card / receivable / other."""
     return _sale_lines(net, tax, refunds, party, description, returned=True)
 
 
@@ -124,9 +124,9 @@ def _sale_lines(net: Decimal, tax: Decimal, money: list[tuple[str, Decimal]], pa
 
 
 def settlement(amount: Decimal, fee: Decimal, *, description: str | None = None) -> list[RecipeLine]:
-    """M-Pesa paid its takings into the bank, keeping a fee.
+    """Mobile-money takings reached the bank, less a fee.
 
-    Dr bank (what arrived)   Dr bank and M-Pesa charges (the fee)   Cr M-Pesa clearing (both)
+    Dr bank (what arrived)   Dr bank and mobile money charges (the fee)   Cr mobile money clearing (both)
     """
     if amount <= 0 or fee < 0:
         raise ValidationFailed("A settlement needs a positive amount and a fee of zero or more")
@@ -195,7 +195,7 @@ def supplier_bill(stock_received_value: Decimal, stock_billed_value: Decimal, va
 
 def supplier_payment(method: str, amount: Decimal, *, party: Any = None, description: str | None = None,
                      reverse: bool = False) -> list[RecipeLine]:
-    """Paying a supplier: Dr accounts payable  Cr cash / bank / M-Pesa / card (reversed: the other way round)."""
+    """Paying a supplier: Dr accounts payable  Cr cash / bank / mobile money / card (reversed: the other way round)."""
     if amount <= 0:
         raise ValidationFailed("A payment must be more than nothing")
     role = method if method in ("cash", "mobile_money", "card", "bank") else "other"
@@ -208,7 +208,7 @@ def expense(method: str, amount: Decimal, tax: Decimal, account_id: Any, *, desc
             reverse: bool = False) -> list[RecipeLine]:
     """An expense paid at once. `amount` is everything paid, `tax` the VAT inside it.
 
-    Dr the expense account (amount less VAT)   Dr VAT input (the VAT)   Cr cash / bank / M-Pesa / card (amount)
+    Dr the expense account (amount less VAT)   Dr VAT input (the VAT)   Cr cash / bank / mobile money / card (amount)
     """
     if amount <= 0 or tax < 0 or tax >= amount:
         raise ValidationFailed("An expense must be more than nothing, and its VAT less than the amount")
@@ -306,7 +306,7 @@ def supplier_credit_note(stock_value: Decimal, goods_credit: Decimal, vat: Decim
 
 def customer_payment(method: str, amount: Decimal, *, party: Any = None, description: str | None = None,
                      reverse: bool = False) -> list[RecipeLine]:
-    """A customer paid an invoice: Dr cash / M-Pesa / card / bank  Cr accounts receivable (reversed: the other way)."""
+    """A customer paid an invoice: Dr cash / mobile money / card / bank  Cr accounts receivable (reversed: reverse)."""
     if amount <= 0:
         raise ValidationFailed("A payment must be more than nothing")
     role = method if method in ("cash", "mobile_money", "card", "bank") else "other"

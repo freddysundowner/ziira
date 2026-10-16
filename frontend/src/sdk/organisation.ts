@@ -1,14 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { useSyncExternalStore } from "react";
+
 import { api, unwrap } from "./api";
+import { getDisplayTimeZone, setDisplayTimeZone, subscribeDisplayTimeZone } from "./format";
 
 /** Companies (with branches) the signed-in user can reach. Use it for company and branch pickers. */
 export function useCompanies() {
   return useQuery({
     queryKey: ["companies"],
-    queryFn: () => unwrap(api.GET("/api/v1/companies")),
+    queryFn: async () => {
+      const companies = await unwrap(api.GET("/api/v1/companies"));
+      setDisplayTimeZone(companies[0]?.timezone);       // every time shown is on the company's clock
+      return companies;
+    },
     staleTime: 5 * 60_000,
   });
+}
+
+/** The time zone times are shown in (changes once, when the company is first known): key a screen on it to redraw. */
+export function useDisplayTimeZone(): string | undefined {
+  return useSyncExternalStore(subscribeDisplayTimeZone, getDisplayTimeZone);
 }
 
 /** The company a screen works in: the one asked for, else the user's first. Most businesses have exactly one. */

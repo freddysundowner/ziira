@@ -37,6 +37,12 @@ def enabled_units(tenant_id) -> set[str]:  # type: ignore[no-untyped-def]
         return {r.unit_name for r in s.execute(text("select unit_name from kernel.tenant_unit where status = 'enabled'"))}
 
 
+def watching_units(tenant_id) -> set[str]:  # type: ignore[no-untyped-def]
+    """The enabled units except the kernel and the country/international packs (registration switches one on from the
+    business's country; a pack is data about a place, not a business unit, so it is not part of 'what watching needs')."""
+    return {u for u in enabled_units(tenant_id) - {"kernel"} if not u.startswith("pack_")}
+
+
 def test_the_default_units_for_a_standalone_business_are_only_what_watching_needs() -> None:
     assert get_settings().standalone_units == "connect,intel,command,imports"
     assert "connect" not in get_settings().registration_units
@@ -44,7 +50,7 @@ def test_the_default_units_for_a_standalone_business_are_only_what_watching_need
 
 def test_a_standalone_registration_enables_exactly_the_watching_units(client, registry) -> None:  # type: ignore[no-untyped-def]
     out, headers = register(client)
-    units = enabled_units(out["tenant_id"]) - {"kernel"}
+    units = watching_units(out["tenant_id"])
     assert units == {"connect", "intel", "command", "imports"}
     assert client.get("/api/v1/auth/me", headers=headers).status_code == 200
     # the Command Center, findings and the connected systems are reachable; the business units are not there
@@ -97,7 +103,7 @@ def test_create_tenant_in_standalone_mode_and_upload_from_the_command_line(clien
                          "--owner-name", "Cli Owner", "--owner-email", "owner@cli-watch.test", "--mode", "standalone"]) == 0
     ids = {k.strip(): v.strip() for k, v in (line.split(" = ") for line in out.getvalue().strip().splitlines())}
     tenant_id = UUID(ids["tenant_id"])
-    assert enabled_units(tenant_id) - {"kernel"} == {"connect", "intel", "command", "imports"}
+    assert watching_units(tenant_id) == {"connect", "intel", "command", "imports"}
     owner = client.post("/api/v1/auth/sign-in", json={"workspace": "cli-watch", "login": "owner@cli-watch.test",
                                                       "password": "owner-pass-123", "device_id": "d"}).json()
     headers = {"Authorization": f"Bearer {owner['access_token']}"}

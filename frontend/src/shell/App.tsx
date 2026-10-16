@@ -24,6 +24,7 @@ import {
   visibleRoutes,
 } from "@/sdk";
 
+import { BillingLink } from "./BillingNotice";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { ForgotPassword } from "./ForgotPassword";
 import { Home } from "./Home";
@@ -78,6 +79,7 @@ function ModuleRoutes() {
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           {routes.map(({ path, Page }) => <Route key={path} path={path} element={<Page />} />)}
+          <Route path="/billing" element={<BillingLink />} />
           <Route path="/register/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
         </Route>
@@ -116,16 +118,29 @@ function Gate() {
   );
 }
 
+/** The business app: its own sign-in and session, only for the businesses' people. */
+function BusinessApp() {
+  return (
+    <SessionProvider>
+      <ErrorBoundary>
+        <Gate />
+      </ErrorBoundary>
+      <Toaster />
+    </SessionProvider>
+  );
+}
+
+// Platform staff use a separate app at /operator with its own sign-in and session; it loads only when opened.
+const OperatorApp = lazy(() => import("@/operator/OperatorApp"));
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <SessionProvider>
-          <ErrorBoundary>
-            <Gate />
-          </ErrorBoundary>
-          <Toaster />
-        </SessionProvider>
+        <Routes>
+          <Route path="/operator/*" element={<Suspense fallback={<Loading />}><ErrorBoundary><OperatorApp /></ErrorBoundary></Suspense>} />
+          <Route path="*" element={<BusinessApp />} />
+        </Routes>
       </BrowserRouter>
     </QueryClientProvider>
   );

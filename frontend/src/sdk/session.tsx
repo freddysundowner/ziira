@@ -32,12 +32,34 @@ export interface Session {
   signOut: () => Promise<void>;
   /** Tries again after the server could not be reached. */
   retry: () => void;
-  /** Re-reads who the user is, their permissions and the enabled units, without signing out (after Apps & plugins changed). */
+  /** Re-reads who the user is, their permissions and the enabled units, without signing out (after Add-ons changed). */
   refresh: () => Promise<void>;
   /** Asks for a business of your own; the person must then use the link emailed to them. */
-  register: (input: RegisterInput) => Promise<{ error: string | null; devToken?: string }>;
-  /** Uses the emailed link: creates the business and signs the owner in. */
-  completeRegistration: (token: string) => Promise<string | null>;
+  register: (input: RegisterInput) => Promise<RegisterResult>;
+  /** Uses the emailed link: creates the business and signs the owner in. `error` is null on success. */
+  completeRegistration: (token: string) => Promise<RegistrationCompletion>;
+}
+
+export interface RegisterResult {
+  error: string | null;
+  devToken?: string;
+  /** HTTP status of a failure (422 invalid, 429 too many, 503 unavailable). */
+  status?: number;
+  /** The server's error code (`validation_failed`, `too_many_requests`, ...). */
+  code?: string;
+  /** Messages per field of the request (`email`, `password` ...) from a 422. */
+  fields?: Record<string, string>;
+  /** Seconds to wait after a 429. */
+  retryAfter?: number;
+}
+
+export interface RegistrationCompletion {
+  error: string | null;
+  status?: number;
+  code?: string;
+  retryAfter?: number;
+  /** The id to quote to support. */
+  requestId?: string;
 }
 
 export interface RegisterInput {
@@ -49,9 +71,18 @@ export interface RegisterInput {
   currency: string;
   phone_country_code: string;
   timezone?: string;
+  tax_id?: string;
   invite_code?: string;
-  /** core: run the business on Ziira; standalone: only watch the system the business already has. */
-  mode?: "core" | "standalone";
+  /** What the business needs: retail, distribution, books, intelligence or full (the default). */
+  edition?: string;
+  /** Onboarding answers (hints only). */
+  phone?: string;
+  owner_role?: string;
+  business_size?: string;
+  staff_size?: string;
+  business_type?: string;
+  /** A public plan code from a website link (unknown ones are ignored). */
+  plan?: string;
 }
 
 export interface Business {
@@ -177,22 +208,39 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [load],
   );
 
-  const register = useCallback(async (input: RegisterInput) => {
+  const register = useCallback(async (input: RegisterInput): Promise<RegisterResult> => {
     const { data, error, response } = await api.POST("/api/v1/register", {
-      body: { ...input, invite_code: input.invite_code || null, mode: input.mode ?? "core" },
+      body: { ...input, invite_code: input.invite_code || null, edition: input.edition ?? "full" },
     });
-    return { error: response.ok ? null : errorMessage(error), devToken: data?.dev_token ?? undefined };
+    if (response.ok) return { error: null, devToken: data?.dev_token ?? undefined };
+    const body = error as { error?: string; message?: string; field?: string; detail?: { loc?: unknown[]; msg?: string }[] } | undefined;
+    const fields: Record<string, string> = {};
+    if (body?.field && body.message) fields[body.field] = body.message;
+    for (const item of Array.isArray(body?.detail) ? body.detail : []) {
+      const name = String(item.loc?.[item.loc.length - 1] ?? "");
+      if (name && item.msg) fields[name] = item.msg;
+    }
+    return {
+      error: errorMessage(error), status: response.status, code: body?.error, fields,
+      retryAfter: response.status === 429 ? retryAfterSeconds(error, response.headers.get("Retry-After")) : undefined,
+    };
   }, []);
 
   const completeRegistration = useCallback(
-    async (token: string) => {
-      const { data, error } = await api.POST("/api/v1/register/verify", {
+    async (token: string): Promise<RegistrationCompletion> => {
+      const { data, error, response } = await api.POST("/api/v1/register/verify", {
         body: { token, device_id: deviceId(), device_name: navigator.userAgent.slice(0, 60) },
       });
-      if (!data) return errorMessage(error);
+      if (!data) {
+        const body = error as { error?: string; request_id?: string } | undefined;
+        return {
+          error: errorMessage(error), status: response.status, code: body?.error, requestId: body?.request_id,
+          retryAfter: response.status === 429 ? retryAfterSeconds(error, response.headers.get("Retry-After")) : undefined,
+        };
+      }
       setTokens(data.access_token, data.refresh_token);
       await load();
-      return null;
+      return { error: null };
     },
     [load],
   );

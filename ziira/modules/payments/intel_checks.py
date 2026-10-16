@@ -51,6 +51,8 @@ class UnlinkedReceipts(IntelCheck):
     """Money received that no sale, invoice or customer explains, after a waiting time."""
 
     code = "payments.unlinked_receipts"
+
+    value_kind = "count"
     title = "Money received that matches nothing"
     area = "cash_sales"
     description = "Money was received but is not linked to any sale, invoice or customer."
@@ -94,6 +96,8 @@ class UnmatchedTransactions(IntelCheck):
     """Money the provider reported that was never matched to a payment recorded in the business."""
 
     code = "payments.unmatched_transactions"
+
+    value_kind = "count"
     title = "Provider transactions nobody matched"
     area = "cash_sales"
     description = "The mobile money provider or bank reported money in that no recorded payment accounts for."
@@ -137,6 +141,8 @@ class CloseVariance(IntelCheck):
     """A branch's daily close that ended with money missing or extra beyond a limit."""
 
     code = "payments.close_variance"
+
+    value_kind = "money"
     title = "Daily close with a variance"
     area = "cash_sales"
     description = "A branch closed its day with more or less money than the records say it should have."
@@ -177,6 +183,8 @@ class MissingClose(IntelCheck):
     """A branch took money on a day and never closed that day."""
 
     code = "payments.missing_close"
+
+    value_kind = "count"
     title = "Day with takings but no close"
     area = "controls"
     description = "A branch received money on a day but its daily close was never submitted."
@@ -213,6 +221,8 @@ class SettlementMismatch(IntelCheck):
     """Mobile money takings that never reached the bank, or a bank settlement that differs from what was received."""
 
     code = "payments.settlement_mismatch"
+
+    value_kind = "money"
     title = "Settlement missing or different"
     area = "cash_sales"
     description = "What a mobile money account received does not agree with what was settled to the bank."
@@ -325,6 +335,8 @@ class FailingPaymentPrompts(IntelCheck):
     """Payment requests sent to customers' phones failing or timing out far more than usual on a day."""
 
     code = "payments.failing_prompts"
+
+    value_kind = "percent"
     title = "Payment prompts failing"
     area = "cash_sales"
     description = "Many payment requests sent to customers' phones failed or timed out on the same day."
@@ -406,6 +418,8 @@ class ManualPaymentWithoutEvidence(IntelCheck):
     """A mobile money, bank or card payment typed in with nothing from the provider to back it up."""
 
     code = "payments.manual_without_evidence"
+
+    value_kind = "money"
     title = "Payment with no provider evidence"
     area = "controls"
     description = "A large mobile money, bank or card payment was recorded but no provider transaction supports it."

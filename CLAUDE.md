@@ -26,7 +26,7 @@ with the same name; read the `.txt`, since the PDFs need extra tools to read):
 ## Stack (decided)
 
 Python 3.12+, FastAPI, SQLAlchemy 2, Pydantic v2, PostgreSQL 16, Redis (later, for jobs),
-React + TypeScript + Vite web app in `frontend/` (POS later). Hosting is a VPS (do not document hosting details).
+React + TypeScript + Vite web app in `frontend/` (POS later). The public marketing website is a separate static Astro site in `site/` (SEO first; never import from `frontend/` or `ziira/`). Hosting is a VPS (do not document hosting details).
 Country-specific integrations (Kenya's eTIMS, M-Pesa, ...) are plugins or providers behind extension points.
 
 ## Commands
@@ -37,7 +37,10 @@ make db-up                    # PostgreSQL 16 in Docker (port from ZIIRA_DB_PORT
 make test                     # all tests (use `caffeinate -i make test` on a Mac: a sleeping laptop expires the test tokens) (creates/drops ziira_test_master, _template, _t_* databases)
 make lint                     # ruff + mypy + import-linter
 make web-setup | web | web-check   # web app: npm ci | dev server :5173 | lint+types+tests+build
+make site-setup | site | site-build | site-check   # marketing website in site/ (static Astro, SEO audit; docs/marketing-site.md, site/SEO.md)
+make site-catalog           # regenerate site/src/content/checks.catalog.json from the real check/action registry (scripts/export_check_catalog.py; plain text in site/src/content/*.plain.json; run by site-build/site-check)
 make e2e-setup | e2e        # real-browser journeys (Playwright, folder e2e/): npm ci + Chromium | run all against a throwaway stack (docs/testing.md, docs/e2e-findings.md)
+make deploy-test | deploy-test-docker   # production installer kit (deploy/, docs/installation.md): fake-server tests | real nginx -t in Docker
 make api-types                # regenerate frontend/src/api/schema.d.ts after backend API changes (commit it)
 .venv/bin/ziira units | install --all | uninstall <unit>          # platform (master database)
 .venv/bin/ziira tenants | enable <tenant> <unit> | disable ... | remove ...   # <tenant> = code or id
@@ -47,7 +50,9 @@ make api-types                # regenerate frontend/src/api/schema.d.ts after ba
                                             # owner password from prompt or ZIIRA_OWNER_PASSWORD
                                             # (businesses normally register themselves: docs/registration.md)
 .venv/bin/ziira invite create [--uses N --days D]   # invitation code for ZIIRA_REGISTRATION_MODE=invite
+.venv/bin/ziira plugin new|check|test|pack|install-archive|list    # plugin kit (docs/writing-a-plugin.md); tests use ziira.sdk.testing; production loads extra plugins only if in ZIIRA_ALLOWED_PLUGINS (docs/plugin-review.md)
 .venv/bin/ziira index-logins [tenant]      # rebuild the login directory (sign-in without a workspace code)
+.venv/bin/ziira apply-packs [tenant]       # copy the data of the country packs switched on into the business (adds only what is missing)
 .venv/bin/ziira outbox-run [--once]         # deliver events to @subscribe_after handlers
 .venv/bin/ziira worker [--once]             # outbox + background jobs (M-Pesa prompts, matching) + recurring tasks (checks, briefs) + purge
 .venv/bin/ziira connect upload <tenant> <connection> FILE [--check] | ocr-check   # statements/exports: CSV, Excel, PDF; ocr-check = can this server read pictures (Tesseract)?
@@ -67,6 +72,11 @@ On this Mac a Homebrew PostgreSQL 14 uses port 5432, so `.env` points everything
 Demo business: login `owner@demo-hardware.test`, password `demo-pass-123` (workspace `demo-hardware`, if asked).
 Key settings (`ZIIRA_*`): `MASTER_DATABASE_URL`, `TENANT_SERVER_URL`, `CREDENTIALS_KEY` (encrypts tenant
 connection strings; losing it locks out every tenant), `SECRET_KEY` (signs tokens), `ENV`.
+
+- Super Admin (`docs/platform-admin.md`, `docs/licensing.md`): `ZIIRA_DEPLOYMENT_MODE=saas|selfhosted`; plans, prices, subscriptions, invoices and licences are master-DB data (`ziira/kernel/platform/`); operator roles/permissions via `require("platform.x")` on every operator route.
+- Website content (`docs/platform-admin-content.md`): the static marketing site (`site/`) takes its editable facts, legal/content pages and plans from the master DB (`kernel/site_*.py`, permission `platform.content`, master tables `site_*`) through an explicit, audited publish and `GET /api/v1/public/site`; a publish POSTs the signed `ZIIRA_SITE_BUILD_HOOK_URL`. Page text is Markdown rendered safely (no raw HTML); the site reads everything through `site/src/lib/siteConfig.ts` and warns loudly in production builds that are not on real published content.
+- Entitlements (`platform/entitlements.py`) decide units, limits (`check_limit` in `users`/`organisation`) and access by status (402 `subscription_suspended|subscription_ended|not_in_plan|plan_limit_reached`); never delete data for billing reasons. No subscription row = unmanaged.
+- Licences: `ziira licence keygen|issue|install|status|verify|revocations|instance-id`; `ziira billing-run`; `ziira operator create ... --role | reset-password EMAIL | reset-mfa EMAIL`.
 
 ## Architecture rules (do not break)
 
@@ -101,6 +111,7 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
 12. **Web modules mirror units** (`frontend/src/modules/<unit>`); they import only `@/sdk` and other modules'
    `public.ts` (ESLint). Every web page names a permission (or `anySignedIn: true`, e.g. My account). New screens follow the kit and
    patterns in `docs/frontend.md` ("Design system and screen patterns"): tokens not raw colours, `unwrap` on every request, all states designed.
+   Menu entries name an `area` (the sidebar has one expandable section per area, pages of the same kind of list share one entry via `under` with a small tab bar; `setup` = last; Settings = grouped list): `docs/frontend.md` "Navigation".
 
 13. **Stock changes only through `inventory/services/ledger.py: post_movement`** (immutable movements, locked
    balances, weighted average cost). Other units publish `sale.posted`, `sale.returned`, `goods.received`
@@ -115,6 +126,9 @@ connection strings; losing it locks out every tenant), `SECRET_KEY` (signs token
    levies), tax codes and the chart of accounts are *data a business enters*, never constants in code or a default
    that only fits one country. Country-specific services (a payment provider, a tax authority's submission system)
    are providers or plugins behind extension points. Tests may use any country's values as *fixtures*, never as logic.
+   Country data comes from **country packs** (plugins `pack_*`, `category = "country"`, data in TOML; `docs/localisation.md`) and each
+   vendor is a **provider plugin** (`ziira/plugins/mpesa`); `tests/test_architecture.py` fails on a country or vendor name in
+   `ziira/modules` or `ziira/kernel` (known leftovers: its `ALLOWED` table and `docs/plugin-audit.md`).
 
 ## Module layout (copy `ziira/modules/products`)
 
@@ -156,6 +170,9 @@ tests/             unit tests for domain rules
   own services; approving runs it as the approver (their permissions apply), only `auto_allowed` non-monetary providers may run under an owner's
   rule, and Ziira never moves money, changes prices, credit limits or stock without a person. See "Actions: levels 3 and 4" in `docs/intelligence.md`.
 - **AI layer** (`docs/ai.md`): opt-in per business with a consent record; a model writes sentences, never figures (every number must be in the facts or tool results); all calls go through `intel/services/ai.py` (consent, budget, scrub, log) with **no database transaction open** (`@unbound_periodic`, `tenant_transaction`); Ask Ziira data comes only from `intel.ask_tool` tools that filter by the asker's `branch_scope`. The Anthropic request format is untested live (`scripts/live_check.py ai`).
+- **Moving from a connected system to Core** (`docs/standalone-mode.md`): `connect/services/move.py` proposes records from `connect.src_*`, has the owning units' importers check them, and stages Data Import batches (`imports.public`: `stage_rows`, `check_rows`, `find_existing`, tagged with the connection); it never writes another unit's tables. Core units tell Connectors what they cover through `connect.core_coverage` (`CoreCoverage`), so standalone checks stay silent where Core runs the same area at the same branch (unless the business chose keep-both); findings carry `source` (`connected`/`ziira`).
+- **Channels** (`docs/channels.md`): a channel exists only while a provider for it is enabled (`kernel/channels.py`; `GET /notifications/channels/available`); email/SMS come from the `messaging` plugin, WhatsApp only from the `leadsintel` plugin. No platform code (kernel, modules, sdk) names a chat service (`tests/test_channel_registry.py` scans for it): send with `send_templated` (customers) or `notify_user` (staff: own channel per kind, capability e.g. `buttons`, quiet hours defer, fallbacks); a gone channel falls back, nothing is dropped; only a *verified* number is matched to a user (replies run as that user, audit channel `chat`).
+- Lead Intel (`ziira/plugins/leadsintel`) is WhatsApp only (no SMS); its template requests are `# UNVERIFIED` (`unverified.py`) and nothing has run against the live service.
 - Anything a client may send twice (a sale from a till, a payment prompt) is made safe with a client-made id
   (`local_id`) or an `Idempotency-Key`: the second request returns the first result and changes nothing.
 - A business event that already happened (an offline sale) is accepted and its problems are flagged, not refused.
@@ -164,7 +181,8 @@ tests/             unit tests for domain rules
   test in their sandboxes before any live use.
 - A unit that stores data about people (customers, employees, suppliers, payers, recipients) implements `kernel.personal_data` in its
   `hooks.py` (find / export / anonymise; `docs/privacy.md`); retention periods and what must be kept are company settings, never code.
-- Platform staff are `master.operator`s (CLI-made, second factor compulsory), never tenant users; they enter a business only through a
+- **Operator console** (`/operator`, `frontend/src/operator`, `kernel/operator_console.py`, `api/operator_unit_routes.py`): platform units install/upgrade/uninstall, per-business unit switches (mandatory reason), health, upgrade-all, operators; same registry functions as the CLI; every change needs a recent confirmation within `ZIIRA_OPERATOR_MFA_MAX_AGE_MINUTES` (the operator's password again, or a fresh code when `ZIIRA_OPERATOR_MFA=totp`) and is logged to `master.operator_action_log` (and the business's audit log); see `docs/security.md`.
+- Platform staff are `master.operator`s (first one CLI-made, then by superadmins; sign-in is email + password, with an authenticator code only when `ZIIRA_OPERATOR_MFA=totp`; the default `off` is refused in production unless `ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED=true`; 12-character passwords, short sessions, every sign-in in `master.operator_action_log`, optional `ZIIRA_OPERATOR_ALLOWED_NETWORKS`: `docs/security.md`), never tenant users; they enter a business only through a
   business-made support grant (`ziira/kernel/support.py`), re-checked on every request, and everything they do is logged twice. Do not add other staff back doors.
 - Never send a message in the caller's request: queue it. Respect the do-not-contact list (the kernel does).
 - **Sign-in security** (`docs/security.md`): wrong passwords are counted and locked out per login/address (`kernel/throttle.py`, 429 with
@@ -172,21 +190,24 @@ tests/             unit tests for domain rules
   `ZIIRA_MFA_DEFAULT_POLICY=off`) and a person who must use it but has not set it up gets a session limited to the setup calls
   (`MfaSetupRequired`); forgotten passwords use an emailed one-use link; every CSV download is audited. New guessable actions use
   `throttle.action_counters`; never add a sign-in path that skips `auth.sign_in`/`complete_mfa`.
-- **Apps & plugins** (Settings, `units.manage`, Owner): `ziira/kernel/unit_admin.py` + `api/unit_routes.py` enable/disable/remove units per business with the same `Registry` the CLI uses (audited; `remove` needs `confirm` = unit name; manifests carry a `description`); the web page then calls `session.refresh()` so menus update.
+- **Add-ons** (sidebar entry at `/addons`, was Apps & plugins, then Features; display name = key `nav.areas.addons` in `frontend/src/i18n/*.json`, route = `ADDONS_PATH` in `modules/admin/paths.ts`; `units.manage`, Owner): `ziira/kernel/unit_admin.py` + `api/unit_routes.py` enable/disable/remove units per business with the same `Registry` the CLI uses (audited; `remove` needs `confirm` = unit name; manifests carry a `description`); the web page then calls `session.refresh()` so menus update.
 - Auth: sign-in with email/phone + password only (no workspace code): the master database's login directory
   (`kernel/directory.py`, keyed hashes of logins -> tenants) says which business database to check; a `workspace` code is
   optional and needed only when the same login (and password) works for several businesses (the reply is `409
   choose_business` with the list). Users are registered in the directory when created; `ziira index-logins` rebuilds it.
   Bearer tokens; API keys (`X-API-Key`).
   Development only: `X-Tenant-ID` (or `ZIIRA_DEV_DEFAULT_TENANT`) acts with every permission; refused in production.
+- Manifests carry `category` (groups the Apps page) and, for plugins, optional `countries` (empty = worldwide); an edition only ever switches units on. The web menu, Home checklist and landing page follow the business's edition (`useEdition`, `docs/registration.md`).
 - New endpoints are covered by the fuzzer automatically (`tests/test_robustness.py`: add a valid baseline body to its
   `valid_body` if the generic sample cannot pass your rules). Request numbers use `ziira.sdk` `Quantity`, `UnitCost`,
   `Amount`, `Rate`; list endpoints use `page_limit()` / `page_offset()`. See `docs/testing.md`.
 - Permission tests sign in as real users (`tests/conftest.py`: `make_tenant`, `sign_in`), never the dev header.
 
+- **Subscription payments** (`docs/subscription-payments.md`): payment providers are plugins implementing `kernel.payment_gateway` (`platform_scope = true`, found at platform level, never switched on by a business); `platform/payments.py` owns attempts, selection and **confirm-before-credit** (never credit from a webhook or the browser alone); nothing in kernel/modules names a provider, currency or country. The worker's `_recover_payments` polls open attempts.
+
 ## Where things are
 
-`docs/security.md` · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/standalone-mode.md` (Intelligence on a business's existing system: the `connect` unit, connectors, `connect.src_*`; `ziira connect sync|upload`, `create-tenant --mode standalone`) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/ai.md` (AI layer, ask tools, providers) · `docs/offline-pos.md` (selling offline) · `docs/registration.md` (how businesses join) · `docs/organisation.md` (companies and branches after registration) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
+`docs/public-api.md` · `docs/platform-admin-content.md` (website content, publish flow, rebuild hook) · `docs/webhooks.md` · `docs/plugin-review.md` · `docs/security.md` · `docs/channels.md` (channel registry, templates, reply to act, Lead Intel) · `docs/privacy.md` · `docs/performance.md` · `docs/data-import.md` · `docs/operations.md` (deploy, backups/restore test, monitoring, logging, PgBouncer, incidents) · `docs/standalone-mode.md` (Intelligence on a business's existing system: the `connect` unit, connectors, `connect.src_*`; `ziira connect sync|upload`, `create-tenant --mode standalone`) · `docs/intelligence.md` (checks, findings, briefs: how a unit adds a check or figures) · `docs/ai.md` (AI layer, ask tools, providers) · `docs/offline-pos.md` (selling offline) · `docs/registration.md` (how businesses join; **editions**: retail / distribution / books / intelligence / full, data in `ziira/kernel/editions.toml`, `--edition`, `mode` is an alias) · `docs/organisation.md` (companies and branches after registration) · `docs/localisation.md` · `docs/privacy.md` (data subject requests, retention, data map) · `docs/PROGRESS.md` (state, checklist, log) · `docs/testing.md` · `docs/adding-a-module.md` · `docs/writing-a-plugin.md` · `docs/extending-units.md` · `docs/frontend.md` ·
 `docs/decisions/0001-0004` · `docs/specs/*.txt` · kernel code map in PROGRESS.md "What exists, and where".
 
 ## Working style for this project

@@ -59,7 +59,7 @@ test("J4 buy: supplier, order, receive, bill, pay", async ({ page }) => {
   await expect(page.getByText("200.00").first()).toBeVisible();
 
   // --- pay the bill
-  const bank = await api.post("/payments/accounts", { company_id: cat.companyId, kind: "bank", name: `Operating ${code(3)}`, provider: "fake", environment: "sandbox" });
+  const bank = await api.post("/payments/accounts", { company_id: cat.companyId, kind: "bank", name: `Operating ${code(3)}`, environment: "sandbox" });
   await page.goto("/pay-suppliers");
   await pick(page, page.getByRole("combobox", { name: /Supplier/ }), supplier);
   await page.getByLabel(lbl("Pay from")).selectOption(bank.id);

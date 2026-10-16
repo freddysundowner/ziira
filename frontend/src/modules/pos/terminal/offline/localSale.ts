@@ -3,7 +3,7 @@
  * The server recalculates everything when it receives the sale; its figures are the ones that count. These follow the
  * same rules (prices include tax, tax inside = gross x rate / (100 + rate), rounded half up) so the paper is right.
  */
-import type { Schemas } from "@/sdk";
+import { getDisplayTimeZone, type Schemas } from "@/sdk";
 
 import { type CartLine, num, type PayLeg } from "../cart";
 import type { OutboxEntry, SaleOp } from "./types";
@@ -75,10 +75,12 @@ export interface OfflineSaleInput {
   labels: Labels;
 }
 
-const pad = (n: number): string => String(n).padStart(2, "0");
+/** A moment as "YYYY-MM-DD HH:MM" on the company's clock (the device's until the company is known), like the server's receipt. */
 export const stamp = (ms: number): string => {
-  const d = new Date(ms);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", {
+    timeZone: getDisplayTimeZone(), year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(new Date(ms)).map((p) => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`;
 };
 
 /** The sale as the sync endpoint wants it. Every line carries the price the customer was charged: the list may change before the sale is sent. */

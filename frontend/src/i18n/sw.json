@@ -34,17 +34,49 @@
     "country": "Nchi",
     "chooseCountry": "Chagua nchi yako",
     "phoneNote": "Namba za simu zitasomwa kwa msimbo wa nchi +{{code}}.",
+    "packNote": "Mpangilio wa kuanzia wa {{country}} utaongezwa (misimbo ya kodi na mpangilio wa akaunti). Unaweza kubadilisha vyote.",
+    "taxId": "{{label}} (hiari)",
+    "taxIdDefault": "Namba ya kodi",
     "next": "Endelea",
     "back": "Rudi",
     "startAgain": "Jisajili tena",
     "devOnly": "Kwa maendeleo tu: barua pepe haitumwi hapa.",
-    "devLink": "Fungua kiungo cha uthibitisho",
-    "modeLegend": "Utatumiaje Ziira?",
-    "mode": {
-      "core": "Nataka kuendesha biashara yangu kwenye Ziira",
-      "coreHint": "Mauzo, hisa, hesabu na watu katika mfumo mmoja.",
-      "standalone": "Tayari nina mfumo na ninataka Ziira uufuatilie",
-      "standaloneHint": "Endelea na unachotumia leo. Ziira husoma (haubadilishi kamwe) na kukuambia kinachohitaji uangalizi."
+    "devLink": "Fungua kiungo cha uthibitisho"
+  },
+  "edition": {
+    "need": "Unahitaji nini?",
+    "later": "Chagua kilicho karibu zaidi. Unaweza kuongeza zaidi wakati wowote; hakuna kinachoondolewa.",
+    "loadFailed": "Chaguo hazikuweza kupakiwa.",
+    "retry": "Jaribu tena",
+    "retail": { "title": "Rejareja / POS", "pitch": "Uza kwenye kaunta, weka hisa sawa na pokea malipo." },
+    "distribution": { "title": "Usambazaji", "pitch": "Rejareja pamoja na kununua kutoka kwa wasambazaji, mikopo ya wateja na hesabu zako." },
+    "books": { "title": "Vitabu na hesabu", "pitch": "Weka hesabu, bili na wateja wako katika mpangilio." },
+    "intelligence": { "title": "Tayari nina mfumo", "pitch": "Endelea na unachotumia leo. Ziira husoma (haubadilishi kamwe) na kukuambia kinachohitaji uangalizi." },
+    "full": { "title": "Kila kitu", "pitch": "Mauzo, hisa, manunuzi, hesabu, watu na Intelligence mahali pamoja." },
+    "checklistTitle": "Kuanza: {{edition}}",
+    "progress": "{{done}} kati ya {{total}} zimekamilika",
+    "allDone": "Yote yamekamilika. Unaweza kuficha hii.",
+    "hide": "Ficha",
+    "open": "Fungua",
+    "guide": "Mwongozo",
+    "tick": "Weka imekamilika: {{step}}",
+    "untick": "Weka haijakamilika: {{step}}",
+    "steps": {
+      "products": { "title": "Ongeza bidhaa zako za kwanza", "hint": "Ziandike au leta lahajedwali." },
+      "opening_stock": { "title": "Weka hisa ya kuanzia", "hint": "Sema ulicho nacho leo." },
+      "till": { "title": "Fungua kaunta", "hint": "Sajili kaunta na ufungue zamu." },
+      "sale": { "title": "Fanya mauzo", "hint": "Piga mauzo yako ya kwanza." },
+      "suppliers": { "title": "Ongeza wasambazaji wako", "hint": "Unaowanunulia." },
+      "customers": { "title": "Ongeza wateja wako", "hint": "Weka kikomo cha mkopo kwa wanaonunua kwa mkopo." },
+      "accounts": { "title": "Kagua orodha ya akaunti zako", "hint": "Ongeza au badilisha majina ya akaunti." },
+      "opening_balances": { "title": "Weka salio za kuanzia", "hint": "Hali ya vitabu leo." },
+      "expense": { "title": "Rekodi matumizi", "hint": "Weka matumizi yako ya kwanza." },
+      "connect": { "title": "Unganisha mfumo wako", "hint": "Unganisha mfumo unaotumia sasa, au pakia ripoti zake." },
+      "alerts": { "title": "Chagua nani apate arifa", "hint": "Chagua simu au barua pepe ya mmiliki." },
+      "findings": { "title": "Soma matokeo yako ya kwanza", "hint": "Kile Ziira kimeona kwenye data yako." },
+      "move": { "title": "Tayari kutumia Ziira? Hamisha data yako", "hint": "Leta bidhaa, wateja, hisa na madeni kutoka mfumo uliounganisha." },
+      "organisation": { "title": "Kagua kampuni na matawi yako", "hint": "Majina, nambari ya kodi, matawi." },
+      "users": { "title": "Alika timu yako", "hint": "Wape watu ufikiaji wanaohitaji." }
     }
   },
   "signOut": "Toka",
@@ -64,23 +96,38 @@
   "notFound": "Ukurasa huu haupo, au huna ruhusa ya kuuona.",
   "language": "Lugha",
   "nav": {
-    "sell": "Mauzo",
-    "stock": "Bidhaa",
-    "buy": "Manunuzi",
-    "money": "Fedha",
-    "people": "Watu",
-    "admin": "Usimamizi"
+    "areas": {
+      "command": "Kituo cha Uongozi",
+      "inbox": "Kikasha",
+      "sell": "Mauzo",
+      "customers": "Wateja",
+      "stock": "Bidhaa",
+      "buy": "Manunuzi",
+      "money": "Fedha",
+      "people": "Watu",
+      "connect": "Mifumo iliyounganishwa",
+      "addons": "Viongezi",
+      "settings": "Mipangilio"
+    },
+    "sections": {
+      "business": "Biashara",
+      "access": "Watu na ruhusa",
+      "channels": "Njia za mawasiliano na miunganisho",
+      "intelligence": "Akili ya biashara",
+      "data": "Data na faragha",
+      "platform": "Jukwaa"
+    },
+    "tabs": { "overview": "Muhtasari", "general": "Jumla" }
   },
-  "auth": {
-    "tagline": "Simamia matawi yote ya biashara yako mahali pamoja.",
-    "subtitle": "Mauzo, bidhaa, manunuzi, vitabu na mishahara, vyote pamoja."
-  },
+  "auth": { "tagline": "Simamia matawi yote ya biashara yako mahali pamoja.", "subtitle": "Mauzo, bidhaa, manunuzi, vitabu na mishahara, vyote pamoja." },
   "theme": {
     "light": "Mwanga",
     "dark": "Giza",
     "system": "Kama kifaa"
   },
   "account": "Akaunti",
+  "myAccount": "Akaunti yangu",
+  "help": "Msaada",
   "menu": "Menyu",
   "close": "Funga",
   "collapse": "Punguza",
@@ -192,5 +239,200 @@
     "full": "ruhusa kamili",
     "read": "kusoma tu",
     "until": "inaisha {{until}}"
+  },
+  "signup": {
+    "title": "Fungua biashara yako",
+    "stepOf": "Hatua {{n}} kati ya {{total}}: {{title}}",
+    "done": "Imekamilika",
+    "progress": "Maendeleo yako",
+    "haveAccount": "Una biashara tayari? Ingia",
+    "steps": {
+      "need": "Unachohitaji",
+      "about": "Kukuhusu",
+      "password": "Nenosiri lako",
+      "business": "Biashara yako",
+      "review": "Kagua na fungua"
+    },
+    "heading": {
+      "need": "Unahitaji nini?",
+      "about": "Tuambie kukuhusu",
+      "password": "Tengeneza nenosiri lako",
+      "business": "Tuambie kuhusu biashara yako",
+      "review": "Kagua na fungua"
+    },
+    "lead": {
+      "need": "Chagua kilicho karibu zaidi. Unaweza kuongeza zaidi wakati wowote; hakuna kinachoondolewa.",
+      "about": "Tunakutumia kiungo kwa barua pepe kuthibitisha kuwa ni wewe.",
+      "password": "Chagua kitu ambacho wewe tu unakijua. Utakitumia pamoja na barua pepe yako kuingia.",
+      "business": "Tunatumia hili kuandaa biashara kwa nchi yako: sarafu, saa ya eneo na maelezo ya kodi.",
+      "review": "Kagua majibu yako, kisha fungua biashara yako."
+    },
+    "back": "Rudi",
+    "continue": "Endelea",
+    "create": "Fungua biashara yangu",
+    "edit": "Badilisha",
+    "optional": "hiari",
+    "field": {
+      "name": "Jina lako kamili",
+      "email": "Barua pepe ya kazi",
+      "phone": "Simu",
+      "role": "Nafasi yako",
+      "password": "Nenosiri",
+      "confirm": "Andika nenosiri tena",
+      "business": "Jina la biashara",
+      "country": "Nchi",
+      "currency": "Sarafu",
+      "zone": "Saa ya eneo",
+      "calling": "Msimbo wa simu wa nchi",
+      "tax": "{{label}}",
+      "branches": "Una matawi mangapi?",
+      "staff": "Wanafanya kazi watu wangapi?",
+      "kind": "Biashara ni ya aina gani?"
+    },
+    "hint": {
+      "name": "Kama unavyosaini barua.",
+      "email": "Tunatuma kiungo cha uthibitisho hapa, na utaingia nacho.",
+      "phone": "Hiari. Hutumika kutusaidia kuandaa mambo tu.",
+      "role": "Hiari. Tunaitumia kukuonyesha hatua za kwanza zinazofaa.",
+      "business": "Jina litakalokuwa kwenye risiti na ankara zako. Unaweza kulibadilisha baadaye.",
+      "currency": "Imejazwa kutoka nchi. Ibadilishe ukifanya biashara kwa sarafu nyingine.",
+      "zone": "Tarehe na ripoti za kila siku hufuata saa hii.",
+      "calling": "Hutumika kusoma namba za simu zilizoandikwa bila msimbo wa nchi.",
+      "tax": "Hiari. Unaweza kuiongeza baadaye kwenye Mipangilio.",
+      "taxPattern": "Muundo: {{pattern}}",
+      "countrySearch": "Andika kutafuta"
+    },
+    "choose": "Chagua nchi",
+    "role": {
+      "owner": "Mmiliki",
+      "manager": "Meneja",
+      "accountant": "Mhasibu",
+      "other": "Nyingine"
+    },
+    "branches": {
+      "1": "Moja tu",
+      "2-5": "2 hadi 5",
+      "6-20": "6 hadi 20",
+      "more": "Zaidi ya 20"
+    },
+    "staff": {
+      "1-5": "1 hadi 5",
+      "6-20": "6 hadi 20",
+      "21-50": "21 hadi 50",
+      "more": "Zaidi ya 50"
+    },
+    "kind": {
+      "retail": "Rejareja",
+      "wholesale": "Jumla",
+      "services": "Huduma",
+      "other": "Kitu kingine"
+    },
+    "didYouMean": "Ulimaanisha {{email}}?",
+    "useSuggestion": "Ndiyo, itumie",
+    "showPassword": "Onyesha nenosiri",
+    "hidePassword": "Ficha nenosiri",
+    "strength": {
+      "label": "Nguvu",
+      "0": "Bado",
+      "1": "Dhaifu",
+      "2": "Wastani",
+      "3": "Nzuri",
+      "4": "Imara"
+    },
+    "rules": {
+      "length": "Angalau herufi 8",
+      "long": "Herufi 12 au zaidi ni bora",
+      "notEmail": "Si barua pepe yako",
+      "common": "Si nenosiri la kawaida mno",
+      "match": "Manenosiri yote mawili yanalingana"
+    },
+    "checking": "Inakagua…",
+    "err": {
+      "name": {
+        "required": "Tafadhali andika jina lako.",
+        "short": "Jina lako linahitaji angalau herufi {{min}}.",
+        "long": "Jina lako linaweza kuwa na herufi {{max}} tu.",
+        "letters": "Jina lako linahitaji herufi."
+      },
+      "business": {
+        "required": "Tafadhali andika jina la biashara.",
+        "short": "Jina la biashara linahitaji angalau herufi {{min}}.",
+        "long": "Jina la biashara linaweza kuwa na herufi {{max}} tu.",
+        "letters": "Jina la biashara linahitaji herufi au tarakimu."
+      },
+      "email": { "required": "Tafadhali andika barua pepe yako.", "invalid": "Barua pepe hiyo haionekani sawa." },
+      "phone": {
+        "chars": "Tumia tarakimu tu (na + mwanzoni ukipenda).",
+        "short": "Namba inaonekana fupi mno: angalau tarakimu {{min}}.",
+        "long": "Namba inaonekana ndefu mno: tarakimu {{max}} zaidi."
+      },
+      "calling": { "invalid": "Msimbo wa nchi una tarakimu 1 hadi 3, kama 44." },
+      "tax": { "shape": "Tumia herufi, tarakimu, nafasi, '-', '/' au '.' (3 hadi 30).", "pattern": "Hii hailingani na muundo wa kawaida wa nchi hii." },
+      "password": { "short": "Tumia angalau herufi 8.", "refused": "Nenosiri hilo halikubaliki." },
+      "confirm": { "required": "Andika nenosiri tena.", "mismatch": "Manenosiri mawili ni tofauti." },
+      "country": { "required": "Tafadhali chagua nchi yako." },
+      "currency": { "required": "Tafadhali chagua sarafu." },
+      "consent": { "required": "Tafadhali kubali ili kuendelea." }
+    },
+    "summary": {
+      "needs_one": "Jambo 1 linahitaji uangalizi wako.",
+      "needs_other": "Mambo {{count}} yanahitaji uangalizi wako.",
+      "serverNeeds": "Tafadhali kagua majibu yaliyoangaziwa."
+    },
+    "announce": "Hatua {{n}} kati ya {{total}}: {{title}}",
+    "review": {
+      "edition": "Unachohitaji",
+      "you": "Wewe",
+      "business": "Biashara yako",
+      "location": "Mahali",
+      "size": "Ukubwa",
+      "none": "Haijatolewa"
+    },
+    "consent": {
+      "agree": "Nakubali",
+      "terms": "Masharti ya matumizi",
+      "and": "na",
+      "privacy": "Sera ya faragha"
+    },
+    "sending": "Inatuma maelezo yako…",
+    "sendingNote": "Subiri kidogo. Tunaandaa barua pepe yako ya uthibitisho.",
+    "tooMany": "Majaribio mengi mno. Tafadhali subiri kabla ya kujaribu tena.",
+    "unavailable": "Hatukuweza kufikia seva. Angalia mtandao wako ujaribu tena.",
+    "side": {
+      "title": "Mpangilio wako",
+      "chose": "Umechagua",
+      "trial": "Majaribio ya siku {{days}} kwenye mpango wa {{plan}}",
+      "firstSteps": "Hatua zako za kwanza",
+      "forYou": "Kwa",
+      "business": "Biashara",
+      "in": "Nchini",
+      "why": "Vizuri kujua",
+      "r1": "Tunakutumia kiungo kwa barua pepe kwanza. Hakuna kinachofunguliwa hadi ukifungue.",
+      "r2": "Ongeza au washa zaidi baadaye. Hakuna kinachoondolewa.",
+      "r3": "Nenosiri lako linabaki kwenye dirisha hili. Halihifadhiwi kwenye kivinjari chako.",
+      "open": "Onyesha mpangilio wako"
+    },
+    "sent": {
+      "title": "Angalia barua pepe yako",
+      "body": "Tumetuma kiungo kwa {{email}}. Kifungue ufungue biashara yako. Kinafanya kazi mara moja na kuisha baada ya siku moja.",
+      "wrong": "Anwani si sahihi? Rudi uirekebishe.",
+      "fix": "Badilisha majibu yangu"
+    },
+    "creating": {
+      "title": "Inafungua biashara yako",
+      "lead": "Kwa kawaida huchukua chini ya dakika moja. Tafadhali acha ukurasa huu wazi.",
+      "what": "Kinachoendelea sasa",
+      "p1": "Kuandaa hifadhidata yako binafsi",
+      "p2": "Kuandaa kampuni yako na tawi la kwanza",
+      "p3": "Kutengeneza kuingia kwa mmiliki",
+      "p4": "Kuwasha ulichochagua",
+      "slow": "Bado inafanya kazi. Inaweza kuchukua hadi dakika moja.",
+      "retrying": "Haikufaulu mara hii. Tunajaribu tena baada ya muda mfupi…",
+      "failedTitle": "Hatukuweza kufungua biashara yako bado",
+      "failedBody": "Hakuna kilichohifadhiwa na kiungo chako bado kinafanya kazi. Tafadhali jaribu tena baada ya dakika moja.",
+      "tryAgain": "Jaribu tena",
+      "reference": "Rejea: {{id}}",
+      "throttled": "Majaribio mengi mno. Unaweza kujaribu tena baada ya {{time}}."
+    }
   }
 }

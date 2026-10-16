@@ -18,7 +18,7 @@ export default function JournalPage() {
   const [tab, setTab] = useState<"entries" | "manual">("entries");
   return (
     <>
-      <PageHeader title={t("journal.title")} description={t("journal.hint")}
+      <PageHeader title={t("accountingMenu")} description={t("journal.hint")}
         actions={<>
           <ScopeSelects scope={scope} branch={false} />
           {canWrite && <Link to="/finance/manual-journals/new"><Button><Plus className="h-4 w-4" />{t("journal.newManual")}</Button></Link>}

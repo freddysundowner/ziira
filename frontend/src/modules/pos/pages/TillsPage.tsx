@@ -21,7 +21,7 @@ export default function TillsPage() {
 
   return (
     <>
-      <PageHeader title={t("tills")} description={t("tillsHint")} />
+      <PageHeader title={t("tillsDevices")} description={t("tillsHint")} />
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()}
         rowKey={(x) => x.id} rowHref={(x) => `/pos/tills/${x.id}`}
