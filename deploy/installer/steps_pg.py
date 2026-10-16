@@ -179,7 +179,11 @@ def ensure_role_and_databases(ctx: Ctx, port: int) -> None:
     if not exists:
         psql_admin(ctx, port, f"create role {role_q} login createdb createrole password {util.sql_literal(secrets.db_password)};",
                    secret=True)
-        ui.ok(f"created PostgreSQL role '{cfg.db_role}' (may create databases and roles; not a superuser)")
+        # Removing a business drops its database "with (force)", which ends the connections its own login still holds: that needs
+        # pg_signal_backend (it lets this role end other NON-superuser sessions only; it cannot touch a superuser's).
+        psql_admin(ctx, port, f"grant pg_signal_backend to {role_q};")
+        ui.ok(f"created PostgreSQL role '{cfg.db_role}' (may create databases and roles and end the sessions of businesses it "
+              "removes; not a superuser)")
     else:
         attrs = psql_admin(ctx, port, "select concat(rolcanlogin::int, rolcreatedb::int, rolcreaterole::int, rolsuper::int) "
                                       f"from pg_roles where rolname = {util.sql_literal(cfg.db_role)};", probe=True).out.strip()
