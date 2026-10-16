@@ -25,7 +25,7 @@
       databases (names only): blogdb, postgres, shopdb
       roles (names only):     postgres, shopuser
   Python        /usr/bin/python3.12 (Python 3.12.3); /usr/bin/python3 ()
-  Node.js       v22.3.0
+  Node.js       v22.14.0
   Other running services (may be other apps): shop-api, backup-agent
   
   PLAN (mode: join); the installer will:

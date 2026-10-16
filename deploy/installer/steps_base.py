@@ -8,8 +8,8 @@ from installer.ui import StepFailed
 from installer.util import removeprefix
 
 PYTHON_CANDIDATES = ["python3.14", "python3.13", "python3.12"]
-NODE_MAJOR = 20          # Node 20 LTS: officially supports glibc 2.31 (Ubuntu 20.04)
-MIN_NODE = 20
+NODE_MAJOR = 22          # Node 22 LTS: the website (Astro 7) needs >= 22.12; official builds need glibc >= 2.28 (focal: 2.31)
+MIN_NODE = (22, 12)
 
 
 def parse_os_release(text: str) -> dict[str, str]:
@@ -199,8 +199,8 @@ def step_python(ctx: Ctx) -> None:
 
 def node_ok(ctx: Ctx, path: str) -> bool:
     r = ctx.sys.run([path, "--version"], probe=True, check=False)
-    m = re.match(r"v(\d+)\.", r.out.strip())
-    return bool(r.ok and m and int(m.group(1)) >= MIN_NODE)
+    m = re.match(r"v(\d+)\.(\d+)\.", r.out.strip())
+    return bool(r.ok and m and (int(m.group(1)), int(m.group(2))) >= MIN_NODE)
 
 
 def step_node(ctx: Ctx) -> None:
@@ -224,7 +224,7 @@ def step_node(ctx: Ctx) -> None:
             ctx.facts["node_bin"] = f"{cfg.install_dir}/tools/node/current/bin"
             return
         raise StepFailed("could not read the Node.js release list from nodejs.org",
-                         hint="Check the server's outbound HTTPS, or install Node.js 20+ yourself, or use --prebuilt.")
+                         hint="Check the server's outbound HTTPS, or install Node.js 22.12+ yourself, or use --prebuilt.")
     digest, filename = line.split()
     version = removeprefix(filename, "node-").split("-linux")[0]
     target = f"{cfg.install_dir}/tools/node/{version}"

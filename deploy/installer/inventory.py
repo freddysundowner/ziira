@@ -350,8 +350,12 @@ def make_plan(ctx: Ctx, inv: Inventory) -> Plan:
     if not any(("3.12" in p or "3.13" in p or "3.14" in p) for p in inv.pythons):
         plan.actions.append("a private Python 3.12 is installed ALONGSIDE the system python3 (official uv binary, SHA-256 verified, under "
                             f"{cfg.install_dir}/tools and {cfg.install_dir}/python); the default python3 is not changed")
-    if not cfg.prebuilt and not (inv.node and int(inv.node.lstrip("v").split(".")[0] or 0) >= 20):
-        plan.actions.append(f"private Node.js 20 LTS (official tarball, SHA-256 verified) in {cfg.install_dir}/tools/node; "
+    node_parts = (inv.node or "").lstrip("v").split(".")
+    node_version = (0, 0)
+    if len(node_parts) >= 2 and node_parts[0].isdigit() and node_parts[1].isdigit():
+        node_version = (int(node_parts[0]), int(node_parts[1]))
+    if not cfg.prebuilt and node_version < (22, 12):
+        plan.actions.append(f"private Node.js 22 LTS (official tarball, SHA-256 verified) in {cfg.install_dir}/tools/node; "
                             "the system node is not touched; npm only without -g")
 
     # --- PostgreSQL

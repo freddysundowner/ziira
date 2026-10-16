@@ -34,7 +34,7 @@ def test_inspect_prints_the_inventory_and_the_plan_and_changes_nothing() -> None
     assert code == 0, out
     assert m.mutations == [] and snapshot(m) == before
     for needle in ("WHAT IS ALREADY ON THIS SERVER", "nginx (running)", "shop.example.com", "blog.example.net",
-                   "gunicorn", "shop.example.com: ", "shopdb", "blogdb", "shopuser", "PostgreSQL 16", "ufw inactive", "v22.3.0",
+                   "gunicorn", "shop.example.com: ", "shopdb", "blogdb", "shopuser", "PostgreSQL 16", "ufw inactive", "v22.14.0",
                    "shop-api", "SSH port 22", "PLAN (mode: join)", "JOIN the existing nginx"):
         assert needle in out, needle
     assert "their-password" not in out                                 # names only, never secrets

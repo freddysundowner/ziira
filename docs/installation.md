@@ -62,7 +62,7 @@ The plan is printed at the start of every run and must be confirmed (`--yes` ski
   port other than the existing ones, own data directory and unit `postgresql@16-ziira`) and leaves the old cluster untouched. On 20.04
   the PostgreSQL packages come from `apt-archive.postgresql.org` (chosen automatically, key fingerprint verified).
 - **Python and Node:** the system `python3` and any system `node` are never changed. A private Python 3.12 (official `uv` binary,
-  checksum verified) lives under `/opt/ziira`, a private Node 20 LTS under `/opt/ziira/tools/node`; no `npm -g`.
+  checksum verified) lives under `/opt/ziira`, a private Node 22 LTS under `/opt/ziira/tools/node`; no `npm -g`.
 - **Ports:** the API and the rebuild receiver take the first free local port (8000, 9001 upwards), always on 127.0.0.1.
 - **Everything is recorded:** each file created, modified (backed up with a timestamp) or removed is listed in
   `/var/lib/ziira/install-manifest.json`. `uninstall.sh` undoes exactly that: services, nginx files, helpers, restored backups; databases,

@@ -300,7 +300,7 @@ def busy_server(**kw) -> Machine:  # type: ignore[no-untyped-def]
     m.files["/etc/letsencrypt/live/shop.example.com/fullchain.pem"] = "SANS:shop.example.com,www.shop.example.com"
     m.on(lambda a, i: a[:2] == ["nginx", "-T"], out=NGINX_DUMP)
     m.on(lambda a, i: a[:2] == ["nginx", "-v"], err="nginx version: nginx/1.24.0 (Ubuntu)")
-    m.on(lambda a, i: a[0].endswith("node") and "--version" in a, out="v22.3.0\n")
+    m.on(lambda a, i: a[0].endswith("node") and "--version" in a, out="v22.14.0\n")
     m.on(lambda a, i: a[0].endswith("python3.12") and "--version" in a, out="Python 3.12.3\n")
     m.on(lambda a, i: a[:2] == ["systemctl", "is-active"] and a[-1] == "nginx", out="active\n")
     m.running_units = "shop-api.service loaded active running Shop API\nbackup-agent.service loaded active running agent\n"
