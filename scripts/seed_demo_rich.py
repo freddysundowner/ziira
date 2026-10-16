@@ -45,7 +45,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import text
 
 ROOT = Path(__file__).resolve().parent.parent
-PASSWORD = "demo-pass-123"                       # every demo login uses this
+PASSWORD = os.environ.get("ZIIRA_DEMO_PASSWORD", "demo-pass-123")   # every demo login uses this (set ZIIRA_DEMO_PASSWORD on a public server)
 MARKER_SKU = "HWD-MARK"                          # a product that says "this business was filled by this script"
 SEED = 20261014
 
