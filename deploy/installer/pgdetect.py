@@ -80,13 +80,14 @@ def classify(facts: PgFacts, *, allow_new_cluster: bool) -> PgPlan:
         return PgPlan("use_existing", port, facts.reachable[port],
                       message=f"PostgreSQL {facts.reachable[port]} is already running on port {port}: it is left as it is; "
                               "only the Ziira role and databases are created")
-    if facts.unreachable_ports:
+    if facts.unreachable_ports and not allow_new_cluster:
         ports = ", ".join(str(p) for p in sorted(facts.unreachable_ports))
         return PgPlan("stop_unreachable", message=(
             f"Something answers on port {ports}, but the installer could not log in as the 'postgres' operating-system "
             "user over the local socket (peer authentication), so it cannot create the Ziira role and databases. "
             "Options: allow peer login for postgres in pg_hba.conf, or create the role and databases yourself "
-            "(docs/installation.md, 'PostgreSQL'), or install on a server without PostgreSQL."))
+            "(docs/installation.md, 'PostgreSQL'), or pass --postgres-new-cluster to leave every existing server alone "
+            "and add a separate PostgreSQL 16 cluster on a free port."))
     down_good = [c for c in facts.clusters if c.version >= MIN_MAJOR and c.status != "online"]
     if down_good:
         c = sorted(down_good, key=lambda c: (c.port != 5432, c.port))[0]

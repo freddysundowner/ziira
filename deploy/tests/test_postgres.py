@@ -55,8 +55,19 @@ def test_decision_older_than_16_stops_with_the_safe_options() -> None:
 
 
 def test_decision_present_but_unreachable_stops() -> None:
-    plan = pgdetect.classify(facts(listening={5432: "postgres"}, unreachable_ports=[5432]), allow_new_cluster=True)
-    assert plan.action == "stop_unreachable" and "peer" in plan.message
+    plan = pgdetect.classify(facts(listening={5432: "postgres"}, unreachable_ports=[5432]), allow_new_cluster=False)
+    assert plan.action == "stop_unreachable" and "peer" in plan.message and "--postgres-new-cluster" in plan.message
+
+
+def test_decision_busy_server_old_cluster_plus_unreachable_one_gets_a_new_cluster_on_a_free_port() -> None:
+    """The owner's real server: PostgreSQL 12 on 5432 (reachable), another server on 5433 we cannot log in to. With
+    --postgres-new-cluster nothing existing is touched and the new 16 cluster takes the next free port."""
+    f = facts(clusters=[Cluster(12, "main", 5432, "online")], reachable={5432: 12}, unreachable_ports=[5433],
+              listening={5432: "postgres", 5433: "postgres"})
+    stopped = pgdetect.classify(f, allow_new_cluster=False)
+    assert stopped.action == "stop_unreachable"
+    plan = pgdetect.classify(f, allow_new_cluster=True)
+    assert (plan.action, plan.port, plan.major) == ("new_cluster", 5434, 16)
 
 
 def test_decision_stopped_16_cluster_is_started_not_replaced() -> None:

@@ -383,9 +383,11 @@ def make_plan(ctx: Ctx, inv: Inventory) -> Plan:
             plan.warnings.append(f"PostgreSQL on port {port} has only {usage[0] - usage[1]} free connection slots "
                                  f"({usage[1]} of {usage[0]} in use); Ziira may need up to about 100. Raise max_connections "
                                  "yourself or use PgBouncer (docs/performance.md)")
-    elif pf.unreachable_ports:
+    elif pf.unreachable_ports and not cfg.postgres_new_cluster:
         plan.conflicts.append("PostgreSQL answers on port " + ", ".join(map(str, pf.unreachable_ports)) +
-                              " but the installer cannot log in as 'postgres' over the local socket (peer authentication).")
+                              " but the installer cannot log in as 'postgres' over the local socket (peer authentication). Either fix that, or pass "
+                              "--postgres-new-cluster to leave every existing server alone and add a separate PostgreSQL 16 cluster "
+                              "on a free port.")
     elif any(v < pgdetect.MIN_MAJOR for v in pf.reachable.values()) or any(c.version < pgdetect.MIN_MAJOR for c in pf.clusters):
         if cfg.postgres_new_cluster:
             plan.actions.append("an older PostgreSQL stays untouched; a NEW separate PostgreSQL 16 cluster 'ziira' is created on "
