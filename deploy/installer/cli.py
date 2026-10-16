@@ -34,14 +34,6 @@ def collect_answers(cfg: Config, ui: UI) -> None:
                                  validate=lambda v: None if util.valid_email(v) else "enter an email address")
     if not cfg.admin_password and not cfg.no_services and not cfg.dry_run:
         cfg.admin_password = _new_password(ui)
-    if not cfg.smtp_host and ui.confirm("Configure the platform mailer (SMTP) now? Registration needs it", default=False):
-        cfg.smtp_host = ui.ask("SMTP host")
-        cfg.smtp_port = int(ui.ask("SMTP port", str(cfg.smtp_port)))
-        cfg.smtp_user = ui.ask("SMTP user (empty if none)", cfg.smtp_user)
-        cfg.smtp_password = ui.ask("SMTP password", secret=True)
-        cfg.smtp_from = ui.ask("Sender address", cfg.admin_email)
-    if cfg.smtp_host and not cfg.smtp_password and ui.interactive:
-        cfg.smtp_password = ui.ask("SMTP password (empty if none)", secret=True)
     if not cfg.operator_networks:
         ui.info("Optional: limit the Super Admin to your own networks (CIDRs, comma separated, e.g. 203.0.113.0/24).")
         cfg.operator_networks = ui.ask("Allowed networks (Enter = anyone who has the password)", "",
@@ -163,5 +155,7 @@ def _final(ctx: Ctx, exit_code: int) -> None:
         ui.info("  Losing it locks out every business. Do not store it with the backups.")
         ui.info("  ================================================================================")
     ui.info("")
-    ui.info("Next: sign in to the Super Admin, create your plans, then publish the website content (Website > Publish):")
-    ui.info("the landing page shows placeholder text until you do.")
+    ui.info("After the install (everything else is set in the Super Admin):")
+    from installer.steps import checklist
+    for line in checklist(cfg):
+        ui.info(line)

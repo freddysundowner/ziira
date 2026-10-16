@@ -38,7 +38,7 @@ class Config:
     smtp_from_name: str = "Ziira"
     # --- application defaults
     default_plan: str = ""
-    registration_mode: str = ""         # open | invite | closed ("" = invite with mail, closed without)
+    registration_mode: str = ""         # advanced; "" = closed (the Super Admin opens it after Email is configured)
     operator_mfa: str = "off"           # off | totp
     operator_networks: str = ""         # comma separated CIDRs ("" = no limit)
     # --- where the code comes from
@@ -110,7 +110,7 @@ class Config:
             self.app_host = (self.app_host or f"app.{self.root_domain}").strip().lower()
             self.admin_host = (self.admin_host or f"admin.{self.root_domain}").strip().lower()
         if not self.registration_mode:
-            self.registration_mode = "invite" if self.smtp_host else "closed"
+            self.registration_mode = "closed"        # the Super Admin opens registration once its email is set up
         if self.db_prefix and not self.db_prefix.endswith("_"):
             self.db_prefix += "_"
         if self.proxy_mode == "snippet" and not self.ports:
@@ -254,9 +254,11 @@ def build_parser() -> argparse.ArgumentParser:
     a("--db-prefix", help="prefix of every database and role we create (default ziira_: role ziira, ziira_master, ziira_t_<code>)")
     a("--pg-port", type=int, help="which PostgreSQL to use when several run")
     a("--admin-name"), a("--admin-email")
-    a("--smtp-host"), a("--smtp-port", type=int), a("--smtp-user"), a("--smtp-from"), a("--smtp-from-name")
+    a("--smtp-host", help=argparse.SUPPRESS), a("--smtp-port", type=int, help=argparse.SUPPRESS)       # advanced: set Email in the
+    a("--smtp-user", help=argparse.SUPPRESS), a("--smtp-from", help=argparse.SUPPRESS)                  # Super Admin instead
+    a("--smtp-from-name", help=argparse.SUPPRESS)
     a("--default-plan", help="plan code given to new registrations (optional; can be set in the Super Admin)")
-    a("--registration-mode", choices=["open", "invite", "closed"])
+    a("--registration-mode", choices=["open", "invite", "closed"], help=argparse.SUPPRESS)
     a("--operator-mfa", choices=["off", "totp"], help="Super Admin sign-in: off = email and password only")
     a("--operator-networks", help="comma separated CIDRs allowed to reach the Super Admin (empty = anyone)")
     a("--repo", help="git repository to install from"), a("--branch")

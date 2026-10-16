@@ -134,6 +134,7 @@ def test_postgres_14_with_consent_gets_a_second_cluster_on_another_port() -> Non
     m.preinstall_pg(14)
     code, ui = run(m, "--postgres-new-cluster")
     assert code == 0, "\n".join(ui.lines)
+    assert m.ran("pg_dropcluster 16 main --stop")                     # the empty cluster the package made by itself
     assert m.ran("pg_createcluster 16 ziira --port 5433")
     assert (14, "main", 5432, "online") in m.clusters                                # the old cluster is untouched
     assert "ziira_master" in m.databases

@@ -13,7 +13,7 @@ from installer.ui import UI, StepFailed
 
 SUPPORTED_OS = {("ubuntu", "20.04"), ("ubuntu", "22.04"), ("ubuntu", "24.04"), ("debian", "12")}
 END_OF_LIFE = {("ubuntu", "20.04")}
-VOLATILE = {"pg_action", "disk_free_mb", "ram_available_mb"}          # facts that change between runs: not part of the saved state
+VOLATILE = {"pg_action", "disk_free_mb", "ram_available_mb", "pgdg_done"}          # volatile facts: not saved
 PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 

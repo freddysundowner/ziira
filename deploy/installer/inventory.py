@@ -348,10 +348,10 @@ def make_plan(ctx: Ctx, inv: Inventory) -> Plan:
 
     # --- python / node
     if not any(("3.12" in p or "3.13" in p or "3.14" in p) for p in inv.pythons):
-        plan.actions.append("Python 3.12 is installed ALONGSIDE the system python3 (apt python3.12, or uv under "
-                            f"{cfg.install_dir}/tools); the default python3 is not changed")
+        plan.actions.append("a private Python 3.12 is installed ALONGSIDE the system python3 (official uv binary, SHA-256 verified, under "
+                            f"{cfg.install_dir}/tools and {cfg.install_dir}/python); the default python3 is not changed")
     if not cfg.prebuilt and not (inv.node and int(inv.node.lstrip("v").split(".")[0] or 0) >= 20):
-        plan.actions.append(f"private Node.js 22 (official tarball, SHA-256 verified) in {cfg.install_dir}/tools/node; "
+        plan.actions.append(f"private Node.js 20 LTS (official tarball, SHA-256 verified) in {cfg.install_dir}/tools/node; "
                             "the system node is not touched; npm only without -g")
 
     # --- PostgreSQL
@@ -385,7 +385,8 @@ def make_plan(ctx: Ctx, inv: Inventory) -> Plan:
                                  "yourself or use PgBouncer (docs/performance.md)")
     elif pf.unreachable_ports and not cfg.postgres_new_cluster:
         plan.conflicts.append("PostgreSQL answers on port " + ", ".join(map(str, pf.unreachable_ports)) +
-                              " but the installer cannot log in as 'postgres' over the local socket (peer authentication). Either fix that, or pass "
+                              " but the installer cannot log in as 'postgres' over the local socket (peer authentication). Fix that, "
+                              "or pass "
                               "--postgres-new-cluster to leave every existing server alone and add a separate PostgreSQL 16 cluster "
                               "on a free port.")
     elif any(v < pgdetect.MIN_MAJOR for v in pf.reachable.values()) or any(c.version < pgdetect.MIN_MAJOR for c in pf.clusters):

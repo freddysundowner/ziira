@@ -52,6 +52,12 @@ def detect(ctx: Ctx) -> pgdetect.PgFacts:
 def add_pgdg_repo(ctx: Ctx) -> None:
     """Official PostgreSQL apt repository, with the signing key checked against its published fingerprint."""
     sysm = ctx.sys
+    if ctx.facts.get("pgdg_done"):
+        return                                   # once per run: one repository line, one apt-get update
+    ctx.facts["pgdg_done"] = True
+    if not sysm.which("gpg"):
+        ctx.apt_install(["gnupg"])                 # needed to check the repository key's fingerprint
+        sysm.manifest.note("packages", "gnupg")
     codename = ctx.facts.get("codename") or "stable"
     # Releases the main repository no longer serves (for example Ubuntu 20.04) live on the archive host.
     head = sysm.run(["curl", "-fsI", "--max-time", "20", f"{PGDG_MAIN}/dists/{codename}-pgdg/Release"], probe=True, check=False)
@@ -77,29 +83,64 @@ def add_pgdg_repo(ctx: Ctx) -> None:
     ctx.ui.ok("added the official PostgreSQL apt repository (key fingerprint verified)")
 
 
+def free_cluster_port(ctx: Ctx, avoid: set) -> int:  # type: ignore[type-arg]
+    """First port from 5433 up that nothing listens on right now (checked again at the moment of use) and not in `avoid`."""
+    listening = pgdetect.parse_listening(ctx.sys.run(["ss", "-ltnpH"], probe=True, check=False).out)
+    port = 5433
+    while port in listening or port in avoid:
+        port += 1
+    return port
+
+
 def install_cluster(ctx: Ctx, plan: pgdetect.PgPlan, facts: pgdetect.PgFacts) -> tuple[int, str]:
-    """Install postgresql-16 and make sure a 16 cluster exists on the planned port. Returns (port, cluster name)."""
+    """Install postgresql-16 and make sure a 16 cluster of OURS exists. Returns (port, cluster name).
+
+    Debian's package creates a `16/main` cluster by itself when it is installed. If that cluster did not exist before this
+    run, it is ours and empty: in side-by-side mode it is dropped and replaced by `16/ziira` (own data directory, own unit
+    postgresql@16-ziira, own port); in plain install mode it is used. A 16 cluster that existed BEFORE is never touched.
+    """
     sysm, ui = ctx.sys, ctx.ui
     add_pgdg_repo(ctx)
+    listing = sysm.run(["pg_lsclusters", "--no-header"], probe=True, check=False).out if sysm.which("pg_lsclusters") else ""
+    before = {(c.version, c.name) for c in pgdetect.parse_lsclusters(listing)}
     if 16 not in facts.packages:
         ctx.apt_install(["postgresql-16", "postgresql-client-16"])
+        sysm.manifest.note("packages", "postgresql-16 postgresql-client-16")
         ui.ok("installed postgresql-16")
     clusters = pgdetect.parse_lsclusters(sysm.run(["pg_lsclusters", "--no-header"], probe=True, check=False).out)
-    mine = [c for c in clusters if c.version == 16]
-    name = "main"
-    if plan.action == "new_cluster" or not mine:
-        name = "ziira" if plan.action == "new_cluster" or any(c.name == "main" for c in clusters) else "main"
-        sysm.run(["pg_createcluster", "16", name, "--port", str(plan.port), "--start"],
-                 desc=f"pg_createcluster 16 {name} --port {plan.port}")
-        ui.ok(f"created PostgreSQL 16 cluster '{name}' on port {plan.port}")
+    new16 = [c for c in clusters if c.version == 16 and (16, c.name) not in before]
+    taken = {c.port for c in clusters if (c.version, c.name) in before} | set(facts.listening)
+    if plan.action == "new_cluster":
+        for c in new16:
+            if c.name == "main":
+                sysm.run(["pg_dropcluster", "16", "main", "--stop"],
+                         desc="drop the empty 16/main that the package just created (it did not exist before this run)")
+        existing = [c for c in clusters if c.version == 16 and c.name == "ziira"]
+        if existing:
+            name, port = "ziira", existing[0].port
+        else:
+            name, port = "ziira", free_cluster_port(ctx, taken)
+            # UTF-8 explicitly: the server's default locale may be POSIX/SQL_ASCII, and the tenant databases are copied from a template
+            sysm.run(["pg_createcluster", "16", name, "--port", str(port), "--locale", "C.UTF-8", "--encoding", "UTF8", "--start"],
+                     desc=f"pg_createcluster 16 {name} --port {port} (UTF-8)")
+            sysm.manifest.note("clusters", f"16/{name}")
+            ui.ok(f"created PostgreSQL 16 cluster '{name}' on 127.0.0.1:{port} (data in /var/lib/postgresql/16/{name}; the older "
+                  "cluster is untouched)")
     else:
-        name, port = mine[0].name, mine[0].port
-        plan = pgdetect.PgPlan(plan.action, port, 16, mine[0], plan.message)
-    port = plan.port
+        mine = new16 or [c for c in clusters if c.version == 16]
+        if mine:
+            name, port = mine[0].name, mine[0].port
+        else:
+            name, port = "main", plan.port
+            sysm.run(["pg_createcluster", "16", name, "--port", str(port), "--locale", "C.UTF-8", "--encoding", "UTF8", "--start"],
+                     desc=f"pg_createcluster 16 {name} (UTF-8)")
+            sysm.manifest.note("clusters", f"16/{name}")
+        if new16:
+            sysm.manifest.note("clusters", f"16/{name}")
     # Tune the cluster we created (never an existing one).
     conf = f"/etc/postgresql/16/{name}/conf.d/90-ziira.conf"
     if sysm.write_text(conf, pgtune.conf_text(int(ctx.facts.get("ram_mb", 4096)))):
-        sysm.run(["pg_ctlcluster", "16", name, "restart"], desc=f"restart cluster 16/{name} with the new settings")
+        sysm.run(["pg_ctlcluster", "16", name, "restart"], desc=f"restart our cluster 16/{name} with the new settings")
         ui.ok(f"wrote {conf} (listen on localhost only, sized from RAM)")
     sysm.run(["systemctl", "enable", f"postgresql@16-{name}"], check=False, desc="enable the cluster at boot")
     return port, name
@@ -159,7 +200,15 @@ def ensure_role_and_databases(ctx: Ctx, port: int) -> None:
     has_db = psql_admin(ctx, port, f"select 1 from pg_database where datname = {util.sql_literal(cfg.master_db)};",
                         probe=True).out.strip() == "1"
     if not has_db:
-        psql_admin(ctx, port, f"create database {db_q} owner {role_q} encoding 'UTF8';")
+        enc = psql_admin(ctx, port, "select pg_encoding_to_char(encoding) from pg_database where datname = 'template1';",
+                         probe=True, check=False).out.strip()
+        # A template1 that is not UTF-8 (a POSIX-locale server) cannot be copied into a UTF-8 database: copy template0 instead.
+        extra = "" if enc in ("", "UTF8") else " template template0 lc_collate 'C.UTF-8' lc_ctype 'C.UTF-8'"
+        if extra:
+            ui.warn(f"template1 on this server is {enc}, not UTF8; the master database is created from template0 as UTF8. "
+                    "The per-business databases are copied from a template created by the application: check its encoding "
+                    "(\\l in psql) before the first business is registered.")
+        psql_admin(ctx, port, f"create database {db_q} owner {role_q} encoding 'UTF8'{extra};")
         psql_admin(ctx, port, f"revoke all on database {db_q} from public;")
         ui.ok(f"created database '{cfg.master_db}' (the tenant template is created by the application installer)")
     else:

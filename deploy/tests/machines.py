@@ -91,6 +91,12 @@ class Machine(FakeSystem):
             return Result(0 if installed else 1, "install ok installed" if installed else "")
         if argv[0] == "pg_lsclusters":
             return Result(0, "".join(f"{v} {n} {p} {st} postgres /var/lib/postgresql/{v}/{n} /log\n" for v, n, p, st in self.clusters))
+        if argv[0] == "pg_dropcluster":
+            gone = [c for c in self.clusters if (c[0], c[1]) == (int(argv[1]), argv[2])]
+            self.clusters = [c for c in self.clusters if c not in gone]
+            for c in gone:
+                self.listening = "".join(ln + "\n" for ln in self.listening.splitlines() if f":{c[2]} " not in ln)
+            return Result()
         if argv[0] == "pg_createcluster":
             self.clusters.append((int(argv[1]), argv[2], int(argv[argv.index("--port") + 1]), "online"))
             self.pg_major = int(argv[1])

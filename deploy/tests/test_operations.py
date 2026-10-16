@@ -232,7 +232,7 @@ def test_purge_drops_only_ziira_databases_and_roles() -> None:
     sql = "\n".join(i or "" for i in m.inputs)
     for expected in ('drop database "ziira_master"', 'drop database "ziira_t_shop"', 'drop role "zt_shop"', 'drop role if exists "ziira"'):
         assert expected in sql
-    assert 'drop database "postgres"' not in sql and "template1" not in sql
+    assert 'drop database "postgres"' not in sql and 'drop database "template1"' not in sql
     assert "/etc/ziira/ziira.env" not in m.files
 
 

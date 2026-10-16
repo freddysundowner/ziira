@@ -5,10 +5,10 @@ PostgreSQL (role and databases only, when a server exists), systemd services, ni
 No hosting provider is assumed. The three names are inputs: the examples use `ziira.io`, `app.ziira.io`, `admin.ziira.io`.
 
 ## Prerequisites
-- A VPS running Ubuntu 22.04, Ubuntu 24.04 or Debian 12, with a public IPv4, root access, 2 CPU / 2 GB RAM / 10 GB disk or more.
+- A VPS running Ubuntu 20.04 (end of life, supported with a private Python and Node), 22.04, 24.04 or Debian 12, with a public IPv4, root access, 2 CPU / 2 GB RAM / 10 GB disk or more.
 - DNS **A records** for the root, `www`, the app host and the admin host pointing at the server. The installer checks them and
   stops (printing the exact records) before asking for any certificate. Ports 80 and 443 reachable from the internet.
-- An email address for certificate notices; for registration, SMTP details for the platform mailer.
+- An email address for certificate notices. Nothing else is asked: email, registration, payments and AI keys are set in the Super Admin afterwards.
 
 ## Install
 ```bash
@@ -16,7 +16,7 @@ git clone <your repository> ziira && cd ziira
 sudo bash deploy/install.sh                       # asks for the domain, emails, super admin password
 sudo bash deploy/install.sh --dry-run --root-domain ziira.io ...      # prints the plan, changes nothing
 sudo ZIIRA_OPERATOR_PASSWORD='...' bash deploy/install.sh --yes --root-domain ziira.io --email ops@ziira.io \
-     --admin-email you@ziira.io --agree-tos --smtp-host smtp.example.com --smtp-from no-reply@ziira.io
+     --admin-email you@ziira.io --agree-tos
 ```
 `--config FILE` takes the same answers as `name=value` lines. Run `install.sh --help` for every option. It is idempotent:
 run it again after fixing any problem and it skips what is done. Useful flags: `--staging` (Let's Encrypt test certificates),
@@ -28,6 +28,49 @@ What it does: preflight (OS, resources, ports, DNS) - packages - Python 3.12 (sy
 build) - service user - PostgreSQL - release + virtualenv - `/etc/ziira/ziira.env` (validated with `scripts/check_env.py`) -
 `ziira install --all` and the first super admin - web app build - systemd services - nginx on port 80 - certificates - nginx over
 HTTPS (HSTS only after HTTPS is verified) - website build - firewall, fail2ban, log rotation.
+
+## After the install
+The installer prints this checklist and writes it to `/etc/ziira/install-summary.txt`: (1) sign in at `https://<admin host>` as the super
+admin; (2) Platform > Email: set up the platform mailer; (3) set the registration mode (it starts closed); (4) add the AI and payment
+keys you use; (5) create plans and publish the website (until then the landing page shows placeholder text); (6) run `sudo ziira-doctor`
+and copy the credentials key and `/var/backups/ziira` off the server. `--smtp-*` and `--registration-mode` exist as advanced flags only.
+
+## Installing on a server that already runs other things
+Take a snapshot or backup of the server first, then **look before you touch**:
+```bash
+sudo bash deploy/install.sh --inspect      # read-only: ports and their owners, nginx sites, certificates, firewall, PostgreSQL
+                                           # (names only), Python/Node, other services; then the PLAN and every conflict
+sudo bash deploy/install.sh --dry-run ...  # the same plus every file and command, nothing changed
+```
+The plan is printed at the start of every run and must be confirmed (`--yes` skips the question, never the conflicts).
+- **nginx already owns 80/443:** the installer joins it. It adds only `ziira-*` files (sites-available/enabled, snippets, one
+  `conf.d/ziira-common.conf` whose log format, zones, map and upstream are all named `ziira*`), never edits or deletes an existing site
+  or `nginx.conf`, never touches the stock default site (the catch-all that refuses unknown host names is skipped), runs `nginx -t`
+  first, restores its own files if the test fails, and uses `systemctl reload`, never `restart`.
+- **Another proxy owns 80/443** (Apache, Caddy, Traefik, HAProxy, a container proxy): it stops and explains. `--proxy-mode snippet`
+  (or `--ports N`) runs Ziira's own nginx on `127.0.0.1:N` (default 8081, plain HTTP, `ziira-nginx.service`), requests no certificates and
+  writes ready-to-adopt snippets for nginx, Caddy, Apache, HAProxy and Traefik to `/opt/ziira/proxy-snippets` (`--snippet-dir`).
+- **Name clashes:** if one of our host names is already served by another nginx site or covered by another certificate, it stops and names
+  the file or certificate. Our certificates are separate lineages named `ziira-<host>`; other certificates are never renewed, changed or
+  deleted; an existing renewal timer or cron job is reused (the deploy hook is attached to our lineages only).
+- **Firewall:** an inactive ufw is never enabled (`--manage-firewall` + confirmation); an active ufw only gets the missing 80/443 allow
+  rules; iptables/nftables/firewalld are reported, not touched. fail2ban only with `--fail2ban`, in `jail.d/ziira-nginx.local`.
+- **PostgreSQL:** an existing 16+ server is used as it is (no restart, reload or configuration change). Only the role `ziira` and
+  databases `ziira_master`, `ziira_template`, `ziira_t_<business>` are created; `--db-prefix zi_` renames all of them and is required when
+  a non-Ziira role or database already has one of those names. With several servers choose one with `--pg-port`. Older than 16 (for
+  example PostgreSQL 12 on Ubuntu 20.04): `--postgres-new-cluster` adds a separate `16/ziira` cluster (UTF-8, `127.0.0.1` only, a free
+  port other than the existing ones, own data directory and unit `postgresql@16-ziira`) and leaves the old cluster untouched. On 20.04
+  the PostgreSQL packages come from `apt-archive.postgresql.org` (chosen automatically, key fingerprint verified).
+- **Python and Node:** the system `python3` and any system `node` are never changed. A private Python 3.12 (official `uv` binary,
+  checksum verified) lives under `/opt/ziira`, a private Node 20 LTS under `/opt/ziira/tools/node`; no `npm -g`.
+- **Ports:** the API and the rebuild receiver take the first free local port (8000, 9001 upwards), always on 127.0.0.1.
+- **Everything is recorded:** each file created, modified (backed up with a timestamp) or removed is listed in
+  `/var/lib/ziira/install-manifest.json`. `uninstall.sh` undoes exactly that: services, nginx files, helpers, restored backups; databases,
+  `/etc/ziira`, backups and our certificates stay (and it says so) unless `--purge-data` (typed confirmation, or
+  `--confirm-purge "delete all data of <root domain>"`), which also drops the databases, the role and a PostgreSQL cluster the installer
+  created. Packages stay installed.
+- **Resources:** only missing packages are installed (`--no-install-recommends`, no upgrade); builds run under `nice`/`ionice` with a
+  Node memory limit from the free RAM; low RAM or disk is warned about (`--prebuilt` skips the build).
 
 ## Where things live
 | What | Where |
@@ -82,8 +125,8 @@ backups), and copy `/var/backups/ziira` off the server (encrypted). See `docs/op
 
 ## Hardening choices
 Super Admin sign-in defaults to email + password (`ZIIRA_OPERATOR_MFA=off`, acknowledged by the installer after a warning). Reduce the
-risk with `--operator-networks` (enforced in nginx and in the API) or `--operator-mfa totp`. Registration is `closed` without SMTP,
-`invite` with it (`--registration-mode`). The web app CSP starts as report-only: check the browser console, then `--csp enforce`.
+risk with `--operator-networks` (enforced in nginx and in the API) or `--operator-mfa totp`. Registration starts `closed`: the Super Admin opens it
+once Email is set up. The web app CSP starts as report-only: check the browser console, then `--csp enforce`.
 
 ## Troubleshooting
 | Symptom | Cause / fix |
@@ -102,3 +145,9 @@ an Ubuntu 24.04 container). The full flow also ran on Ubuntu 24.04 in a systemd 
 tested on a real server:** Let's Encrypt issuance and renewal, DNS/IP detection, Ubuntu 22.04 and Debian 12 (the `uv` Python path, PGDG on
 those), ufw/fail2ban, the website build with Node on the server, hairpin access to the server's own public name, nginx older than 1.24,
 and the app's web CSP in a browser.
+
+## After install: configure email and registration in the Super Admin
+
+Sign in to the Super Admin, open **Platform > Email**, enter your mail provider's credentials, send a test email and make it live;
+then open **Platform > Settings** and choose the registration mode (open or invite-only need working email). Until then
+sign-up stays closed in production. See `docs/platform-admin.md`.

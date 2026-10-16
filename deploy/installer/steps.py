@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Callable, Tuple
 
+from installer.config import Config
 from installer.context import Ctx
 from installer.steps_app import step_env, step_migrate, step_release, step_services, step_user, step_webapp
 from installer.steps_base import step_node, step_packages, step_preflight, step_python
@@ -35,6 +36,20 @@ STEPS: list[Step] = [
 NAMES = [s[0] for s in STEPS]
 
 
+AFTER_INSTALL = [
+    "Sign in to the Super Admin at https://{admin} as {email}.",
+    "Platform > Email: set up the platform mailer (it sends verification and reset emails).",
+    "Platform > Settings: open registration (or invite-only) once Email works, and check the public URLs.",
+    "Add the AI key and the payment provider keys you will use in the Super Admin.",
+    "Create your plans and prices, then publish the website (Website > Publish): the landing page shows placeholder text until then.",
+    "Run  sudo ziira-doctor,  and copy the credentials key and /var/backups/ziira off this server.",
+]
+
+
+def checklist(cfg: Config) -> list[str]:
+    return [f"  {i}. " + line.format(admin=cfg.admin_host, email=cfg.admin_email) for i, line in enumerate(AFTER_INSTALL, 1)]
+
+
 def summary_text(ctx: Ctx) -> str:
     cfg = ctx.cfg
     s = ctx.secrets()
@@ -60,7 +75,10 @@ def summary_text(ctx: Ctx) -> str:
                   "    It must not be stored with the backups. Also keep the whole " + ctx.env_path + "."]
     else:
         lines += [f"  ZIIRA_CREDENTIALS_KEY: unchanged from an earlier install; it is in {ctx.env_path}"]
-    lines += ["", "Warnings"] + [f"  - {w}" for w in ctx.ui.report.warnings] if ctx.ui.report.warnings else []
+    lines += ["", "After the install (everything else is set in the Super Admin)", *checklist(cfg)]
+    lines += ["", "After the install (everything else is set in the Super Admin)", *checklist(cfg)]
+    if ctx.ui.report.warnings:
+        lines += ["", "Warnings"] + [f"  - {w}" for w in ctx.ui.report.warnings]
     return "\n".join(lines) + "\n"
 
 

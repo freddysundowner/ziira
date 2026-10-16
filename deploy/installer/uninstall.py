@@ -91,8 +91,16 @@ def remove_services(ctx: Ctx, *, purge: bool) -> None:
         if purge:
             sysm.run(["certbot", "delete", "--non-interactive", "--cert-name", lineage], check=False,
                      desc=f"certbot delete --cert-name {lineage} (our certificate only)")
+    if not purge and cfg_clusters(ctx):
+        ui.info("Kept the PostgreSQL cluster(s) the installer created (" + ", ".join(cfg_clusters(ctx)) + ") with all data and running; "
+                "--purge-data drops them. The postgresql-16 package stays installed.")
     if not purge and sysm.manifest.extra.get("lineages"):
         ui.info("Kept our certificates (lineages " + ", ".join(sysm.manifest.extra["lineages"]) + "); --purge-data removes them.")
+
+
+def cfg_clusters(ctx: Ctx) -> list[str]:
+    """PostgreSQL clusters the installer itself created (only ever a separate '16/ziira', or a 16/main it installed)."""
+    return [c for c in ctx.sys.manifest.extra.get("clusters", []) if c.startswith("16/")]
 
 
 def purge_data(ctx: Ctx) -> None:
@@ -112,6 +120,10 @@ def purge_data(ctx: Ctx) -> None:
         if role.startswith(cfg.tenant_role_prefix):
             psql_admin(ctx, port, f"drop role {util.sql_ident(role)};", check=False)
     psql_admin(ctx, port, f"drop role if exists {util.sql_ident(cfg.db_role)};", check=False)
+    for cluster in cfg_clusters(ctx):
+        version, name = cluster.split("/")
+        ctx.sys.run(["pg_dropcluster", version, name, "--stop"], check=False,
+                    desc=f"pg_dropcluster {version} {name} (created by this installer)")
     ui.ok(f"dropped {len(names)} database(s) and {len(roles)} tenant role(s), and the role '{cfg.db_role}'")
 
 

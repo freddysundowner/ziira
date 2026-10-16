@@ -40,9 +40,10 @@ def test_cert_lineages() -> None:
     assert load(*GOOD).lineage_of("www.ziira.io") == "ziira-ziira.io"       # always ziira-<host>: never an existing lineage
 
 
-def test_registration_defaults_follow_the_mailer() -> None:
+def test_registration_is_closed_by_default_even_with_a_mailer() -> None:
     assert load("--root-domain", "ziira.io").registration_mode == "closed"
-    assert load("--root-domain", "ziira.io", "--smtp-host", "smtp.example.com").registration_mode == "invite"
+    assert load("--root-domain", "ziira.io", "--smtp-host", "smtp.example.com").registration_mode == "closed"
+    assert load("--root-domain", "ziira.io", "--registration-mode", "invite").registration_mode == "invite"    # advanced flag still works
 
 
 def test_staging_and_self_signed_switch_hsts_off() -> None:
