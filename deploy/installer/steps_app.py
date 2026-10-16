@@ -77,10 +77,22 @@ def step_release(ctx: Ctx) -> None:
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
     current = sysm.readlink(cfg.current)
     if current and sysm.exists(f"{current}/.complete"):
-        ctx.facts["release"] = current
-        ctx.facts["release_id"] = current.rsplit("/", 1)[-1]
-        ui.already(f"release {current.rsplit('/', 1)[-1]} is installed and active (use ziira-update to deploy a newer version)")
-        return
+        name = current.rsplit("/", 1)[-1]
+        # An install that stopped part-way (the services are not written yet) and is re-run from a NEWER checkout must use the
+        # new code: otherwise a fix pulled from the repository is ignored and the same failure repeats. A finished install is
+        # only ever changed by ziira-update (with a database backup and a rollback).
+        unfinished = not sysm.exists("/etc/systemd/system/ziira-api.service")
+        newer = False
+        if unfinished and not cfg.repo and not cfg.tarball:
+            sha = sysm.run(["git", "-C", cfg.from_dir or release.repo_root_of_installer(), "rev-parse", "--short", "HEAD"],
+                           probe=True, check=False).out.strip()
+            newer = bool(sha) and not name.endswith("-" + sha)
+        if not newer:
+            ctx.facts["release"] = current
+            ctx.facts["release_id"] = name
+            ui.already(f"release {name} is installed and active (use ziira-update to deploy a newer version)")
+            return
+        ui.note(f"release {name} was made by an earlier, unfinished run from older code: building a new release from this checkout")
     workdir = f"{cfg.state_dir}/fetch"
     if cfg.repo or cfg.tarball:
         sysm.makedirs(workdir)

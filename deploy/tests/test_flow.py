@@ -188,3 +188,28 @@ def test_ubuntu_22_without_python_312_uses_uv() -> None:
     assert not m.ran("curl -LsSf") and not m.ran("python3.12")                      # no curl|sh, no apt python, system python untouched
     assert not any(c[0] == "apt-get" and "python3.12" in c for c in m.calls)
     assert "/opt/ziira/python/current" in m.links
+
+
+def test_a_rerun_after_an_unfinished_install_uses_the_newer_checkout() -> None:
+    """The owner's case: the first run stopped at the web build; a fix was pulled; the re-run must not reuse the old release."""
+    m = Machine()
+    code, _ = install(m)
+    assert code == 0
+    first = m.links["/opt/ziira/current"]
+    m.files.pop("/etc/systemd/system/ziira-api.service")          # the install had not got as far as the services
+    m.on("rev-parse --short HEAD", out="newsha1\n")
+    code, ui = install(m)
+    assert code == 0, text(ui)
+    assert m.links["/opt/ziira/current"] != first and m.links["/opt/ziira/current"].endswith("-newsha1")
+
+
+def test_a_finished_install_is_only_changed_by_the_updater() -> None:
+    m = Machine()
+    code, _ = install(m)
+    assert code == 0
+    first = m.links["/opt/ziira/current"]
+    m.on("rev-parse --short HEAD", out="newsha2\n")
+    code, ui = install(m)
+    assert code == 0, text(ui)
+    assert m.links["/opt/ziira/current"] == first
+    assert "use ziira-update to deploy a newer version" in text(ui)

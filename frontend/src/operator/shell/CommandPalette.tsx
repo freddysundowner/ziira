@@ -109,7 +109,7 @@ export function CommandPalette({ open, onClose, permissions, missingFeatures }: 
           <SearchIcon className="h-4 w-4 text-muted" aria-hidden />
           <input ref={input} value={text} onChange={(e) => setText(e.target.value)} role="combobox" aria-expanded="true" aria-controls="search-results" aria-activedescendant={flat.length ? `hit-${index}` : undefined}
             aria-autocomplete="list" autoComplete="off" spellCheck={false} maxLength={80} placeholder={t("shell.search.placeholder")} aria-label={t("shell.search.title")}
-            className="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-muted" />
+            className="h-12 flex-1 bg-transparent text-sm shadow-none outline-none focus:outline-none focus-visible:outline-none placeholder:text-muted" />
           <kbd className="hidden rounded border border-line px-1.5 py-0.5 text-[11px] text-muted sm:block">Esc</kbd>
         </div>
         <div id="search-results" role="listbox" aria-label={t("shell.search.title")} className="overflow-y-auto pb-2">{body}</div>

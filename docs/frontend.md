@@ -131,3 +131,9 @@ Unset, neither is shown. The guides are on the marketing site (`docs/marketing-s
 `validators.ts` (email typo suggestions, phone length, password rules and strength, tax pattern) and `state.ts` (step gating,
 server-field to step mapping, the sessionStorage draft that never holds the password); layout in `RegisterLayout.tsx` and `SidePanel.tsx`.
 `VerifyRegistration.tsx` shows the honest wait (`Creating.tsx`) and retries a 503 once. New strings live under `signup.*` (English and Swahili).
+
+## Super Admin shell (`frontend/src/operator`)
+
+Sidebar entries live in `operator/nav.ts` (id, address, permission, optional feature, `match`); words under `nav.i.<id>` in `i18n/*.shell.json`.
+Shell pieces are in `operator/shell/` (sidebar, top bar, search palette, alerts bell, risk banners, breadcrumbs); charts are inline SVG in
+`operator/components/charts.tsx` with pure helpers in `helpers/chart.ts`. Each dashboard block reads its own data so one failure never blanks the page.

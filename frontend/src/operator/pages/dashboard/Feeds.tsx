@@ -13,7 +13,7 @@ export function Feeds() {
   const { t } = useTranslation("operator");
   const { feed, activity, seesTrail } = useDashboardQueries();
   return (
-    <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3 [&>section]:min-w-0">
       <Section query={feed} title={t("dash.feeds.payments")} errorTitle={t("dash.feeds.failed")} skeleton="h-48"
         actions={<Link to="/operator/billing/invoices" className="text-xs font-medium text-brand-strong hover:underline">{t("dash.openInvoices")}</Link>}>
         {(f) => f.payments.length === 0 ? <EmptyState title={t("dash.feeds.noPayments")} hint={t("dash.feeds.noPaymentsHint")} /> : (

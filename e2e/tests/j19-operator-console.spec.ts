@@ -45,7 +45,7 @@ test("J19 operator console", async ({ page }) => {
   await nav.getByRole("link", { name: "Dashboard" }).click();
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Subscribers" })).toBeVisible();
-  await nav.getByRole("link", { name: "Platform units" }).click();
+  await nav.getByRole("link", { name: "Add-ons & units" }).click();
   await expect(page.getByRole("heading", { name: "Platform units" })).toBeVisible();
 
   // --- the units: the kernel offers no uninstall, the scratch plugin is available
@@ -103,8 +103,10 @@ test("J19 operator console", async ({ page }) => {
   const folder = join(extra, PLUGIN);
   writeFileSync(join(folder, "migrations", "0002_more.up.sql"), "alter table plg_e2escratch.note add column body text;\n");
   writeFileSync(join(folder, "manifest.toml"), readFileSync(join(folder, "manifest.toml"), "utf8").replace('version = "1.0.0"', 'version = "1.1.0"'));
-  await nav.getByRole("link", { name: "Platform health" }).click();
+  await nav.getByRole("link", { name: "Health" }).click();
   await expect(page.getByRole("heading", { name: "Platform health" })).toBeVisible();
+  await nav.getByRole("link", { name: "Backups & upgrades" }).click();
+  await expect(page.getByRole("heading", { name: "Backups & upgrades" })).toBeVisible();
   await expect(page.getByText(business)).toBeVisible();
   await page.getByRole("button", { name: /Upgrade \d+ business/ }).click();
   const upgrade = page.getByRole("dialog");
@@ -115,7 +117,7 @@ test("J19 operator console", async ({ page }) => {
   await checkAccessibility(page, "platform health");
 
   // --- the unit itself still needs its record upgraded; then it is current
-  await nav.getByRole("link", { name: "Platform units" }).click();
+  await nav.getByRole("link", { name: "Add-ons & units" }).click();
   await page.getByPlaceholder("Search units").fill(PLUGIN);
   await expect(row("E2E scratch plugin")).toContainText("Needs upgrade");
   await row("E2E scratch plugin").getByRole("button", { name: /Upgrade/ }).click();
@@ -141,7 +143,7 @@ test("J19 operator console", async ({ page }) => {
   await expect(page.getByRole("row").filter({ hasText: "E2E scratch plugin" })).toContainText("Off, data kept");
   await ownerApi.post(`/units/${PLUGIN}/remove`, { confirm: PLUGIN });
 
-  await nav.getByRole("link", { name: "Platform units" }).click();
+  await nav.getByRole("link", { name: "Add-ons & units" }).click();
   await page.getByPlaceholder("Search units").fill(PLUGIN);
   await row("E2E scratch plugin").getByRole("button", { name: /Uninstall/ }).click();
   const gone = page.getByRole("dialog");
@@ -152,14 +154,15 @@ test("J19 operator console", async ({ page }) => {
   await expect(row("E2E scratch plugin")).toContainText("Available");
 
   // --- operators, with the trail of what was changed
-  await nav.getByRole("link", { name: "Operators" }).click();
+  await nav.getByRole("link", { name: "Operators & roles" }).click();
   await expect(page.getByText("E2E Operator").first()).toBeVisible();
   await expect(page.getByText("unit.install").first()).toBeVisible();
   await expect(page.getByText("business.unit_enable").first()).toBeVisible();
   await checkAccessibility(page, "operators");
 
   // --- the operator's own account: a wrong current password is refused, then the password is changed and used
-  await page.getByRole("link", { name: "Account" }).click();
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "My account" }).click();
   await expect(page.getByRole("heading", { name: "My account" })).toBeVisible();
   const newPassword = `${password}-changed`;
   await page.getByLabel("Current password").fill("not-the-password-1");
@@ -186,7 +189,8 @@ test("J19 operator console", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Platform health" })).toBeVisible();
 
   // --- put the shared operator's password back for the journeys that follow
-  await page.getByRole("link", { name: "Account" }).click();
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "My account" }).click();
   await page.getByLabel("Current password").fill(newPassword);
   await page.getByLabel(/^New password(?! again)/).fill(password);
   await page.getByLabel("New password again").fill(password);

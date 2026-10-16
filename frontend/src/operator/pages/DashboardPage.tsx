@@ -39,8 +39,8 @@ export default function DashboardPage() {
         <ErrorState title={t("dash.loadFailed")} message={overview.error.message} onRetry={() => void overview.refetch()} />
       ) : <Kpis d={overview.data} />}
       <div className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2"><TrendCard /></div>
-        <SystemTiles />
+        <div className="min-w-0 xl:col-span-2 [&>section]:h-full"><TrendCard /></div>
+        <div className="min-w-0 [&>section]:h-full"><SystemTiles /></div>
       </div>
       {d && (
         <>

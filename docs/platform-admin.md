@@ -197,3 +197,52 @@ moved; a shared Ziira-owned OAuth app would be a design change.
 
 Tests: `tests/test_platform_email.py` (mocked transports; secrets never in responses, trail or log; masking; env fallback and move;
 registration guard; public config). Not run: real mail providers (request shapes are from public documentation).
+
+## Screens and where everything is
+
+The Super Admin (`frontend/src/operator`, code in `nav.ts`) has a left menu that stays in view (icons only on request, a drawer on a
+phone), a top bar (search, environment badge, language, theme, alerts bell, account menu), banners for risky settings, and breadcrumbs.
+A role sees only the entries it may open (`platform.view` shows the read-only ones).
+
+| Section | Entry | Address | Needs |
+|---|---|---|---|
+| Overview | Dashboard (setup checklist "Where do I find ...?" until finished, figures, trend, health tiles, feeds, quick actions) | `/operator/dashboard`; checklist alone `/operator/setup` | view |
+| Customers | Subscribers | `/operator/subscribers` (`/businesses` redirects) | view |
+| | Licences | `/operator/licences` | view |
+| | Plan requests | `/operator/billing/requests` | view |
+| Revenue | Plans & pricing (plans, add-ons) | `/operator/plans` | view |
+| | Coupons | `/operator/plans/coupons` | view |
+| | Invoices & payments | `/operator/billing/invoices` | view |
+| | Payment methods (provider cards) | `/operator/payment-methods` (old `/billing/payment-methods` redirects) | view |
+| | Billing settings (vendor, tax, dunning) | `/operator/billing/settings` | view |
+| Website | Company & contact (also social, SEO), Pages & legal (also banner, pricing), Media, Publish | `/operator/website?tab=...` | content |
+| Platform | Add-ons & units | `/operator/units` | view |
+| | AI providers (keys, default, spend cap) | `/operator/ai` | ai |
+| | Email (provider, sender, test) | `/operator/email` | settings |
+| | Platform settings (registration mode, addresses) | `/operator/settings` | settings |
+| | Operators & roles | `/operator/operators` | operators |
+| System | Health | `/operator/health` | view |
+| | Backups & upgrades | `/operator/backups` | view (upgrade button: units) |
+| | Audit trail (filters, CSV) | `/operator/audit` | operators |
+| | Mail log | `/operator/mail-log` | settings |
+| | Payment attempts | `/operator/payment-attempts` (old `/billing/payment-attempts` redirects) | view |
+
+Set-up order, with where each setting lives: 1 Email (Platform > Email), 2 registration mode (Platform > Platform settings),
+3 AI provider keys (Platform > AI providers), 4 payment methods (Revenue > Payment methods), 5 plans and prices (Revenue > Plans & pricing),
+6 Website (Website > Company & contact, then Publish), 7 first licence (Customers > Licences, only if you sell self-hosted copies).
+
+### Endpoints behind the frame (`api/operator_admin_routes.py`, `platform/overview.py`; all reads)
+
+- `GET /operator/search?q=` (view; rate limited; two characters at least): subscribers, invoices, plans, licences, and operators only for `platform.operators`.
+- `GET /operator/alerts` (view): failed or mismatched payments, suspended and past-due subscribers, plan requests, trials ending in 7 days,
+  failed jobs, businesses behind on upgrades or unreadable, refused plugins, licences expiring in 30 days, backup older than 26 hours,
+  platform not ready, mail not working, AI cap reached. Each item names the permission that can act on it and only holders see it
+  (so a read-only operator sees none). Facts are cached for a minute.
+- `GET /operator/dashboard/system`, `/dashboard/series?metric=revenue|signups|churn&range=12m|12w` (revenue one line per currency, never summed),
+  `/dashboard/feed` (view).
+- `GET /operator/setup` (view): checklist state from real data, environment, and risky settings (no second factor in production, registration
+  open without working mail, mail not set up, no AI provider).
+- `GET /operator/audit` (filters operator, action, target, outcome, date_from, date_to; paged) and `/audit/export` (CSV, at most 5000 lines,
+  written to the trail as `audit.export`): `platform.operators`.
+
+Not done: the "MRR" series is not shown over time (history of price snapshots is not kept), only money collected; the churn figure is the dashboard's 30-day window, not a calendar month.
