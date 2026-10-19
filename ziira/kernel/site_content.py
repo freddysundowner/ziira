@@ -30,6 +30,13 @@ from ziira.kernel.config import get_settings
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import Conflict, NotFound, ValidationFailed
 
+
+def _platform_web_url() -> str | None:
+    """The business app's address from the platform settings, used when the website has no app address of its own."""
+    from ziira.kernel.platform import behaviour
+
+    return behaviour.public_web_url() or None
+
 LOCALE = re.compile(r"^[a-z]{2,3}(-[A-Z]{2})?$")
 SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 EMAIL = re.compile(r"^[^@\s<>]{1,64}@[^@\s<>]+\.[^@\s<>]{2,}$")
@@ -568,7 +575,7 @@ def _public_settings(w: _Working) -> dict[str, Any]:
         "branding": {"logo": w.asset_setting("logo"), "favicon": w.asset_setting("favicon")},
         "analytics": {"id": s["analytics_id"]} if analytics_on else None,
         "cookie_notice": s.get("cookie_notice_text") or {},
-        "links": {"app_url": s.get("app_url"), "status_page_url": s.get("status_page_url")},
+        "links": {"app_url": s.get("app_url") or _platform_web_url(), "status_page_url": s.get("status_page_url")},
         "banner": banner,
         "locales": locales,
         "default_locale": locales[0],
