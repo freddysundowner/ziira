@@ -37,6 +37,19 @@ set -a; . ./.env; set +a
 | **Country packs and provider plugins** | `tests/test_country_packs.py`, `ziira/plugins/*/tests` | The country list, a pack chosen at registration (and the international fallback), seeding that is idempotent and never overwrites, the upgrade step that switches on a provider plugin; each pack's data files parse with the owning unit's own rules; the M-Pesa formats and provider against a mock Safaricom. |
 | **Web app** | `frontend/` (`make web-check`) | Module registry rules, translations in step, types generated from the API. |
 
+## Responsive audit (`make responsive-audit`)
+
+`e2e/responsive-audit.mjs` (Playwright) signs in to the **already running local stack** (web :5173, API :8000) as the demo owners
+(`demo-hardware`, `demo-gym`) and the Super Admin from `.dev-operator.local`, finds every reachable route itself (it expands the
+sidebar, follows all links, Settings, Add-ons and tab links, opens the first row of each list for a detail page), and visits each
+at 320, 360, 390, 768 and 1280 px (also each tab and the open phone menu). It records, with a selector, text, and a screenshot
+with the offenders outlined in red (`e2e/results/responsive/`, gitignored): page scrolling sideways, children wider than their
+card, clipped or spilling text and figures cut by an ellipsis, overlapping text boxes, fixed elements (floating buttons, banners)
+covering content or each other, and (report only) tap targets under 36 px. Output: `docs/plans/responsive-audit.md` (by module,
+worst first) and `e2e/results/responsive/audit.json`; exit code 1 when there are defects. Options: `--only /jobs`,
+`--widths 320,390`, `--account email:password[:label]`, `--web URL` (e.g. a throwaway stack from `E2E_SERVE=1 bash e2e/run.sh`
+on :4175), `--no-operator`, `--max-routes N`.
+
 ## Real-browser journeys (`make e2e`)
 
 Eighteen journeys drive the web app in Chromium (Playwright) against a **throwaway stack that the run starts and removes**:

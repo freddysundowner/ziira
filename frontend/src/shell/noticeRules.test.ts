@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { mustGoToBilling, noticeFor, type BillingBanner } from "./noticeRules";
+import { dismissible, mustGoToBilling, noticeFor, type BillingBanner } from "./noticeRules";
 
 const banner = (over: Partial<BillingBanner>): BillingBanner => ({ level: "blocked", message: "m", status: "suspended", kind: "suspended", date: null, days_left: null, ...over });
 const fmt = (v: string) => `<${v.slice(0, 10)}>`;
@@ -37,5 +37,19 @@ describe("noticeFor", () => {
     expect(noticeFor(banner({ kind: "grace", level: "warning", status: "grace" }), fmt)).toMatchObject({ tone: "warn", key: "billing.notice.overdue" });
     expect(noticeFor(banner({ kind: "other", status: "expired", message: "Read only" }), fmt)).toMatchObject({ tone: "bad", text: "Read only" });
     expect(noticeFor(null, fmt)).toBeNull();
+  });
+});
+
+describe("trial notice on Home", () => {
+  const trial = (days: number) => banner({ kind: "trial", status: "trialing", level: "info", days_left: days, message: "Your free trial ends on 1 Dec." });
+  it("says when a longer trial ends, on Home only, as a quiet info line", () => {
+    expect(noticeFor(trial(20), fmt)).toBeNull();
+    expect(noticeFor(trial(20), fmt, true)).toEqual({ tone: "info", key: "", params: {}, text: "Your free trial ends on 1 Dec." });
+  });
+  it("lets a running trial be hidden, never an ended trial, a suspended plan or an overdue payment", () => {
+    expect(dismissible(trial(5), "info")).toBe(true);
+    expect(dismissible(banner({ kind: "trial_ended" }), "bad")).toBe(false);
+    expect(dismissible(banner({ kind: "past_due", level: "warning" }), "warn")).toBe(false);
+    expect(dismissible(banner({}), "bad")).toBe(false);
   });
 });

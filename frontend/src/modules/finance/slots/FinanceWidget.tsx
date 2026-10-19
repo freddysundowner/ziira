@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { api, ErrorState, monthStart, money, Skeleton, today, type Schemas, useCompany, useQuery, useTranslation } from "@/sdk";
+import { api, ErrorState, Figure, StatRow, monthStart, money, Skeleton, today, type Schemas, useCompany, useQuery, useTranslation } from "@/sdk";
 import { json } from "../api";
 
 /** Home page box: cash and bank position, and profit so far this month, from the books. */
@@ -17,15 +17,9 @@ export default function FinanceWidget() {
   if (!company || cash.isLoading || profit.isLoading) return <Skeleton className="h-16 w-full" />;
   const net = profit.data?.consolidated.net_profit;
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <Link to="/finance/reports/cashflow" className="block">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">{t("widget.cash")}</p>
-        <p className="tnum text-xl font-semibold">{money(cash.data?.closing, company.currency)}</p>
-      </Link>
-      <Link to="/finance/reports/pnl" className="block">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">{t("widget.profit")}</p>
-        <p className={`tnum text-xl font-semibold ${Number(net) < 0 ? "text-bad" : "text-ok"}`}>{money(net, company.currency)}</p>
-      </Link>
-    </div>
+    <StatRow>
+      <Link to="/finance/reports/cashflow" className="block min-w-0"><Figure label={t("widget.cash")} value={money(cash.data?.closing, company.currency)} /></Link>
+      <Link to="/finance/reports/pnl" className="block min-w-0"><Figure label={t("widget.profit")} value={money(net, company.currency)} tone={Number(net) < 0 ? "bad" : "ok"} /></Link>
+    </StatRow>
   );
 }

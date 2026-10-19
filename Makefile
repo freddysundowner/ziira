@@ -1,4 +1,4 @@
-.PHONY: deploy-test deploy-test-docker setup db-up db-down install run test lint check web-setup web web-check api-types e2e-setup e2e site-setup site site-catalog site-build site-check site-screens
+.PHONY: responsive-audit deploy-test deploy-test-docker setup db-up db-down install run test lint check web-setup web web-check api-types e2e-setup e2e site-setup site site-catalog site-build site-check site-screens
 
 PY ?= python3
 
@@ -52,6 +52,9 @@ e2e-setup:        ## real-browser tests: install Playwright and its Chromium (on
 
 e2e:              ## real-browser journeys against a throwaway stack (scratch databases, API on :8765, web on :4175); see docs/testing.md
 	bash e2e/run.sh
+
+responsive-audit: ## layout audit of every page at 320-1280 px against the running local stack (web :5173, API :8000); writes docs/plans/responsive-audit.md
+	node e2e/responsive-audit.mjs
 
 site-setup:       ## marketing website (site/): npm ci
 	cd site && npm ci

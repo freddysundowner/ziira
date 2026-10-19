@@ -1,8 +1,8 @@
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  api, Alert, Button, Card, EmptyState, ErrorState, Field, Skeleton, Spinner, Textarea, unwrap, useCan, useCompany, useMutation, useQuery,
+  api, Alert, Button, EmptyState, ErrorState, Field, Skeleton, Spinner, Textarea, unwrap, useCan, useCompany, useMutation, useQuery,
   useTranslation,
 } from "@/sdk";
 
@@ -11,10 +11,10 @@ import AnswerSources from "./AnswerSources";
 import { EXAMPLE_KEYS, fixableInSettings, reasonKey, type Turn } from "../logic";
 
 /**
- * Ask Ziira: a chat-like box on the Today page. The answer is written by AI from defined queries over what the
+ * Ask Ziira: the chat-like body of the floating panel (see slots/AskFloating). The answer is written by AI from defined queries over what the
  * person may see, and says what it is based on. Disabled, over-budget and failed states each say what to do.
  */
-export default function AskBox() {
+export default function AskBox({ autoAsk }: { autoAsk?: { text: string; n: number } }) {
   const { t, i18n } = useTranslation("intel");
   const { company } = useCompany();
   const companyId = company?.id;
@@ -45,26 +45,33 @@ export default function AskBox() {
     setQuestion("");
     ask.mutate({ id, text: trimmed });
   };
+  const lastAuto = useRef(0);
+  const ready = !!status.data?.ask_available;
+  useEffect(() => {
+    if (ready && autoAsk && autoAsk.n !== lastAuto.current) { lastAuto.current = autoAsk.n; send(autoAsk.text); }
+  });
   const onSubmit = (e: FormEvent) => { e.preventDefault(); send(question); };
   const restart = () => { setTurns([]); setSessionId(undefined); input.current?.focus(); };
 
-  const title = <span className="inline-flex flex-wrap items-center gap-2">{t("ai.askTitle")}<AiBadge short /></span>;
-  if (status.error) return <Card title={title}><ErrorState message={status.error.message} onRetry={() => void status.refetch()} /></Card>;
-  if (!status.data) return <Card title={title}><Skeleton className="h-24 w-full" /></Card>;
+  const hint = <p className="text-sm text-muted">{t("ai.askHint")}</p>;
+  if (status.error) return <ErrorState message={status.error.message} onRetry={() => void status.refetch()} />;
+  if (!status.data) return <Skeleton className="h-24 w-full" />;
   if (!status.data.ask_available) {
     const reason = status.data.reason;
     return (
-      <Card title={title} description={t("ai.askHint")}>
+      <div className="space-y-3">
+        {hint}
         <EmptyState title={t(`ai.unavailable.${reasonKey(reason)}`)}
           hint={fixableInSettings(reason) ? (canSettings ? undefined : t("ai.ownerCanFix")) : undefined}
           action={canSettings && fixableInSettings(reason) ? <Link className="text-sm font-medium text-brand-strong hover:underline" to="/admin/settings?tab=ai">{t("ai.openSettings")}</Link> : undefined} />
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card title={title} description={t("ai.askHint")}
-      actions={turns.length > 0 && <Button size="sm" variant="ghost" onClick={restart}>{t("ai.newConversation")}</Button>}>
+    <div className="space-y-4">
+      {hint}
+      {turns.length > 0 && <div><Button size="sm" variant="ghost" onClick={restart}>{t("ai.newConversation")}</Button></div>}
       <div className="space-y-4">
         {turns.length === 0 ? (
           <div>
@@ -94,7 +101,7 @@ export default function AskBox() {
           <Button type="submit" loading={ask.isPending} disabled={!question.trim()}>{t("ai.send")}</Button>
         </form>
       </div>
-    </Card>
+    </div>
   );
 }
 

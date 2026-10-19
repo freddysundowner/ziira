@@ -6,11 +6,12 @@ import { areaEntryPath, cx, iconFor, isSingle, type NavArea, type NavItem, type 
 import { readStored, writeStored } from "@/sdk/storage";
 
 const OPEN_KEY = "ziira.sidebar.sections";
-/** Sections the person opened or closed by hand (id -> open); everything else follows the default: Intelligence open, the rest closed. */
+/** Sections the person opened or closed by hand (id -> open); everything else follows the default: Intelligence and the kind of business's main sections open, the rest closed. */
 function readChoices(): Record<string, boolean> {
   try { return JSON.parse(readStored(OPEN_KEY) ?? "{}") as Record<string, boolean>; } catch { return {}; }
 }
-const OPEN_BY_DEFAULT = new Set(["command"]);
+/** Intelligence always starts open; the kind of business adds its own main sections (SIDEBAR in sdk/kindProfile.ts). */
+const ALWAYS_OPEN = "command";
 
 const rowClass = (active: boolean, small: boolean) =>
   cx("flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors", active ? "bg-brand-soft text-brand-strong" : "text-ink hover:bg-sunken", small && "justify-center px-0", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand");
@@ -87,7 +88,7 @@ function moveFocus(e: KeyboardEvent<HTMLElement>) {
  * The sidebar: Home, then every area at once: an area with several pages is a quiet heading followed by its pages; Settings and one-page
  * areas are plain links. Collapsed to icons, each area shows its pages in a flyout.
  */
-export function SidebarNav({ small, navigation, placement, homeLabel, onGo }: { small: boolean; navigation: Navigation; placement: Placement | null; homeLabel: string; onGo?: () => void }) {
+export function SidebarNav({ small, navigation, placement, homeLabel, onGo, openByDefault = [] }: { small: boolean; navigation: Navigation; placement: Placement | null; homeLabel: string; onGo?: () => void; openByDefault?: readonly string[] }) {
   const { t } = useTranslation();
   const Home = iconFor("home");
   const badges = useNavBadges();
@@ -117,7 +118,7 @@ export function SidebarNav({ small, navigation, placement, homeLabel, onGo }: { 
       );
     }
     // The section you are in is always open; otherwise the person's own choice, then the default.
-    const open = active || (choices[area.id] ?? OPEN_BY_DEFAULT.has(area.id));
+    const open = active || (choices[area.id] ?? (area.id === ALWAYS_OPEN || openByDefault.includes(area.id)));
     const flip = () => {
       const next = { ...choices, [area.id]: !open };
       setChoices(next);

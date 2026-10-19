@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-import { api, unwrap, useQuery, useTranslation } from "@/sdk";
+import { api, Figure, type SlotProps, unwrap, useQuery, useTranslation } from "@/sdk";
 
 import { useBranch } from "../hooks";
 import { clock } from "../lib";
 
 /** Home page box: how many appointments today, and the next few. */
-export default function TodayWidget() {
+export default function TodayWidget({ variant }: SlotProps) {
   const { t } = useTranslation("bookings");
   const { branchId, zone } = useBranch();
   const desk = useQuery({
@@ -18,10 +18,18 @@ export default function TodayWidget() {
   const all = desk.data.appointments.filter((a) => a.status !== "cancelled");
   const waiting = all.filter((a) => a.status === "requested").length;
   const next = all.filter((a) => ["requested", "confirmed", "checked_in"].includes(a.status)).slice(0, 4);
+  if (variant === "stat") {
+    return (
+      <Link to="/front-desk" className="block">
+        <p className="tnum text-2xl font-semibold">{all.length}</p>
+        <p className={`mt-1 truncate text-xs ${waiting > 0 ? "font-medium text-warn" : "text-muted"}`}>{waiting > 0 ? t("widget.requests", { count: waiting }) : next.length === 0 ? t("widget.none") : `${clock(next[0].starts_at, zone)} ${next[0].kind === "class" ? next[0].service : next[0].client_name}`}</p>
+      </Link>
+    );
+  }
   return (
     <div className="space-y-3">
-      <div className="flex items-end justify-between gap-3">
-        <div><p className="text-xs uppercase tracking-wide text-muted">{t("widget.today")}</p><p className="tnum text-2xl font-semibold">{all.length}</p></div>
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+        <Figure label={t("widget.today")} value={all.length} />
         {waiting > 0 && <p className="text-sm font-medium text-warn">{t("widget.requests", { count: waiting })}</p>}
       </div>
       {next.length === 0 ? <p className="text-sm text-muted">{t("widget.none")}</p> : (

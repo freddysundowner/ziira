@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { api, money, today, unwrap, useCompany, useQuery, useTranslation } from "@/sdk";
+import { api, money, type SlotProps, today, unwrap, useCompany, useQuery, useTranslation } from "@/sdk";
 
 import { PAYMENTS_PATH } from "../public";
 import { summarise } from "../logic";
@@ -8,7 +8,7 @@ import { summarise } from "../logic";
 const WINDOW = 200;
 
 /** Dashboard box: money received today, by method. Refreshes every minute. */
-export default function PaymentsTodayWidget() {
+export default function PaymentsTodayWidget({ variant }: SlotProps) {
   const { t } = useTranslation("payments");
   const { company } = useCompany();
   const day = today();
@@ -24,7 +24,7 @@ export default function PaymentsTodayWidget() {
     <Link to={PAYMENTS_PATH} className="block space-y-2">
       <p className="tnum text-2xl font-semibold">{money(s.received, company?.currency)}{more && "+"}</p>
       <p className="text-sm text-muted">{t("receivedToday", { count: s.count })}</p>
-      {s.byMethod.length === 0 ? <p className="text-sm text-muted">{t("nothingToday")}</p> : (
+      {variant === "stat" ? null : s.byMethod.length === 0 ? <p className="text-sm text-muted">{t("nothingToday")}</p> : (
         <ul className="space-y-0.5 text-sm">
           {s.byMethod.map((m) => <li key={m.method} className="flex justify-between"><span className="text-muted">{t(`methods.${m.method}`, m.method)}</span><span className="tnum">{money(m.amount, company?.currency)}</span></li>)}
         </ul>

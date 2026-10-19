@@ -35,6 +35,9 @@ export default defineModule({
     "dashboard.widgets": [
       { label: "intel:findingsWidget", component: () => import("./slots/FindingsWidget"), permission: "findings.view", order: 2 },
     ],
+    "shell.floating": [
+      { component: () => import("./slots/AskFloating"), permission: "ai.ask" },
+    ],
     "shell.background": [
       { component: () => import("./slots/NavFlags"), permission: "findings.view" },
     ],

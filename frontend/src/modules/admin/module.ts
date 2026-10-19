@@ -67,7 +67,6 @@ export default defineModule({
   slots: {
     "shell.background": [{ component: () => import("./slots/WaitingBadge") }],
     "dashboard.widgets": [
-      { component: () => import("./slots/BillingBannerWidget"), permission: "billing.manage", order: 1 },
       { label: "kernel:widgetApprovalsTitle", component: () => import("./slots/ApprovalsWidget"), permission: "approvals.decide", order: 5 },
       { label: "kernel:widgetExceptionsTitle", component: () => import("./slots/ExceptionsWidget"), permission: "exceptions.manage", order: 6 },
     ],

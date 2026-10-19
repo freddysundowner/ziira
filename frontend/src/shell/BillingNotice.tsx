@@ -1,9 +1,13 @@
-import { useEffect } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
-import { api, Alert, formatDate, unwrap, useQuery, useTranslation } from "@/sdk";
+import { api, formatDate, unwrap, useQuery, useTranslation } from "@/sdk";
 
-import { mustGoToBilling, noticeFor } from "./noticeRules";
+import { NoticeStrip } from "./NoticeStrip";
+import { dismissible, mustGoToBilling, noticeFor } from "./noticeRules";
+
+const SEEN_KEY = "ziira.notice.dismissed";
+const seen = (): string | null => { try { return sessionStorage.getItem(SEEN_KEY); } catch { return null; } };
 
 /** Above every page, for owners: a trial ending, an ended trial or plan, an overdue payment. A suspended business is sent straight to Plan & billing, the one place it can still act. */
 export function BillingNotice() {
@@ -15,13 +19,17 @@ export function BillingNotice() {
   const goBilling = mustGoToBilling(banner, location.pathname);
   useEffect(() => { if (goBilling) navigate("/admin/billing", { replace: true }); }, [goBilling, navigate]);
   const onBilling = location.pathname.startsWith("/admin/billing");
-  const notice = onBilling ? null : noticeFor(banner, (v) => formatDate(v));
+  const notice = onBilling ? null : noticeFor(banner, (v) => formatDate(v), location.pathname === "/");
+  const [hidden, setHidden] = useState(seen);
   if (!notice) return null;
+  const id = `${banner?.kind}:${notice.key}`;
+  const canHide = dismissible(banner, notice.tone);
+  if (canHide && hidden === id) return null;
   return (
-    <Alert tone={notice.tone} className="no-print mx-4 mt-3 sm:mx-6 lg:mx-8">
-      <p className="font-medium">{notice.text ?? t(notice.key, notice.params)}</p>
-      <Link to="/admin/billing" className="mt-1 inline-block font-medium underline">{t("billing.notice.open")}</Link>
-    </Alert>
+    <NoticeStrip tone={notice.tone} to="/admin/billing" action={t("billing.notice.open")}
+      onDismiss={canHide ? () => { try { sessionStorage.setItem(SEEN_KEY, id); } catch { /* shown again next time */ } setHidden(id); } : undefined}>
+      {notice.text ?? t(notice.key, notice.params)}
+    </NoticeStrip>
   );
 }
 

@@ -3,3 +3,4 @@ test-results/
 screenshots/
 playwright-report/
 .state/
+results/

@@ -16,4 +16,16 @@ describe("WidgetCard", () => {
     expect(screen.getByText("3 sales")).toBeTruthy();
     expect(screen.getByText("Today")).toBeTruthy();
   });
+  it("shrinks a widget that has nothing to show into a one-line all-clear row at the end of its grid", () => {
+    const { container } = render(<WidgetCard title="Waiting for approval"><p data-clear>Nothing waiting for you.</p></WidgetCard>);
+    const box = container.firstElementChild as HTMLElement;
+    expect(box.dataset.widget).toBe("clear");
+    expect(box.className).toContain("col-span-full");
+    expect(box.className).toContain("order-last");
+    expect(screen.getByText("Nothing waiting for you.")).toBeTruthy();
+  });
+  it("keeps the full card when the widget has something to show", () => {
+    const { container } = render(<WidgetCard title="Waiting"><p>3 requests</p></WidgetCard>);
+    expect((container.firstElementChild as HTMLElement).dataset.widget).toBe("shown");
+  });
 });

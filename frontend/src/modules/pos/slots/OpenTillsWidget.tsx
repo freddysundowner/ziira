@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 
-import { api, Skeleton, unwrap, useQuery, useTranslation } from "@/sdk";
+import { api, Skeleton, type SlotProps, unwrap, useQuery, useTranslation } from "@/sdk";
 
 import { useDeviceName } from "../hooks";
 
 /** Home page box: the tills that are open right now. */
-export default function OpenTillsWidget() {
+export default function OpenTillsWidget({ variant }: SlotProps) {
   const { t } = useTranslation("pos");
   const deviceName = useDeviceName();
   const tills = useQuery({
@@ -14,7 +14,11 @@ export default function OpenTillsWidget() {
   });
   if (tills.error) return <p role="alert" className="text-sm text-bad">{tills.error.message}</p>;
   if (!tills.data) return <Skeleton className="h-12 w-full" />;
-  if (tills.data.length === 0) return <p className="text-sm text-muted">{t("noOpenTills")}</p>;
+  if (tills.data.length === 0) {
+    return variant === "stat"
+      ? <Link to="/pos/tills" className="block"><p className="tnum text-2xl font-semibold">0</p><p className="mt-1 text-xs text-muted">{t("noOpenTills")}</p></Link>
+      : <p data-clear className="text-sm text-muted">{t("noOpenTills")}</p>;
+  }
   return (
     <Link to="/pos/tills" className="block">
       <p className="tnum text-2xl font-semibold">{tills.data.length}</p>

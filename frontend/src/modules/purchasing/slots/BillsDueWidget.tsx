@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 
-import { api, formatDate, money, today, unwrap, useCurrency, useQuery, useTranslation } from "@/sdk";
+import { api, Figure, formatDate, money, type SlotProps, today, unwrap, useCurrency, useQuery, useTranslation } from "@/sdk";
 
 import { SupplierName } from "../components/names";
 import { addDays, amountDue, isOverdue } from "../lib";
 
 /** Home page box: what is owed to suppliers and which bills fall due in the coming week. */
-export default function BillsDueWidget() {
+export default function BillsDueWidget({ variant }: SlotProps) {
   const { t } = useTranslation("purchasing");
   const currency = useCurrency();
   const day = today();
@@ -23,10 +23,18 @@ export default function BillsDueWidget() {
   if (!owed.data || !due.data) return <p className="text-sm text-muted">…</p>;
   const pastDue = Object.entries(owed.data.buckets).filter(([k]) => k !== "not_due").reduce((s, [, v]) => s + Number(v), 0);
 
+  if (variant === "stat") {
+    return (
+      <Link to="/payables" className="block">
+        <p className="tnum text-2xl font-semibold">{money(owed.data.total, currency)}</p>
+        <p className={`mt-1 truncate text-xs ${pastDue > 0 ? "font-medium text-bad" : "text-muted"}`}>{pastDue > 0 ? t("pastDue", { amount: money(pastDue, currency) }) : due.data.length === 0 ? t("nothingDueSoon") : t("totalOwed")}</p>
+      </Link>
+    );
+  }
   return (
     <div className="space-y-3">
-      <div className="flex items-end justify-between gap-3">
-        <div><p className="text-xs uppercase tracking-wide text-muted">{t("totalOwed")}</p><p className="tnum text-2xl font-semibold">{money(owed.data.total, currency)}</p></div>
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+        <Figure label={t("totalOwed")} value={money(owed.data.total, currency)} />
         {pastDue > 0 && <p className="tnum text-sm font-medium text-bad">{t("pastDue", { amount: money(pastDue, currency) })}</p>}
       </div>
       {due.data.length === 0 ? <p className="text-sm text-muted">{t("nothingDueSoon")}</p> : (

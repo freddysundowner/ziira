@@ -40,6 +40,7 @@ make web-setup | web | web-check   # web app: npm ci | dev server :5173 | lint+t
 make site-setup | site | site-build | site-check   # marketing website in site/ (static Astro, SEO audit; docs/marketing-site.md, site/SEO.md)
 make site-catalog           # regenerate site/src/content/checks.catalog.json from the real check/action registry (scripts/export_check_catalog.py; plain text in site/src/content/*.plain.json; run by site-build/site-check)
 make e2e-setup | e2e        # real-browser journeys (Playwright, folder e2e/): npm ci + Chromium | run all against a throwaway stack (docs/testing.md, docs/e2e-findings.md)
+make responsive-audit         # every page at 320/360/390/768/1280 px on the running local stack: sideways scroll, overflow, overlapping text, fixed covers; writes docs/plans/responsive-audit.md + e2e/results/responsive/ (e2e/responsive-audit.mjs; docs/testing.md)
 make deploy-test | deploy-test-docker   # production installer kit (deploy/, docs/installation.md): fake-server tests | real nginx -t in Docker
 make api-types                # regenerate frontend/src/api/schema.d.ts after backend API changes (commit it)
 .venv/bin/ziira units | install --all | uninstall <unit>          # platform (master database)

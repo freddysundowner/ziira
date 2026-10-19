@@ -6,6 +6,7 @@
 import { matchPath } from "react-router-dom";
 
 import { AREA_IDS, type AreaId, type MenuGroup, type MenuItem, type ModuleDefinition, type PageRoute } from "./module";
+import { TILL_PAGES, type SidebarPlan } from "./kindProfile";
 import { type Access, type NavItem, visibleMenu } from "./registry";
 
 export interface AreaDefinition {
@@ -93,15 +94,19 @@ function buildArea(id: AreaId, items: NavItem[]): NavArea | null {
  * The sidebar for this person: areas that have at least one page they may open, in the edition's order (Settings always last),
  * then entries that belong to no area. Pages of a unit that is off are absent because only active modules are passed in.
  */
-export function buildNavigation(modules: readonly ModuleDefinition[], access: Access, groupOrder: readonly MenuGroup[]): Navigation {
-  const items = visibleMenu(modules, access).filter((i) => !i.hidden);
-  const areas = AREA_IDS.map((id) => buildArea(id, items)).filter((a): a is NavArea => a !== null);
+export function buildNavigation(modules: readonly ModuleDefinition[], access: Access, groupOrder: readonly MenuGroup[], plan?: SidebarPlan): Navigation {
+  const till = (i: NavItem) => !!i.primary || TILL_PAGES.includes(i.to);
+  const items = visibleMenu(modules, access).filter((i) => !i.hidden && (plan?.till !== false || !till(i)));
+  const areas = AREA_IDS.map((id) => buildArea(id, items)).filter((a): a is NavArea => a !== null)
+    .map((a) => (plan?.till === false && a.id === "sell" ? { ...a, titleKey: "nav.areas.sellNoTill" } : a));   // no counter: Sell is invoices and payments
   const rank = (a: NavArea) => {
     if (a.id === "settings") return Number.MAX_SAFE_INTEGER;
     const group = AREA_DEFINITIONS[a.id].group;
     if (!group) return -1;
+    const own = plan ? plan.order.indexOf(a.id) : -1;
+    if (own !== -1) return own;
     const at = groupOrder.indexOf(group);
-    return at === -1 ? groupOrder.length : at;
+    return (plan?.order.length ?? 0) + (at === -1 ? groupOrder.length : at);
   };
   const sorted = areas
     .map((area, n) => ({ area, n }))

@@ -155,6 +155,8 @@
     "written": "Explanation written.",
     "askTitle": "Ask Ziira",
     "askHint": "Ask about sales, stock, who owes you or your books, in your own words. Ziira answers from your records, and only what you are allowed to see.",
+    "openAsk": "Ask Ziira",
+    "closeAsk": "Close",
     "placeholder": "For example: How did sales go this week?",
     "questionLabel": "Your question",
     "send": "Ask",

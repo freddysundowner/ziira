@@ -155,6 +155,8 @@
     "written": "Maelezo yameandikwa.",
     "askTitle": "Uliza Ziira",
     "askHint": "Uliza kuhusu mauzo, bidhaa, wanaokudai au hesabu zako kwa maneno yako mwenyewe. Ziira hujibu kutokana na rekodi zako, na kile unachoruhusiwa kuona tu.",
+    "openAsk": "Uliza Ziira",
+    "closeAsk": "Funga",
     "placeholder": "Kwa mfano: Mauzo yalikuwaje wiki hii?",
     "questionLabel": "Swali lako",
     "send": "Uliza",

@@ -4,7 +4,6 @@ import { api, Card, EmptyState, ErrorState, formatDate, PageHeader, SkeletonRows
 
 import { COMMAND_PANELS } from "@/modules/command/public";
 
-import AskBox from "../components/AskBox";
 import ThingCard from "../components/ThingCard";
 import { daySummary } from "../plainWords";
 import { TODAY_PANELS } from "../public";
@@ -14,11 +13,10 @@ import { useGrouped } from "../useGrouped";
 
 const SHOWN = 5;
 
-/** The landing page of Intelligence: what needs the person today, in a sentence, the five most pressing things, and a box to ask. */
+/** The landing page of Intelligence: what needs the person today, in a sentence, the five most pressing things. */
 export default function TodayPage() {
   const { t } = useTranslation("intel");
   const canManage = useCan("findings.manage");
-  const canAsk = useCan("ai.ask");
   const { company } = useCompany();
   const list = useGrouped("open", SHOWN);
   const topics = useQuery({ queryKey: ["intel", "topics"], queryFn: () => unwrap(api.GET("/api/v1/intel/topics")) });
@@ -63,7 +61,6 @@ export default function TodayPage() {
             )}
         </section>
         <aside className="min-w-0 space-y-4">
-          {canAsk && <AskBox />}
           <SeeStrip />
           <Slot name={COMMAND_PANELS} props={{ companyId: company?.id }} />
           <SummaryStrip />

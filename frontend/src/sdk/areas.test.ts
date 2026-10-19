@@ -4,6 +4,7 @@ import { allModules } from "@/modules";
 
 import { areaEntryPath, AREA_DEFINITIONS, areaPages, buildNavigation, isSingle, placeOf, type NavArea } from "./areas";
 import { orderedGroups } from "./edition";
+import { SIDEBAR } from "./kindProfile";
 import { defineModule, type MenuItem } from "./module";
 import { activeModules, visibleRoutes } from "./registry";
 
@@ -159,5 +160,45 @@ describe("the real modules", () => {
   it("points every declared entry at an existing entry", () => {
     const entries = new Set(everything.flatMap((m) => m.menu ?? []).map((i) => i.to));
     expect(routes.filter((r) => r.tab && !entries.has(r.tab)).map((r) => r.path)).toEqual([]);
+  });
+});
+
+describe("buildNavigation for a kind of business", () => {
+  const withPlan = (kind: keyof typeof SIDEBAR) => buildNavigation(all, access("all"), groups, SIDEBAR[kind]);
+  const order = (n: ReturnType<typeof nav>) => ids(n).filter((x) => ["sell", "stock", "people", "money"].includes(x));
+
+  it("puts a service business's own sections first and keeps Intelligence and Settings at the ends", () => {
+    expect(order(withPlan("salon"))[0]).toBe("sell");     // no Services unit in this fixture: the kind's order still applies among what exists
+    expect(order(withPlan("distribution"))).toEqual(["sell", "stock", "people"]);
+    expect(ids(withPlan("books")).at(-1)).toBe("settings");
+    expect(ids(withPlan("books"))[0]).toBe("command");
+  });
+  it("orders by the kind, not by the edition", () => {
+    const g = orderedGroups({ menu_groups: ["people", "stock", "sell"] });
+    expect(order(buildNavigation(all, access("all"), g))[0]).toBe("people");
+    expect(order(buildNavigation(all, access("all"), g, SIDEBAR.retail))[0]).toBe("sell");
+  });
+  it("lists the till and Tills and devices only for kinds that sell over a counter", () => {
+    const pages = (n: ReturnType<typeof nav>) => areaPages(area(n, "sell")).map((i) => i.to);
+    expect(pages(withPlan("retail"))).toContain("/pos/terminal");
+    expect(pages(withPlan("retail"))).toContain("/pos/devices");
+    for (const kind of ["salon", "garage", "clinic", "gym", "professional", "books"] as const) {
+      expect(pages(withPlan(kind))).not.toContain("/pos/terminal");
+      expect(pages(withPlan(kind))).not.toContain("/pos/devices");
+      expect(pages(withPlan(kind))).toContain("/pos/invoices");
+    }
+  });
+  it("renames Sell to what it holds when there is no till", () => {
+    expect(area(withPlan("salon"), "sell").titleKey).toBe("nav.areas.sellNoTill");
+    expect(area(withPlan("retail"), "sell").titleKey).toBe("nav.areas.sell");
+    expect(area(nav("all"), "sell").titleKey).toBe("nav.areas.sell");
+  });
+  it("names 1 to 3 sections to start open for each kind, all of them real areas", () => {
+    for (const [kind, plan] of Object.entries(SIDEBAR)) {
+      expect(plan.open.length, kind).toBeLessThanOrEqual(3);
+      for (const id of plan.open) expect(AREA_DEFINITIONS[id], `${kind}:${id}`).toBeDefined();
+    }
+    expect(SIDEBAR.retail.open).toEqual(["sell", "stock"]);
+    expect(SIDEBAR.salon.open[0]).toBe("services");
   });
 });

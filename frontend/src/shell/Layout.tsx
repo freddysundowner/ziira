@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import {
-  BrandTile, BrandWord, areaPages, buildNavigation, cx, LANGUAGES, Menu, orderedGroups, placeOf, setLanguage, Slot, useAccess, useActiveModules, useCompany, useDisplayTimeZone, useEdition, useSession,
+  BrandTile, BrandWord, areaPages, buildNavigation, cx, LANGUAGES, Menu, orderedGroups, placeOf, profileFor, SIDEBAR, setLanguage, Slot, useAccess, useActiveModules, useCompany, useDisplayTimeZone, useEdition, useSession,
   useTheme, useTranslation, visibleMenu, visibleRoutes,
 } from "@/sdk";
 import { readStored, writeStored } from "@/sdk/storage";
@@ -23,7 +23,7 @@ const COLLAPSE_KEY = "ziira.sidebar";
 /** The frame around every page: the sidebar (one entry per area, built from the active modules' manifests) and the area's tabs around the open page. */
 export function Layout() {
   const { t, i18n } = useTranslation();
-  const { signOut, me } = useSession();
+  const { signOut, me, enabledUnits } = useSession();
   const { company } = useCompany();
   const timeZone = useDisplayTimeZone();      // pages redraw once when the company's clock becomes known
   const [theme, setTheme] = useTheme();
@@ -31,6 +31,7 @@ export function Layout() {
   const access = useAccess();
   const items = useMemo(() => visibleMenu(modules, access), [modules, access]);
   const { edition } = useEdition();
+  const plan = SIDEBAR[profileFor(edition?.id, enabledUnits)];
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(readStored(COLLAPSE_KEY) === "1");
   const [palette, setPalette] = useState(false);
@@ -46,7 +47,7 @@ export function Layout() {
     return () => document.removeEventListener("keydown", key);
   }, []);
 
-  const navigation = useMemo(() => buildNavigation(modules, access, orderedGroups(edition)), [modules, access, edition]);
+  const navigation = useMemo(() => buildNavigation(modules, access, orderedGroups(edition), plan), [modules, access, edition, plan]);
   const placement = useMemo(() => placeOf(navigation.areas, visibleRoutes(modules, access), location.pathname), [navigation, modules, access, location.pathname]);
   // What search shows next to a page's name: the section it is listed under.
   const areaOf = useMemo(() => {
@@ -58,7 +59,7 @@ export function Layout() {
   const name = me?.full_name ?? t("account");
   const initials = name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
-  const nav = (small: boolean) => <SidebarNav small={small} navigation={navigation} placement={placement} homeLabel={t("home.menu")} onGo={() => setMobileOpen(false)} />;
+  const nav = (small: boolean) => <SidebarNav small={small} openByDefault={plan.open} navigation={navigation} placement={placement} homeLabel={t("home.menu")} onGo={() => setMobileOpen(false)} />;
 
   const toggleSidebar = () => { setCollapsed(!collapsed); writeStored(COLLAPSE_KEY, collapsed ? null : "1"); };
   const toggle = (
@@ -82,6 +83,7 @@ export function Layout() {
   return (
     <div className="flex min-h-screen">
       <Slot name="shell.background" />
+      <Slot name="shell.floating" />
       <aside className={cx("no-print sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface transition-[width] md:flex", collapsed ? "w-[68px]" : "w-64")}>
         {brand(collapsed, true)}
         {nav(collapsed)}
