@@ -33,7 +33,7 @@ log = logging.getLogger("ziira.operators")
 
 OPERATOR_TOKEN_MINUTES = 30                 # a sign-in with a second factor (ZIIRA_OPERATOR_MFA=totp)
 CHALLENGE_MINUTES = 5
-MIN_PASSWORD_LENGTH = 8                     # the same minimum as a business user (common passwords and the email are refused)
+MIN_PASSWORD_LENGTH = 8                     # same as a business user; common passwords are refused
 TOUCH_SECONDS = 30                          # last_seen_at is written at most this often per sign-in
 
 

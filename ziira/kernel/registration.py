@@ -25,7 +25,6 @@ from uuid import UUID
 from sqlalchemy import text
 
 from ziira.kernel import auth, company_settings, editions, industry, operators, packs, passwords, platform_mail
-from ziira.kernel.platform import mail
 from ziira.kernel.config import get_settings
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import (
@@ -37,7 +36,7 @@ from ziira.kernel.errors import (
     ValidationFailed,
 )
 from ziira.kernel.phone import check_calling_code, normalise_phone
-from ziira.kernel.platform import behaviour, plans, subscriptions
+from ziira.kernel.platform import behaviour, mail, plans, subscriptions
 from ziira.kernel.registry import Registry
 from ziira.kernel.security import hash_password, hash_secret, new_secret
 from ziira.kernel.tenants import CODE_PATTERN, create_tenant, drop_tenant
