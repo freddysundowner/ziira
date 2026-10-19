@@ -34,6 +34,7 @@ import { NotFound } from "./NotFound";
 import { Register } from "./Register";
 import { ResetPassword } from "./ResetPassword";
 import { SignIn } from "./SignIn";
+import { ConfirmEmail } from "./ConfirmEmail";
 import { VerifyRegistration } from "./VerifyRegistration";
 
 /**
@@ -153,6 +154,7 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
+          <Route path="/confirm-email" element={<ConfirmEmail />} />
           <Route path="/book/:slug" element={<Suspense fallback={<Loading />}><ErrorBoundary><PublicBookingPage /></ErrorBoundary></Suspense>} />
           <Route path="/job-approval/:token" element={<Suspense fallback={<Loading />}><ErrorBoundary><PublicApprovalPage /></ErrorBoundary></Suspense>} />
           <Route path="/claim-response/:token" element={<Suspense fallback={<Loading />}><ErrorBoundary><PublicResponsePage /></ErrorBoundary></Suspense>} />

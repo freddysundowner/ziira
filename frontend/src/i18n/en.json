@@ -48,11 +48,26 @@
     "later": "Pick the closest. You can add more whenever you like; nothing is ever taken away.",
     "loadFailed": "The choices could not be loaded.",
     "retry": "Try again",
-    "retail": { "title": "Retail / POS", "pitch": "Sell at the till, keep stock right and take payments." },
-    "distribution": { "title": "Distribution", "pitch": "Retail plus buying from suppliers, customer credit and your books." },
-    "books": { "title": "Books and accounts", "pitch": "Keep your accounts, bills and customers in order." },
-    "intelligence": { "title": "I already have a system", "pitch": "Keep what you use today. Ziira reads it (never changes it) and tells you what needs attention." },
-    "full": { "title": "Everything", "pitch": "Sales, stock, buying, accounts, people and Intelligence in one place." },
+    "retail": {
+      "title": "Retail / POS",
+      "pitch": "Sell at the till, keep stock right and take payments."
+    },
+    "distribution": {
+      "title": "Distribution",
+      "pitch": "Retail plus buying from suppliers, customer credit and your books."
+    },
+    "books": {
+      "title": "Books and accounts",
+      "pitch": "Keep your accounts, bills and customers in order."
+    },
+    "intelligence": {
+      "title": "I already have a system",
+      "pitch": "Keep what you use today. Ziira reads it (never changes it) and tells you what needs attention."
+    },
+    "full": {
+      "title": "Everything",
+      "pitch": "Sales, stock, buying, accounts, people and Intelligence in one place."
+    },
     "services": {
       "title": "Services",
       "pitch": "Take bookings, run jobs, track time and bill clients: for salons, garages, clinics, agencies and trainers."
@@ -82,24 +97,66 @@
         "title": "Send your first invoice",
         "hint": "Bill a client for work done."
       },
-      "products": { "title": "Add your first products", "hint": "Type them in or bring a spreadsheet." },
-      "opening_stock": { "title": "Set your opening stock", "hint": "Say what you have today." },
-      "till": { "title": "Open a till", "hint": "Register a till and open a shift." },
-      "sale": { "title": "Make a sale", "hint": "Ring up your first sale." },
-      "suppliers": { "title": "Add your suppliers", "hint": "Who you buy from." },
-      "customers": { "title": "Add your customers", "hint": "Set credit limits for those who buy on credit." },
-      "accounts": { "title": "Check your chart of accounts", "hint": "Add or rename accounts to suit you." },
-      "opening_balances": { "title": "Enter your opening balances", "hint": "Where the books stand today." },
-      "expense": { "title": "Record an expense", "hint": "Enter your first expense." },
-      "connect": { "title": "Connect your system", "hint": "Link the system you use now, or upload its reports." },
-      "alerts": { "title": "Choose how you hear from Ziira", "hint": "Pick the owner's phone or email." },
-      "findings": { "title": "See the first things to look at", "hint": "What Ziira noticed in your data." },
+      "products": {
+        "title": "Add your first products",
+        "hint": "Type them in or bring a spreadsheet."
+      },
+      "opening_stock": {
+        "title": "Set your opening stock",
+        "hint": "Say what you have today."
+      },
+      "till": {
+        "title": "Open a till",
+        "hint": "Register a till and open a shift."
+      },
+      "sale": {
+        "title": "Make a sale",
+        "hint": "Ring up your first sale."
+      },
+      "suppliers": {
+        "title": "Add your suppliers",
+        "hint": "Who you buy from."
+      },
+      "customers": {
+        "title": "Add your customers",
+        "hint": "Set credit limits for those who buy on credit."
+      },
+      "accounts": {
+        "title": "Check your chart of accounts",
+        "hint": "Add or rename accounts to suit you."
+      },
+      "opening_balances": {
+        "title": "Enter your opening balances",
+        "hint": "Where the books stand today."
+      },
+      "expense": {
+        "title": "Record an expense",
+        "hint": "Enter your first expense."
+      },
+      "connect": {
+        "title": "Connect your system",
+        "hint": "Link the system you use now, or upload its reports."
+      },
+      "alerts": {
+        "title": "Choose how you hear from Ziira",
+        "hint": "Pick the owner's phone or email."
+      },
+      "findings": {
+        "title": "See the first things to look at",
+        "hint": "What Ziira noticed in your data."
+      },
       "move": {
         "title": "Ready to run on Ziira? Move your data",
         "hint": "Bring products, customers, stock and balances over from the system you connected."
       },
-      "organisation": { "title": "Check your company and branches", "hint": "Names, tax number, branches." },
-      "users": { "title": "Invite your team", "hint": "Give people the access they need." }
+      "organisation": {
+        "title": "Check your company and branches",
+        "hint": "Names, tax number, branches."
+      },
+      "users": {
+        "title": "Invite your team",
+        "hint": "Give people the access they need."
+      }
     }
   },
   "signOut": "Sign out",
@@ -142,7 +199,9 @@
       "data": "Data and privacy",
       "platform": "Platform"
     },
-    "tabs": { "general": "General" },
+    "tabs": {
+      "general": "General"
+    },
     "waitingKeywords": "inbox approvals exceptions to do waiting decide"
   },
   "auth": {
@@ -360,7 +419,7 @@
     },
     "lead": {
       "need": "Pick the closest. You can add more whenever you like; nothing is ever taken away.",
-      "about": "We email you a link to confirm it is really you.",
+      "about": "We use your email to sign you in and to send you important notices.",
       "password": "Choose something only you know. You will use it with your email to sign in.",
       "business": "We use this to set the business up for your country: currency, time zone and tax details.",
       "review": "Check your answers, then create your business."
@@ -459,19 +518,39 @@
         "long": "The business name can have at most {{max}} characters.",
         "letters": "The business name needs some letters or digits."
       },
-      "email": { "required": "Please enter your email.", "invalid": "That email address does not look right." },
+      "email": {
+        "required": "Please enter your email.",
+        "invalid": "That email address does not look right."
+      },
       "phone": {
         "chars": "Use digits only (and a leading + if you like).",
         "short": "That number looks too short: at least {{min}} digits.",
         "long": "That number looks too long: at most {{max}} digits."
       },
-      "calling": { "invalid": "A calling code is 1 to 3 digits, such as 44." },
-      "tax": { "shape": "Use 3 to 30 letters, digits, spaces, '-', '/' or '.'.", "pattern": "That does not match the usual format for this country." },
-      "password": { "short": "Use at least 8 characters.", "refused": "That password is not accepted." },
-      "confirm": { "required": "Type the password again.", "mismatch": "The two passwords are different." },
-      "country": { "required": "Please choose your country." },
-      "currency": { "required": "Please choose a currency." },
-      "consent": { "required": "Please agree to continue." }
+      "calling": {
+        "invalid": "A calling code is 1 to 3 digits, such as 44."
+      },
+      "tax": {
+        "shape": "Use 3 to 30 letters, digits, spaces, '-', '/' or '.'.",
+        "pattern": "That does not match the usual format for this country."
+      },
+      "password": {
+        "short": "Use at least 8 characters.",
+        "refused": "That password is not accepted."
+      },
+      "confirm": {
+        "required": "Type the password again.",
+        "mismatch": "The two passwords are different."
+      },
+      "country": {
+        "required": "Please choose your country."
+      },
+      "currency": {
+        "required": "Please choose a currency."
+      },
+      "consent": {
+        "required": "Please agree to continue."
+      }
     },
     "summary": {
       "needs_one": "1 thing needs your attention.",
@@ -506,7 +585,7 @@
       "business": "Business",
       "in": "In",
       "why": "Good to know",
-      "r1": "We email you a link first. Nothing is created until you open it.",
+      "r1": "You go straight in after sign-up. We email you a link to confirm your address afterwards.",
       "r2": "Add or switch on more later. Nothing is ever taken away.",
       "r3": "Your password stays in this window. It is never saved in your browser.",
       "open": "Show your setup"
@@ -533,5 +612,20 @@
       "reference": "Reference: {{id}}",
       "throttled": "Too many attempts. You can try again in {{time}}."
     }
+  },
+  "emailBanner": {
+    "text": "Please confirm your email address. We sent a link to {{email}}.",
+    "resend": "Send it again",
+    "sent": "Sent. Please check your inbox.",
+    "wait": "A link was sent a moment ago. Please check your inbox.",
+    "failed": "Could not send the email. Please try again later."
+  },
+  "confirmEmail": {
+    "working": "Confirming your email address…",
+    "doneTitle": "Your email address is confirmed",
+    "doneText": "Thank you. You can carry on using Ziira.",
+    "failedTitle": "This link did not work",
+    "failedText": "The link has expired or was already replaced. Sign in and use “Send it again” in the banner at the top.",
+    "continue": "Continue to Ziira"
   }
 }

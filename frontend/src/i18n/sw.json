@@ -48,11 +48,26 @@
     "later": "Chagua kilicho karibu zaidi. Unaweza kuongeza zaidi wakati wowote; hakuna kinachoondolewa.",
     "loadFailed": "Chaguo hazikuweza kupakiwa.",
     "retry": "Jaribu tena",
-    "retail": { "title": "Rejareja / POS", "pitch": "Uza kwenye kaunta, weka hisa sawa na pokea malipo." },
-    "distribution": { "title": "Usambazaji", "pitch": "Rejareja pamoja na kununua kutoka kwa wasambazaji, mikopo ya wateja na hesabu zako." },
-    "books": { "title": "Vitabu na hesabu", "pitch": "Weka hesabu, bili na wateja wako katika mpangilio." },
-    "intelligence": { "title": "Tayari nina mfumo", "pitch": "Endelea na unachotumia leo. Ziira husoma (haubadilishi kamwe) na kukuambia kinachohitaji uangalizi." },
-    "full": { "title": "Kila kitu", "pitch": "Mauzo, hisa, manunuzi, hesabu, watu na Intelligence mahali pamoja." },
+    "retail": {
+      "title": "Rejareja / POS",
+      "pitch": "Uza kwenye kaunta, weka hisa sawa na pokea malipo."
+    },
+    "distribution": {
+      "title": "Usambazaji",
+      "pitch": "Rejareja pamoja na kununua kutoka kwa wasambazaji, mikopo ya wateja na hesabu zako."
+    },
+    "books": {
+      "title": "Vitabu na hesabu",
+      "pitch": "Weka hesabu, bili na wateja wako katika mpangilio."
+    },
+    "intelligence": {
+      "title": "Tayari nina mfumo",
+      "pitch": "Endelea na unachotumia leo. Ziira husoma (haubadilishi kamwe) na kukuambia kinachohitaji uangalizi."
+    },
+    "full": {
+      "title": "Kila kitu",
+      "pitch": "Mauzo, hisa, manunuzi, hesabu, watu na Intelligence mahali pamoja."
+    },
     "services": {
       "title": "Huduma",
       "pitch": "Pokea miadi, simamia kazi, fuatilia muda na wadai wateja: kwa saluni, gereji, kliniki, mashirika na wakufunzi."
@@ -82,21 +97,66 @@
         "title": "Tuma ankara yako ya kwanza",
         "hint": "Mdai mteja kwa kazi iliyofanyika."
       },
-      "products": { "title": "Ongeza bidhaa zako za kwanza", "hint": "Ziandike au leta lahajedwali." },
-      "opening_stock": { "title": "Weka hisa ya kuanzia", "hint": "Sema ulicho nacho leo." },
-      "till": { "title": "Fungua kaunta", "hint": "Sajili kaunta na ufungue zamu." },
-      "sale": { "title": "Fanya mauzo", "hint": "Piga mauzo yako ya kwanza." },
-      "suppliers": { "title": "Ongeza wasambazaji wako", "hint": "Unaowanunulia." },
-      "customers": { "title": "Ongeza wateja wako", "hint": "Weka kikomo cha mkopo kwa wanaonunua kwa mkopo." },
-      "accounts": { "title": "Kagua orodha ya akaunti zako", "hint": "Ongeza au badilisha majina ya akaunti." },
-      "opening_balances": { "title": "Weka salio za kuanzia", "hint": "Hali ya vitabu leo." },
-      "expense": { "title": "Rekodi matumizi", "hint": "Weka matumizi yako ya kwanza." },
-      "connect": { "title": "Unganisha mfumo wako", "hint": "Unganisha mfumo unaotumia sasa, au pakia ripoti zake." },
-      "alerts": { "title": "Chagua jinsi unavyopata habari kutoka Ziira", "hint": "Chagua simu au barua pepe ya mmiliki." },
-      "findings": { "title": "Ona mambo ya kwanza ya kuangalia", "hint": "Kile Ziira kimeona kwenye data yako." },
-      "move": { "title": "Tayari kutumia Ziira? Hamisha data yako", "hint": "Leta bidhaa, wateja, hisa na madeni kutoka mfumo uliounganisha." },
-      "organisation": { "title": "Kagua kampuni na matawi yako", "hint": "Majina, nambari ya kodi, matawi." },
-      "users": { "title": "Alika timu yako", "hint": "Wape watu ufikiaji wanaohitaji." }
+      "products": {
+        "title": "Ongeza bidhaa zako za kwanza",
+        "hint": "Ziandike au leta lahajedwali."
+      },
+      "opening_stock": {
+        "title": "Weka hisa ya kuanzia",
+        "hint": "Sema ulicho nacho leo."
+      },
+      "till": {
+        "title": "Fungua kaunta",
+        "hint": "Sajili kaunta na ufungue zamu."
+      },
+      "sale": {
+        "title": "Fanya mauzo",
+        "hint": "Piga mauzo yako ya kwanza."
+      },
+      "suppliers": {
+        "title": "Ongeza wasambazaji wako",
+        "hint": "Unaowanunulia."
+      },
+      "customers": {
+        "title": "Ongeza wateja wako",
+        "hint": "Weka kikomo cha mkopo kwa wanaonunua kwa mkopo."
+      },
+      "accounts": {
+        "title": "Kagua orodha ya akaunti zako",
+        "hint": "Ongeza au badilisha majina ya akaunti."
+      },
+      "opening_balances": {
+        "title": "Weka salio za kuanzia",
+        "hint": "Hali ya vitabu leo."
+      },
+      "expense": {
+        "title": "Rekodi matumizi",
+        "hint": "Weka matumizi yako ya kwanza."
+      },
+      "connect": {
+        "title": "Unganisha mfumo wako",
+        "hint": "Unganisha mfumo unaotumia sasa, au pakia ripoti zake."
+      },
+      "alerts": {
+        "title": "Chagua jinsi unavyopata habari kutoka Ziira",
+        "hint": "Chagua simu au barua pepe ya mmiliki."
+      },
+      "findings": {
+        "title": "Ona mambo ya kwanza ya kuangalia",
+        "hint": "Kile Ziira kimeona kwenye data yako."
+      },
+      "move": {
+        "title": "Tayari kutumia Ziira? Hamisha data yako",
+        "hint": "Leta bidhaa, wateja, hisa na madeni kutoka mfumo uliounganisha."
+      },
+      "organisation": {
+        "title": "Kagua kampuni na matawi yako",
+        "hint": "Majina, nambari ya kodi, matawi."
+      },
+      "users": {
+        "title": "Alika timu yako",
+        "hint": "Wape watu ufikiaji wanaohitaji."
+      }
     }
   },
   "signOut": "Toka",
@@ -139,10 +199,15 @@
       "data": "Data na faragha",
       "platform": "Jukwaa"
     },
-    "tabs": { "general": "Jumla" },
+    "tabs": {
+      "general": "Jumla"
+    },
     "waitingKeywords": "kikasha idhini ubaguzi kazi zinazosubiri uamuzi"
   },
-  "auth": { "tagline": "Simamia matawi yote ya biashara yako mahali pamoja.", "subtitle": "Mauzo, bidhaa, manunuzi, vitabu na mishahara, vyote pamoja." },
+  "auth": {
+    "tagline": "Simamia matawi yote ya biashara yako mahali pamoja.",
+    "subtitle": "Mauzo, bidhaa, manunuzi, vitabu na mishahara, vyote pamoja."
+  },
   "theme": {
     "light": "Mwanga",
     "dark": "Giza",
@@ -354,7 +419,7 @@
     },
     "lead": {
       "need": "Chagua kilicho karibu zaidi. Unaweza kuongeza zaidi wakati wowote; hakuna kinachoondolewa.",
-      "about": "Tunakutumia kiungo kwa barua pepe kuthibitisha kuwa ni wewe.",
+      "about": "Tunatumia barua pepe yako kukuingiza na kukutumia taarifa muhimu.",
       "password": "Chagua kitu ambacho wewe tu unakijua. Utakitumia pamoja na barua pepe yako kuingia.",
       "business": "Tunatumia hili kuandaa biashara kwa nchi yako: sarafu, saa ya eneo na maelezo ya kodi.",
       "review": "Kagua majibu yako, kisha fungua biashara yako."
@@ -453,19 +518,39 @@
         "long": "Jina la biashara linaweza kuwa na herufi {{max}} tu.",
         "letters": "Jina la biashara linahitaji herufi au tarakimu."
       },
-      "email": { "required": "Tafadhali andika barua pepe yako.", "invalid": "Barua pepe hiyo haionekani sawa." },
+      "email": {
+        "required": "Tafadhali andika barua pepe yako.",
+        "invalid": "Barua pepe hiyo haionekani sawa."
+      },
       "phone": {
         "chars": "Tumia tarakimu tu (na + mwanzoni ukipenda).",
         "short": "Namba inaonekana fupi mno: angalau tarakimu {{min}}.",
         "long": "Namba inaonekana ndefu mno: tarakimu {{max}} zaidi."
       },
-      "calling": { "invalid": "Msimbo wa nchi una tarakimu 1 hadi 3, kama 44." },
-      "tax": { "shape": "Tumia herufi, tarakimu, nafasi, '-', '/' au '.' (3 hadi 30).", "pattern": "Hii hailingani na muundo wa kawaida wa nchi hii." },
-      "password": { "short": "Tumia angalau herufi 8.", "refused": "Nenosiri hilo halikubaliki." },
-      "confirm": { "required": "Andika nenosiri tena.", "mismatch": "Manenosiri mawili ni tofauti." },
-      "country": { "required": "Tafadhali chagua nchi yako." },
-      "currency": { "required": "Tafadhali chagua sarafu." },
-      "consent": { "required": "Tafadhali kubali ili kuendelea." }
+      "calling": {
+        "invalid": "Msimbo wa nchi una tarakimu 1 hadi 3, kama 44."
+      },
+      "tax": {
+        "shape": "Tumia herufi, tarakimu, nafasi, '-', '/' au '.' (3 hadi 30).",
+        "pattern": "Hii hailingani na muundo wa kawaida wa nchi hii."
+      },
+      "password": {
+        "short": "Tumia angalau herufi 8.",
+        "refused": "Nenosiri hilo halikubaliki."
+      },
+      "confirm": {
+        "required": "Andika nenosiri tena.",
+        "mismatch": "Manenosiri mawili ni tofauti."
+      },
+      "country": {
+        "required": "Tafadhali chagua nchi yako."
+      },
+      "currency": {
+        "required": "Tafadhali chagua sarafu."
+      },
+      "consent": {
+        "required": "Tafadhali kubali ili kuendelea."
+      }
     },
     "summary": {
       "needs_one": "Jambo 1 linahitaji uangalizi wako.",
@@ -500,7 +585,7 @@
       "business": "Biashara",
       "in": "Nchini",
       "why": "Vizuri kujua",
-      "r1": "Tunakutumia kiungo kwa barua pepe kwanza. Hakuna kinachofunguliwa hadi ukifungue.",
+      "r1": "Unaingia moja kwa moja baada ya kujisajili. Baadaye tunakutumia kiungo kuthibitisha barua pepe yako.",
       "r2": "Ongeza au washa zaidi baadaye. Hakuna kinachoondolewa.",
       "r3": "Nenosiri lako linabaki kwenye dirisha hili. Halihifadhiwi kwenye kivinjari chako.",
       "open": "Onyesha mpangilio wako"
@@ -527,5 +612,20 @@
       "reference": "Rejea: {{id}}",
       "throttled": "Majaribio mengi mno. Unaweza kujaribu tena baada ya {{time}}."
     }
+  },
+  "emailBanner": {
+    "text": "Tafadhali thibitisha barua pepe yako. Tumetuma kiungo kwa {{email}}.",
+    "resend": "Tuma tena",
+    "sent": "Imetumwa. Tafadhali angalia kikasha chako.",
+    "wait": "Kiungo kilitumwa muda mfupi uliopita. Tafadhali angalia kikasha chako.",
+    "failed": "Barua pepe haikutumwa. Tafadhali jaribu tena baadaye."
+  },
+  "confirmEmail": {
+    "working": "Inathibitisha barua pepe yako…",
+    "doneTitle": "Barua pepe yako imethibitishwa",
+    "doneText": "Asante. Unaweza kuendelea kutumia Ziira.",
+    "failedTitle": "Kiungo hiki hakikufanya kazi",
+    "failedText": "Kiungo kimeisha muda au kilibadilishwa. Ingia kisha utumie “Tuma tena” kwenye bango la juu.",
+    "continue": "Endelea kwenye Ziira"
   }
 }

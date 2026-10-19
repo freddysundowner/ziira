@@ -81,7 +81,7 @@ describe("the sign-up wizard", () => {
     await waitFor(() => expect((screen.getByRole("radio", { name: /everything/i }) as HTMLInputElement).checked).toBe(true));
   });
 
-  it("holds Continue back until the step is valid, and tells the truth about the trial in the side panel", async () => {
+  it("holds Continue back until the step is valid", async () => {
     open();
     await screen.findByRole("radio", { name: /retail/i });
     next();
@@ -92,7 +92,6 @@ describe("the sign-up wizard", () => {
     expect(cont.disabled).toBe(true);
     type(/work email/i, "jane@acme.test");
     expect(cont.disabled).toBe(false);
-    expect((await screen.findAllByText("14-day trial on the Starter plan")).length).toBeGreaterThan(0);
   });
 
   it("checks the password with the server as the person types and refuses a common one", async () => {

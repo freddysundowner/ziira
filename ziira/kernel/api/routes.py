@@ -74,11 +74,22 @@ def register(body: sc.RegisterIn, request: Request) -> object:
         invite_code=body.invite_code, ip_address=auth.client_ip(request), phone=body.phone,
         owner_role=body.owner_role, business_size=body.business_size, staff_size=body.staff_size,
         business_type=body.business_type, plan=body.plan)
-    if started.instant_token:
-        return sc.RegisterOut(message="Your business is being created.", dev_token=None,
-                              instant_token=started.instant_token)
-    return sc.RegisterOut(message="Check your email for a link to finish creating your business.",
-                          dev_token=started.dev_token)
+    return sc.RegisterOut(message="Your business is being created.", dev_token=started.dev_token,
+                          instant_token=started.instant_token, dev_confirm_token=started.dev_confirm_token)
+
+
+@router.post("/register/confirm-email", status_code=NO_CONTENT, tags=["Registration"])
+def register_confirm_email(body: sc.ConfirmEmailIn) -> Response:
+    """Use the link in the confirmation email sent after sign-up (no sign-in needed; using it twice is harmless)."""
+    registration.confirm_email(body.token)
+    return Response(status_code=NO_CONTENT)
+
+
+@router.post("/auth/email-confirmation/resend", tags=["Auth"])
+def resend_email_confirmation(ctx: RequestContext = Depends(signed_in_user), s: Session = DB_SESSION) -> object:
+    """Send the signed-in owner a fresh confirmation link (at most one a minute)."""
+    email = s.execute(text("select email from kernel.app_user where id = :u"), {"u": str(ctx.user_id)}).scalar()
+    return {"sent": registration.resend_confirmation(ctx.tenant_id, email)}
 
 
 @router.get("/register/trial", response_model=sc.TrialOut | None, tags=["Registration"])
@@ -123,6 +134,7 @@ def me(ctx: RequestContext = Depends(request_context), s: Session = DB_SESSION) 
     return sc.MeOut(tenant_id=ctx.tenant_id, user_id=ctx.user_id, session_id=ctx.session_id, channel=ctx.channel,
                     support_session=sc.SupportSessionInfo(**open_support) if open_support else None,
                     full_name=person.full_name if person else None, email=person.email if person else None,
+                    email_verified=registration.email_confirmed(ctx.tenant_id, person.email if person else None),
                     roles=[sc.AssignmentOut(role_id=a.role_id, role_name=a.role_name, scope=a.scope,
                                             company_id=a.company_id, branch_id=a.branch_id,
                                             permissions=sorted(a.permissions)) for a in ctx.assignments])

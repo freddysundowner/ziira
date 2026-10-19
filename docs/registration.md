@@ -120,3 +120,14 @@ be sent would make registration look broken), and with an unknown mode.
 
 Not built yet: a CAPTCHA, billing and plans (a business is free), and an operator console (operators use `ziira tenants`,
 `ziira enable`, `ziira drop-tenant`).
+
+## Going straight in, confirming the email afterwards (2026-10-19)
+
+A new owner is never asked to wait for an email. `POST /api/v1/register` saves the request and returns `instant_token`;
+the web app uses it at once on `/register/verify` (create the business, sign in). If the platform can send email
+(`platform/mail.active()` is set), a confirmation link (`/confirm-email?token=zc_...`, 14 days, stored only as a hash) is
+sent as well; a failed send never stops the sign-up. Until the link is used `GET /auth/me` says `email_verified: false` and the
+web app shows a banner with "Send it again" (`POST /auth/email-confirmation/resend`, one a minute). With no working email
+nothing is sent and no banner shows. Registrations made before this change count as confirmed. Registration mode (open,
+invite, closed) is exactly what the operator chose: missing email no longer closes sign-up. Operator and user passwords
+both need at least 8 characters.

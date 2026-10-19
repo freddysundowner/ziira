@@ -15,6 +15,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { OfflineBanner } from "./OfflineBanner";
 import { helpUrl } from "./help";
 import { SidebarNav } from "./Sidebar";
+import { EmailVerifyBanner } from "./EmailVerifyBanner";
 import { SupportBanner } from "./SupportBanner";
 
 const COLLAPSE_KEY = "ziira.sidebar";
@@ -99,6 +100,7 @@ export function Layout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <OfflineBanner />
         <SupportBanner />
+        <EmailVerifyBanner />
         <BillingNotice />
         <header className="app-bar sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-surface/85 px-3 backdrop-blur sm:px-5">
           <button aria-label={t("menu")} onClick={() => setMobileOpen(true)} className="rounded-lg p-2 text-muted hover:bg-sunken md:hidden"><MenuIcon className="h-5 w-5" /></button>

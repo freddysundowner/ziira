@@ -45,6 +45,9 @@ log = logging.getLogger("ziira.registration")
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 TAX_ID = re.compile(r"^[A-Z0-9][A-Z0-9/\-. ]{2,29}$")
 TOKEN_PREFIX = "zg_"
+CONFIRM_PREFIX = "zc_"
+CONFIRM_DAYS = 14
+CONFIRM_RESEND_SECONDS = 60
 # Onboarding answers (hints only, never rules): the allowed values; anything else is refused.
 ROLES = ("owner", "manager", "accountant", "other")
 BUSINESS_SIZES = ("1", "2-5", "6-20", "more")           # branches
@@ -66,6 +69,7 @@ class Started:
 
     dev_token: str | None
     instant_token: str | None = None
+    dev_confirm_token: str | None = None       # outside production only (tests, local development)
 
 
 @dataclass(frozen=True)
@@ -202,28 +206,88 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
         if by_email >= settings.registration_per_email_per_hour or by_ip >= settings.registration_per_ip_per_hour:
             raise TooManyRequests("Too many registration attempts: please try again in an hour", {"retry_after": 3600})
         token = TOKEN_PREFIX + new_secret()
+        confirm = CONFIRM_PREFIX + new_secret()
         # an earlier unverified request for this email stops working (its row stays: it counts towards the rate limit)
         s.execute(text("update master.registration set expires_at = now() where email = :e and verified_at is null "
                        "and expires_at > now()"), {"e": address})
         s.execute(text(
             "insert into master.registration (email, business_name, owner_name, password_hash, currency, "
             "phone_country_code, country, timezone, tax_id, invite_code_hash, token_hash, ip_address, expires_at, "
-            "mode, edition, phone, owner_role, business_size, staff_size, business_type, plan_code) "
+            "mode, edition, phone, owner_role, business_size, staff_size, business_type, plan_code, "
+            "confirm_token_hash, confirm_sent_at) "
             "values "
-            "(:e, :b, :o, :p, :c, :pc, :n, :z, :t, :i, :h, :ip, :x, :m, :ed, :ph, :ro, :bs, :ss, :bt, :pl)"),
+            "(:e, :b, :o, :p, :c, :pc, :n, :z, :t, :i, :h, :ip, :x, :m, :ed, :ph, :ro, :bs, :ss, :bt, :pl, "
+            ":ch, now())"),
             {"e": address, "b": business, "o": owner, "p": password_hash, "c": currency, "pc": code, "n": nation,
              "z": zone, "t": tax, "i": invite, "h": hash_secret(token), "ip": ip_address, "m": legacy_mode,
              "ed": chosen, "ph": contact, "ro": hints["owner_role"], "bs": hints["business_size"],
-             "ss": hints["staff_size"], "bt": hints["business_type"], "pl": plan_code,
+             "ss": hints["staff_size"], "bt": hints["business_type"], "pl": plan_code, "ch": hash_secret(confirm),
              "x": datetime.now(UTC) + timedelta(hours=settings.registration_token_hours)})
-    if not mail.status()["working"] and settings.env == "production":
-        return Started(dev_token=None, instant_token=token)      # no email to send: the owner set the password just now
-    link = f"{behaviour.public_web_url()}/register/verify?token={token}"
-    platform_mail.send(address, "Confirm your email to create your business",
-                       f"Hello {owner},\n\nTo finish creating {business}, confirm your email address:\n\n{link}\n\n"
-                       f"The link works for {settings.registration_token_hours} hours and only once. If you did not "
-                       "ask for this, ignore this message: nothing will be created.\n", "registration")
-    return Started(dev_token=token if settings.env != "production" else None)
+    # The owner goes straight in (the client uses `instant_token` at once); the email only confirms the address.
+    _send_confirmation(address, owner, business, confirm)
+    dev = settings.env != "production"
+    return Started(dev_token=token if dev else None, instant_token=token, dev_confirm_token=confirm if dev else None)
+
+
+def _send_confirmation(address: str, owner: str, business: str, confirm: str) -> bool:
+    """Email the confirmation link when the platform can send email; a failure never stops the sign-up."""
+    if mail.active() is None:
+        return False
+    link = f"{behaviour.public_web_url()}/confirm-email?token={confirm}"
+    try:
+        platform_mail.send(address, "Please confirm your email address",
+                           f"Hello {owner},\n\nWelcome to Ziira. Please confirm your email address for {business}:\n\n"
+                           f"{link}\n\nYou can keep using Ziira in the meantime. If you did not create this business, "
+                           "you can ignore this message.\n", "registration")
+    except Exception:
+        log.warning("Could not send the confirmation email to a new owner", exc_info=True)
+        return False
+    return True
+
+
+def confirm_email(token: str) -> None:
+    """Use the link in the confirmation email. Using it again is harmless."""
+    if not token.startswith(CONFIRM_PREFIX):
+        raise Unauthorized("This link is not valid")
+    since = datetime.now(UTC) - timedelta(days=CONFIRM_DAYS)
+    with master_session() as s:
+        row = s.execute(text("select id, email_confirmed_at from master.registration where confirm_token_hash = :h "
+                             "and confirm_sent_at > :t"), {"h": hash_secret(token), "t": since}).first()
+        if row is None:
+            raise Unauthorized("This link is not valid or has expired: sign in and ask for a new one")
+        if row.email_confirmed_at is None:
+            s.execute(text("update master.registration set email_confirmed_at = now() where id = :i"),
+                      {"i": str(row.id)})
+
+
+def email_confirmed(tenant_id: UUID, email: str | None) -> bool:
+    """False only for an owner who signed up here and has not confirmed their address, where email can be sent."""
+    if not email or mail.active() is None:
+        return True
+    with master_session() as s:
+        row = s.execute(text("select email_confirmed_at from master.registration where tenant_id = :t "
+                             "and lower(email) = lower(:e) order by created_at desc limit 1"),
+                        {"t": str(tenant_id), "e": email}).first()
+    return row is None or row.email_confirmed_at is not None
+
+
+def resend_confirmation(tenant_id: UUID, email: str | None) -> bool:
+    """Send a fresh confirmation link to a signed-in owner who has not confirmed. False when there is nothing to do."""
+    if not email or mail.active() is None:
+        return False
+    with master_session() as s:
+        row = s.execute(text("select id, owner_name, business_name, email_confirmed_at, confirm_sent_at "
+                             "from master.registration where tenant_id = :t and lower(email) = lower(:e) "
+                             "order by created_at desc limit 1 for update"), {"t": str(tenant_id), "e": email}).first()
+        if row is None or row.email_confirmed_at is not None:
+            return False
+        if row.confirm_sent_at and (datetime.now(UTC) - row.confirm_sent_at).total_seconds() < CONFIRM_RESEND_SECONDS:
+            raise TooManyRequests("A confirmation email was sent a moment ago: please check your inbox",
+                                  {"retry_after": CONFIRM_RESEND_SECONDS})
+        confirm = CONFIRM_PREFIX + new_secret()
+        s.execute(text("update master.registration set confirm_token_hash = :h, confirm_sent_at = now() where id = :i"),
+                  {"h": hash_secret(confirm), "i": str(row.id)})
+    return _send_confirmation(email, row.owner_name, row.business_name, confirm)
 
 
 def _workspace_code(name: str) -> str:

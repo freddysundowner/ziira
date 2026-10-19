@@ -51,16 +51,7 @@ function Content({ values, edition, country, trial }: { values: Values; edition:
   );
 }
 
-/** The right-hand panel: what they chose and what they get. On a wide screen it is always open; on a phone it folds away under the step. */
+/** The right-hand panel: what they chose and what they get. Shown on a wide screen only (no "Show your setup" fold-away on a phone). */
 export function SidePanel(props: { values: Values; edition: Edition | undefined; country: Country | undefined; trial: Trial | null | undefined }) {
-  const { t } = useTranslation();
-  return (
-    <>
-      <details className="xl:hidden">
-        <summary className="cursor-pointer text-sm font-semibold text-brand-strong">{t("signup.side.open")}</summary>
-        <div className="mt-4"><Content {...props} /></div>
-      </details>
-      <div className="hidden xl:block"><Content {...props} /></div>
-    </>
-  );
+  return <div className="hidden xl:block"><Content {...props} /></div>;
 }

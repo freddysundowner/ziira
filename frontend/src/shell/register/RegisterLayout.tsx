@@ -25,9 +25,9 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
   const index = step ? STEPS.indexOf(step) : STEPS.length - 1;
   return (
     <div className="flex min-h-screen flex-col bg-bg">
-      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-3 sm:px-8">
+      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-4 sm:px-8">
         <Link to="/" className="flex items-center gap-2.5" aria-label={t("appName")}>
-          <BrandWord className="h-8" />
+          <BrandWord className="h-9" />
         </Link>
         <Link to="/" className="text-sm font-medium text-brand-strong hover:underline">{t("signup.haveAccount")}</Link>
       </header>
@@ -36,7 +36,7 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
         <nav aria-label={t("signup.progress")} className="border-b border-line bg-surface px-4 py-3 lg:hidden">
           <p className="mb-2 text-sm font-medium">{t("signup.stepOf", { n: index + 1, total: STEPS.length, title: t(`signup.steps.${STEPS[index]}`) })}</p>
           <div className="flex gap-1.5" aria-hidden>
-            {STEPS.map((s, i) => <span key={s} className={cx("h-1.5 flex-1 rounded-full", i <= index ? "bg-brand" : "bg-line")} />)}
+            {STEPS.map((s, i) => <span key={s} className={cx("h-1.5 flex-1 rounded-full", i <= index ? "bg-brand-gradient" : "bg-line")} />)}
           </div>
         </nav>
       )}
@@ -69,7 +69,7 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
 
         <main className="min-w-0 px-4 py-8 sm:px-8 lg:px-12 lg:py-12">{children}</main>
 
-        {side && <aside className="border-t border-line bg-surface p-4 sm:p-8 lg:col-span-2 xl:col-span-1 xl:border-l xl:border-t-0">{side}</aside>}
+        {side && <aside className="hidden border-line bg-surface p-8 xl:col-span-1 xl:block xl:border-l">{side}</aside>}
       </div>
     </div>
   );

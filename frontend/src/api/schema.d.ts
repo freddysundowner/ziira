@@ -80,6 +80,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/register/confirm-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register Confirm Email
+         * @description Use the link in the confirmation email sent after sign-up (no sign-in needed; using it twice is harmless).
+         */
+        post: operations["register_confirm_email_api_v1_register_confirm_email_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/email-confirmation/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resend Email Confirmation
+         * @description Send the signed-in owner a fresh confirmation link (at most one a minute).
+         */
+        post: operations["resend_email_confirmation_api_v1_auth_email_confirmation_resend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/register/trial": {
         parameters: {
             query?: never;
@@ -24701,6 +24741,11 @@ export interface components {
             /** Example */
             example: string;
         };
+        /** ConfirmEmailIn */
+        ConfirmEmailIn: {
+            /** Token */
+            token: string;
+        };
         /** ConfirmIn */
         ConfirmIn: {
             /**
@@ -31523,6 +31568,12 @@ export interface components {
             full_name?: string | null;
             /** Email */
             email?: string | null;
+            /**
+             * Email Verified
+             * @description False while a new owner has not confirmed their email address (the web app shows a banner)
+             * @default true
+             */
+            email_verified: boolean;
             /** Roles */
             roles: components["schemas"]["AssignmentOut"][];
             /** @description Set while platform staff are working in the business under a support grant (the web app shows a banner) and for the staff member's own session */
@@ -37366,9 +37417,14 @@ export interface components {
             dev_token?: string | null;
             /**
              * Instant Token
-             * @description Only when the platform has no working email: use it at once on /register/verify
+             * @description Use it at once on /register/verify: the owner goes straight in
              */
             instant_token?: string | null;
+            /**
+             * Dev Confirm Token
+             * @description Outside production only: the token the confirmation email carries
+             */
+            dev_confirm_token?: string | null;
         };
         /** RegisterVerifyIn */
         RegisterVerifyIn: {
@@ -45737,6 +45793,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegisterOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    register_confirm_email_api_v1_register_confirm_email_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmEmailIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resend_email_confirmation_api_v1_auth_email_confirmation_resend_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

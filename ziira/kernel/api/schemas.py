@@ -84,7 +84,13 @@ class RegisterOut(BaseModel):
     message: str
     dev_token: str | None = Field(default=None, description="Outside production only: the token the email carries")
     instant_token: str | None = Field(
-        default=None, description="Only when the platform has no working email: use it at once on /register/verify")
+        default=None, description="Use it at once on /register/verify: the owner goes straight in")
+    dev_confirm_token: str | None = Field(
+        default=None, description="Outside production only: the token the confirmation email carries")
+
+
+class ConfirmEmailIn(BaseModel):
+    token: str = Field(max_length=200)
 
 
 class RegisterVerifyIn(BaseModel):
@@ -120,6 +126,8 @@ class MeOut(BaseModel):
     channel: str
     full_name: str | None = None
     email: str | None = None
+    email_verified: bool = Field(default=True, description="False while a new owner has not confirmed their email "
+                                                            "address (the web app shows a banner)")
     roles: list[AssignmentOut]
     support_session: SupportSessionInfo | None = Field(
         default=None, description="Set while platform staff are working in the business under a support grant (the "

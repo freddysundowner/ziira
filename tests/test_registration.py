@@ -33,7 +33,7 @@ def test_a_business_registers_verifies_and_is_signed_in(client, registry) -> Non
     asked = client.post(REGISTER, json=payload)
     assert asked.status_code == 202, asked.text
     token = asked.json()["dev_token"]
-    assert token.startswith("zg_") and "check your email" in asked.json()["message"].lower()
+    assert token.startswith("zg_") and asked.json()["instant_token"] == token       # the owner goes straight in
     # nothing exists yet: no tenant, no database
     with master_session() as s:
         assert s.execute(text("select count(*) from master.tenant where code = 'globex-imports'")).scalar_one() == 0
@@ -192,10 +192,39 @@ def test_a_failed_provisioning_leaves_the_link_usable(client, registry, monkeypa
     assert verify(client, token).status_code == 200                                            # try again: it works
 
 
-def test_when_the_email_cannot_be_sent_registration_says_so(client, registry, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+def test_registration_still_works_when_the_confirmation_email_cannot_be_sent(client, registry, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """The owner goes straight in; a broken mailer only means the confirmation link does not arrive."""
     monkeypatch.setattr(get_settings(), "platform_email_provider", "no-such-provider")
     r = client.post(REGISTER, json=body())
-    assert r.status_code == 503 and r.json()["error"] == "unavailable"
+    assert r.status_code == 202 and r.json()["instant_token"]
+    assert verify(client, r.json()["instant_token"]).status_code == 200
+
+
+def test_a_new_owner_is_in_at_once_and_is_asked_to_confirm_their_email_afterwards(client, registry) -> None:  # type: ignore[no-untyped-def]
+    asked = client.post(REGISTER, json=body("Confirm Traders")).json()
+    out = verify(client, asked["instant_token"]).json()
+    headers = {"Authorization": f"Bearer {out['access_token']}"}
+    assert client.get("/api/v1/auth/me", headers=headers).json()["email_verified"] is False          # the banner shows
+    # a second email is not sent within a minute; the link in the first one confirms
+    again = client.post("/api/v1/auth/email-confirmation/resend", headers=headers)
+    assert again.status_code == 429
+    bad = client.post("/api/v1/register/confirm-email", json={"token": "zc_not-a-real-token"})
+    assert bad.status_code == 401
+    assert client.post("/api/v1/register/confirm-email", json={"token": asked["dev_confirm_token"]}).status_code == 204
+    assert client.get("/api/v1/auth/me", headers=headers).json()["email_verified"] is True
+    assert client.post("/api/v1/register/confirm-email", json={"token": asked["dev_confirm_token"]}).status_code == 204   # harmless twice
+    assert client.post("/api/v1/auth/email-confirmation/resend", headers=headers).json() == {"sent": False}
+
+
+def test_a_resent_link_replaces_the_first_and_confirms(client, registry) -> None:  # type: ignore[no-untyped-def]
+    asked = client.post(REGISTER, json=body("Resend Traders")).json()
+    headers = {"Authorization": f"Bearer {verify(client, asked['instant_token']).json()['access_token']}"}
+    with master_session() as s:           # pretend the first email went out two minutes ago
+        s.execute(text("update master.registration set confirm_sent_at = now() - interval '2 minutes' "
+                       "where business_name = 'Resend Traders'"))
+    sent = client.post("/api/v1/auth/email-confirmation/resend", headers=headers)
+    assert sent.status_code == 200 and sent.json() == {"sent": True}
+    assert client.post("/api/v1/register/confirm-email", json={"token": asked["dev_confirm_token"]}).status_code == 401   # replaced
 
 
 def test_production_accepts_open_registration_and_the_guard_closes_it_without_email(monkeypatch) -> None:  # type: ignore[no-untyped-def]
