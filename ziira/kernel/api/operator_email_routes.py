@@ -13,7 +13,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from ziira.kernel import editions, operators
 from ziira.kernel.api.operator_routes import require
 from ziira.kernel.auth import client_ip
-from ziira.kernel.errors import ValidationFailed
 from ziira.kernel.platform import admin, behaviour, mail
 
 router = APIRouter(prefix="/api/v1/operator", tags=["Super Admin"])
