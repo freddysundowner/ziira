@@ -18,7 +18,7 @@ import time
 from dataclasses import fields
 from urllib.parse import unquote, urlparse
 
-from installer import release, webbuild
+from installer import envfile, release, webbuild
 from installer.config import Config
 from installer.context import Ctx
 from installer.steps_app import step_services, wait_http
@@ -83,6 +83,25 @@ def rollback(ctx: Ctx, to: str | None = None) -> bool:
     return ok
 
 
+def add_new_settings(ctx: Ctx) -> list[str]:
+    """Settings a newer version needs that an older install does not have yet: added to the env file with the same
+    defaults a fresh install gets (and their folders made), so an update never stops on a setting the installer itself
+    would have written. Existing values are never touched."""
+    cfg, sysm = ctx.cfg, ctx.sys
+    wanted = {"ZIIRA_FILES_DIR": f"{cfg.state_dir}/files", "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000"}
+    existing = ctx.existing_env()
+    missing = {k: v for k, v in wanted.items() if not existing.get(k)}
+    if missing:
+        text = sysm.read_text(ctx.env_path) or ""
+        if text and not text.endswith("\n"):
+            text += "\n"
+        text += "# added by ziira-update\n" + "".join(f"{k}={envfile.quote(v)}\n" for k, v in missing.items())
+        sysm.write_text(ctx.env_path, text, mode=0o640, owner="root", group=cfg.service_user, secret=True)
+    folder = existing.get("ZIIRA_FILES_DIR") or wanted["ZIIRA_FILES_DIR"]
+    sysm.makedirs(folder, mode=0o700, owner=cfg.service_user, group=cfg.service_user)
+    return sorted(missing)
+
+
 def run_update(ctx: Ctx, *, skip_backup: bool = False, keep: int = release.KEEP_RELEASES) -> int:
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
     ctx.need_root()
@@ -105,6 +124,9 @@ def run_update(ctx: Ctx, *, skip_backup: bool = False, keep: int = release.KEEP_
     ui.ok(f"built release {rel_id}")
 
     ui.step(2, 6, "Checking the configuration with the new code")
+    added = add_new_settings(ctx)
+    if added:
+        ui.ok("added settings this version needs: " + ", ".join(added))
     r = sysm.run(["python3", f"{path}/scripts/check_env.py", ctx.env_path], probe=True, check=False)
     if r.code != 0 and not cfg.dry_run:
         sysm.run(["rm", "-rf", path], check=False)

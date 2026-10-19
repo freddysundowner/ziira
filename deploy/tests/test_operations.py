@@ -239,3 +239,20 @@ def test_purge_drops_only_ziira_databases_and_roles() -> None:
 def test_uninstall_asks_before_doing_anything() -> None:
     ui = quiet_ui()
     assert uninstall.typed(ui, "uninstall", "x") is False        # non-interactive never confirms by itself
+
+
+def test_update_adds_the_settings_a_newer_version_needs_instead_of_stopping() -> None:
+    """An install made before the files feature has no ZIIRA_FILES_DIR: the update adds it (and the folder), keeps every other value."""
+    m = installed_machine()
+    ctx = ctx_for(m)
+    text = m.read_text(ctx.env_path) or ""
+    old = "".join(line + "\n" for line in text.splitlines() if not line.startswith(("ZIIRA_FILES_DIR", "ZIIRA_FILES_MAX_UPLOAD_BYTES")))
+    m.write_text(ctx.env_path, old, mode=0o640, owner="root", group=ctx.cfg.service_user, secret=True)
+    before = ctx.existing_env()
+    assert "ZIIRA_FILES_DIR" not in before
+    assert update.add_new_settings(ctx) == ["ZIIRA_FILES_DIR", "ZIIRA_FILES_MAX_UPLOAD_BYTES"]
+    after = ctx.existing_env()
+    assert after["ZIIRA_FILES_DIR"] == f"{ctx.cfg.state_dir}/files"
+    assert all(after[k] == v for k, v in before.items())
+    assert m.is_dir(after["ZIIRA_FILES_DIR"])
+    assert update.add_new_settings(ctx) == []                      # nothing more to add the second time
