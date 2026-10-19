@@ -193,7 +193,7 @@ describe("operators", () => {
     expect((await screen.findByTestId("mfa-secret")).textContent).toBe("JBSWY3DPEHPK3PXP");
   });
 
-  it("takes an empty password or one of at least 12 characters", async () => {
+  it("takes an empty password or one of at least 8 characters", async () => {
     handlers["GET /api/v1/operator/operators"] = () => json(operators);
     handlers["GET /api/v1/operator/actions"] = () => json([]);
     handlers["GET /api/v1/operator/roles"] = () => json({ roles: [], permissions: {} });

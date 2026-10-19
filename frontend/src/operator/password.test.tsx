@@ -143,7 +143,7 @@ describe("a temporary password", () => {
     const repeat = () => screen.getAllByLabelText(/New password/)[1];
     fireEvent.change(screen.getByLabelText(/Current password/), { target: { value: "the temporary one" } });
     fireEvent.change(newPassword(), { target: { value: "short" } });
-    expect(await screen.findByText("At least 12 characters.")).toBeTruthy();
+    expect(await screen.findByText("At least 8 characters.")).toBeTruthy();
     expect(save.disabled).toBe(true);
     fireEvent.change(newPassword(), { target: { value: "my own long password" } });
     fireEvent.change(repeat(), { target: { value: "my own long passwor" } });

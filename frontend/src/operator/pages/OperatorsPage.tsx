@@ -17,7 +17,7 @@ type OperatorRow = Schemas["OperatorRow"];
 type Line = Schemas["ActionLine"];
 type Role = Schemas["OperatorCreateIn"]["role"];
 const ROLES: NonNullable<Role>[] = ["superadmin", "billing", "support", "content", "readonly"];
-const MIN_PASSWORD = 12;
+const MIN_PASSWORD = 8;
 
 export default function OperatorsPage() {
   const { t } = useTranslation("operator");

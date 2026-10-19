@@ -208,7 +208,7 @@ def test_a_business_token_is_not_an_operator_token_and_the_reverse(client) -> No
 
 
 # --------------------------------------------------------------------------- the password rule
-@pytest.mark.parametrize("password", ["short-one", "elevenchars", "password1234", "aaaaaaaaaaaaaaaa"])
+@pytest.mark.parametrize("password", ["short", "1234567", "password1234", "aaaaaaaaaaaaaaaa"])
 def test_an_operator_password_must_be_long_and_not_obvious(password: str) -> None:
     with pytest.raises(ValidationFailed):
         operators.create_operator("Weak", f"weak-{uuid4().hex[:6]}@ziira.test", password)

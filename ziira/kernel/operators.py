@@ -33,7 +33,7 @@ log = logging.getLogger("ziira.operators")
 
 OPERATOR_TOKEN_MINUTES = 30                 # a sign-in with a second factor (ZIIRA_OPERATOR_MFA=totp)
 CHALLENGE_MINUTES = 5
-MIN_PASSWORD_LENGTH = 12                    # operators hold more power than any business user: a longer minimum
+MIN_PASSWORD_LENGTH = 8                     # same minimum as a business user; common passwords and the email are still refused
 TOUCH_SECONDS = 30                          # last_seen_at is written at most this often per sign-in
 
 
@@ -60,7 +60,7 @@ def _now() -> datetime:
 
 # --------------------------------------------------------------------------- managing operators (command line)
 def check_password(password: str, email: str) -> None:
-    """The operator password rule: at least 12 characters, not a common password, not the email."""
+    """The operator password rule: at least 8 characters, not a common password, not the email."""
     if len(password) < MIN_PASSWORD_LENGTH:
         raise ValidationFailed(f"An operator password must be at least {MIN_PASSWORD_LENGTH} characters")
     passwords.check(password, login=email)

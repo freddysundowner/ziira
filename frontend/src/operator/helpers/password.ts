@@ -1,5 +1,5 @@
 /** The shortest operator password the server accepts (it also refuses common passwords and the email). */
-export const MIN_PASSWORD = 12;
+export const MIN_PASSWORD = 8;
 
 export interface PasswordForm {
   current: string;

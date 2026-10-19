@@ -560,7 +560,7 @@ Platform staff never use a business's own logins. They use **operators** and a b
 How operators sign in is `ZIIRA_OPERATOR_MFA` (`off`, the default: email and password; `totp`: also an authenticator code; the risk of
 `off` and its compensating controls are in `docs/security.md`, "Platform staff sign-in"). In `totp` mode `create` prints the authenticator
 secret and `otpauth://` address once: add it to an authenticator app before closing the terminal; in `off` mode it prints no secret.
-Operator passwords need 12 characters (not common, not the email). Give each person their own operator; never share one. Production with
+Operator passwords need 8 characters (not common, not the email). Give each person their own operator; never share one. Production with
 `off` needs `ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED=true` to start; `ZIIRA_OPERATOR_ALLOWED_NETWORKS`, `ZIIRA_OPERATOR_SESSION_HOURS`,
 `ZIIRA_OPERATOR_IDLE_MINUTES` and `ZIIRA_OPERATOR_SIGNIN_EMAILS` are in `.env.example`; apply the same address restriction at the proxy.
 

@@ -50,8 +50,8 @@ def _cidr_problem(value: str) -> str | None:
 
 def _new_password(ui: UI) -> str:
     while True:
-        first = ui.ask("Password for the first super admin (at least 12 characters)", secret=True)
-        if len(first) < 12:
+        first = ui.ask("Password for the first super admin (at least 8 characters)", secret=True)
+        if len(first) < 8:
             ui.warn("too short")
             continue
         if ui.ask("Repeat the password", secret=True) == first:
@@ -88,8 +88,8 @@ def main(argv: Sequence[str] | None = None, *, system: System | None = None, ui:
     problems = [] if cfg.inspect else cfg.validate()
     if not cfg.inspect and not cfg.dry_run and not cfg.no_services and not cfg.admin_password:
         problems.append("the first super admin's password is missing (set ZIIRA_OPERATOR_PASSWORD, or run interactively)")
-    if cfg.admin_password and len(cfg.admin_password) < 12:
-        problems.append("the super admin password must have at least 12 characters")
+    if cfg.admin_password and len(cfg.admin_password) < 8:
+        problems.append("the super admin password must have at least 8 characters")
     if problems:
         ui.fail("some answers are missing or invalid:", "\n".join(f"  - {p}" for p in problems))
         return 2

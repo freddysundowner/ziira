@@ -160,7 +160,7 @@ banner ("Two-step verification is off for the Super Admin"; it can be dismissed 
 
 Controls that stay or are added when it is off:
 
-- **Passwords:** at least 12 characters (users have 8), not on the common list, not the email; checked when an operator is created, a
+- **Passwords:** at least 8 characters (the same as users), not on the common list, not the email; checked when an operator is created, a
   password is changed or reset. Stored as scrypt hashes. A password made by someone else (a console-made account, a reset) is
   temporary: the person must choose their own at the first sign-in (`must_change_password`; every other call answers 403
   `password_change_required` until then). A reset is `ziira operator reset-password EMAIL` (prints a random temporary password once;
