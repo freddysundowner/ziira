@@ -25,6 +25,7 @@ export function UsagePanel() {
               ))}</tbody>
             </table>
           </div>
+          {u.website_assistant.calls > 0 && <p className="text-xs text-muted">{u.website_assistant.label}: {t("ai.site.usage", { calls: u.website_assistant.calls, cost: usd(u.website_assistant.cost_usd) })}</p>}
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("ai.usage.perDay")}</p>
             <ul className="space-y-1" aria-label={t("ai.usage.perDay")}>

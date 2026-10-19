@@ -12,6 +12,8 @@ from ziira.sdk import RequestContext, Session, provides
 @provides(INTEL_ASK_TOOL)
 class Figures(AskTool):
     name = "command_figures"
+    plain_label = "Looking at today's key figures"
+    plain_label_sw = "Naangalia takwimu kuu za leo"
     description = ("The business's key figures for a period (sales, voids, refunds, stock value, overdue balances), "
                    "each against the period of the same length just before it, company-wide and by branch. These are "
                    "the figures shown in the Command Center; money and counts are added over the days, percentages "

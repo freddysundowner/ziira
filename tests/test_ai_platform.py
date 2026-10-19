@@ -275,6 +275,29 @@ def test_changing_the_default_needs_typing_it_a_reason_and_ends_every_consent(cl
         "provider": "anthropic", "confirm": "anthropic", "reason": "no key yet"}).status_code == 422
 
 
+def test_one_dropdown_choice_uses_a_provider_and_can_switch_it_off(client, world, net) -> None:  # type: ignore[no-untyped-def]
+    use = lambda provider, headers=None: client.put(  # noqa: E731
+        f"{AI}/active", headers=headers or world["boss"], json={"provider": provider})
+    assert use("gemini", world["billing"]).status_code == 403
+    assert use("gemini").status_code == 422                       # no key yet
+    assert use("nope").status_code in (404, 422)
+    save(client, world, "gemini", api_key=GKEY, enabled=True)
+    save(client, world, "openai", api_key=OKEY, enabled=True)
+    done = use("gemini")
+    assert done.status_code == 200 and done.json()["default_provider"] == "gemini"
+    assert client.get(AI, headers=world["boss"]).json()["default_provider"] == "gemini"
+    switched = use("openai").json()
+    assert switched["default_provider"] == "openai" and switched["from_provider"] == "gemini"
+    assert provider_of(client, world, "gemini")["key_set"] is True    # the other key is kept
+    assert GKEY not in done.text and OKEY not in done.text
+    off = use(None)
+    assert off.status_code == 200 and off.json()["default_provider"] is None
+    assert client.get(AI, headers=world["boss"]).json()["default_provider"] is None
+    with master_session() as m:
+        n = m.execute(text("select count(*) from master.operator_action_log where action = 'ai_provider.default'")).scalar_one()
+    assert n >= 3
+
+
 # --------------------------------------------------------------------------- data terms
 def test_production_refuses_a_provider_until_its_data_terms_are_acknowledged(client, world, net, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     make_default(client, world, "gemini")

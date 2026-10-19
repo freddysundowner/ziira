@@ -46,12 +46,12 @@ export function UploadStep() {
   return (
     <form onSubmit={submit} className="space-y-4">
       <Card title={t("upload.what")} description={t("upload.whatHint")}>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-3">
           {kinds.data.map((k) => (
-            <label key={k.kind} className={`cursor-pointer rounded-xl border p-3 transition-colors ${kind === k.kind ? "border-brand bg-brand/5" : "border-line hover:bg-sunken"}`}>
+            <label key={k.kind} className={`min-w-0 cursor-pointer rounded-xl border p-3 transition-colors ${kind === k.kind ? "border-brand bg-brand/5" : "border-line hover:bg-sunken"}`}>
               <input type="radio" name="kind" className="sr-only" checked={kind === k.kind} onChange={() => setKind(k.kind)} />
-              <span className="block font-medium">{k.title}</span>
-              <span className="mt-1 block text-sm text-muted">{k.description}</span>
+              <span className="block font-medium [overflow-wrap:anywhere]">{k.title}</span>
+              <span className="mt-1 block text-sm text-muted [overflow-wrap:anywhere]">{k.description}</span>
             </label>
           ))}
         </div>

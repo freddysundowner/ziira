@@ -211,6 +211,8 @@ class AskTool(ABC):
     never take SQL or free text into a query. `permissions` are any-of: the tool is offered only to people who hold one
     of them somewhere. Names of people (customers, suppliers, employees) in the result go in the fields listed in
     `personal_fields`: they are replaced by labels such as "Customer A" before anything is sent to the provider.
+    `plain_label` / `plain_label_sw` say in plain words what the tool is doing; the chat shows them as a status line
+    (no technical terms, no figures).
     """
 
     name: str
@@ -218,6 +220,8 @@ class AskTool(ABC):
     parameters: dict[str, Any]
     permissions: tuple[str, ...]
     personal_fields: tuple[str, ...] = ()
+    plain_label: str = ""                      # what the person sees while the tool runs ("Checking stock levels")
+    plain_label_sw: str = ""                   # the same in Swahili
 
     @abstractmethod
     def run(self, session: Session, context: RequestContext, params: dict[str, Any]) -> dict[str, Any]:

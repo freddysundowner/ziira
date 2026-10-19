@@ -65,3 +65,50 @@ export function barPercent(cost: string, max: number): number {
 
 /** What the model list says about a choice: unknown price needs the owner's attention. */
 export const priceKnown = (m: ModelChoice | undefined): boolean => !!m && m.input_per_mtok !== null;
+
+/** The dropdown's value for "a model name I type". */
+export const OTHER_MODEL = "__other__";
+export const NO_PROVIDER = "__none__";
+
+export interface ModelOptions {
+  /** The "fast and cheap" recommendation (the provider's best-value model). */
+  fast: ModelChoice | undefined;
+  /** The "more capable" model. */
+  capable: ModelChoice | undefined;
+}
+
+/** Two plain choices first (Fast and cheap, More capable); the rest of the catalogue is only reachable as "Other". */
+export function modelOptions(p: AiProvider): ModelOptions {
+  const fast = p.model_choices.find((m) => m.tiers.includes("best_value")) ?? p.model_choices[0];
+  const capable = p.model_choices.find((m) => m.tiers.includes("higher_quality") && m.id !== fast?.id);
+  return { fast, capable };
+}
+
+/** What the model dropdown shows for the model in use: a listed option, or "Other". */
+export function modelSelectValue(p: AiProvider, current: string, typingOther: boolean): string {
+  const o = modelOptions(p);
+  if (typingOther) return OTHER_MODEL;
+  if (o.fast && current === o.fast.id) return o.fast.id;
+  if (o.capable && current === o.capable.id) return o.capable.id;
+  return OTHER_MODEL;
+}
+
+/** One model for every feature (the simple form); per-feature choices live under Details. */
+export function withModel(d: ProviderDraft, id: string): ProviderDraft {
+  return { ...d, models: { explain: id, rank: id, ask: id } };
+}
+
+/** Saving to use a provider: switched on, and nothing else sent that did not change. */
+export function bodyToUse(p: AiProvider, d: ProviderDraft): AiProviderBody {
+  return providerBody(p, { ...d, enabled: true });
+}
+
+/** Is there a key to use: one saved (and not being removed) or one typed. */
+export const hasKey = (p: AiProvider, d: ProviderDraft): boolean => d.apiKey.trim().length > 0 || (p.key_set && !d.clearKey);
+
+/** The plain status line at the top, from what is saved (not from the dropdown). */
+export function statusOf(o: AiOverview): { on: boolean; provider: string | null; model: string | null } {
+  const p = o.providers.find((x) => x.name === o.default_provider);
+  if (p) return { on: true, provider: p.title, model: p.models.ask ?? null };
+  return { on: false, provider: null, model: null };
+}

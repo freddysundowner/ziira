@@ -17,7 +17,12 @@ export default function SettingsPage() {
       <PageHeader title={t("settings")} description={t("settingsHint")} />
       <div className="space-y-4">
         <ReceiptFooters />
-        {CATEGORIES.map((c) => <ReasonList key={c} category={c} />)}
+        <details className="group rounded-xl border border-line bg-surface">
+          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+            {t("reasonListsMore")}<span aria-hidden className="ml-1 inline-block text-xs text-muted transition-transform group-open:rotate-90">›</span>
+          </summary>
+          <div className="space-y-4 border-t border-line p-4">{CATEGORIES.map((c) => <ReasonList key={c} category={c} />)}</div>
+        </details>
       </div>
     </>
   );

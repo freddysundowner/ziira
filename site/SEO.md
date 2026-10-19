@@ -37,6 +37,8 @@ verify them in Google Search Console (queries, impressions, click-through) and a
 | `.../bank-statements/` | Reconcile bank statements to sales | bank statement fraud checks | Commercial |
 | `.../mobile-money-statements/` | Reconcile mobile-money statements to sales | M-Pesa statement reconciliation | Commercial |
 | `.../csv-excel-pdf/` | Use sales and stock exports (CSV, Excel, PDF) for checks | no-API systems | Commercial |
+| `/ai/` | AI for business: ask questions of your business data, AI daily checks, AI that shows proof | business AI assistant, AI accounting and stock checks | Commercial |
+| `/solutions/every-business/`, salons, garages, clinics, gyms, consultants | Business software for each kind of business (one intent each) | salon software, garage and body shop software with insurer claims, clinic billing software, gym membership software | Commercial |
 | `/solutions/` and three children | ERP/POS for a retailer; for a distributor; for a multi-branch owner | | Commercial |
 | `/integrations/` and children | What does Ziira connect to (WhatsApp alerts, M-Pesa, ERPs, statements, API); WhatsApp business alerts; M-Pesa integration; ERP API and webhooks | | Commercial / technical |
 | `/security-and-privacy/` | Is it safe; how is my data protected | read-only ERP access, data protection | Trust |

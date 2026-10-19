@@ -31,6 +31,8 @@ def _guard(session: Session, context: RequestContext, params: dict[str, Any]) ->
 @provides(INTEL_ASK_TOOL)
 class CustomerBalance(AskTool):
     name = "crm_customer_balance"
+    plain_label = "Checking what a customer owes"
+    plain_label_sw = "Naangalia deni la mteja"
     description = ("What customers whose name contains the given text owe on open invoices: balance, how much of it is "
                    "overdue, and their credit limit. Counts only invoices at branches the person may see.")
     parameters = {"type": "object", "properties": {"name": {"type": "string", "maxLength": 80}}, "required": ["name"]}
@@ -56,6 +58,8 @@ class CustomerBalance(AskTool):
 @provides(INTEL_ASK_TOOL)
 class OverdueCustomers(AskTool):
     name = "crm_overdue_customers"
+    plain_label = "Looking at overdue customers"
+    plain_label_sw = "Naangalia wateja waliochelewa kulipa"
     description = ("Customers with invoices past their due date, largest overdue amount first: the amount, how many "
                    "invoices and how long the oldest has been overdue.")
     parameters = {"type": "object", "properties": {

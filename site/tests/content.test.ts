@@ -3,10 +3,11 @@ import { coreEn } from "../src/content/pages/core.en";
 import { intelEn } from "../src/content/pages/intel.en";
 import { sourcesEn } from "../src/content/pages/sources.en";
 import { miscEn } from "../src/content/pages/misc.en";
+import { aiEn, solutionsFirst, solutionsMore } from "../src/content/pages/ai.en";
 import { home } from "../src/content/home";
 import { glossary } from "../src/content/glossary";
 
-const en = [...coreEn, ...intelEn, ...sourcesEn, ...miscEn];
+const en = [...coreEn, ...aiEn, ...intelEn, ...sourcesEn, ...solutionsFirst, ...miscEn, ...solutionsMore];
 
 describe("content", () => {
   it("ids and slugs are unique within a language", () => {

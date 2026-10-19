@@ -13,10 +13,14 @@ How the answer stays trustworthy:
 - The conversation is stored with the tools called and the rows used (`intel.ask_session` / `ask_message`).
 """
 
+import contextvars
 import json
 import logging
 import re
+import threading
 import time
+from collections.abc import Generator
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
@@ -24,6 +28,7 @@ from typing import Any
 from uuid import UUID
 
 from ziira.modules.intel.domain import ai_rules
+from ziira.modules.intel.domain.chat_text import split_chunks
 from ziira.modules.intel.domain.llm import AskTool, LlmMessage, LlmReply, ToolCall, ToolResult, ToolSpec
 from ziira.modules.intel.domain.scope import branch_scope
 from ziira.modules.intel.domain.tool_params import BadParams, check_params
@@ -54,11 +59,17 @@ SECONDS_CAP = 75.0               # for one question, between model calls
 ANSWER_TOKENS = 1200
 MAX_ROWS = 40
 MAX_RESULT_CHARS = 14_000
+HISTORY_MESSAGES = 6             # the last three exchanges of the conversation are sent as context
+HISTORY_CHARS = 1200             # of each earlier message
+MAX_PARALLEL_TOOLS = 4
 LANGUAGE_NAMES = {"en": "English", "sw": "Swahili"}
 NOTE = {"en": "Some figures could not be verified against your data.",
         "sw": "Baadhi ya namba hazikuweza kuthibitishwa dhidi ya data yako."}
 GAVE_UP = {"en": "I could not finish answering that with the information available. Try asking in a narrower way.",
            "sw": "Sikuweza kukamilisha jibu kwa taarifa zilizopo. Jaribu kuuliza kwa upana mdogo zaidi."}
+WORKING = {"en": "Reading your question", "sw": "Nasoma swali lako"}
+COMPOSING = {"en": "Putting the answer together", "sw": "Naandaa jibu"}
+FALLBACK_LABEL = {"en": "Looking at your data", "sw": "Naangalia data yako"}
 PERSON_FIELD_KINDS = (("customer", "Customer"), ("supplier", "Supplier"), ("employee", "Employee"))
 
 SYSTEM = (
@@ -84,6 +95,7 @@ class Answer:
     flag_reason: str | None = None
     capped: str | None = None
     ai_generated: bool = True
+    withheld: bool = False           # a sentence with a figure that is not in the data was left out (streaming)
 
 
 @dataclass
@@ -98,6 +110,18 @@ class _Run:
     tokens_in: int = 0
     tokens_out: int = 0
     capped: str | None = None
+    cache: dict[str, "_Outcome"] = field(default_factory=dict)       # identical tool calls within the question
+    lock: threading.Lock = field(default_factory=threading.Lock)     # the names are shared by the parallel tools
+
+
+@dataclass
+class _Outcome:
+    """What one tool call came to: what the model reads, the log entry, and (when it ran) the rows used."""
+
+    result: ToolResult
+    entry: dict[str, Any]
+    source: dict[str, Any] | None = None
+    figures: dict[str, Any] | None = None
 
 
 # --------------------------------------------------------------------------- tools
@@ -168,15 +192,19 @@ def _person_fields(tool: AskTool) -> dict[str, str]:
     return kinds
 
 
+def _call_key(call: ToolCall) -> str:
+    return f"{call.name}:{json.dumps(call.arguments, sort_keys=True, default=str)}"
+
+
 def _run_tool(tenant_id: UUID, context: RequestContext, company_id: UUID, tools: dict[str, AskTool], call: ToolCall,
-              run: _Run) -> ToolResult:
-    """Run one tool the model asked for, as the person asking, and turn the outcome into what the model reads."""
+              run: _Run) -> _Outcome:
+    """Run one tool the model asked for, as the person asking, and turn the outcome into what the model reads. Safe to
+    run several at once: it changes nothing in `run` except through the lock (the names)."""
     entry: dict[str, Any] = {"tool": call.name, "params": ai_rules.scrub_value(call.arguments)}
-    run.tools_used.append(entry)
     tool = tools.get(call.name)
     if tool is None:
         entry["status"] = "refused"
-        return ToolResult(call.id, "This tool does not exist or you are not allowed to use it.", True)
+        return _Outcome(ToolResult(call.id, "This tool does not exist or you are not allowed to use it.", True), entry)
     try:
         params = check_params(tool.parameters, call.arguments)
         entry["params"] = dict(params)
@@ -184,22 +212,70 @@ def _run_tool(tenant_id: UUID, context: RequestContext, company_id: UUID, tools:
             result = tool.run(s, context, {**params, "company_id": str(company_id)})
     except BadParams as error:
         entry["status"] = "bad_params"
-        return ToolResult(call.id, f"Invalid arguments: {error}", True)
+        return _Outcome(ToolResult(call.id, f"Invalid arguments: {error}", True), entry)
     except ZiiraError as error:
         entry["status"] = "refused"
-        return ToolResult(call.id, f"Not possible: {error.message}", True)
+        return _Outcome(ToolResult(call.id, f"Not possible: {error.message}", True), entry)
     except Exception:  # noqa: BLE001 - a tool bug must not take the conversation down
         log.exception("Ask tool %s failed", call.name)
         entry["status"] = "failed"
-        return ToolResult(call.id, "The tool failed. Do not guess; tell the person it could not be answered.", True)
+        return _Outcome(ToolResult(call.id, "The tool failed. Do not guess; tell the person it could not be answered.",
+                                   True), entry)
     result = _bound(result)
     entry["status"] = "ok"
-    _collect_figures(result, run)
     rows = next((v for v in result.values() if isinstance(v, list)), [])
     entry["rows"] = len(rows)
-    run.sources.append({"tool": call.name, "params": dict(params), "result": result})
-    shown = ai_rules.scrub_value(run.names.hide_fields(result, _person_fields(tool)))
-    return ToolResult(call.id, json.dumps(shown, default=str, ensure_ascii=False))
+    with run.lock:
+        shown = ai_rules.scrub_value(run.names.hide_fields(result, _person_fields(tool)))
+    return _Outcome(ToolResult(call.id, _compact(shown)), entry,
+                    {"tool": call.name, "params": dict(params), "result": result}, result)
+
+
+def _compact(shown: Any) -> str:
+    """What the model reads: JSON without spaces and without empty cells (fewer tokens, the same facts)."""
+    if isinstance(shown, dict):
+        shown = {k: v for k, v in shown.items() if v is not None}
+    return json.dumps(shown, default=str, ensure_ascii=False, separators=(",", ":"))
+
+
+def _run_tools(tenant_id: UUID, context: RequestContext, company_id: UUID, tools: dict[str, AskTool],
+               calls: list[ToolCall], run: _Run) -> list[ToolResult]:
+    """The tools of one round: identical calls (in this round or an earlier one) run once, the different ones run at the
+    same time, and the log, the rows used and the figures to check the answer against are added in the order asked."""
+    todo: dict[str, ToolCall] = {}
+    for c in calls:
+        key = _call_key(c)
+        if key not in run.cache and key not in todo:
+            todo[key] = c
+    if len(todo) > 1:
+        with ThreadPoolExecutor(max_workers=min(len(todo), MAX_PARALLEL_TOOLS)) as pool:
+            futures = {k: pool.submit(contextvars.copy_context().run, _run_tool, tenant_id, context, company_id, tools,
+                                      c, run) for k, c in todo.items()}
+            done = {k: f.result() for k, f in futures.items()}
+    else:
+        done = {k: _run_tool(tenant_id, context, company_id, tools, c, run) for k, c in todo.items()}
+    results: list[ToolResult] = []
+    for c in calls:
+        key = _call_key(c)
+        fresh = done.pop(key, None)
+        if fresh is not None:
+            run.tools_used.append(fresh.entry)
+            if fresh.figures is not None and fresh.source is not None:
+                _collect_figures(fresh.figures, run)
+                run.sources.append(fresh.source)
+            if fresh.entry.get("status") == "ok":
+                run.cache[key] = fresh
+            results.append(fresh.result)
+        else:
+            earlier = run.cache.get(key)
+            if earlier is None:            # a failed call asked for twice in one round: the same answer again
+                again = _run_tool(tenant_id, context, company_id, tools, c, run)
+                run.tools_used.append(again.entry)
+                results.append(again.result)
+                continue
+            run.tools_used.append({**earlier.entry, "cached": True})
+            results.append(ToolResult(c.id, earlier.result.content))
+    return results
 
 
 # --------------------------------------------------------------------------- the question
@@ -233,6 +309,22 @@ def ask(context: RequestContext, question: str, *, company_id: UUID | None = Non
         language: str = "en") -> Answer:
     """Answer a question for the person in `context`. Raises AiUnavailable when the assistant is off, over budget or
     not consented to; AiFailed when the provider cannot answer."""
+    steps = ask_steps(context, question, company_id=company_id, session_id=session_id, language=language)
+    try:
+        while True:
+            next(steps)
+    except StopIteration as done:
+        answer: Answer = done.value
+        return answer
+
+
+def ask_steps(context: RequestContext, question: str, *, company_id: UUID | None = None,
+              session_id: UUID | None = None, language: str = "en",
+              strict: bool = False) -> Generator[tuple[str, str], None, Answer]:
+    """The whole question as a generator: it yields `("status", words)` as the work moves on and returns the Answer.
+    With `strict` (the chat that shows text as it is released) a sentence holding a figure that is not in the data is
+    left out and replaced by the note; otherwise the whole answer is kept with the note added. Raises what `ask`
+    does."""
     from sqlalchemy import text
 
     tenant_id = context.tenant_id
@@ -244,10 +336,12 @@ def ask(context: RequestContext, question: str, *, company_id: UUID | None = Non
         company = _pick_company(s, context, company_id)
         _, blocked = ai.gate(s, company, "ask", context.user_id)
         tools = {} if blocked else available_tools(s, context)
+        earlier: list[Any] = []
         if session_id is not None:
             existing = repo.get_session(s, session_id)
             if existing is None or existing.user_id != context.user_id or existing.company_id != company:
                 raise NotFound("Conversation not found")
+            earlier = repo.messages_of(s, session_id)[-HISTORY_MESSAGES:]
         info = s.execute(text("select name, base_currency from kernel.company where id = :c"),
                          {"c": str(company)}).one()
         today: date = company_today(s, company)
@@ -259,18 +353,26 @@ def ask(context: RequestContext, question: str, *, company_id: UUID | None = Non
     system = SYSTEM.format(company=info.name, today=today.isoformat(), zone=zone, currency=info.base_currency,
                            branches=branches, language=LANGUAGE_NAMES[lang])
     specs = [ToolSpec(t.name, t.description, t.parameters) for t in tools.values()]
-    messages = [LlmMessage("user", ai_rules.scrub_personal(question))]
+    messages = _history(earlier, tools, run)
+    messages.append(LlmMessage("user", ai_rules.scrub_personal(question)))
     run.facts += [*ai_rules.numbers_in(question), Decimal(today.year), Decimal(today.month), Decimal(today.day)]
-    final = _converse(tenant_id, context, company, tools, specs, system, messages, run)
+    final = yield from _converse(tenant_id, context, company, tools, specs, system, messages, run, lang)
     text_out = run.names.restore(final.strip()) if final.strip() else GAVE_UP[lang]
-    flagged, reason = False, None
+    flagged, reason, withheld = False, None, False
     if not final.strip():
         flagged, reason = True, run.capped or "no answer"
     else:
-        bad = ai_rules.FigureChecker(run.facts, run.groups).unverified(text_out)
+        checker = ai_rules.FigureChecker(run.facts, run.groups)
+        bad = checker.unverified(text_out)
         if bad:
-            text_out = f"{text_out}\n\n{NOTE[lang]}"
             flagged, reason = True, f"figures not found in the data: {', '.join(bad[:8])}"
+            if strict:
+                kept = [c for c in split_chunks(text_out)
+                        if not checker.unverified(c) and not any(b in c for b in bad)]
+                text_out = f"{''.join(kept).strip()}\n\n{NOTE[lang]}".strip()
+                withheld = True
+            else:
+                text_out = f"{text_out}\n\n{NOTE[lang]}"
     with tenant_transaction(tenant_id) as s:
         sid = session_id or repo.create_session(s, company, context.user_id, question)
         repo.add_message(s, sid, "user", question)
@@ -278,11 +380,32 @@ def ask(context: RequestContext, question: str, *, company_id: UUID | None = Non
                                flagged=flagged, flag_reason=reason, input_tokens=run.tokens_in,
                                output_tokens=run.tokens_out)
         repo.touch_session(s, sid)
-    return Answer(sid, mid, text_out, run.sources, flagged, reason, run.capped)
+    return Answer(sid, mid, text_out, run.sources, flagged, reason, run.capped, withheld=withheld)
+
+
+def _history(earlier: list[Any], tools: dict[str, AskTool], run: _Run) -> list[LlmMessage]:
+    """The last messages of this conversation as context for a follow-up ("and last week?"): text only, with the names
+    of people put back to labels (found again from the rows the earlier answers used) and bounded. The figures of
+    earlier answers that passed the check may be repeated in the new answer."""
+    while earlier and earlier[0].role != "user":
+        earlier = earlier[1:]
+    for m in earlier:
+        for src in (m.sources or []) if m.role == "assistant" else []:
+            tool = tools.get(str(src.get("tool")))
+            if tool is not None and tool.personal_fields:
+                run.names.hide_fields(src.get("result") or {}, _person_fields(tool))
+    out: list[LlmMessage] = []
+    for m in earlier:
+        out.append(LlmMessage("user" if m.role == "user" else "assistant",
+                              ai_rules.scrub_personal(run.names.hide(m.content))[:HISTORY_CHARS]))
+        if m.role == "user" or not m.flagged:
+            run.facts += ai_rules.numbers_in(m.content)
+    return out
 
 
 def _converse(tenant_id: UUID, context: RequestContext, company: UUID, tools: dict[str, AskTool],
-              specs: list[ToolSpec], system: str, messages: list[LlmMessage], run: _Run) -> str:
+              specs: list[ToolSpec], system: str, messages: list[LlmMessage], run: _Run,
+              lang: str = "en") -> Generator[tuple[str, str], None, str]:
     """The loop: ask the model; run the tools it names; give it the results; until it answers or a cap is reached."""
     started = time.monotonic()
     rounds = 0
@@ -293,6 +416,7 @@ def _converse(tenant_id: UUID, context: RequestContext, company: UUID, tools: di
         last = capped is not None
         if capped:
             run.capped = capped
+        yield "status", (WORKING if rounds == 0 else COMPOSING)[lang]
         reply: LlmReply = ai.call(
             tenant_id, company_id=company, user_id=context.user_id, purpose="ask", messages=messages,
             tools=[] if last else specs, system=system, max_tokens=ANSWER_TOKENS, ref_type="intel.ask",
@@ -303,7 +427,15 @@ def _converse(tenant_id: UUID, context: RequestContext, company: UUID, tools: di
             return reply.text
         rounds += 1
         calls = reply.tool_calls
-        results = [_run_tool(tenant_id, context, company, tools, c, run) for c in calls[:MAX_CALLS_PER_ROUND]]
+        shown: set[str] = set()
+        for c in calls[:MAX_CALLS_PER_ROUND]:
+            tool = tools.get(c.name)
+            label = ((tool.plain_label_sw if lang == "sw" else tool.plain_label) if tool else "") \
+                or FALLBACK_LABEL[lang]
+            if label not in shown:
+                shown.add(label)
+                yield "status", label
+        results = _run_tools(tenant_id, context, company, tools, list(calls[:MAX_CALLS_PER_ROUND]), run)
         results += [ToolResult(c.id, "Too many tools at once; ask for fewer.", True)
                     for c in calls[MAX_CALLS_PER_ROUND:]]
         messages.append(LlmMessage("assistant", reply.text, tool_calls=tuple(calls)))

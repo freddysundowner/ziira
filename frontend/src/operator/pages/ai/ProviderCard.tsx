@@ -6,7 +6,6 @@ import { opApi, opUnwrap } from "../../client";
 import { type AiOverview, type AiProvider, FEATURES, maskedKey, providerBody, providerDirty, providerDraft, type ProviderDraft, TIER_TONE, usd } from "../../helpers/ai";
 import { useOperatorCan } from "../../me";
 import { useChange } from "../../stepUp";
-import { DefaultDialog } from "./DefaultDialog";
 import { QualityDialog } from "./QualityDialog";
 
 /** One provider: switch, write-only key, a model for each feature with its price, the live list, a connection test and the data-terms acknowledgement. */
@@ -16,7 +15,7 @@ export function ProviderCard({ provider: p, overview, onChanged }: { provider: A
   const [draft, setDraft] = useState<ProviderDraft>(providerDraft(p));
   const [problem, setProblem] = useState<string | null>(null);
   const [test, setTest] = useState<{ ok: boolean; message: string } | null>(null);
-  const [dialog, setDialog] = useState<"default" | "quality" | null>(null);
+  const [dialog, setDialog] = useState<"quality" | null>(null);
   const dirty = providerDirty(p, draft);
   const set = (next: ProviderDraft) => { setDraft(next); setProblem(null); };
   const save = useChange(() => opUnwrap(opApi.PUT("/api/v1/operator/ai/providers/{name}", { params: { path: { name: p.name } }, body: providerBody(p, draft) })), {
@@ -91,12 +90,10 @@ export function ProviderCard({ provider: p, overview, onChanged }: { provider: A
             <Button type="button" variant="ghost" size="sm" loading={refresh.isPending} disabled={!canRun} onClick={() => refresh.mutate(undefined)}>{t("ai.refresh")}</Button>
             <Button type="button" variant="secondary" size="sm" loading={probe.isPending} disabled={!canRun} onClick={() => { setTest(null); probe.mutate(undefined); }}>{t("ai.test.button")}</Button>
             <Button type="button" variant="secondary" size="sm" disabled={!canRun} onClick={() => setDialog("quality")}>{t("ai.quality.button")}</Button>
-            {p.enabled && p.key_set && !p.is_default && <Button type="button" variant="secondary" size="sm" disabled={dirty} onClick={() => setDialog("default")}>{t("ai.default.make")}</Button>}
             <Button type="submit" size="sm" loading={save.isPending} disabled={!dirty}>{t("ai.save")}</Button>
           </div>
         )}
       </form>
-      {dialog === "default" && <DefaultDialog provider={p.name} title={p.title} onClose={() => setDialog(null)} onDone={onChanged} />}
       {dialog === "quality" && <QualityDialog provider={p.name} model={draft.models.ask} onClose={() => setDialog(null)} />}
     </Card>
   );

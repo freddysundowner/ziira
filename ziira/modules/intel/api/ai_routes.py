@@ -1,10 +1,16 @@
 """HTTP endpoints of the AI layer: whether the assistant is on, its settings and consent, its usage and call log, and
 Ask Ziira with the person's own conversations."""
 
+import asyncio
+import contextvars
+import json
+import threading
+from collections.abc import AsyncIterator, Iterator
 from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 
 from ziira.modules.intel.api.schemas import (
     AiCallOut,
@@ -23,7 +29,7 @@ from ziira.modules.intel.api.schemas import (
 from ziira.modules.intel.domain import ai_rules
 from ziira.modules.intel.permissions import AI_ASK, AI_MANAGE, FINDINGS_VIEW
 from ziira.modules.intel.repository import ai_repo
-from ziira.modules.intel.services import ai, ai_admin, ask
+from ziira.modules.intel.services import ai, ai_admin, ask, ask_stream
 from ziira.sdk import (
     DB_SESSION,
     Forbidden,
@@ -111,6 +117,54 @@ def post_ask(body: AskQuestionIn, ctx: RequestContext = Depends(request_context)
     return AskAnswerOut(session_id=answer.session_id, message_id=answer.message_id, answer=answer.answer,
                         sources=[source_out(s) for s in answer.sources], flagged=answer.flagged,
                         flag_reason=answer.flag_reason, capped=answer.capped)
+
+
+def _pump(events: Iterator[dict[str, Any]], loop: asyncio.AbstractEventLoop,
+          queue: "asyncio.Queue[dict[str, Any] | None]", stop: threading.Event) -> None:
+    """Runs in a worker thread: moves the events of a question to the response, and stops when the reader has gone."""
+    try:
+        for event in events:
+            if stop.is_set():
+                break
+            loop.call_soon_threadsafe(queue.put_nowait, event)
+    finally:
+        close = getattr(events, "close", None)
+        if close:
+            close()
+        loop.call_soon_threadsafe(queue.put_nowait, None)
+
+
+def _sse(event: dict[str, Any]) -> bytes:
+    data = event["data"]
+    if event["event"] == "sources":
+        data = {"sources": [source_out(s).model_dump(mode="json") for s in data["sources"]]}
+    return f"event: {event['event']}\ndata: {json.dumps(data, default=str, ensure_ascii=False)}\n\n".encode()
+
+
+@router.post("/ask/stream", dependencies=[Depends(require_permission(AI_ASK))],
+             responses={200: {"content": {"text/event-stream": {}}, "description": (
+                 "Server-Sent Events: `status` {text} while it works, `text` {text} for each sentence of the answer, "
+                 "`sources` {sources}, then `done` {session_id, message_id, flagged, withheld, capped}; or `error` "
+                 "{reason, message}.")}})
+async def post_ask_stream(body: AskQuestionIn, ctx: RequestContext = Depends(request_context)) -> StreamingResponse:
+    """Ask a question as a chat: the same checks and the same answer as `/ask`, told as events while the work happens.
+    Closing the connection stops the question at its next step."""
+    loop = asyncio.get_running_loop()
+    queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+    stop = threading.Event()
+    events = ask_stream.stream(ctx, body.question, company_id=body.company_id, session_id=body.session_id,
+                               language=body.language)
+    loop.run_in_executor(None, contextvars.copy_context().run, _pump, events, loop, queue, stop)
+
+    async def body_iter() -> AsyncIterator[bytes]:
+        try:
+            while (event := await queue.get()) is not None:
+                yield _sse(event)
+        finally:
+            stop.set()
+
+    return StreamingResponse(body_iter(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
 @router.get("/ask/sessions", response_model=list[AskSessionOut], dependencies=[Depends(require_permission(AI_ASK))])

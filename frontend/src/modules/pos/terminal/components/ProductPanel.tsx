@@ -111,14 +111,14 @@ export function ProductPanel({ branchId, locationId, currency, searchRef, onAdd,
                 return (
                   <li key={item.product_id}>
                     <button type="button" onClick={() => add(item)}
-                      className={cx("flex min-h-[6rem] w-full flex-col justify-between rounded-xl border bg-surface p-3 text-left shadow-card transition-colors hover:border-brand active:bg-brand-soft",
+                      className={cx("flex min-h-[6rem] w-full min-w-0 flex-col justify-between overflow-hidden rounded-xl border bg-surface p-3 text-left shadow-card transition-colors hover:border-brand active:bg-brand-soft",
                         i === active ? "border-brand ring-2 ring-brand" : "border-line")}>
-                      <span className="line-clamp-2 text-sm font-medium leading-snug">{item.name}</span>
-                      <span className="mt-2 flex items-end justify-between gap-2">
-                        <span className="tnum text-sm font-semibold text-brand-strong">{item.price === null ? t("terminal.products.setPrice") : money(item.price, currency)}</span>
-                        {item.stock !== null && item.stock !== undefined && <Badge tone={out ? "bad" : "neutral"}>{out ? t("terminal.products.out") : quantity(item.stock)}</Badge>}
+                      <span className="line-clamp-2 min-w-0 text-sm font-medium leading-snug [overflow-wrap:anywhere]">{item.name}</span>
+                      <span className="mt-2 flex min-w-0 flex-wrap items-end justify-between gap-x-2 gap-y-1">
+                        <span className="tnum min-w-0 text-sm font-semibold text-brand-strong [overflow-wrap:anywhere]">{item.price === null ? t("terminal.products.setPrice") : money(item.price, currency)}</span>
+                        {item.stock !== null && item.stock !== undefined && <span className="shrink-0"><Badge tone={out ? "bad" : "neutral"}>{out ? t("terminal.products.out") : quantity(item.stock)}</Badge></span>}
                       </span>
-                      <span className="mt-1 truncate font-mono text-[11px] text-muted">{item.sku}</span>
+                      <span className="mt-1 block min-w-0 max-w-full truncate font-mono text-[11px] text-muted">{item.sku}</span>
                     </button>
                   </li>
                 );

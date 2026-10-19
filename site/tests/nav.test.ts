@@ -4,9 +4,10 @@ import { coreEn } from "../src/content/pages/core.en";
 import { intelEn } from "../src/content/pages/intel.en";
 import { sourcesEn } from "../src/content/pages/sources.en";
 import { miscEn } from "../src/content/pages/misc.en";
+import { aiEn, solutionsFirst, solutionsMore } from "../src/content/pages/ai.en";
 import { home } from "../src/content/home";
 
-const ids = new Set(["home", ...[...coreEn, ...intelEn, ...sourcesEn, ...miscEn].map((p) => p.id)]);
+const ids = new Set(["home", ...[...coreEn, ...aiEn, ...intelEn, ...sourcesEn, ...solutionsFirst, ...miscEn, ...solutionsMore].map((p) => p.id)]);
 // Pages another package adds (the Help centre) may be absent when this file is tested alone; the header drops links to pages that do not exist.
 const OPTIONAL = new Set(["help"]);
 
@@ -27,13 +28,12 @@ describe("navigation", () => {
     for (const bad of ["free trial", "synergy", "leverage", "solutions", "intelligence"]) expect(text, bad).not.toContain(bad);
   });
   it("the top level uses the owner's words", () => {
-    expect(navGroups.map((g) => g.label)).toEqual(["What Ziira does", "Who it is for", "How it works", "Pricing", "Help"]);
+    expect(navGroups.map((g) => g.label)).toEqual(["What Ziira does", "Ziira AI", "Who it is for", "How it works", "Pricing", "Help"]);
   });
   it("the home page names who it is for and shows only true trust statements", () => {
     const h = home.en;
     expect(h.h1.includes(h.h1Em) && h.h1.includes(h.h1Und)).toBe(true);
-    expect(h.annotation).toBe("from the till to the balance sheet");
-    expect(h.trustLine).toEqual(["Sales, stock, finance and people in one system", "Many branches and companies, one view", "Reads your existing system without changing it"]);
-    expect(h.mock.badge.toLowerCase()).toContain("example");
+    expect(h.annotation).toBe("ask it anything, in plain words");
+    expect(h.trustLine).toEqual(["One system instead of a pile of separate tools", "AI that shows its proof and never moves money", "Shops, salons, garages, clinics, gyms, agencies and more"]);
   });
 });

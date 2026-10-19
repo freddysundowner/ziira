@@ -2,7 +2,7 @@ import { Camera, CloudOff, Maximize, RefreshCw, ScanLine } from "lucide-react";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Alert, Badge, Button, cx, EmptyState, ErrorState, PageHeader, Skeleton, Stat, useCurrency, useTranslation } from "@/sdk";
+import { Alert, Badge, Button, cx, EmptyState, ErrorState, PageHeader, Skeleton, Stat, StatGrid, useCurrency, useTranslation } from "@/sdk";
 
 import { CameraScan } from "../components/CameraScan";
 import { cameraScanSupported } from "../components/camera";
@@ -80,10 +80,10 @@ export default function CheckinPage() {
         {savedRoster && !listUsable && <span className="text-bad">{t("checkin.listTooOld")}</span>}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-        <div className="space-y-4">
-          <div className="rounded-xl border border-line bg-surface p-4 shadow-card">
-            <label htmlFor="checkin-input" className="mb-2 flex items-center gap-2 text-sm font-semibold"><ScanLine className="h-4 w-4" />{t("checkin.inputLabel")}</label>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <div className="min-w-0 space-y-4">
+          <div className="min-w-0 rounded-xl border border-line bg-surface p-4 shadow-card">
+            <label htmlFor="checkin-input" className="mb-2 flex min-w-0 items-center gap-2 text-sm font-semibold"><ScanLine className="h-4 w-4" />{t("checkin.inputLabel")}</label>
             <div className="flex gap-2">
               <input id="checkin-input" ref={input} autoFocus autoComplete="off" autoCorrect="off" spellCheck={false} inputMode="search" enterKeyHint="go"
                 role="combobox" aria-expanded={listOpen} aria-controls="checkin-choices" aria-autocomplete="list"
@@ -126,12 +126,12 @@ export default function CheckinPage() {
             : !listOpen && <Alert tone="info">{t("checkin.ready")}</Alert>}
         </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+        <div className="min-w-0 space-y-4">
+          <StatGrid>
             <Stat label={t("checkin.today")} value={stats.counts.data?.visits ?? 0} loading={stats.counts.isLoading} />
             <Stat label={t("checkin.refused")} value={stats.counts.data?.refused ?? 0} loading={stats.counts.isLoading} tone={(stats.counts.data?.refused ?? 0) > 0 ? "bad" : undefined} />
             <Stat label={t("checkin.letIn")} value={stats.counts.data?.overridden ?? 0} loading={stats.counts.isLoading} />
-          </div>
+          </StatGrid>
           {stats.counts.error && <ErrorState message={stats.counts.error.message} onRetry={() => void stats.counts.refetch()} />}
           <RecentList rows={stats.recent.data} loading={stats.recent.isLoading} error={stats.recent.error?.message} onRetry={() => void stats.recent.refetch()} />
         </div>

@@ -30,12 +30,14 @@ from ziira.kernel.api.operator_ai_routes import router as operator_ai_router
 from ziira.kernel.api.operator_email_routes import router as operator_email_router
 from ziira.kernel.api.operator_payment_routes import router as operator_payment_router
 from ziira.kernel.api.operator_routes import router as operator_router
+from ziira.kernel.api.operator_site_assistant_routes import router as operator_site_assistant_router
 from ziira.kernel.api.operator_unit_routes import router as operator_unit_router
 from ziira.kernel.api.ops_routes import router as ops_router
 from ziira.kernel.api.organisation_routes import router as organisation_router
 from ziira.kernel.api.payment_routes import router as subscription_payment_router
 from ziira.kernel.api.platform_routes import router as platform_router
 from ziira.kernel.api.privacy_routes import router as privacy_router
+from ziira.kernel.api.public_assistant_routes import router as public_assistant_router
 from ziira.kernel.api.public_config_routes import router as public_config_router
 from ziira.kernel.api.public_plan_routes import router as public_plan_router
 from ziira.kernel.api.routes import router as kernel_router
@@ -44,6 +46,7 @@ from ziira.kernel.api.site_routes import public_router as site_public_router
 from ziira.kernel.api.site_routes import router as site_router
 from ziira.kernel.api.support_routes import router as support_router
 from ziira.kernel.api.unit_routes import router as unit_router
+from ziira.kernel.assistant_cors import AssistantCors
 from ziira.kernel.config import get_settings
 from ziira.kernel.errors import UnitNotEnabled, ZiiraError
 from ziira.kernel.export_audit import ExportAuditMiddleware
@@ -99,7 +102,9 @@ def create_app() -> FastAPI:
     app.include_router(operator_payment_router)
     app.include_router(operator_email_router)
     app.include_router(public_config_router)
+    app.include_router(public_assistant_router)
     app.include_router(operator_ai_router)
+    app.include_router(operator_site_assistant_router)
     app.include_router(operator_admin_router)
     app.include_router(site_router)
     app.include_router(site_public_router)
@@ -179,6 +184,7 @@ def create_app() -> FastAPI:
                            allow_headers=["Authorization", "Content-Type", "Idempotency-Key", "X-API-Key",
                                           "X-Request-ID", "X-Device-ID", "Accept-Language"],
                            expose_headers=["X-Request-ID"], max_age=600)
+    app.add_middleware(AssistantCors)       # the website assistant's two public routes, for the site's origin only
     app.add_middleware(PublicApiHeaders)
     app.add_middleware(OperatorNetworkMiddleware)
     app.add_middleware(HostRoutingMiddleware)

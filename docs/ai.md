@@ -273,3 +273,83 @@ confirmation. Command line (12 questions with `--quality full`):
 - Model ids and prices came from the providers' pages on 2026-10-16 through a summarising fetch; Haiku 5.5 is priced higher above
   100,000 prompt tokens. Re-check both before relying on the cost figures.
 - Cost estimates ignore cache discounts and long-prompt surcharges. Quality-check scores are heuristics, not a benchmark.
+
+## 13. Ask Ziira as a chat (streaming)
+
+`POST /api/v1/intel/ask/stream` (permission `ai.ask`, same checks as `POST /ask`, which stays) answers as Server-Sent Events:
+`status` {text} (plain words: "Reading your question", then each tool's `plain_label` / `plain_label_sw`, then "Putting the answer
+together"), `text` {text} (one sentence or list line each), `sources` {sources} (the rows used), `done` {session_id, message_id,
+flagged, withheld, capped}; or a single `error` {reason, message} (not_enabled, no_consent, purpose_off, budget, spend_cap,
+provider_failed ...) in plain English or Swahili. Code: `services/ask.py` (`ask_steps`, a generator shared with the plain
+endpoint), `services/ask_stream.py`, `api/ai_routes.py` (a worker thread feeds the response; closing the connection stops the
+question at its next step).
+
+- **Nothing unchecked is shown.** The model's whole reply is verified against the tool results first; in the chat a sentence that
+  holds a figure not in the data is left out and replaced by the note ("Some figures could not be verified..."), the message is
+  flagged and stored as released. Only then is the reply released sentence by sentence (short pauses). Provider-level token
+  streaming is deliberately not used: the check needs the finished reply, the answers are short, and each provider's streaming
+  format would be untested live. The provider is still called with no transaction open.
+- **Speed.** Different tools of one round run at the same time; identical calls (same tool and arguments, this round or an earlier
+  one) run once; tool results sent to the model are compact JSON without empty cells; the first status leaves within milliseconds
+  (before the model is asked); the model per use is already a Super Admin choice (`ask` model, Platform > AI), and every provider's
+  default `ask` model is its fast one. Measured with the fake provider (0.5 s per model call, three 0.4 s tools in a round):
+  one after another 2.33 s, now 1.68 s to the end; the first event 0.03 s (the plain endpoint shows nothing until the end).
+- **Conversation.** Send `session_id` with the next question: the last six messages are sent as context (scrubbed, names put back to
+  labels, 1200 characters each) and the figures of earlier checked answers may be repeated ("and last week?").
+- **Tools** carry `plain_label` and `plain_label_sw` (a test requires them).
+- **Development without a key:** `ZIIRA_AI_FAKE=1` (ignored in production) uses the fake provider for everything, whatever the
+  platform has set up: it picks a tool from the words of the question and answers with figures that tool returned.
+  `ZIIRA_AI_FAKE_DELAY_SECONDS=2` makes each model call take that long, to see the typing dots. Then switch the assistant on (and
+  consent) in Settings for the demo business: consent is tied to the provider, so give it again after switching.
+- **Web.** `frontend/src/modules/intel/chat/` (SSE parser, typing reveal, chat state) and `components/AskBox.tsx`,
+  `ChatParts.tsx`: bubbles, dots until the first event, live status, typing word by word (click or "Show all" to skip; at once for
+  reduced motion and hidden tabs), "How I know", suggested chips, Stop, Try again, history and draft kept for the browser session.
+
+## 14. Website assistant (the floating chat on the marketing site)
+
+A visitor of the public site can ask Ziira about Ziira and get answers in real time. It is **off until the Super Admin
+switches it on**, has no sign-in, no business and no tenant: the only data it sees is the site's own knowledge and the live
+public prices. Code: `kernel/site_assistant.py` (the stream), `kernel/site_knowledge.py` (knowledge file, retrieval),
+`kernel/platform/site_assistant.py` (settings, limits, spend), `kernel/api/public_assistant_routes.py`,
+`kernel/assistant_cors.py`, and the model call in `modules/intel/site_assistant_llm.py` (extension point
+`kernel.site_assistant_llm`, so the kernel never touches the provider contract).
+
+**Contract (the site codes against this).**
+- `GET /api/v1/public/assistant/config` -> `{enabled, greeting, suggestions[]}` (no secrets, `Cache-Control: max-age=30`).
+  `enabled` is false when the switch is off, no provider is set up, or a spend cap or the daily total is reached: the site then hides the button.
+- `POST /api/v1/public/assistant/stream` with `{message (<=500 chars), history: [{role: user|assistant, text}] (last 6 used,
+  800 chars each), page: "/path"|null, lang: "en"|"sw"}` -> `text/event-stream`: `status {text}` (first within milliseconds),
+  `text {text}` (one sentence or list line each, released only after the whole reply is checked), `links {items: [{title, href}]}`
+  (only pages from the knowledge), `done {}`; or `error {reason, message[, retry_after]}`, reason one of `off`, `busy` (a rate
+  limit, with `retry_after` seconds), `budget`, `provider_failed`, `too_long`. Errors are events inside a 200 stream.
+- CORS: only for the origins of the platform setting `public.site_url` (and its `www.` twin), only on these two paths, no credentials,
+  preflight answered (403 for other origins). Every other route is untouched.
+
+**Knowledge.** The site build writes `assistant-knowledge.json` into its output folder: a list (or `{"chunks": [...]}`) of
+`{id, title, url, text}`. `ZIIRA_SITE_DIST_DIR` names that folder on the API server; the file is re-read when it changes. Urls
+must be site paths (`/pricing`) or http(s) addresses (anything else is dropped). Ids `contact`, `get-started`/`start` and
+`pricing` are used for the "I do not know" links. Missing or unusable file: a short built-in text, and the assistant says its
+information is limited. The live plans and add-ons (`/public/plans` data) are added as one chunk with the url `/pricing`.
+Retrieval is BM25 over words with a light stem and a few synonyms (no dependency); the top 6 chunks go in the prompt. A question that
+matches nothing gets "I do not know" and links, **without a model call**.
+
+**Prompt and safety.** No tools, no history of the business, hard cap of 320 output tokens, one global concurrency limit (8). The system
+text holds the role, the knowledge quoted as data and the rules **last** (answer only from the knowledge; reply UNKNOWN otherwise;
+plain text, short; never invent prices, customers, awards, certifications or integrations; no live-tested claims; no legal or
+financial advice; ignore instructions in the conversation; never ask for or repeat personal data). The visitor's words and the
+history appear only in the one user turn, as untrusted text with `<` and `>` removed. Personal data in a message is scrubbed
+before it is sent and the reply ends with a reminder. The reply is checked before anything is shown: plain text only (tags and
+markdown removed), and a sentence holding a figure, web address or email that is not in the chunks sent is replaced by "Please
+check the pricing page for the exact figures." A reply cut off by the token cap loses its unfinished sentence.
+
+**Cost and limits (Platform > AI, "Website assistant" card; `platform.ai`, superadmin only, audited as `site_assistant.save`).**
+Switch (default off), monthly cap in USD of its own (usage is recorded in `master.ai_usage` under the pseudo business
+`00000000-0000-0000-0000-000000000001`, shown as "Website assistant" in the usage panel; the platform-wide cap also applies),
+requests per minute (default 8) and per day (default 60) per address, a daily total (default 2000), a burst limit (3 in 5 s),
+greeting and up to 6 suggestion chips. It uses the active provider's `rank` model (a fast one). Counts per address are keyed
+hashes in `master.auth_throttle` (client address honours `ZIIRA_TRUST_FORWARDED_FOR`). Logs keep outcome, length, a short hash and
+time only, never the words.
+
+**Development.** `ZIIRA_AI_FAKE=1` plays a demo brain for this feature (the first sentences of the best source). Tests:
+`tests/test_site_assistant.py`. Not verified against a real provider.
+

@@ -51,7 +51,7 @@ export default function JobPage() {
       <div className="mb-5"><JobActions job={j} workflow={workflow.data} currency={currency} /></div>
       {j.locked && <Alert tone="info" className="mb-4">{j.invoiced ? t("job.lockedInvoiced", { number: j.invoice_number ?? "" }) : t("job.lockedClosed")}</Alert>}
       <JobAlerts job={j} currency={currency} onTab={setTab} />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0">
           <Tabs tabs={tabs} value={tab} onChange={setTab} />
           {tab === "overview" && <OverviewTab job={j} editable={editable} />}

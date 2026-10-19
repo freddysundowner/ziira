@@ -43,6 +43,8 @@ def _rows(session: Session, context: RequestContext, params: dict[str, Any], con
 @provides(INTEL_ASK_TOOL)
 class StockOnHand(AskTool):
     name = "inventory_stock_on_hand"
+    plain_label = "Counting stock on hand"
+    plain_label_sw = "Nahesabu hisa iliyopo"
     description = ("How much of a product is in stock at each branch: products whose name or code contains the given "
                    "text. Shows what the stock is worth only to people allowed to see costs.")
     parameters = {"type": "object", "properties": {**BRANCH, "product": {"type": "string", "maxLength": 80}},
@@ -59,6 +61,8 @@ class StockOnHand(AskTool):
 @provides(INTEL_ASK_TOOL)
 class LowStock(AskTool):
     name = "inventory_low_stock"
+    plain_label = "Checking stock levels"
+    plain_label_sw = "Naangalia viwango vya hisa"
     description = "Products at or below their reorder level at each branch, the most short first."
     parameters = {"type": "object", "properties": {**BRANCH, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}}
     permissions = (STOCK_VIEW,)

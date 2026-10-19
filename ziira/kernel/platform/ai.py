@@ -234,7 +234,8 @@ class Runtime:
 def runtime(feature: str = "ask", tenant_id: UUID | None = None) -> Runtime | None:
     """The provider to use now, or None when nothing is set up (or the chosen provider is not installed)."""
     snap = snapshot()
-    name = (snap.overrides.get(tenant_id) if tenant_id else None) or snap.default
+    fake = get_settings().ai_fake and not is_production()   # development: the fake provider, whatever is set up
+    name = None if fake else ((snap.overrides.get(tenant_id) if tenant_id else None) or snap.default)
     spend_ok = snap.cap_usd is None or snap.spend_usd < snap.cap_usd
     if name:
         row = snap.rows.get(name)
@@ -246,15 +247,16 @@ def runtime(feature: str = "ask", tenant_id: UUID | None = None) -> Runtime | No
         return Runtime(name, cls, row.key, model, row.base_url or None, dict(info.options) if info else {},
                        "platform", (not is_production()) or row.terms_ack_at is not None, spend_ok)
     s = get_settings()
-    if not s.ai_provider:
+    wanted = "fake" if fake else s.ai_provider
+    if not wanted:
         return None
-    env_cls = next((c for c in implementations_of(INTEL_LLM) if getattr(c, "name", None) == s.ai_provider), None)
-    if env_cls is None or (s.ai_provider == "fake" and is_production()):
+    env_cls = next((c for c in implementations_of(INTEL_LLM) if getattr(c, "name", None) == wanted), None)
+    if env_cls is None or (wanted == "fake" and is_production()):
         return None
     cat = env_cls.catalog()  # type: ignore[attr-defined]
     model = s.ai_model or (cat.default_model(feature) if cat else "")
     info = cat.model(model) if cat else None
-    return Runtime(s.ai_provider, env_cls, s.ai_api_key, model, s.ai_base_url or None,
+    return Runtime(wanted, env_cls, s.ai_api_key, model, s.ai_base_url or None,
                    dict(info.options) if info else {}, "environment",
                    (not is_production()) or s.ai_terms_confirmed, spend_ok)
 
@@ -557,6 +559,20 @@ def change_default(provider: str, *, confirm: str, reason: str, by: str) -> dict
     return {**preview, "provider": cls.name}  # type: ignore[attr-defined]
 
 
+def use_provider(provider: str | None, *, by: str) -> dict[str, Any]:
+    """The one-dropdown choice: make `provider` the provider in use (None switches the platform's choice off).
+    Same rules as `change_default` (it must be on and have a key); the dropdown choice is the confirmation."""
+    if provider is None:
+        previous = _stored_default()
+        with master_session() as m:
+            _put_setting(m, "ai.default_provider", None, by)
+        invalidate()
+        return {"default_provider": None, "from_provider": previous, "consents_affected": 0}
+    done = change_default(provider, confirm=provider, reason="Chosen on the AI page", by=by)
+    return {"default_provider": done["provider"], "from_provider": done["from_provider"],
+            "consents_affected": done["consents_affected"]}
+
+
 def set_cap(cap_usd: str | None, by: str) -> dict[str, Any]:
     """Set (or with None remove) the platform's monthly spend cap in USD. Setting it clears a reached-cap flag."""
     value: str | None = None
@@ -626,7 +642,10 @@ def usage_report() -> dict[str, Any]:
     for item in per_provider + top + days:
         item["cost_usd"] = str(Decimal(item["cost_usd"] or 0).quantize(Decimal("0.0001")))
     snap = snapshot()
+    from ziira.kernel.platform import site_assistant
+
     return {"month": start, "providers": per_provider, "top_businesses": top, "days": days,
+            "website_assistant": site_assistant.usage_summary(),
             "cap_usd": str(snap.cap_usd) if snap.cap_usd is not None else None,
             "spend_usd": str(snap.spend_usd.quantize(Decimal("0.0001"))), "cap_flag": cap_reached_flag()}
 

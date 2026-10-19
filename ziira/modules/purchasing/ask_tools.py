@@ -22,6 +22,8 @@ def _scope(context: RequestContext, params: dict[str, Any]) -> tuple[UUID, str, 
 @provides(INTEL_ASK_TOOL)
 class SupplierBalance(AskTool):
     name = "purchasing_supplier_balance"
+    plain_label = "Checking what you owe a supplier"
+    plain_label_sw = "Naangalia deni la msambazaji"
     description = ("What the business owes suppliers whose name contains the given text on posted, unpaid bills: the "
                    "balance and how much is past its due date.")
     parameters = {"type": "object", "properties": {"name": {"type": "string", "maxLength": 80}}, "required": ["name"]}
@@ -46,6 +48,8 @@ class SupplierBalance(AskTool):
 @provides(INTEL_ASK_TOOL)
 class BillsDue(AskTool):
     name = "purchasing_bills_due"
+    plain_label = "Looking at bills due"
+    plain_label_sw = "Naangalia bili zinazodaiwa"
     description = ("Unpaid supplier bills that are overdue or fall due within the next days (default 7), earliest due "
                    "first: supplier, bill number, due date and amount still owed.")
     parameters = {"type": "object", "properties": {

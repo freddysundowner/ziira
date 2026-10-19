@@ -13,7 +13,7 @@
   "productionNote": "Kwenye uzalishaji mtoa huduma haitwi hadi masharti yake ya data yakubaliwe hapa chini.",
   "on": "Umewashwa",
   "off": "Umezimwa",
-  "isDefault": "Mkuu",
+  "isDefault": "Inatumika",
   "enable": "Washa mtoa huduma huyu",
   "save": "Hifadhi",
   "close": "Funga",
@@ -73,22 +73,8 @@
    "lastOk": "jaribio la mwisho lilifaulu {{when}}",
    "lastBad": "jaribio la mwisho lilishindwa {{when}}"
   },
-  "default": {
-   "make": "Fanya mkuu",
-   "title": "Fanya {{provider}} kuwa mkuu",
-   "warning": "Ridhaa {{count}} za biashara zilizotolewa kwa {{from}} zitaisha. Biashara hizo zitaombwa kukubali tena kabla msaidizi hajafanya kazi.",
-   "noChange": "Hakuna ridhaa itakayoisha.",
-   "typeLabel": "Andika {{name}} kuthibitisha",
-   "confirm": "Badilisha mkuu"
-  },
   "cap": {
-   "title": "Kikomo cha matumizi cha mwezi",
-   "hint": "Makadirio kutoka idadi ya tokeni na jedwali la bei. Kikifikiwa, maombi ya AI yanakataliwa.",
-   "spent": "Mwezi huu: {{spend}} kati ya {{cap}}",
-   "none": "hakuna kikomo",
-   "label": "Kikomo kwa dola za Marekani",
-   "labelHint": "Acha tupu kama hakuna kikomo.",
-   "saved": "Kikomo kimehifadhiwa"
+   "none": "hakuna kikomo"
   },
   "usage": {
    "title": "Matumizi ya mwezi huu",
@@ -126,6 +112,76 @@
     "injection": "alipuuza agizo lililofichwa",
     "answered": "alijibu"
    }
+  },
+  "formDescription": "Chagua huduma ya AI ambayo Ziira inatumia. Mtoa huduma mmoja anatumika kwa wakati mmoja. Biashara hazioni ufunguo kamwe.",
+  "status": {
+   "on": "AI imewashwa: {{provider}}, modeli {{model}}.",
+   "off": "AI imezimwa. Chagua mtoa huduma, weka ufunguo wake kisha bonyeza Hifadhi na tumia."
+  },
+  "form": {
+   "provider": "Mtoa huduma",
+   "providerHint": "Mtoa huduma unayemchagua hapa ndiye anayetumika kwa biashara zote.",
+   "none": "Hakuna: AI imezimwa",
+   "keyHint": "Bandika ufunguo kutoka kwenye dashibodi ya mtoa huduma. Unahifadhiwa kwa usimbaji na haonyeshwi tena.",
+   "keySaved": "Imehifadhiwa {{last4}}",
+   "replace": "Badilisha",
+   "model": "Modeli",
+   "modelFast": "Haraka na nafuu (inapendekezwa)",
+   "modelCapable": "Yenye uwezo zaidi",
+   "modelOther": "Nyingine (andika jina la modeli)",
+   "modelName": "Jina la modeli",
+   "modelNameHint": "Kama mtoa huduma anavyoliita. Orodha ya mtoa huduma ikijulikana, jina lazima liwemo.",
+   "price": "Takriban {{input}} kuingia na {{output}} kutoka kwa kila tokeni milioni.",
+   "limit": "Kikomo cha matumizi ya mwezi kwa dola za Marekani (si lazima)",
+   "limitHint": "AI inasimama kwa kila mtu kikomo kikifikiwa. Acha wazi kama hakuna kikomo. Imetumika mwezi huu: {{spend}}.",
+   "test": "Jaribu",
+   "saveAndUse": "Hifadhi na tumia",
+   "testOk": "Inafanya kazi. {{model}} ilijibu kwa ms {{ms}}.",
+   "testBad": "Haikufanya kazi: {{reason}}",
+   "needKey": "Weka ufunguo wa API ili kuendelea.",
+   "unsaved": "Una mabadiliko ambayo hayajahifadhiwa.",
+   "upToDate": "Kila kitu kimehifadhiwa na kinatumika.",
+   "nowInUse": "{{name}} sasa inatumika",
+   "nowOff": "AI imezimwa",
+   "keyRemoved": "Ufunguo wa {{name}} umeondolewa",
+   "removeTitle": "Kuondoa ufunguo wa {{name}}?",
+   "removeBody": "Ufunguo uliohifadhiwa unafutwa. Utahitaji kuubandika tena ili kutumia {{name}}.",
+   "removeInUse": "Mtoa huduma huyu anatumika, kwa hiyo chagua mwingine kwanza. Kuondoa ufunguo wake kunakataliwa wakati anatumika.",
+   "consentsEnd": "Ridhaa {{count}} za biashara zilizotolewa kwa mtoa huduma wa sasa zitaisha. Biashara hizo zitaombwa kukubali tena.",
+   "otherKeptUnused": "Ufunguo wako wa {{name}} umehifadhiwa; hautumiki.",
+   "offNote": "Bila mtoa huduma, msaidizi haupatikani isipokuwa mipangilio ya seva itaje mmoja. Funguo zilizohifadhiwa zinabaki.",
+   "switchOff": "Zima AI"
+  },
+  "details": {
+   "title": "Maelezo zaidi",
+   "hint": "Matumizi, ukaguzi wa ubora, modeli kwa kila huduma, watoa huduma wengine",
+   "providers": "Mipangilio ya watoa huduma",
+   "providersHint": "Modeli kwa kila huduma, orodha ya bei, anwani ya msingi, masharti ya data, ukaguzi wa ubora na funguo zilizohifadhiwa.",
+   "audit": "Angalia kumbukumbu ya mabadiliko"
+  },
+  "site": {
+   "title": "Msaidizi wa tovuti",
+   "description": "Gumzo kwenye tovuti ya umma. Hujibu tu kutokana na kurasa za tovuti yenyewe na bei za sasa. Limezimwa hadi uliwashe.",
+   "loadFailed": "Mipangilio ya msaidizi wa tovuti haikuweza kupakiwa",
+   "on": "Msaidizi ameamilishwa: wageni wanaona kitufe cha gumzo.",
+   "off": "Msaidizi amezimwa: wageni hawaoni kitufe cha gumzo.",
+   "noProvider": "Umewasha, lakini bado hawezi kujibu. Chagua na uhifadhi mtoa huduma wa AI hapo juu kwanza.",
+   "budget": "Kikomo cha matumizi au jumla ya siku imefikiwa, kwa hiyo kitufe cha gumzo kimefichwa kwa sasa.",
+   "enable": "Washa msaidizi wa tovuti",
+   "cap": "Kikomo cha matumizi kwa mwezi (USD)",
+   "capHint": "Kikomo chake chenyewe, tofauti na cha biashara. Imetumika mwezi huu: {{spent}}.",
+   "noCap": "Hakuna kikomo chake",
+   "perMinute": "Maswali kwa mgeni kwa dakika",
+   "perMinuteHint": "Mgeni mmoja, anwani moja.",
+   "perDay": "Maswali kwa mgeni kwa siku",
+   "perDayHint": "Mgeni mmoja, anwani moja.",
+   "total": "Maswali kwa siku, wote",
+   "totalHint": "Ikifikiwa, gumzo hupumzika hadi kesho.",
+   "greeting": "Ujumbe wa kwanza",
+   "chips": "Maswali ya haraka",
+   "chipsHint": "Moja kwa mstari, hadi 6.",
+   "saved": "Msaidizi wa tovuti amehifadhiwa",
+   "usage": "Mwezi huu: majibu {{calls}}, takriban {{cost}}."
   }
  }
 }

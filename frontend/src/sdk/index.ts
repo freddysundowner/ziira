@@ -15,7 +15,7 @@ export { AREA_IDS, type AreaId, defineModule, MENU_GROUPS, type MenuGroup, type 
 export { ModulesProvider, Slot, SlotContent, useAccess, useActiveModules, useSlot } from "./modules";
 export { type ActiveContribution, activeModules, type NavItem, slotContributions, visibleMenu, visibleRoutes } from "./registry";
 export {
-  AREA_DEFINITIONS, areaEntryPath, areaMembers, areaPages, buildNavigation, isSingle, itemsOfSection, type NavArea, type Navigation, placeOf, type Placement, type SidebarEntry,
+  AREA_DEFINITIONS, areaEntryPath, areaMembers, areaPages, buildNavigation, isSingle, itemsOfSection, SETTINGS_HOME, type NavArea, type Navigation, placeOf, type Placement, type SidebarEntry,
 } from "./areas";
 export { setNavBadge, setNavFlag, useNavBadges } from "./navFlags";
 export { useCompanies, useCompany, useCurrency, useDisplayTimeZone } from "./organisation";

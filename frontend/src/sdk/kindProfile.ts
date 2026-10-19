@@ -50,5 +50,5 @@ export const SIDEBAR: Record<ProfileId, SidebarPlan> = {
   full: { order: [], open: [], till: true },
 };
 
-/** Menu entries that exist only for a till (hidden from the menu, never from the router, when the kind has none). */
-export const TILL_PAGES: readonly string[] = ["/pos/tills", "/pos/devices"];
+/** Menu entries that exist only for a till (and Selling settings, its receipt text and reason lists) (hidden from the menu, never from the router, when the kind has none). */
+export const TILL_PAGES: readonly string[] = ["/pos/tills", "/pos/devices", "/pos/settings"];

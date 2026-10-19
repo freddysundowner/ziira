@@ -1,5 +1,5 @@
 /** The kernel's own screens: users, roles, settings, approvals, exceptions, notifications, API keys, privacy requests, support access and my account. Always active (unit "kernel"). */
-import { defineModule } from "@/sdk";
+import { defineModule, SETTINGS_HOME } from "@/sdk";
 
 import en from "./i18n/en.json";
 import { ADDONS_OLD_PATHS, ADDONS_PATH } from "./paths";
@@ -24,6 +24,7 @@ import swOrg from "./i18n/sw.org.json";
 export default defineModule({
   unit: "kernel",
   routes: [
+    { path: SETTINGS_HOME, page: () => import("./pages/SettingsHomePage"), anySignedIn: true },
     { path: "/admin/users", page: () => import("./pages/UsersPage"), permission: "users.manage" },
     { path: "/admin/organisation", page: () => import("./pages/OrganisationPage"), permission: "organisation.manage" },
     { path: ADDONS_PATH, page: () => import("./pages/AppsPage"), permission: "units.manage" },
@@ -48,19 +49,21 @@ export default defineModule({
   menu: [
     { label: "kernel:approvals", to: "/admin/approvals", permission: "approvals.decide", order: 40, area: "waiting", icon: "document", keywords: "nav.waitingKeywords" },
     { label: "kernel:exceptions", to: "/admin/exceptions", permission: "exceptions.manage", order: 41, area: "waiting", under: "/admin/approvals", icon: "security", keywords: "nav.waitingKeywords" },
-    { label: "kernel:org.menu", to: "/admin/organisation", permission: "organisation.manage", order: 10, area: "settings", section: "business", icon: "settings" },
-    { label: "kernel:settings", tab: "nav.tabs.general", to: "/admin/settings", permission: "settings.manage", order: 11, area: "settings", section: "business", icon: "settings" },
-    { label: "kernel:fields.menu", keywords: "kernel:fields.keywords", to: "/admin/custom-fields", permission: "customfields.manage", order: 12, area: "settings", section: "business", icon: "document" },
-    { label: "kernel:users", to: "/admin/users", permission: "users.manage", order: 10, area: "settings", section: "access", icon: "people" },
-    { label: "kernel:roles", to: "/admin/roles", permission: "roles.manage", order: 11, area: "settings", section: "access", icon: "security" },
-    { label: "kernel:approvalRules", to: "/admin/approval-rules", permission: "approvals.manage", order: 12, area: "settings", section: "access", icon: "document" },
-    { label: "kernel:notifications", to: "/admin/notifications", permission: "settings.manage", order: 10, area: "settings", section: "channels", icon: "document" },
-    { label: "kernel:apiKeys", to: "/admin/api-keys", permission: "api_keys.manage", order: 40, area: "settings", section: "channels", icon: "security" },
-    { label: "kernel:webhooks.menu", to: "/admin/webhooks", permission: "webhooks.manage", order: 41, area: "settings", section: "channels", icon: "security" },
-    { label: "kernel:privacy", to: "/admin/privacy", permission: "privacy.manage", order: 10, area: "settings", section: "data", icon: "security" },
-    { label: "kernel:supportAccess", to: "/admin/support", permission: "support.grant", order: 20, area: "settings", section: "data", icon: "security" },
+    // Settings: about eight plain entries. An entry with `under` is a tab of the entry before it; Advanced is collapsed in the list.
+    { label: "nav.settings.home", to: SETTINGS_HOME, order: 0, area: "settings", section: "", icon: "settings", keywords: "nav.settings.homeKeywords" },
+    { label: "kernel:org.menu", tab: "nav.settings.business", to: "/admin/organisation", permission: "organisation.manage", order: 10, area: "settings", section: "business", icon: "settings" },
+    { label: "nav.tabs.general", to: "/admin/settings", permission: "settings.manage", order: 11, area: "settings", section: "business", under: "/admin/organisation", icon: "settings" },
+    { label: "kernel:users", tab: "nav.settings.access", to: "/admin/users", permission: "users.manage", order: 10, area: "settings", section: "access", icon: "people" },
+    { label: "kernel:roles", to: "/admin/roles", permission: "roles.manage", order: 11, area: "settings", section: "access", under: "/admin/users", icon: "security" },
+    { label: "kernel:approvalRules", to: "/admin/approval-rules", permission: "approvals.manage", order: 12, area: "settings", section: "access", under: "/admin/users", icon: "document" },
+    { label: "kernel:notifications", tab: "nav.settings.channels", to: "/admin/notifications", permission: "settings.manage", order: 10, area: "settings", section: "channels", icon: "document" },
+    { label: "kernel:fields.menu", keywords: "kernel:fields.keywords", to: "/admin/custom-fields", permission: "customfields.manage", order: 12, area: "settings", section: "data", under: "/admin/privacy", icon: "document" },
+    { label: "kernel:privacy", tab: "nav.settings.data", to: "/admin/privacy", permission: "privacy.manage", order: 10, area: "settings", section: "data", icon: "security" },
+    { label: "kernel:apiKeys", to: "/admin/api-keys", permission: "api_keys.manage", order: 10, area: "settings", section: "advanced", icon: "security" },
+    { label: "kernel:webhooks.menu", to: "/admin/webhooks", permission: "webhooks.manage", order: 11, area: "settings", section: "advanced", icon: "security" },
+    { label: "kernel:supportAccess", to: "/admin/support", permission: "support.grant", order: 12, area: "settings", section: "advanced", icon: "security" },
     { label: "nav.areas.addons", keywords: "kernel:apps.keywords", to: ADDONS_PATH, permission: "units.manage", order: 10, area: "addons", icon: "boxes" },
-    { label: "kernel:billing.menu", to: "/admin/billing", permission: "billing.manage", order: 20, area: "settings", section: "platform", icon: "finance" },
+    { label: "kernel:billing.menu", tab: "nav.settings.plan", to: "/admin/billing", permission: "billing.manage", order: 20, area: "settings", section: "platform", icon: "finance" },
     // Opened from the account menu in the top bar, so it is not in the sidebar.
     { label: "kernel:myAccount", to: "/admin/account", order: 99, hidden: true, icon: "settings" },
   ],

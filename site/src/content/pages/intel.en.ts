@@ -18,7 +18,7 @@ export const intelEn: PageDef[] = [
     description: "How Ziira finds mistakes and losses in your sales, stock, cash and staff records every day, in six short steps, and what you get each morning.",
     h1: "How Intelligence works, step by step",
     eyebrow: "Intelligence", short: "How Intelligence works",
-    lead: "Every day Ziira checks your records and tells you what looks wrong, with the proof. Here is how, in six steps.",
+    lead: "Every day Ziira checks your records and tells you what looks wrong, with the proof. This is the daily-work part of [Ziira AI](@ai). Here is how it works, in six steps.",
     glance: ["Six steps, from your records to a decision", "What it checks, with the number of checks", "What you get each morning", "What it never does: it never moves money"],
     glanceTitle: "On this page",
     how: {
@@ -77,6 +77,7 @@ export const intelEn: PageDef[] = [
       ],
     },
     blocks: [
+      { h2: "Where the AI fits", p: ["The daily check is one half of [Ziira AI](@ai). The other half is asking questions in plain words, with the proof beside every answer, and approving the next steps Ziira prepares."] },
       ...(comingNext.length ? [{ h2: "Coming next", ul: comingNext, after: ["Want one of these first? [Tell us](@get-started) and we will let you know the day it opens."] }] : []),
     ],
     faq: [
@@ -89,10 +90,10 @@ export const intelEn: PageDef[] = [
   {
     id: "intelligence-existing", slug: "intelligence/on-your-existing-system", parent: "intelligence-how", kind: "sources", avail: ["erpnext", "odoo", "zoho-books", "quickbooks"], children: true, schema: "intelligence", cta: "intelligence", hero: "connect-add",
     title: "Fraud Detection for the ERP You Already Use (Read-Only)",
-    description: "Keep your bank and mobile-money statements and sales files. Ziira reads them view only and checks the business daily. ERP connections are coming soon.",
+    description: "Keep your ERP, bank and mobile-money statements and sales files. Ziira reads them view only and checks the business daily, with AI that explains what it finds.",
     h1: "Use Intelligence with the system you already have",
     eyebrow: "Intelligence · Your existing system", short: "On your existing system",
-    lead: "Not ready to move your books and tills? You do not have to. Ziira can look at what you keep (a till report, a bank or mobile-money statement, a sales or stock export), keep a copy for checking, and run the same daily checks, with alerts and a daily summary. It never changes anything in your system.",
+    lead: "Not ready to move your books and tills? You do not have to. Ziira can look at what you keep (a till report, a bank or mobile-money statement, a sales or stock export), keep a copy for checking, and run the same daily checks, with alerts and a daily summary, and [Ziira AI](@ai) can explain what it finds in plain words. It never changes anything in your system.",
     blocks: [
       { h2: "Looking only, never changing", ul: [
         "Ziira only ever looks. It never writes to, edits or deletes anything in your system, and a file you upload never connects to anything.",

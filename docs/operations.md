@@ -152,6 +152,16 @@ Everything here is done by `ziira/kernel/http_middleware.py` (one pure-ASGI midd
 If the web app and the API share one origin (the proxy sends `/api` to the API and everything else to the static
 files), no CORS setting is needed at all. That is the recommended layout.
 
+### The website assistant (`ZIIRA_SITE_DIST_DIR`, CORS)
+
+The marketing site's floating chat calls `GET /api/v1/public/assistant/config` and `POST /api/v1/public/assistant/stream` on the
+API host from the site's host. Set the platform setting **Website address** (Super Admin > Platform > Settings, `public.site_url`):
+those two paths (only) allow that origin and its `www.` twin, without credentials; `ZIIRA_CORS_ORIGINS` is not needed for them.
+`ZIIRA_SITE_DIST_DIR` is the folder holding the site build's `assistant-knowledge.json` (for example the directory nginx serves
+the static site from); empty or missing means a short built-in text and the assistant says it is limited. The assistant is off
+until switched on at Platform > AI > Website assistant. Behind a proxy keep `ZIIRA_TRUST_FORWARDED_FOR=true`, or every visitor looks like one address, and make the proxy pass
+streaming responses unbuffered (the API sends `X-Accel-Buffering: no`). See `docs/ai.md` section 14.
+
 ### The static site (what the Vite build serves)
 
 `npm --prefix frontend run build` produces `frontend/dist/`: an `index.html` with **one inline script** (the dark-mode

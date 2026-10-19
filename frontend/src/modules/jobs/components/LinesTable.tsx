@@ -27,7 +27,7 @@ export function LinesTable({ title, lines, currency, qtyLabel, unitLabel, onRemo
   return (
     <Card title={title} actions={action} flush>
       {lines.length === 0 ? <p className="px-4 py-6 text-center text-sm text-muted">{empty}</p> : (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line bg-sunken/60 text-xs uppercase tracking-wide text-muted">
               <tr>

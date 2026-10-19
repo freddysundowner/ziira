@@ -24,7 +24,7 @@ const nav = (id: string) => { const k = order.indexOf(id); return { prev: k > 0 
 const link = (id: string, label?: string) => ({ href: urlFor(id, lang), label: label ?? "" });
 const go = [
   { h: "Start here", links: [
-    ["intelligence-how", "How Intelligence works, step by step"], ["intelligence-existing", "Use it with the system you already have"], ["get-started", "Create your business or talk to us"],
+    ["ai", "Ziira AI: ask, check, approve"], ["intelligence-how", "How Intelligence works, step by step"], ["intelligence-existing", "Use it with the system you already have"], ["get-started", "Create your business or talk to us"],
   ] },
   { h: "Connect a source", links: [
     ["intelligence-source-erpnext", "ERPNext (view only)"], ["intelligence-source-odoo", "Odoo (view only)"], ["intelligence-source-zoho-books", "Zoho Books (view only)"], ["intelligence-source-quickbooks", "QuickBooks Online (view only)"],

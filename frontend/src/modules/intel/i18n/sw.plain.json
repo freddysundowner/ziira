@@ -169,10 +169,10 @@
     }
   },
   "summary": {
-    "title": "Muhtasari wako wa kila siku",
-    "arrives": "Muhtasari wako wa kila siku unafika saa {{time}} {{way}}.",
+    "title": "Ujumbe wako wa kila siku",
+    "arrives": "Ujumbe wako wa kila siku unafika saa {{time}} {{way}}.",
     "inApp": "ndani ya programu",
-    "none": "Bado hupati muhtasari wa kila siku.",
+    "none": "Bado hupati ujumbe wa kila siku.",
     "change": "Badilisha",
     "turnOn": "Uwashe",
     "inAppOption": "Ndani ya programu"
@@ -209,7 +209,7 @@
   "watch": {
     "menu": "Ziira inaangalia nini",
     "title": "Ziira inaangalia nini",
-    "hint": "Kila kitu Ziira inachokuangalia, kwa maneno rahisi. Zima mambo, au badilisha mipaka ndani ya sentensi.",
+    "hint": "Kila kitu Ziira inachokuangalia. Zima mambo au badilisha kikomo.",
     "setupAgain": "Weka upya",
     "resetAll": "Rudi kwenye inayopendekezwa",
     "resetAllTitle": "Kurudi kwenye inayopendekezwa?",

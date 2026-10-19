@@ -34,7 +34,7 @@ export const AREA_DEFINITIONS: Record<AreaId, AreaDefinition> = {
   people: { icon: "people", group: "people", variant: "list", sections: [] },
   connect: { icon: "spark", group: "admin", variant: "list", sections: [] },
   addons: { icon: "boxes", group: "admin", variant: "list", sections: [] },
-  settings: { icon: "settings", group: "admin", variant: "side", sections: ["business", "access", "channels", "intelligence", "data", "platform"] },
+  settings: { icon: "settings", group: "admin", variant: "side", sections: ["", "business", "access", "channels", "intelligence", "data", "platform", "advanced"] },
 };
 
 export interface NavArea {
@@ -63,6 +63,9 @@ export interface Navigation {
   areas: NavArea[];
 }
 
+/** The Settings landing page (cards and "Find a setting"). It is listed only while at least one other Settings page is. */
+export const SETTINGS_HOME = "/settings";
+
 const orderOf = (i: MenuItem) => i.order ?? 100;
 const byOrder = (list: NavItem[]) => list.map((item, n) => ({ item, n })).sort((a, b) => orderOf(a.item) - orderOf(b.item) || a.n - b.n).map((x) => x.item);
 
@@ -73,7 +76,7 @@ function buildArea(id: AreaId, items: NavItem[]): NavArea | null {
   const listed = byOrder(mine.filter((i) => !i.primary));
   const side = def.variant === "side";
   // A page whose entry is not available to this person gets an entry of its own, so it stays reachable.
-  const entries = listed.filter((i) => side || !i.under || !listed.some((h) => h.to === i.under));
+  const entries = listed.filter((i) => !i.under || !listed.some((h) => h.to === i.under));
   const families: Record<string, NavItem[]> = {};
   for (const head of entries) {
     const rest = listed.filter((i) => i.under === head.to && !entries.includes(i));
@@ -96,7 +99,8 @@ function buildArea(id: AreaId, items: NavItem[]): NavArea | null {
  */
 export function buildNavigation(modules: readonly ModuleDefinition[], access: Access, groupOrder: readonly MenuGroup[], plan?: SidebarPlan): Navigation {
   const till = (i: NavItem) => !!i.primary || TILL_PAGES.includes(i.to);
-  const items = visibleMenu(modules, access).filter((i) => !i.hidden && (plan?.till !== false || !till(i)));
+  const shown = visibleMenu(modules, access).filter((i) => !i.hidden && (plan?.till !== false || !till(i)));
+  const items = shown.some((i) => i.area === "settings" && i.to !== SETTINGS_HOME) ? shown : shown.filter((i) => i.to !== SETTINGS_HOME);
   const areas = AREA_IDS.map((id) => buildArea(id, items)).filter((a): a is NavArea => a !== null)
     .map((a) => (plan?.till === false && a.id === "sell" ? { ...a, titleKey: "nav.areas.sellNoTill" } : a));   // no counter: Sell is invoices and payments
   const rank = (a: NavArea) => {

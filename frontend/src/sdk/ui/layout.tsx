@@ -7,17 +7,17 @@ import { Skeleton } from "./feedback";
 
 export function Card({ title, description, actions, children, className, flush }: { title?: ReactNode; description?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; flush?: boolean }) {
   return (
-    <section className={cx("rounded-xl border border-line bg-surface shadow-card", className)}>
+    <section className={cx("min-w-0 rounded-xl border border-line bg-surface shadow-card", className)}>
       {(title || actions) && (
         <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
-          <div>
-            {title && <h2 className="text-sm font-semibold">{title}</h2>}
-            {description && <p className="text-xs text-muted">{description}</p>}
+          <div className="min-w-0 max-w-full">
+            {title && <h2 className="text-sm font-semibold [overflow-wrap:anywhere]">{title}</h2>}
+            {description && <p className="text-xs text-muted [overflow-wrap:anywhere]">{description}</p>}
           </div>
-          {actions && <div className="flex items-center gap-2">{actions}</div>}
+          {actions && <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={flush ? "" : "p-4"}>{children}</div>
+      <div className={cx("min-w-0", !flush && "p-4")}>{children}</div>
     </section>
   );
 }
@@ -31,11 +31,11 @@ export function PageHeader({ title, description, actions, back }: { title: React
         </Link>
       )}
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="truncate text-xl font-semibold sm:text-2xl">{title}</h1>
-          {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+        <div className="min-w-0 max-w-full flex-1 basis-60">
+          <h1 className="text-xl font-semibold [overflow-wrap:anywhere] sm:text-2xl">{title}</h1>
+          {description && <p className="mt-1 text-sm text-muted [overflow-wrap:anywhere]">{description}</p>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        {actions && <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{actions}</div>}
       </div>
     </div>
   );
@@ -44,13 +44,18 @@ export function PageHeader({ title, description, actions, back }: { title: React
 /** A figure with its label, for dashboards and report headers. */
 export function Stat({ label, value, hint, tone, loading, to }: { label: string; value: ReactNode; hint?: ReactNode; tone?: "ok" | "bad"; loading?: boolean; to?: string }) {
   const body = (
-    <div className="rounded-xl border border-line bg-surface p-4 shadow-card transition-colors hover:border-muted/40">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
-      {loading ? <Skeleton className="mt-2 h-7 w-24" /> : <p className={cx("tnum mt-1 text-2xl font-semibold", tone === "ok" && "text-ok", tone === "bad" && "text-bad")}>{value}</p>}
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+    <div className="h-full min-w-0 rounded-xl border border-line bg-surface p-3 shadow-card transition-colors hover:border-muted/40 sm:p-4">
+      <p className="text-xs font-medium uppercase leading-tight tracking-wide text-muted [overflow-wrap:anywhere]">{label}</p>
+      {loading ? <Skeleton className="mt-2 h-7 w-24" /> : <p className={cx("tnum mt-1 text-[length:clamp(1.125rem,5vw,1.5rem)] font-semibold leading-tight [overflow-wrap:anywhere] sm:text-2xl", tone === "ok" && "text-ok", tone === "bad" && "text-bad")}>{value}</p>}
+      {hint && <p className="mt-1 text-xs text-muted [overflow-wrap:anywhere]">{hint}</p>}
     </div>
   );
-  return to ? <Link to={to} className="block">{body}</Link> : body;
+  return to ? <Link to={to} className="block min-w-0">{body}</Link> : body;
+}
+
+/** Stats in a grid that fits the room it is given (not the screen): as many columns as hold a figure of about 9rem, never a squeezed one. Use it for every row of <Stat>. */
+export function StatGrid({ children, className, min = "9rem" }: { children: ReactNode; className?: string; min?: string }) {
+  return <div className={cx("grid min-w-0 gap-3", className)} style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${min}), 1fr))` }}>{children}</div>;
 }
 
 export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: T; label: string; count?: number }[]; value: T; onChange: (id: T) => void }) {
@@ -68,7 +73,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
 
 export function Breadcrumbs({ items }: { items: { label: string; to?: string }[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="mb-2 flex items-center gap-1 text-xs text-muted">
+    <nav aria-label="Breadcrumb" className="mb-2 flex flex-wrap items-center gap-1 text-xs text-muted">
       {items.map((it, i) => (
         <span key={i} className="flex items-center gap-1">
           {i > 0 && <ChevronRight className="h-3 w-3" />}
@@ -82,11 +87,11 @@ export function Breadcrumbs({ items }: { items: { label: string; to?: string }[]
 /** Label / value rows for a record's details. */
 export function DetailList({ items }: { items: { label: string; value: ReactNode }[] }) {
   return (
-    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+    <dl className="grid min-w-0 gap-x-6 gap-y-3 sm:grid-cols-2">
       {items.map((i) => (
-        <div key={i.label}>
-          <dt className="text-xs font-medium uppercase tracking-wide text-muted">{i.label}</dt>
-          <dd className="mt-0.5 text-sm">{i.value ?? "—"}</dd>
+        <div key={i.label} className="min-w-0">
+          <dt className="text-xs font-medium uppercase tracking-wide text-muted [overflow-wrap:anywhere]">{i.label}</dt>
+          <dd className="mt-0.5 text-sm [overflow-wrap:anywhere]">{i.value ?? "—"}</dd>
         </div>
       ))}
     </dl>
@@ -95,5 +100,5 @@ export function DetailList({ items }: { items: { label: string; value: ReactNode
 
 /** A responsive set of form fields: one column on a phone, two from `sm`. */
 export function FormGrid({ children, cols = 2 }: { children: ReactNode; cols?: 1 | 2 | 3 }) {
-  return <div className={cx("grid gap-4", cols === 2 && "sm:grid-cols-2", cols === 3 && "sm:grid-cols-3")}>{children}</div>;
+  return <div className={cx("grid min-w-0 gap-4", cols === 2 && "sm:grid-cols-2", cols === 3 && "sm:grid-cols-3")}>{children}</div>;
 }

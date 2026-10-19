@@ -103,5 +103,5 @@ export default function TillPage() {
 }
 
 function Line({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
-  return <div className={`flex justify-between gap-3 ${strong ? "text-base font-semibold" : ""}`}><dt className={strong ? "" : "text-muted"}>{label}</dt><dd className="tnum">{value}</dd></div>;
+  return <div className={`flex justify-between gap-3 ${strong ? "text-base font-semibold" : ""}`}><dt className={`min-w-0 [overflow-wrap:anywhere] ${strong ? "" : "text-muted"}`}>{label}</dt><dd className="tnum min-w-0 text-right [overflow-wrap:anywhere]">{value}</dd></div>;
 }

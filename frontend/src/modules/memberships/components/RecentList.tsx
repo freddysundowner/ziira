@@ -25,15 +25,15 @@ export function RecentList({ rows, loading, error, onRetry }: { rows?: Row[]; lo
                 <li key={r.id} className={cx(refused && "bg-bad-soft")}>
                   <Link to={personPath(r.customer_id)} className="flex min-h-12 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-2 text-sm hover:bg-sunken">
                     <span className="min-w-0">
-                      <span className="font-medium">{r.customer_name ?? r.member_number ?? "—"}</span>
+                      <span className="font-medium [overflow-wrap:anywhere]">{r.customer_name ?? r.member_number ?? "—"}</span>
                       {r.member_number && <span className="ml-2 font-mono text-xs text-muted">{r.member_number}</span>}
-                      {refused && r.reasons[0] && <span className="block text-xs text-bad">{r.reasons[0].message}</span>}
-                      {r.overridden && r.override_reason && <span className="block text-xs text-muted">{t("checkin.letInBecause", { reason: r.override_reason })}</span>}
+                      {refused && r.reasons[0] && <span className="block text-xs text-bad [overflow-wrap:anywhere]">{r.reasons[0].message}</span>}
+                      {r.overridden && r.override_reason && <span className="block text-xs text-muted [overflow-wrap:anywhere]">{t("checkin.letInBecause", { reason: r.override_reason })}</span>}
                     </span>
-                    <span className="flex items-center gap-2">
+                    <span className="flex flex-wrap items-center gap-2">
                       {r.offline && <Badge tone="info">{t("checkin.wasOffline")}</Badge>}
                       <Badge tone={TONE[decision]}>{r.overridden ? t("checkin.overriddenShort") : t(`checkin.banner.${decision}`)}</Badge>
-                      <span className="text-xs text-muted">{formatDate(r.occurred_at, true)}</span>
+                      <span className="text-xs text-muted tnum">{formatDate(r.occurred_at, true)}</span>
                     </span>
                   </Link>
                 </li>

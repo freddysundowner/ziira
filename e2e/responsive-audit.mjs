@@ -140,20 +140,21 @@ function auditInPage() {
     if (/auto|scroll/.test(s.overflowX)) continue;
     if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
     if (el.clientWidth < 1 || el.scrollWidth <= el.clientWidth + 1) continue;
-    if (el.matches("input,textarea,select")) continue;
+    if (el.matches("input,textarea,select") || el.closest('[class*="sr-only"]') || (el.clientWidth <= 2 && el.clientHeight <= 2)) continue;   // visually hidden labels are not defects
     const text = snippet(el);
     const ellipsis = s.textOverflow === "ellipsis" && /hidden|clip/.test(s.overflowX);
     if (ellipsis && !figureLike(text)) continue;   // an ellipsis on a name is by design
     add("text-overflow", el, `${ellipsis ? "figure cut by ellipsis" : /hidden|clip/.test(s.overflowX) ? "clipped" : "spills out of its box"}: content ${el.scrollWidth}px in ${el.clientWidth}px`);
   }
 
-  // (d) overlapping text
+  // (d) overlapping text (a sticky or fixed layer over the page is judged separately, as a layer)
+  const layerRoot = (el) => { for (let n = el; n && n !== document.body; n = n.parentElement) { const p = st(n).position; if (p === "fixed" || p === "sticky") return n; } return null; };
   const lines = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
     if (!n.textContent.trim()) continue;
     const el = n.parentElement;
-    if (!el || /^(script|style|noscript|option)$/i.test(el.tagName) || !isVis(el) || el.closest("[aria-hidden=true],[hidden],.sr-only")) continue;
+    if (!el || /^(script|style|noscript|option)$/i.test(el.tagName) || !isVis(el) || el.closest('[aria-hidden=true],[hidden],[class*="sr-only"]')) continue;
     const range = document.createRange(); range.selectNodeContents(n);
     const rects = [...range.getClientRects()].filter((r) => r.width > 1 && r.height > 1);
     for (const r0 of rects) {
@@ -164,7 +165,7 @@ function auditInPage() {
         r = { left: Math.max(r.left, ar.left), right: Math.min(r.right, ar.right), top: Math.max(r.top, ar.top), bottom: Math.min(r.bottom, ar.bottom) };
         if (r.right - r.left < 1 || r.bottom - r.top < 1) r = null;
       }
-      if (r) lines.push({ el, node: n, ...r, root: fixedRoot(el), text: n.textContent.trim().slice(0, 40) });
+      if (r) lines.push({ el, node: n, ...r, root: layerRoot(el), text: n.textContent.trim().slice(0, 40) });
     }
   }
   lines.sort((x, y) => x.top - y.top);
@@ -388,6 +389,16 @@ function writeReport(results, startedAt) {
   L.push(`**Defects: ${real.length}** (${Object.keys(KINDS).map((k) => `${KINDS[k]}: ${real.filter((d) => d.kind === k).length}`).join("; ")}). Small tap targets (report only): ${taps.length}.`, "");
   L.push("## How to read", "", "- *sticks out*: a child's box is wider than the nearest bordered/rounded container (not inside an `overflow-x:auto` wrapper). *text-overflow*: an element's content is wider than the element (clipped, spilling, or a figure cut with an ellipsis). *overlapping text*: two unrelated text boxes intersect. *fixed cover*: a fixed element (floating button, banner) sits over text or a control, or over another fixed element.",
     "- Selectors are short paths (tag.class chain, up to 5 levels). The file is a guess from the route table (`module.ts`); shared-kit components are in `frontend/src/sdk/ui/` and `frontend/src/shell/`.", "");
+  L.push(`## Fix patterns (for module owners)
+
+- Rows of \`<Stat>\`: use \`<StatGrid>\` (\`@/sdk\`, auto-fit columns of about 9rem) instead of \`grid sm:grid-cols-4\`-style wrappers; a Stat now wraps and shrinks its figure by itself but cannot widen a squeezed grid cell. Several small labelled figures in a widget: \`StatRow\` / \`Figure\`.
+- Flex or grid children that hold text or amounts need \`min-w-0\` (and \`[overflow-wrap:anywhere]\` on labels, \`tnum\` on figures); a flex row of controls needs \`flex-wrap\`.
+- Choice cards (\`label.cursor-pointer.rounded-xl\`) and tiles in a fixed \`grid-cols-N\`: use \`grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))]\`.
+- A wide hand-made table: wrap it in \`overflow-x-auto\` (or use \`DataTable\`), never \`overflow-hidden\` around a table wider than the card.
+- A sticky bottom action bar (\`sticky bottom-0\`) sits under the floating Ask Ziira button: give the bar \`flex-wrap\` and \`pr-20\`, or leave the button's corner free.
+- Badges (\`Badge\`) beside a truncated title: put the title in \`min-w-0 truncate\` and the badge in \`shrink-0\`.
+
+`);
   const sel = new Map();
   for (const d of real) { const k = `${d.kind} | ${d.selector.split(" > ").slice(-2).join(" > ")}`; const e = sel.get(k) ?? { n: 0, pages: new Set(), sample: d }; e.n++; e.pages.add(d.r.account + d.r.route); sel.set(k, e); }
   const topSel = [...sel.entries()].sort((a, b) => b[1].pages.size - a[1].pages.size || b[1].n - a[1].n).slice(0, 25);
@@ -441,7 +452,12 @@ async function main() {
     const tasks = routes.flatMap((r) => WIDTHS.map((w) => ({ r, w })));
     let i = 0;
     await Promise.all(pages.map(async (page) => {
-      while (i < tasks.length) { const t = tasks[i++]; await auditRoute(page, t.r, t.w, acct, results, log); }
+      while (i < tasks.length) {
+        const t = tasks[i++];
+        for (let attempt = 0; attempt < 2; attempt++) {   // a reload of the dev server or a redirect mid-audit: try once more
+          try { await auditRoute(page, t.r, t.w, acct, results, log); break; } catch (e) { if (attempt) log(`  gave up on ${t.r.path} @${t.w}: ${String(e).split("\n")[0]}`); await pause(500); }
+        }
+      }
     }));
     await Promise.all(pages.map((p) => p.close()));
   };

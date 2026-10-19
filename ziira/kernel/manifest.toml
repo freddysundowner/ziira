@@ -8,7 +8,7 @@ version = "1.0.0"
 
 [provides]
 publishes = ["approval.decided", "exception.raised"]
-extension_points = ["kernel.integrity_check", "kernel.notification_channel", "kernel.personal_data", "kernel.branch_usage", "kernel.inbound_command", "kernel.country_seeder", "kernel.payment_gateway", "kernel.ai_platform", "kernel.custom_field_entity", "kernel.industry_seeder", "kernel.attachable_entity"]
+extension_points = ["kernel.integrity_check", "kernel.notification_channel", "kernel.personal_data", "kernel.branch_usage", "kernel.inbound_command", "kernel.country_seeder", "kernel.payment_gateway", "kernel.ai_platform", "kernel.site_assistant_llm", "kernel.custom_field_entity", "kernel.industry_seeder", "kernel.attachable_entity"]
 
 [extends]
 implements = ["kernel.personal_data", "kernel.industry_seeder", "kernel.integrity_check"]

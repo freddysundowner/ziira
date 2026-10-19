@@ -122,6 +122,17 @@ class AiDefaultOut(AiDefaultPreviewOut):
     provider: str
 
 
+class AiActiveIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    provider: str | None = Field(max_length=40, description="The provider to use; null leaves no platform choice")
+
+
+class AiActiveOut(BaseModel):
+    default_provider: str | None
+    from_provider: str | None
+    consents_affected: int = Field(description="Companies whose consent ended because the provider changed")
+
+
 class AiCapIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     cap_usd: str | None = Field(default=None, max_length=20, description="USD per month; null removes the cap")
@@ -149,7 +160,16 @@ class AiUsageDay(BaseModel):
     cost_usd: str
 
 
+class AiUsageWebsite(BaseModel):
+    label: str = Field(description="Website assistant: visitors of the marketing site, not a business")
+    calls: int
+    tokens_in: int
+    tokens_out: int
+    cost_usd: str
+
+
 class AiUsageOut(BaseModel):
+    website_assistant: AiUsageWebsite
     month: date
     providers: list[AiUsageProvider]
     top_businesses: list[AiUsageBusiness]
@@ -265,6 +285,16 @@ def put_default(body: AiDefaultIn, request: Request, operator: Op = Needs) -> ob
         summary=lambda r: {"from": r["from_provider"], "to": r["provider"],
                            "consents_affected": r["consents_affected"]},
         reason=body.reason)
+
+
+@router.put("/active", response_model=AiActiveOut)
+def put_active(body: AiActiveIn, request: Request, operator: Op = Needs) -> object:
+    """The provider in use, chosen from one dropdown (the same as making it the default; null = none)."""
+    return admin.act(
+        operator, "ai_provider.default", body.provider or "none", _ip(request),
+        lambda: platform_ai.use_provider(body.provider, by=operator.name),
+        summary=lambda r: {"from": r["from_provider"], "to": r["default_provider"],
+                           "consents_affected": r["consents_affected"]})
 
 
 @router.put("/cap", response_model=AiOverviewOut)

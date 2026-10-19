@@ -509,7 +509,7 @@ def test_ask_ziira_answers_from_a_tool_and_shows_its_sources(client, shop) -> No
     assert "pos_sales_summary" in first["tools"] and "inventory_low_stock" in first["tools"]
     assert "Today is" in first["system"] and str(shop["branch_id"]) in first["system"]
     results = second["messages"][-1].tool_results
-    assert len(results) == 1 and '"sales_total": "116.00"' in results[0].content and not results[0].is_error
+    assert len(results) == 1 and '"sales_total":"116.00"' in results[0].content and not results[0].is_error
     again = client.get(f"{INTEL}/ask/sessions/{body['session_id']}", headers=shop["manager"]).json()
     assert [m["role"] for m in again["messages"]] == ["user", "assistant"]
     assert again["messages"][1]["sources"][0]["tool"] == "pos_sales_summary" and again["messages"][1]["ai_generated"]
@@ -587,9 +587,9 @@ def test_only_four_tools_run_at_a_time(client, shop) -> None:  # type: ignore[no
 def test_the_tool_loop_stops_after_six_rounds_and_the_model_must_answer(client, shop) -> None:  # type: ignore[no-untyped-def]
     enable(client, shop)
 
-    def endless(call: dict[str, Any]) -> LlmReply:
+    def endless(call: dict[str, Any]) -> LlmReply:                    # a different limit each time: nothing is cached
         return FakeLlm.say("Here is what I found: 1 sale.") if not call["tools"] else FakeLlm.tool(
-            "inventory_low_stock", {})
+            "inventory_low_stock", {"limit": len(FakeLlm.calls)})
 
     FakeLlm.script.extend([endless] * 20)
     r = asking(client, "manager", shop)

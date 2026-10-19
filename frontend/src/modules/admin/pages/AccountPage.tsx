@@ -99,11 +99,11 @@ function Sessions() {
       {sessions.error ? <ErrorState message={sessions.error.message} onRetry={() => void sessions.refetch()} /> : !sessions.data ? <SkeletonRows rows={3} cols={2} /> : (
         <ul className="divide-y divide-line">
           {sessions.data.map((s) => (
-            <li key={s.id} className="flex items-center gap-3 px-4 py-3">
+            <li key={s.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
               <Laptop className="h-5 w-5 shrink-0 text-muted" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{s.device_name || t("unnamedDevice")} {s.current && <Badge tone="ok">{t("thisDevice")}</Badge>}</p>
-                <p className="text-xs text-muted">{s.channel} · {t("lastUsed")} {formatDate(s.last_used_at, true)}</p>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><p className="min-w-0 truncate text-sm font-medium">{s.device_name || t("unnamedDevice")}</p>{s.current && <Badge tone="ok" className="shrink-0">{t("thisDevice")}</Badge>}</div>
+                <p className="text-xs text-muted [overflow-wrap:anywhere]">{s.channel} · {t("lastUsed")} {formatDate(s.last_used_at, true)}</p>
               </div>
               {!s.current && <Button size="sm" variant="ghost" onClick={() => setEnding(s)}>{t("signOut")}</Button>}
             </li>

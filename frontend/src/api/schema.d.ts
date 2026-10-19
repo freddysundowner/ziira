@@ -3469,6 +3469,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/assistant/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Config
+         * @description Whether the assistant is available, its greeting and quick-reply suggestions. Cached briefly; no secrets.
+         */
+        get: operations["get_config_api_v1_public_assistant_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/assistant/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Stream
+         * @description Ask the website assistant about Ziira. It answers only from the site's own facts and the public prices.
+         */
+        post: operations["post_stream_api_v1_public_assistant_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operator/ai": {
         parameters: {
             query?: never;
@@ -3586,6 +3626,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/operator/ai/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Active
+         * @description The provider in use, chosen from one dropdown (the same as making it the default; null = none).
+         */
+        put: operations["put_active_api_v1_operator_ai_active_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operator/ai/cap": {
         parameters: {
             query?: never;
@@ -3690,6 +3750,30 @@ export interface paths {
         get?: never;
         /** Put Tenant Override */
         put: operations["put_tenant_override_api_v1_operator_ai_tenant_overrides__code__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/site-assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Site Assistant
+         * @description The website assistant's settings and this month's use.
+         */
+        get: operations["get_site_assistant_api_v1_operator_site_assistant_get"];
+        /**
+         * Put Site Assistant
+         * @description Change the given settings (only the fields sent).
+         */
+        put: operations["put_site_assistant_api_v1_operator_site_assistant_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -9447,6 +9531,27 @@ export interface paths {
          *     results of defined queries over what you may see; `sources` lists what it is based on.
          */
         post: operations["post_ask_api_v1_intel_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/intel/ask/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Ask Stream
+         * @description Ask a question as a chat: the same checks and the same answer as `/ask`, told as events while the work happens.
+         *     Closing the connection stops the question at its next step.
+         */
+        post: operations["post_ask_stream_api_v1_intel_ask_stream_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -18716,6 +18821,26 @@ export interface components {
             /** Over 90 */
             over_90: string;
         };
+        /** AiActiveIn */
+        AiActiveIn: {
+            /**
+             * Provider
+             * @description The provider to use; null leaves no platform choice
+             */
+            provider: string | null;
+        };
+        /** AiActiveOut */
+        AiActiveOut: {
+            /** Default Provider */
+            default_provider: string | null;
+            /** From Provider */
+            from_provider: string | null;
+            /**
+             * Consents Affected
+             * @description Companies whose consent ended because the provider changed
+             */
+            consents_affected: number;
+        };
         /** AiCallOut */
         AiCallOut: {
             /**
@@ -19236,6 +19361,22 @@ export interface components {
         AiUsageProvider: {
             /** Provider */
             provider: string;
+            /** Calls */
+            calls: number;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Cost Usd */
+            cost_usd: string;
+        };
+        /** AiUsageWebsite */
+        AiUsageWebsite: {
+            /**
+             * Label
+             * @description Website assistant: visitors of the marketing site, not a business
+             */
+            label: string;
             /** Calls */
             calls: number;
             /** Tokens In */
@@ -19975,6 +20116,54 @@ export interface components {
             branch_id: string | null;
             /** Permissions */
             permissions: string[];
+        };
+        /** AssistantConfig */
+        AssistantConfig: {
+            /**
+             * Enabled
+             * @description Show the chat button only when true
+             */
+            enabled: boolean;
+            /** Greeting */
+            greeting: string;
+            /** Suggestions */
+            suggestions: string[];
+        };
+        /** AssistantQuestion */
+        AssistantQuestion: {
+            /**
+             * Message
+             * @description At most 500 characters; longer gets a `too_long` error event
+             */
+            message: string;
+            /**
+             * History
+             * @description Only the last 6 are used
+             */
+            history?: components["schemas"]["AssistantTurn"][];
+            /**
+             * Page
+             * @description The site path the visitor is on
+             */
+            page?: string | null;
+            /**
+             * Lang
+             * @default en
+             */
+            lang: string;
+        };
+        /** AssistantTurn */
+        AssistantTurn: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /**
+             * Text
+             * @description Only the first 800 characters are used
+             */
+            text: string;
         };
         /** AttachedFileAccessOut */
         AttachedFileAccessOut: {
@@ -39408,6 +39597,91 @@ export interface components {
              */
             created_at: string;
         };
+        /** SiteAssistantDefaults */
+        SiteAssistantDefaults: {
+            /** Per Minute */
+            per_minute: number;
+            /** Per Day */
+            per_day: number;
+            /** Daily Total */
+            daily_total: number;
+        };
+        /** SiteAssistantIn */
+        SiteAssistantIn: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /**
+             * Monthly Cap Usd
+             * @description Empty or null: no cap of its own
+             */
+            monthly_cap_usd?: string | null;
+            /** Per Minute */
+            per_minute?: number | null;
+            /** Per Day */
+            per_day?: number | null;
+            /** Daily Total */
+            daily_total?: number | null;
+            /** Greeting */
+            greeting?: string | null;
+            /** Suggestions */
+            suggestions?: string[] | null;
+        };
+        /** SiteAssistantOut */
+        SiteAssistantOut: {
+            /** Enabled */
+            enabled: boolean;
+            /**
+             * Monthly Cap Usd
+             * @description USD per month; null means no cap of its own
+             */
+            monthly_cap_usd: string | null;
+            /** Per Minute */
+            per_minute: number;
+            /** Per Day */
+            per_day: number;
+            /** Daily Total */
+            daily_total: number;
+            /** Greeting */
+            greeting: string;
+            /** Suggestions */
+            suggestions: string[];
+            /**
+             * Provider
+             * @description The platform's active AI provider the assistant would use
+             */
+            provider: string | null;
+            /** Model */
+            model: string | null;
+            /**
+             * Available
+             * @description The site shows the chat button
+             */
+            available: boolean;
+            /**
+             * Blocked Reason
+             * @description off or budget when it is not available
+             */
+            blocked_reason: string | null;
+            /** Month Spend Usd */
+            month_spend_usd: string;
+            /** Cap Reached */
+            cap_reached: boolean;
+            usage: components["schemas"]["SiteAssistantUsage"];
+            defaults: components["schemas"]["SiteAssistantDefaults"];
+        };
+        /** SiteAssistantUsage */
+        SiteAssistantUsage: {
+            /** Label */
+            label: string;
+            /** Calls */
+            calls: number;
+            /** Tokens In */
+            tokens_in: number;
+            /** Tokens Out */
+            tokens_out: number;
+            /** Cost Usd */
+            cost_usd: string;
+        };
         /** SiteAvailability */
         SiteAvailability: {
             /**
@@ -43932,6 +44206,7 @@ export interface components {
         };
         /** AiUsageOut */
         ziira__kernel__api__operator_ai_routes__AiUsageOut: {
+            website_assistant: components["schemas"]["AiUsageWebsite"];
             /**
              * Month
              * Format: date
@@ -52981,6 +53256,60 @@ export interface operations {
             };
         };
     };
+    get_config_api_v1_public_assistant_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantConfig"];
+                };
+            };
+        };
+    };
+    post_stream_api_v1_public_assistant_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantQuestion"];
+            };
+        };
+        responses: {
+            /** @description Server-Sent Events: `status` {text}, `text` {text} (one sentence or list line each), `links` {items: [{title, href}]}, then `done` {}; or `error` {reason, message[, retry_after]} where reason is off, busy, budget, provider_failed or too_long. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_overview_api_v1_operator_ai_get: {
         parameters: {
             query?: never;
@@ -53170,6 +53499,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AiDefaultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_active_api_v1_operator_ai_active_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AiActiveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AiActiveOut"];
                 };
             };
             /** @description Validation Error */
@@ -53374,6 +53738,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AiTenantProviderOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_site_assistant_api_v1_operator_site_assistant_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteAssistantOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_site_assistant_api_v1_operator_site_assistant_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SiteAssistantIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteAssistantOut"];
                 };
             };
             /** @description Validation Error */
@@ -67481,6 +67911,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AskAnswerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_ask_stream_api_v1_intel_ask_stream_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskQuestionIn"];
+            };
+        };
+        responses: {
+            /** @description Server-Sent Events: `status` {text} while it works, `text` {text} for each sentence of the answer, `sources` {sources}, then `done` {session_id, message_id, flagged, withheld, capped}; or `error` {reason, message}. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    "text/event-stream": unknown;
                 };
             };
             /** @description Validation Error */

@@ -6,6 +6,7 @@ import { ui } from "../i18n/ui";
 import { siteConfig } from "../lib/siteConfig";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Assistant from "../components/Assistant.astro";
 
 interface Props { head: HeadMeta; graph: Record<string, unknown>; path: string }
 const { head, graph, path } = Astro.props;
@@ -56,5 +57,6 @@ const twitter = siteConfig.seo.twitterHandle;
     <Header lang={lang} path={path} />
     <main id="main"><slot /></main>
     <Footer lang={lang} />
+    {path !== "/404/" && !path.startsWith("/get-started") && <Assistant />}
   </body>
 </html>

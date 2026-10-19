@@ -13,7 +13,7 @@ const VARIANTS: Record<Variant, string> = {
   ghost: "text-ink hover:bg-sunken [&:disabled:not([aria-busy])]:text-[rgb(var(--disabled-ink))]",
   danger: "bg-bad text-bad-ink hover:opacity-90 shadow-card [&:disabled:not([aria-busy])]:bg-[rgb(var(--disabled-bg))] [&:disabled:not([aria-busy])]:text-[rgb(var(--disabled-ink))] [&:disabled:not([aria-busy])]:shadow-none",
 };
-const SIZES: Record<Size, string> = { sm: "h-8 px-2.5 text-xs gap-1.5", md: "h-9 px-3.5 text-sm gap-2", lg: "h-11 px-5 text-base gap-2" };
+const SIZES: Record<Size, string> = { sm: "min-h-8 px-2.5 py-1 text-xs gap-1.5", md: "min-h-9 px-3.5 py-1.5 text-sm gap-2", lg: "min-h-11 px-5 py-2 text-base gap-2" };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; loading?: boolean }>(
   function Button({ variant = "primary", size = "md", loading, disabled, className, children, type = "button", ...props }, ref) {
@@ -23,7 +23,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLBut
         type={type}
         disabled={disabled || loading}
         aria-busy={loading || undefined}
-        className={cx("inline-flex select-none items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors disabled:cursor-not-allowed", VARIANTS[variant], SIZES[size], className)}
+        className={cx("inline-flex max-w-full select-none items-center justify-center rounded-lg text-center font-medium leading-tight transition-colors disabled:cursor-not-allowed", VARIANTS[variant], SIZES[size], className)}
         {...props}
       >
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -71,12 +71,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
 export function Field({ label, hint, error, required, children, className }: { label: string; hint?: string; error?: string | null; required?: boolean; children: ReactNode; className?: string }) {
   const id = useId();
   return (
-    <div className={cx("space-y-1.5", className)}>
-      <label htmlFor={id} className="block text-sm font-medium text-ink">
+    <div className={cx("min-w-0 space-y-1.5", className)}>
+      <label htmlFor={id} className="block text-sm font-medium text-ink [overflow-wrap:anywhere]">
         {label}{required && <span className="ml-0.5 text-bad" aria-hidden>*</span>}
       </label>
       <FieldControl id={id} invalid={!!error}>{children}</FieldControl>
-      {error ? <p role="alert" className="text-xs text-bad">{error}</p> : hint ? <p className="text-xs text-muted">{hint}</p> : null}
+      {error ? <p role="alert" className="text-xs text-bad [overflow-wrap:anywhere]">{error}</p> : hint ? <p className="text-xs text-muted [overflow-wrap:anywhere]">{hint}</p> : null}
     </div>
   );
 }
@@ -94,8 +94,8 @@ function FieldControl({ id, invalid, children }: { id: string; invalid: boolean;
 
 export function Checkbox({ label, className, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: ReactNode }) {
   return (
-    <label className={cx("inline-flex cursor-pointer items-center gap-2 text-sm", className)}>
-      <input type="checkbox" className="h-4 w-4 rounded border-line accent-[rgb(var(--brand))]" {...props} />
+    <label className={cx("inline-flex min-w-0 max-w-full cursor-pointer items-center gap-2 text-sm [overflow-wrap:anywhere]", className)}>
+      <input type="checkbox" className="h-4 w-4 shrink-0 rounded border-line accent-[rgb(var(--brand))]" {...props} />
       {label}
     </label>
   );

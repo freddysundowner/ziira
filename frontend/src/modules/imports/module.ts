@@ -12,7 +12,7 @@ export default defineModule({
     { path: "/imports/:batchId", page: () => import("./pages/ImportWizardPage"), permission: "imports.manage" },
   ],
   menu: [
-    { label: "imports:menu", to: "/imports", permission: "imports.manage", order: 30, area: "settings", section: "data", icon: "document" },
+    { label: "imports:menu", to: "/imports", permission: "imports.manage", order: 11, area: "settings", section: "data", under: "/admin/privacy", icon: "document" },
   ],
   translations: { en, sw },
 });

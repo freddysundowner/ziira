@@ -18,7 +18,7 @@ describe("every label the navigation shows has real text in English and Swahili"
       for (const name of [id, AREA_DEFINITIONS[id].fallbackTitle].filter(Boolean)) {
         for (const [lang, tree] of [["en", en], ["sw", sw]] as const) if (!isText(lookup(tree, `nav.areas.${name}`))) missing.push(`${lang}: nav.areas.${name}`);
       }
-      for (const s of AREA_DEFINITIONS[id].sections) {
+      for (const s of AREA_DEFINITIONS[id].sections.filter(Boolean)) {
         for (const [lang, tree] of [["en", en], ["sw", sw]] as const) if (!isText(lookup(tree, `nav.sections.${s}`))) missing.push(`${lang}: nav.sections.${s}`);
       }
     }

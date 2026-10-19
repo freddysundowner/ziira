@@ -12,11 +12,11 @@ export const GET: APIRoute = () => {
   const guideRows = en.filter((e) => e.guideSlug).map((e) => `- [${e.def.h1}](${absUrl(e.path)}): ${e.def.description}`);
   const body = `# ${siteConfig.orgName}
 
-> ${siteConfig.orgName} is a business system for small and medium retail and distribution businesses: selling, stock, buying, customers on credit, books, payments and payroll. Its Intelligence part checks business data every day and alerts owners to money and stock that do not add up. Intelligence can also watch a system you already use (Odoo, ERPNext, Zoho Books, QuickBooks Online, bank and mobile-money statements, CSV/Excel/PDF exports) without changing it.
+> ${siteConfig.orgName} is an AI-first business system for every kind of business, from one till to many branches and companies: selling, stock, buying, customers, accounting, payroll, payments, bookings, jobs, insurer claims, memberships and projects billed by time. Ziira AI checks business data every day, answers questions in plain words with the proof beside the answer, and prepares next steps for a person to approve. It never moves money. Intelligence can also watch a system you already use (Odoo, ERPNext, Zoho Books, QuickBooks Online, bank and mobile-money statements, CSV/Excel/PDF exports) without changing it.
 
 Notes for readers and models: prices, ratings, customers and certifications are stated only where published on the page.
 
-${group("Product and Intelligence", (id) => id === "product" || id.startsWith("core-") || id === "intelligence-complete" || id === "intelligence-how")}
+${group("Product and Ziira AI", (id) => id === "product" || id === "ai" || id.startsWith("core-") || id === "intelligence-complete" || id === "intelligence-how")}
 ${group("Intelligence on your existing system", (id) => id === "intelligence-existing" || id.startsWith("intelligence-source-"))}
 ${group("Solutions and integrations", (id) => id.startsWith("solutions") || id.startsWith("integrations"))}
 ${group("Help centre: step-by-step guides for using Ziira", (id) => id === "help" || id.startsWith("help-") || id.startsWith("helpj-"))}

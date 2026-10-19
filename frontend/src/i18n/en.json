@@ -203,7 +203,35 @@
       "channels": "Channels and integrations",
       "intelligence": "Intelligence",
       "data": "Data and privacy",
-      "platform": "Plan"
+      "platform": "Plan",
+      "advanced": "Advanced"
+    },
+    "settings": {
+      "home": "Overview",
+      "homeKeywords": "settings preferences options configure",
+      "business": "Business",
+      "access": "People and access",
+      "channels": "Notifications",
+      "intelligence": "Intelligence",
+      "data": "Data and privacy",
+      "plan": "Plan and billing",
+      "advanced": "Advanced",
+      "title": "Settings",
+      "intro": "Everything about how your business is set up, in a few groups.",
+      "find": "Find a setting",
+      "findPlaceholder": "Search settings, for example receipts or users",
+      "noMatch": "Nothing matches \"{{q}}\". Try a shorter word.",
+      "in": "in {{group}}",
+      "open": "Open",
+      "d": {
+        "business": "Your companies and branches, business details, numbering and selling rules.",
+        "access": "Who can sign in, what each person may do, and what needs approval.",
+        "channels": "What you are told about, and the email and message channels used.",
+        "intelligence": "What Ziira watches, how much it does for you, and where you hear from it.",
+        "data": "Bring in your records, add your own fields, and look after personal data.",
+        "plan": "Your plan, invoices and payments to Ziira.",
+        "advanced": "Connections to other systems and support access, for the technically minded."
+      }
     },
     "tabs": {
       "general": "General"

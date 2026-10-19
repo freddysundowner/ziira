@@ -1,6 +1,10 @@
 {
  "settings": "Mipangilio",
  "settingsHint": "Sera za biashara, namba za hati na sababu za vitendo.",
+ "generalTitle": "Jumla",
+ "generalHint": "Sheria unazobadilisha mara chache.",
+ "moreOptions": "Chaguo zaidi",
+ "permissionsOf": "{{chosen}} kati ya {{total}}",
  "tabPolicies": "Sera",
  "tabNumbering": "Namba za hati",
  "tabReasons": "Sababu",
@@ -25,10 +29,10 @@
   "reminders": "Kuwakumbusha wateja wanaodaiwa.",
   "people": "Siku za kazi, likizo na saa za ziada.",
   "printing": "Mistari kwenye risiti na ankara, na jinsi namba za simu zinavyosomwa.",
-  "regional": "Mahali biashara yako ilipo: tarehe ya kila mauzo, uhamisho wa bidhaa, risiti na kiingilio cha vitabu ni tarehe ya hapa.",
-  "alerts": "Wakati Ziira inakutumia ujumbe kuhusu jambo zito. Chaguo zaidi ziko kwenye mipangilio ya Intelligence, Unapopata habari kutoka Ziira.",
-  "privacy": "Jinsi unavyojibu watu kuhusu data yao kwa haraka, nani aidhinishe ufutaji, na kumbukumbu zinahifadhiwa kwa muda gani.",
-  "files": "Picha na PDF kwenye kazi, wateja na rekodi nyingine zinaweza kuwa kubwa kiasi gani, zitumie nafasi kiasi gani, na zihifadhiwe kwa muda gani."
+  "regional": "Huweka tarehe ya kila mauzo, risiti na kiingilio.",
+  "alerts": "Wakati Ziira inakutumia ujumbe kuhusu jambo zito.",
+  "privacy": "Muda wa kujibu, idhini ya ufutaji na muda wa kuhifadhi rekodi.",
+  "files": "Ukubwa, nafasi na muda wa kuhifadhi picha na PDF."
  },
  "set": {
   "negative_stock_allowed": "Ruhusu kuuza bidhaa isiyokuwepo",
@@ -225,7 +229,7 @@
   "critical": "Hatari sana"
  },
  "notifications": "Arifa",
- "notificationsHint": "Ujumbe uliotumwa kwa barua pepe na SMS, walioomba wasiwasiliane nao, na njia zilizo tayari.",
+ "notificationsHint": "Ujumbe uliotumwa, walioacha kupokea, na njia zako.",
  "setUpChannels": "Weka njia za ujumbe",
  "tabLog": "Ujumbe uliotumwa",
  "tabOptOuts": "Usiwasiliane",

@@ -23,6 +23,8 @@ def _lines(lines: list[Any], limit: int = 8) -> list[dict[str, str]]:
 @provides(INTEL_ASK_TOOL)
 class ProfitAndLoss(AskTool):
     name = "finance_profit_and_loss"
+    plain_label = "Working out profit and loss"
+    plain_label_sw = "Nakokotoa faida na hasara"
     description = ("Income, cost of sales, gross profit, expenses and net profit between two dates, from the books, "
                    "for all branches the person may see or one branch; with the largest income and expense accounts.")
     parameters = {"type": "object", "properties": PERIOD, "required": ["date_from", "date_to"]}
@@ -43,6 +45,8 @@ class ProfitAndLoss(AskTool):
 @provides(INTEL_ASK_TOOL)
 class CashPosition(AskTool):
     name = "finance_cash_position"
+    plain_label = "Checking your cash and bank"
+    plain_label_sw = "Naangalia pesa taslimu na benki"
     description = ("Cash, bank, mobile-money and card balances: the balance at the start and at the end of the period "
                    "and what moved it, from the books.")
     parameters = {"type": "object", "properties": PERIOD, "required": ["date_from", "date_to"]}

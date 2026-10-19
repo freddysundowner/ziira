@@ -150,11 +150,11 @@ def registration_mode() -> str:
     return registration_mode_set()
 
 
-DEFAULT_COUNTRY = "KE"          # the owner's choice: sign-up starts on Kenya until the Super Admin sets another
+DEFAULT_COUNTRY = "KE"          # the owner's starting value for the sign-up form; the Super Admin can set another
 
 
 def default_country() -> str:
-    """The country the sign-up form starts on (a platform setting; the owner chose Kenya as the starting value)."""
+    """The country the sign-up form starts on (a platform setting; the owner chose its starting value)."""
     return str(get("registration.default_country") or "").strip().upper() or DEFAULT_COUNTRY
 
 

@@ -66,7 +66,7 @@ export function ErrorState({ message, onRetry, title = "Something went wrong" }:
     <div role="alert" className="flex flex-col items-center px-6 py-12 text-center">
       <div className="mb-3 rounded-full bg-bad-soft p-3 text-bad"><AlertTriangle className="h-6 w-6" /></div>
       <p className="font-medium">{title}</p>
-      {message && <p className="mt-1 max-w-md text-sm text-muted">{message}</p>}
+      {message && <p className="mt-1 max-w-md text-sm text-muted [overflow-wrap:anywhere]">{message}</p>}
       {onRetry && (
         <button onClick={onRetry} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-medium hover:bg-sunken">
           <RefreshCw className="h-4 w-4" /> Try again
@@ -78,7 +78,7 @@ export function ErrorState({ message, onRetry, title = "Something went wrong" }:
 
 export function Alert({ tone = "info", children, className }: { tone?: "info" | "ok" | "warn" | "bad"; children: ReactNode; className?: string }) {
   const t = { info: "bg-info-soft text-info", ok: "bg-ok-soft text-ok", warn: "bg-warn-soft text-warn", bad: "bg-bad-soft text-bad" }[tone];
-  return <div role={tone === "bad" ? "alert" : "status"} className={cx("rounded-lg px-3 py-2 text-sm", t, className)}>{children}</div>;
+  return <div role={tone === "bad" ? "alert" : "status"} className={cx("min-w-0 rounded-lg px-3 py-2 text-sm [overflow-wrap:anywhere]", t, className)}>{children}</div>;
 }
 
 /** Shows an error text under a form, when there is one. */

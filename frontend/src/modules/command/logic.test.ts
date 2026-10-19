@@ -58,3 +58,34 @@ describe("byArea", () => {
     expect(groups[0]!.figures).toHaveLength(2);
   });
 });
+
+import { DEFAULT_NOTE, noteFrom, planNoteSaves, type NoteSchedule } from "./logic";
+
+const sched = (over: Partial<NoteSchedule>): NoteSchedule => ({ kind: "daily", channel: "in_app", send_time: "07:30:00", weekday: null, is_active: true, ...over });
+
+describe("the daily note card", () => {
+  it("starts off, at 07:30 in the app, when nothing is saved", () => {
+    expect(noteFrom([])).toEqual(DEFAULT_NOTE);
+    expect(planNoteSaves(DEFAULT_NOTE, [])).toEqual([]);
+  });
+  it("switching on saves only the daily schedule", () => {
+    expect(planNoteSaves({ ...DEFAULT_NOTE, on: true }, [])).toEqual([{ kind: "daily", channel: "in_app", send_time: "07:30", weekday: null, is_active: true }]);
+  });
+  it("the weekly line is optional and follows the daily time and way", () => {
+    const saves = planNoteSaves({ on: true, time: "08:00", channel: "email", weekly: true, weekday: 5 }, [sched({})]);
+    expect(saves.map((s) => [s.kind, s.send_time, s.channel, s.weekday])).toEqual([["daily", "08:00", "email", null], ["weekly", "08:00", "email", 5]]);
+  });
+  it("saves nothing when the card already matches what is stored", () => {
+    const stored = [sched({}), sched({ kind: "weekly", weekday: 1 })];
+    expect(planNoteSaves(noteFrom(stored), stored)).toEqual([]);
+  });
+  it("switching off pauses both schedules instead of deleting them", () => {
+    const stored = [sched({}), sched({ kind: "weekly", weekday: 2 })];
+    const saves = planNoteSaves({ ...noteFrom(stored), on: false }, stored);
+    expect(saves.map((s) => [s.kind, s.is_active])).toEqual([["daily", false], ["weekly", false]]);
+  });
+  it("unticking the weekly line pauses only the weekly schedule", () => {
+    const stored = [sched({}), sched({ kind: "weekly", weekday: 1 })];
+    expect(planNoteSaves({ ...noteFrom(stored), weekly: false }, stored).map((s) => [s.kind, s.is_active])).toEqual([["weekly", false]]);
+  });
+});

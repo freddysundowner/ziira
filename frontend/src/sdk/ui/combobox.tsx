@@ -88,8 +88,8 @@ export function Combobox({ value, onChange, options, search, selectedLabel, plac
     <div ref={box} className="relative">
       <button ref={trigger} id={id} type="button" disabled={disabled} role="combobox" aria-label={id ? undefined : shownLabel ? `${placeholder}: ${shownLabel}` : placeholder} aria-expanded={open} aria-controls={listId} aria-invalid={invalid || undefined}
         onClick={() => { setOpen((o) => !o); setActive(0); }}
-        className={cx("flex h-9 w-full items-center justify-between rounded-lg border bg-surface px-3 text-left text-sm disabled:bg-sunken", invalid ? "border-bad" : "border-line hover:border-muted/50")}>
-        <span className={cx("truncate", !shownLabel && "text-muted")}>{shownLabel || placeholder}</span>
+        className={cx("flex h-9 w-full min-w-0 items-center justify-between gap-2 rounded-lg border bg-surface px-3 text-left text-sm disabled:bg-sunken", invalid ? "border-bad" : "border-line hover:border-muted/50")}>
+        <span className={cx("min-w-0 flex-1 truncate", !shownLabel && "text-muted")}>{shownLabel || placeholder}</span>
         <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted" />
       </button>
       {open && createPortal(

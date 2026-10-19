@@ -30,7 +30,7 @@ export default function SettingsPage() {
   if (wanted === "actions") return <Navigate to="/intelligence/how-much" replace />;
   return (
     <>
-      <PageHeader title={t("settings")} description={t("settingsHint")} />
+      <PageHeader title={t("generalTitle")} description={t("generalHint")} />
       {(tab === "policies" || tab === "ai") && picker && <div className="mb-4">{picker}</div>}
       <Tabs value={tab} onChange={setTab} tabs={tabs} />
       {tab === "policies" && <PoliciesTab companyId={companyId} />}

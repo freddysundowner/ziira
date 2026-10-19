@@ -29,6 +29,7 @@ import PricingPlans from "../components/PricingPlans.astro";
 import ContactDetails from "../components/ContactDetails.astro";
 import Icon from "../components/Icon.astro";
 import Home from "../components/Home.astro";
+import { does, safety, aiCta } from "../content/ai";
 import { catalog, totals } from "../lib/catalog";
 import { presentation, availability, soonKeys, type AvailKey } from "../content/availability";
 import { integrationsPage } from "../content/integrations";
@@ -95,6 +96,25 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
   {kind === "home" && h && <Home lang={lang} h={h} />}
 
   {kind === "complete" && <CompleteGuide lang={lang} entry={entry} crumbs={crumbs} words={completeProse} />}
+
+  {kind === "ai" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} lead={def.lead} glance={handGlance} glanceTitle={def.glanceTitle} />
+      <section class="section" aria-labelledby="ai-does-h">
+        <div class="container narrow">
+          <h2 id="ai-does-h">{does.h2}</h2>
+          <ul class="ticks">{does.lines.map((l) => <li set:html={inline(l, lang, urlFor)} />)}</ul>
+          <h2 id="ai-rules-h" style="margin-top:2em">{safety.h2}</h2>
+          <ul class="ticks">{safety.items.map((l) => <li>{l}</li>)}</ul>
+          <p class="note" set:html={inline(safety.note, lang, urlFor)} />
+          <p style="margin-top:1.6em"><a class="btn btn-primary btn-lg" href={urlFor("ai", lang)} data-ask-ziira>{aiCta.button}</a></p>
+          <p class="note">{aiCta.text}</p>
+        </div>
+      </section>
+      <section class="section tint"><div class="container"><div class="faq-split"><div class="faq-intro"><h2 id="faq-h">{t.faq}</h2></div><Faq lang={lang} items={faq} bare /></div></div></section>
+      <Cta lang={lang} variant="general" title="Put an AI on your own records" text="Create a business in minutes. The AI stays off until you agree, and you choose what it may do." />
+    </>
+  )}
 
   {kind === "integrations" && ip && (
     <>

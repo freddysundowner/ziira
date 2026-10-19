@@ -62,6 +62,11 @@ Money and quantities are **decimal strings**, never floats. Lists take `limit` (
 be sent twice should carry an `Idempotency-Key` header: the second request returns the first result and changes nothing.
 Dates are ISO 8601.
 
+## Website assistant (public, not part of the keyed API)
+
+`GET /api/v1/public/assistant/config` and `POST /api/v1/public/assistant/stream` serve the marketing site's chat (no key, no
+sign-in, rate limited per address, CORS only for the site's own origin). Events and limits: `docs/ai.md` section 14.
+
 ## Versioning and deprecation policy
 
 - The version is in the path: `/api/v1`. Every API response carries `Ziira-API-Version: 1`.

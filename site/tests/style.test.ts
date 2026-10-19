@@ -1,6 +1,7 @@
 // Plain-language style for guides, Help centre and the Intelligence step-by-step page (docs/marketing-site.md "Writing style").
 // Hard fail: banned jargon. Warnings (printed, never failing): sentences over 25 words, paragraphs over 4 lines, more than 2 internal links
 // in a paragraph, and the reading grade (Flesch-Kincaid, target about 7) with the worst pages listed.
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import { collect, check, grade, syllables } from "./lib/style";
 
@@ -26,5 +27,13 @@ describe("plain-language style", () => {
     const r = check([{ source: "x", where: "y", text: "The webhook endpoint uses a tenant baseline. We found three findings." }]);
     expect(r.banned.length).toBeGreaterThanOrEqual(5);
     expect(check([{ source: "x", where: "y", text: "The old name for this was Findings." }]).banned).toEqual([]);
+  });
+});
+
+describe("hero product frame", () => {
+  it("has no floating example cards that overhang the next section", () => {
+    const css = readFileSync(new URL("../src/styles/global.css", import.meta.url), "utf8");
+    expect(css).not.toMatch(/\.float-[ad]\b/);
+    expect(css).not.toMatch(/\.stage\s*\{[^}]*margin-bottom:\s*clamp\(-/);
   });
 });

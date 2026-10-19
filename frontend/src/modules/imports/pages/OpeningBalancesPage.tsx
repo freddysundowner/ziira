@@ -27,11 +27,11 @@ export default function OpeningBalancesPage() {
               <li key={step.id}>
                 <Card>
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium"><span className="tnum mr-2 text-muted">{index + 1}.</span>{t(`guide.steps.${step.id}.title`)}</p>
-                      <p className="mt-1 text-sm text-muted">{t(`guide.steps.${step.id}.text`)}</p>
+                    <div className="min-w-0 max-w-full flex-1 basis-60">
+                      <p className="font-medium [overflow-wrap:anywhere]"><span className="tnum mr-2 text-muted">{index + 1}.</span>{t(`guide.steps.${step.id}.title`)}</p>
+                      <p className="mt-1 text-sm text-muted [overflow-wrap:anywhere]">{t(`guide.steps.${step.id}.text`)}</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {state === "done" && <Badge tone="ok">{t("guide.done")}</Badge>}
                       {state === "unavailable" && <Badge>{t("guide.unavailable")}</Badge>}
                       {state !== "unavailable" && target && (

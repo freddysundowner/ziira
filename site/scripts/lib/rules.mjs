@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { load } from "cheerio";
 
-export const LIMITS = { title: 60, descriptionMax: 160, descriptionMin: 50, htmlBytes: 80_000, longformHtmlBytes: 300_000, longformCssBytes: 80_000, jsBytes: 10_000, cssBytes: 66_000, imageFileBytes: 160_000, pageImageBytes: 700_000, guideMinWords: 900, guideMaxWords: 1800, helpMinSteps: 3, helpMinProblems: 1, helpMaxProblems: 3, helpMaxNext: 2 };
+export const LIMITS = { title: 60, descriptionMax: 160, descriptionMin: 50, htmlBytes: 86_000, longformHtmlBytes: 300_000, longformCssBytes: 80_000, jsBytes: 10_000, cssBytes: 67_000, imageFileBytes: 160_000, pageImageBytes: 700_000, guideMinWords: 900, guideMaxWords: 1800, helpMinSteps: 3, helpMinProblems: 1, helpMaxProblems: 3, helpMaxNext: 2 };
 export const PLACEHOLDER_ORIGIN = /example\.(invalid|com|org|net)|localhost|127\.0\.0\.1/;
 
 /** @typedef {{rule: string, page: string, message: string}} Issue */
@@ -283,7 +283,27 @@ export function auditSite(dist, opts = {}) {
     if (!/^Sitemap:\s*\S+/im.test(robotsTxt)) add("robots-sitemap", "/robots.txt", "robots.txt has no Sitemap line");
     if (/^Disallow:\s*\/\s*$/im.test(robotsTxt)) add("robots-blocks-all", "/robots.txt", "robots.txt disallows everything");
   }
-  for (const f of ["llms.txt", "site.webmanifest", "guides/feed.xml", "404.html", "_headers", "favicon.svg"]) if (!exists(f)) add("file-missing", "/" + f, `${f} is missing from the build`);
+  // ---- the assistant's knowledge base (src/lib/knowledge.ts): the floating Ask Ziira reads it from here
+  if (exists("assistant-knowledge.json")) {
+    let kb = null;
+    try { kb = JSON.parse(fs.readFileSync(path.join(dist, "assistant-knowledge.json"), "utf8")); } catch { add("assistant-knowledge", "/assistant-knowledge.json", "is not valid JSON"); }
+    if (kb) {
+      const bad = /\b(trusted by|award|ranked|number one|best-in-class|uptime|customers worldwide|live-tested|certified|benchmark|million users|kenya|kenyan|m-pesa|mpesa|etims|nairobi|safaricom|ksh|kes)\b|99\.9|% more accurate|#1/i;
+      const ids = new Set();
+      if (!Array.isArray(kb) || kb.length < 10) add("assistant-knowledge", "/assistant-knowledge.json", "must be an array of at least 10 chunks");
+      else for (const c of kb) {
+        const w = String(c.text ?? "").split(/\s+/).filter(Boolean).length;
+        if (!c.id || !c.title || !c.url || !c.text) add("assistant-knowledge", "/assistant-knowledge.json", `chunk ${c.id ?? "?"} needs id, title, url and text`);
+        if (ids.has(c.id)) add("assistant-knowledge", "/assistant-knowledge.json", `duplicate chunk id ${c.id}`); ids.add(c.id);
+        if (w > 300) add("assistant-knowledge", "/assistant-knowledge.json", `chunk ${c.id} has ${w} words (max 300)`);
+        if (/[<>]|\]\(|\*\*/.test(c.text ?? "")) add("assistant-knowledge", "/assistant-knowledge.json", `chunk ${c.id} is not plain text`);
+        if (bad.test(`${c.title} ${c.text}`)) add("assistant-knowledge", "/assistant-knowledge.json", `chunk ${c.id} has a banned word: ${bad.exec(`${c.title} ${c.text}`)[0]}`);
+        const u = String(c.url ?? "");
+        if (!pages.has(u)) add("assistant-knowledge", "/assistant-knowledge.json", `chunk ${c.id} points to ${u}, which is not a built page`);
+      }
+    }
+  }
+  for (const f of ["llms.txt", "site.webmanifest", "guides/feed.xml", "404.html", "_headers", "favicon.svg", "assistant-knowledge.json", "assistant.js", "assistant-chat.js", "assistant.css"]) if (!exists(f)) add("file-missing", "/" + f, `${f} is missing from the build`);
 
   const filtered = only ? issues.filter((i) => only.has(i.rule)) : issues;
   return { issues: filtered, stats: { pages: pages.size, sitemapUrls: sitemapUrls.size, externalLinks: [...externalLinks].sort(), siteOrigin } };

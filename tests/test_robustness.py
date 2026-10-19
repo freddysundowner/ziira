@@ -19,7 +19,8 @@ from tests.fuzz import Spec, mutations, operations
 from tests.stock_helpers import INV, P, make_stock_shop, system
 
 # Not fuzzed: they would end the fuzzer's own session or change the owner's credentials.
-SKIP = ("/auth/sign-out", "/auth/change-password", "/auth/password", "/health", "/docs", "/openapi", "/redoc")
+SKIP = ("/auth/sign-out", "/auth/change-password", "/auth/password", "/health", "/docs", "/openapi", "/redoc",
+        "/public/assistant")      # public, can spend money when on: tested in test_site_assistant.py
 
 
 @pytest.fixture(scope="module")

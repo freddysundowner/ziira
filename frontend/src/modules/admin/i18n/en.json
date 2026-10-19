@@ -1,6 +1,6 @@
 {
   "users": "Users", "roles": "Roles", "usersHint": "People who can sign in to this business, and what they may do.",
-  "rolesHint": "A role is a named set of permissions. Give roles to users, for the whole business, one company, one branch, or only their own records.",
+  "rolesHint": "A role is a named set of permissions you give to users.",
   "newUser": "New user", "fullName": "Full name", "email": "Email", "phone": "Phone", "password": "Password", "passwordHint": "At least 8 characters. Leave empty to invite them to set one.",
   "newPassword": "New password", "setPassword": "Set password", "passwordSet": "Password changed.", "status": "Status", "save": "Save", "cancel": "Cancel", "close": "Close", "edit": "Edit", "view": "View",
   "noUsers": "No users yet.", "searchUsers": "Search users", "actions": "Actions", "enable": "Enable", "disable": "Disable",

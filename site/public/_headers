@@ -1,6 +1,7 @@
 # Security and caching headers for the built static folder (Netlify/Cloudflare Pages "_headers" syntax).
 # For another web server, translate these into its own configuration: see site/README.md ("Security headers").
-# The site has no third-party scripts, fonts or embeds, so the policy can be strict.
+# The site has no third-party scripts, fonts or embeds, so the policy can be strict. connect-src allows https: only so the Ask Ziira chat can
+# call the Ziira API on the app host; narrow it to that host (e.g. connect-src 'self' https://app.example.com) when you deploy.
 
 /*
   X-Content-Type-Options: nosniff
@@ -9,7 +10,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self' https:; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https:; form-action 'self' https:; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
 
 # Hashed build assets never change.
 /_astro/*
@@ -20,6 +21,12 @@
   Cache-Control: public, max-age=2592000
 
 # Everything else: revalidate.
+/assistant*.js
+  Cache-Control: public, max-age=3600
+/assistant.css
+  Cache-Control: public, max-age=3600
+/assistant-knowledge.json
+  Cache-Control: public, max-age=300
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 /og/*

@@ -203,7 +203,35 @@
       "channels": "Njia za mawasiliano na miunganisho",
       "intelligence": "Akili ya biashara",
       "data": "Data na faragha",
-      "platform": "Mpango"
+      "platform": "Mpango",
+      "advanced": "Mipangilio ya hali ya juu"
+    },
+    "settings": {
+      "home": "Muhtasari",
+      "homeKeywords": "mipangilio chaguo mapendeleo",
+      "business": "Biashara",
+      "access": "Watu na ruhusa",
+      "channels": "Arifa",
+      "intelligence": "Akili ya biashara",
+      "data": "Data na faragha",
+      "plan": "Mpango na malipo",
+      "advanced": "Mipangilio ya hali ya juu",
+      "title": "Mipangilio",
+      "intro": "Kila kitu kuhusu jinsi biashara yako ilivyopangwa, katika makundi machache.",
+      "find": "Tafuta mpangilio",
+      "findPlaceholder": "Tafuta mipangilio, mfano risiti au watumiaji",
+      "noMatch": "Hakuna kinacholingana na \"{{q}}\". Jaribu neno fupi zaidi.",
+      "in": "katika {{group}}",
+      "open": "Fungua",
+      "d": {
+        "business": "Kampuni na matawi yako, taarifa za biashara, namba za hati na sheria za mauzo.",
+        "access": "Nani anaweza kuingia, kila mtu anaruhusiwa nini, na nini kinahitaji idhini.",
+        "channels": "Unachoarifiwa, na njia za barua pepe na ujumbe zinazotumika.",
+        "intelligence": "Ziira inachofuatilia, inachokufanyia, na unapopata habari zake.",
+        "data": "Leta rekodi zako, ongeza sehemu zako mwenyewe, na linda data binafsi.",
+        "plan": "Mpango wako, ankara na malipo kwa Ziira.",
+        "advanced": "Miunganisho na mifumo mingine na ufikiaji wa msaada, kwa wanaoyajua."
+      }
     },
     "tabs": {
       "general": "Jumla"

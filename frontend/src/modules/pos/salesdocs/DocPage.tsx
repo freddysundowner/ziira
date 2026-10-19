@@ -82,7 +82,7 @@ export function DocPage({ kind }: { kind: "quotation" | "order" }) {
       {d.status === "draft" && <Alert tone="info" className="mb-4">{t(`docs.draftNote.${kind}`)}</Alert>}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           <Card title={t("items")} flush>
             <DataTable rows={d.lines} rowKey={(l) => l.id} empty={{ title: t("noItems") }}
               columns={[
@@ -97,7 +97,7 @@ export function DocPage({ kind }: { kind: "quotation" | "order" }) {
           </Card>
           {kind === "order" && d.status !== "draft" && <DeliveredInvoices order={d} />}
         </div>
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card title={t("totals")}>
             <dl className="space-y-1.5 text-sm">
               <Row label={t("subtotal")} value={m(d.subtotal, d.company_id)} />
@@ -128,7 +128,7 @@ export function DocPage({ kind }: { kind: "quotation" | "order" }) {
 }
 
 function Row({ label, value, strong, divider }: { label: string; value: string; strong?: boolean; divider?: boolean }) {
-  return <div className={`flex justify-between gap-3 ${strong ? "text-base font-semibold" : ""} ${divider ? "border-t border-line pt-1.5" : ""}`}><dt className={strong ? "" : "text-muted"}>{label}</dt><dd className="tnum">{value}</dd></div>;
+  return <div className={`flex justify-between gap-3 ${strong ? "text-base font-semibold" : ""} ${divider ? "border-t border-line pt-1.5" : ""}`}><dt className={`min-w-0 [overflow-wrap:anywhere] ${strong ? "" : "text-muted"}`}>{label}</dt><dd className="tnum min-w-0 text-right [overflow-wrap:anywhere]">{value}</dd></div>;
 }
 
 /** The order an accepted quotation turned into (found among the customer's orders). */

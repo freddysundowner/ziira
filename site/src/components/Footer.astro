@@ -13,15 +13,15 @@ const t = ui[lang];
 // Footer labels reuse the header's plain-language words where a page has one.
 const plain = new Map<string, string>();
 for (const g of navGroups) for (const c of g.columns) for (const l of c.links) if (l.id && !plain.has(l.id) && !/^\d\./.test(l.label)) plain.set(l.id, l.label);
-const override: Record<string, string> = { product: "Everything Ziira does", "intelligence-how": "How the daily check works", solutions: "All kinds of business", integrations: "All connections", "get-started": "Talk to us or get started" };
+const override: Record<string, string> = { product: "Everything Ziira does", "intelligence-how": "How the daily check works", solutions: "All kinds of business", ai: "Ziira AI: ask, check, approve", integrations: "All connections", "get-started": "Talk to us or get started" };
 const label = (id: string) => override[id] ?? plain.get(id) ?? t.labels[id] ?? titleFor(id, lang);
 const exists = (id: string) => { try { urlFor(id, lang); return true; } catch { return false; } };
 type Section = { h: string; ids: string[] };
 const cols: Section[][] = [
   [{ h: "What Ziira does", ids: ["product", "core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people"] }],
-  [{ h: "Watch it for you", ids: ["intelligence-how", "intelligence-complete", "intelligence-existing", "intelligence-source-erpnext", "intelligence-source-odoo", "intelligence-source-zoho-books", "intelligence-source-quickbooks", "intelligence-source-bank", "intelligence-source-mobile-money", "intelligence-source-files"] }],
+  [{ h: "Ziira AI", ids: ["ai", "intelligence-how", "intelligence-complete", "intelligence-existing", "intelligence-source-erpnext", "intelligence-source-odoo", "intelligence-source-zoho-books", "intelligence-source-quickbooks", "intelligence-source-bank", "intelligence-source-mobile-money", "intelligence-source-files"] }],
   [
-    { h: "Who it is for", ids: ["solutions", "solutions-retail", "solutions-distribution", "solutions-multi-branch"] },
+    { h: "Who it is for", ids: ["solutions-every-business", "solutions-retail", "solutions-distribution", "solutions-multi-branch", "solutions-salons", "solutions-garages", "solutions-clinics", "solutions-gyms", "solutions-professional"] },
     { h: "Connect your tools", ids: ["integrations", "integrations-whatsapp", "integrations-mpesa", "integrations-api"] },
   ],
   [{ h: "Help", ids: ["help", "guides", "glossary", "security", "get-started"] }],

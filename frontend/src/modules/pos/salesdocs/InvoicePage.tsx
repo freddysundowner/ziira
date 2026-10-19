@@ -69,7 +69,7 @@ export default function InvoicePage() {
       {i.kind === "opening_balance" && <Alert tone="info" className="mb-4">{t("docs.openingNote")}</Alert>}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           <Card title={t("items")} flush>
             <DataTable rows={i.lines} rowKey={(l) => l.id} empty={{ title: t("docs.noInvoiceLines") }}
               columns={[
@@ -82,7 +82,7 @@ export default function InvoicePage() {
               ]} />
           </Card>
         </div>
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card title={t("totals")}>
             <dl className="space-y-1.5 text-sm">
               <Row label={t("subtotal")} value={m(i.subtotal, i.company_id)} />
@@ -118,5 +118,5 @@ export default function InvoicePage() {
 }
 
 function Row({ label, value, strong, divider }: { label: string; value: string; strong?: boolean; divider?: boolean }) {
-  return <div className={`flex justify-between gap-3 ${strong ? "text-base font-semibold" : ""} ${divider ? "border-t border-line pt-1.5" : ""}`}><dt className={strong ? "" : "text-muted"}>{label}</dt><dd className="tnum">{value}</dd></div>;
+  return <div className={`flex justify-between gap-3 ${strong ? "text-base font-semibold" : ""} ${divider ? "border-t border-line pt-1.5" : ""}`}><dt className={`min-w-0 [overflow-wrap:anywhere] ${strong ? "" : "text-muted"}`}>{label}</dt><dd className="tnum min-w-0 text-right [overflow-wrap:anywhere]">{value}</dd></div>;
 }

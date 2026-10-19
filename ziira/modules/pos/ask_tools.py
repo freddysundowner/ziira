@@ -34,6 +34,8 @@ def _where(context: RequestContext, params: dict[str, Any], alias: str = "s") ->
 @provides(INTEL_ASK_TOOL)
 class SalesSummary(AskTool):
     name = "pos_sales_summary"
+    plain_label = "Looking at your sales"
+    plain_label_sw = "Naangalia mauzo yako"
     description = ("Sales between two dates: how many sales and their total, and how many were voided, for each branch "
                    "(or each day). Counts only branches the person may see.")
     parameters = {"type": "object", "properties": {**PERIOD, **BRANCH, "by": {
@@ -63,6 +65,8 @@ class SalesSummary(AskTool):
 @provides(INTEL_ASK_TOOL)
 class TopProducts(AskTool):
     name = "pos_top_products"
+    plain_label = "Finding your best sellers"
+    plain_label_sw = "Natafuta bidhaa zinazouzwa zaidi"
     description = "The best-selling products between two dates, by sales value, with the quantity sold."
     parameters = {"type": "object", "properties": {**PERIOD, **BRANCH, "limit": {
         "type": "integer", "minimum": 1, "maximum": 20}}, "required": ["date_from", "date_to"]}
@@ -83,6 +87,8 @@ class TopProducts(AskTool):
 @provides(INTEL_ASK_TOOL)
 class Voids(AskTool):
     name = "pos_voids"
+    plain_label = "Checking cancelled sales"
+    plain_label_sw = "Naangalia mauzo yaliyofutwa"
     description = "Voided sales between two dates: how many and their value, with the latest (number, date, total)."
     parameters = {"type": "object", "properties": {**PERIOD, **BRANCH}, "required": ["date_from", "date_to"]}
     permissions = SALES_PERMISSIONS

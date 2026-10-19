@@ -1,7 +1,7 @@
 import type { Lang } from "./types";
 import type { AvailKey } from "./availability";
 
-export type IconName = "chat" | "phone" | "blocks" | "book" | "receipt" | "bank" | "coins" | "sheet" | "code" | "bolt" | "till" | "boxes" | "truck" | "people" | "wallet" | "ledger" | "person" | "check" | "bell" | "thumb" | "plug";
+export type IconName = "chat" | "phone" | "blocks" | "book" | "receipt" | "bank" | "coins" | "sheet" | "code" | "bolt" | "till" | "boxes" | "truck" | "people" | "wallet" | "ledger" | "person" | "check" | "bell" | "thumb" | "plug" | "spark" | "shield" | "calendar" | "wrench" | "briefcase" | "heart" | "repeat" | "umbrella";
 
 export interface IntegrationCard {
   /** Page id of the detail page (null when there is none). */

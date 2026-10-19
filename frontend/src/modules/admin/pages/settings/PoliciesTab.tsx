@@ -1,12 +1,14 @@
 import {
   api, channelOptions, formatBytes, Button, Card, Checkbox, EmptyState, ErrorState, Field, Input, NumberInput, Select, SkeletonRows, Switch, toast, unwrap, useCurrency,
-  useChannels, useMutation, useQuery, useQueryClient, useTranslation, useUnsavedWarning,
+  useChannels, useMutation, useSession, useQuery, useQueryClient, useTranslation, useUnsavedWarning,
 } from "@/sdk";
 import { useEffect, useState } from "react";
 
 import { type FormValues, GROUPS, type SettingField, toForm, toPatch, WEEKDAYS } from "./model";
 
 const CHANNEL_FIELDS: string[] = ["reminder_channel", "intel_alert_channel"];
+/** Groups that are rarely changed: kept behind "More options". */
+const RARE = ["alerts", "privacy", "files"];
 
 /** How much space the company's photos and files use now, and the plan's limit when it has one. */
 function FilesUsage({ companyId }: { companyId: string }) {
@@ -34,6 +36,7 @@ export default function PoliciesTab({ companyId }: { companyId: string | undefin
     queryFn: () => unwrap(api.GET("/api/v1/companies/{company_id}/settings", { params: { path: { company_id: companyId! } } })),
   });
   const channels = useChannels(companyId);
+  const { enabledUnits } = useSession();
   const [form, setForm] = useState<FormValues | null>(null);
   useEffect(() => { if (settings.data) setForm(toForm(settings.data)); }, [settings.data]);
 
@@ -88,25 +91,35 @@ export default function PoliciesTab({ companyId }: { companyId: string | undefin
     return <NumberInput value={value} inputMode={f.kind === "integer" ? "numeric" : "decimal"} onChange={(v) => set(f.key, v)} />;
   };
 
+  // Settings of a unit that is off never show; the rarely changed groups sit behind "More options".
+  const needs: Record<string, string> = { people: "people", alerts: "intel" };
+  const shown = GROUPS.filter((g) => !needs[g.id] || enabledUnits.has(needs[g.id]));
+  const card = (g: (typeof GROUPS)[number]) => (
+    <Card key={g.id} title={t(`group.${g.id}`)} description={t(`groupHint.${g.id}`)}>
+      <div className="divide-y divide-line">
+        {g.fields.map((f) => (
+          <div key={f.key} className="grid gap-2 py-3 first:pt-0 last:pb-0 sm:grid-cols-[1fr_minmax(0,20rem)] sm:items-center sm:gap-6">
+            <div>
+              <p className="text-sm font-medium">{t(`set.${f.key}`)}{f.kind === "money" && currency ? ` (${currency})` : ""}</p>
+              <p className="text-xs text-muted">{t(`setHint.${f.key}`)}</p>
+            </div>
+            <Field label={t(`set.${f.key}`)} className="[&>label]:sr-only">{control(f)}</Field>
+          </div>
+        ))}
+      </div>
+      {g.id === "files" && <FilesUsage companyId={companyId} />}
+    </Card>
+  );
   return (
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
-      {GROUPS.map((g) => (
-        <Card key={g.id} title={t(`group.${g.id}`)} description={t(`groupHint.${g.id}`)}>
-          <div className="divide-y divide-line">
-            {g.fields.map((f) => (
-              <div key={f.key} className="grid gap-2 py-3 first:pt-0 last:pb-0 sm:grid-cols-[1fr_minmax(0,20rem)] sm:items-center sm:gap-6">
-                <div>
-                  <p className="text-sm font-medium">{t(`set.${f.key}`)}{f.kind === "money" && currency ? ` (${currency})` : ""}</p>
-                  <p className="text-xs text-muted">{t(`setHint.${f.key}`)}</p>
-                </div>
-                <Field label={t(`set.${f.key}`)} className="[&>label]:sr-only">{control(f)}</Field>
-              </div>
-            ))}
-          </div>
-          {g.id === "files" && <FilesUsage companyId={companyId} />}
-        </Card>
-      ))}
-      <div className="sticky bottom-0 -mx-1 flex items-center justify-end gap-2 bg-bg/90 px-1 py-3 backdrop-blur">
+      {shown.filter((g) => !RARE.includes(g.id)).map(card)}
+      <details className="group rounded-xl border border-line bg-surface">
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+          {t("moreOptions")}<span aria-hidden className="ml-1 inline-block text-xs text-muted transition-transform group-open:rotate-90">›</span>
+        </summary>
+        <div className="space-y-4 border-t border-line p-4">{shown.filter((g) => RARE.includes(g.id)).map(card)}</div>
+      </details>
+      <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center justify-end gap-2 bg-bg/90 py-3 pl-1 pr-20 backdrop-blur">
         {dirty && <span className="text-xs text-muted">{t("unsaved")}</span>}
         <Button type="button" variant="secondary" disabled={!dirty} onClick={() => settings.data && setForm(toForm(settings.data))}>{t("discard")}</Button>
         <Button type="submit" loading={save.isPending} disabled={!dirty}>{t("save")}</Button>

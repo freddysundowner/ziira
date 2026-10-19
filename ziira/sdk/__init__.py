@@ -119,6 +119,12 @@ from ziira.kernel.platform.gateways import (
     WebhookEvent,
     classify_response,
 )
+from ziira.kernel.platform.site_assistant import (
+    SITE_ASSISTANT_LLM,
+    SiteAssistantFailed,
+    SiteAssistantLlm,
+    SiteReply,
+)
 from ziira.kernel.recipients import Recipient, recipients_with_permission
 from ziira.kernel.security import decrypt, encrypt, hash_secret, new_secret, sign_value, verify_value
 
@@ -156,6 +162,7 @@ __all__ = [
     "verify_value",
     "claim_booking_slug", "client_ip", "rate_limit", "release_booking_slug", "resolve_booking_slug",
     "AI_PLATFORM", "AiPlatformHooks", "ai_active_secrets", "ai_cap_reached", "ai_record_usage", "ai_runtime",
+    "SITE_ASSISTANT_LLM", "SiteAssistantFailed", "SiteAssistantLlm", "SiteReply",
 ]
 
 

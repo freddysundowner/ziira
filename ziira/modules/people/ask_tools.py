@@ -24,6 +24,8 @@ BRANCH = {"branch_id": {"type": "string", "format": "uuid", "description": "Only
 @provides(INTEL_ASK_TOOL)
 class Headcount(AskTool):
     name = "people_headcount"
+    plain_label = "Counting your team"
+    plain_label_sw = "Nahesabu wafanyakazi"
     description = "How many employees are active, on leave or have left, for each branch the person may see."
     parameters = {"type": "object", "properties": BRANCH}
     permissions = READERS
@@ -49,6 +51,8 @@ class Headcount(AskTool):
 @provides(INTEL_ASK_TOOL)
 class LeavePending(AskTool):
     name = "people_leave_pending"
+    plain_label = "Looking at leave requests"
+    plain_label_sw = "Naangalia maombi ya likizo"
     description = "Leave requests waiting for approval: who asked, the dates and the number of days (latest first)."
     parameters = {"type": "object", "properties": {**BRANCH, "limit": {"type": "integer", "minimum": 1, "maximum": 30}}}
     permissions = (LEAVE_APPROVE, EMPLOYEES_MANAGE, ATTENDANCE_MANAGE)

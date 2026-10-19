@@ -26,9 +26,9 @@ export default defineModule({
     { label: "intel:today.menu", to: "/intelligence", permission: "findings.view", order: 1, area: "command", icon: "dashboard", keywords: "intel:keywords.today" },
     { label: "intel:things.menu", to: "/intelligence/things", permission: "findings.view", order: 10, area: "command", icon: "spark", keywords: "intel:keywords.things" },
     { label: "intel:suggestions.menu", to: "/intelligence/suggestions", permission: "findings.view", order: 20, area: "command", icon: "document", when: "intel.suggestions", keywords: "intel:keywords.suggestions" },
-    { label: "intel:watch.menu", to: "/intelligence/watching", permission: "findings.manage", order: 30, area: "settings", section: "intelligence", icon: "settings", keywords: "intel:keywords.watching" },
-    { label: "intel:how.menu", to: "/intelligence/how-much", permission: "findings.view", order: 31, area: "settings", section: "intelligence", icon: "settings", keywords: "intel:keywords.how" },
-    { label: "intel:alerts.menu", to: "/intelligence/alerts", permission: "findings.view", order: 32, area: "settings", section: "intelligence", icon: "settings", keywords: "intel:keywords.alerts" },
+    { label: "intel:watch.menu", to: "/intelligence/watching", tab: "nav.settings.intelligence", permission: "findings.manage", order: 30, area: "settings", section: "intelligence", icon: "settings", keywords: "intel:keywords.watching" },
+    { label: "intel:how.menu", to: "/intelligence/how-much", permission: "findings.view", order: 31, area: "settings", section: "intelligence", under: "/intelligence/watching", icon: "settings", keywords: "intel:keywords.how" },
+    { label: "intel:alerts.menu", to: "/intelligence/alerts", permission: "findings.view", order: 32, area: "settings", section: "intelligence", under: "/intelligence/watching", icon: "settings", keywords: "intel:keywords.alerts" },
     { label: "intel:quick.menu", to: "/intelligence/setup", permission: "findings.manage", order: 33, hidden: true, icon: "spark", keywords: "intel:keywords.setup" },
   ],
   slots: {

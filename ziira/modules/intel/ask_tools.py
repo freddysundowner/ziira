@@ -15,6 +15,8 @@ SEVERITIES = ["info", "low", "medium", "high", "critical"]
 
 class ListFindings(AskTool):
     name = "intel_list_findings"
+    plain_label = "Looking at what needs attention"
+    plain_label_sw = "Naangalia yanayohitaji uangalizi"
     description = ("List findings (things the automated checks flagged for attention) the person may see, most serious "
                    "first: severity, area, a plain summary, the recommended action and the money at stake. Open "
                    "findings unless a status is given.")
@@ -42,6 +44,8 @@ class ListFindings(AskTool):
 
 class FindingDetail(AskTool):
     name = "intel_finding_detail"
+    plain_label = "Reading the details of that issue"
+    plain_label_sw = "Nasoma maelezo ya jambo hilo"
     description = "One finding in full: its summary, figures and the records behind it. Use a finding_id from a list."
     parameters = {"type": "object", "properties": {"finding_id": {"type": "string", "format": "uuid"}},
                   "required": ["finding_id"]}

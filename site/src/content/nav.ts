@@ -34,7 +34,7 @@ export const navGroups: NavGroup[] = [
         { id: "core-people", label: "People and payroll", desc: "Staff, leave and pay with your rules", icon: "person", color: 5 },
       ] },
       { title: "Watch it for you", links: [
-        { id: "intelligence-how", label: "Daily check: catch mistakes and losses", desc: "What looks wrong, with the proof", icon: "check", color: 8 },
+        { id: "intelligence-how", label: "The daily check, step by step", desc: "What looks wrong, with the proof", icon: "check", color: 8 },
         { id: "intelligence-complete", label: "Full reference for daily checks", desc: "Every check and option, in plain words", icon: "book", color: 6 },
         { id: "intelligence-existing", label: "Use it with the system you already have", desc: "Odoo, ERPNext, Zoho, QuickBooks, statements", icon: "plug", color: 2 },
         { id: "integrations", label: "Connect your tools", desc: "WhatsApp, mobile money, your own apps", icon: "bell", color: 3 },
@@ -43,12 +43,32 @@ export const navGroups: NavGroup[] = [
     foot: { id: "product", label: "See everything Ziira does →" },
   },
   {
-    key: "who", label: "Who it is for", to: { id: "solutions-retail" },
+    key: "ai", label: "Ziira AI", to: { id: "ai" },
     columns: [{ links: [
-      { id: "solutions-retail", label: "Shops and retail", desc: "Hardware, agrovets, pharmacies, mini-marts", icon: "till" },
-      { id: "solutions-distribution", label: "Wholesale and distribution", desc: "Buy in volume, sell on credit safely", icon: "truck" },
-      { id: "solutions-multi-branch", label: "Businesses with several branches", desc: "See every branch without being there", icon: "blocks" },
+      { id: "ai", label: "Ask in plain words", desc: "Answers with the proof beside them", icon: "spark", color: 1 },
+      { id: "intelligence-how", label: "The daily check", desc: "Alerts and a daily note, with the proof", icon: "bell", color: 8 },
+      { id: "intelligence-existing", label: "Use it with the system you have", desc: "AI that reads yours, and never changes it", icon: "plug", color: 2 },
     ] }],
+    foot: { id: "ai", label: "See everything Ziira AI does →" },
+  },
+  {
+    key: "who", label: "Who it is for", to: { id: "solutions-every-business" }, mega: true,
+    columns: [
+      { title: "Every business", links: [
+        { id: "solutions-every-business", label: "Every kind of business", desc: "One system that fits how you work", icon: "blocks", color: 1 },
+        { id: "solutions-retail", label: "Shops and retail", desc: "Hardware, agrovets, pharmacies, mini-marts", icon: "till", color: 3 },
+        { id: "solutions-distribution", label: "Wholesale and distribution", desc: "Buy in volume, sell on credit safely", icon: "truck", color: 2 },
+        { id: "solutions-multi-branch", label: "Businesses with several branches", desc: "See every branch without being there", icon: "boxes", color: 5 },
+      ] },
+      { title: "And more", links: [
+        { id: "solutions-salons", label: "Salons, spas and barbers", desc: "Diary, deposits, products, commission", icon: "calendar", color: 4 },
+        { id: "solutions-garages", label: "Garages and body shops", desc: "Jobs, parts, photos, insurer claims", icon: "wrench", color: 8 },
+        { id: "solutions-clinics", label: "Clinics and dental practices", desc: "Appointments and billing", icon: "heart", color: 6 },
+        { id: "solutions-gyms", label: "Gyms and studios", desc: "Memberships, packs, classes", icon: "repeat", color: 7 },
+        { id: "solutions-professional", label: "Consultants and agencies", desc: "Time, approvals, retainers", icon: "briefcase", color: 3 },
+      ] },
+    ],
+    foot: { id: "solutions-every-business", label: "See how it fits your business →" },
   },
   {
     key: "how", label: "How it works", to: { href: "/#how-it-works" }, right: true,
@@ -82,7 +102,12 @@ export const appTiles: AppTile[] = [
   { id: "core-people", label: "People and payroll", desc: "Staff, leave and pay", icon: "person", color: 5 },
   { id: "core-customers", label: "Customers", desc: "Credit, statements, reminders", icon: "people", color: 4 },
   { id: "core-payments", label: "Payments", desc: "Match money to sales", icon: "wallet", color: 6 },
-  { id: "intelligence-how", label: "Intelligence", desc: "A daily check, with proof", icon: "bell", color: 8 },
+  { id: "ai", label: "Ziira AI", desc: "Ask, check, approve", icon: "spark", color: 8 },
   { id: "intelligence-existing", label: "Your systems", desc: "Watch Odoo, ERPNext, QuickBooks", icon: "plug", color: 2 },
   { id: "integrations", label: "Add-ons", desc: "WhatsApp, mobile money, API", icon: "blocks", color: 3 },
+  { id: "solutions-salons", label: "Bookings", desc: "Diaries, deposits, reminders", icon: "calendar", color: 4 },
+  { id: "solutions-garages", label: "Jobs and repairs", desc: "Work orders, parts, photos", icon: "wrench", color: 5 },
+  { id: "solutions-garages", label: "Insurer claims", desc: "Estimates, answers, split invoices", icon: "umbrella", color: 2 },
+  { id: "solutions-gyms", label: "Memberships", desc: "Plans, packs, recurring invoices", icon: "repeat", color: 7 },
+  { id: "solutions-professional", label: "Projects and time", desc: "Timesheets, rates, billing", icon: "briefcase", color: 6 },
 ];

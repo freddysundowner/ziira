@@ -34,7 +34,7 @@ export function TrialBalanceReport({ scope, from, to }: ReportProps) {
               { header: t("balance"), hideBelow: "sm", align: "right", cell: (l) => money(l.balance, c) },
             ]}
             footer={r.lines.length > 0 && (
-              <div className="tnum flex justify-end gap-6 border-t border-line px-4 py-2.5 text-sm font-semibold">
+              <div className="tnum flex flex-wrap justify-end gap-x-6 gap-y-1 border-t border-line px-4 py-2.5 text-sm font-semibold">
                 <span>{t("totals")}</span><span>{money(r.total_debit, c)}</span><span>{money(r.total_credit, c)}</span>
               </div>)} />
         </div>

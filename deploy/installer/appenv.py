@@ -31,6 +31,8 @@ def build(cfg: Config, *, secret_key: str, credentials_key: str, metrics_token: 
         # Photos and PDFs attached to records: private folder (backed up with the databases), 27 MB bodies in nginx.
         "ZIIRA_FILES_DIR": f"{cfg.state_dir}/files",
         "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000",
+        # The built website: the public Ask Ziira assistant reads its knowledge file (assistant-knowledge.json) from here.
+        "ZIIRA_SITE_DIST_DIR": f"{cfg.web_root}/site/current",
         "ZIIRA_HSTS_MAX_AGE": "0" if cfg.hsts == "off" else "31536000",
         "ZIIRA_MFA_DEFAULT_POLICY": "privileged",
         "ZIIRA_REGISTRATION_MODE": cfg.registration_mode,

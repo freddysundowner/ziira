@@ -24,7 +24,7 @@ export function EntryLines({ lines, names, scope, currency }: { lines: readonly 
         { header: t("credit"), align: "right", cell: (l) => (Number(l.credit) ? money(l.credit, currency) : "") },
       ]}
       footer={
-        <div className="tnum flex justify-end gap-6 border-t border-line px-4 py-2.5 text-sm font-semibold">
+        <div className="tnum flex flex-wrap justify-end gap-x-6 gap-y-1 border-t border-line px-4 py-2.5 text-sm font-semibold">
           <span>{t("totals")}</span><span>{money(sum("debit"), currency)}</span><span>{money(sum("credit"), currency)}</span>
         </div>}
     />

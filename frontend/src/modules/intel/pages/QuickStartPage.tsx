@@ -59,14 +59,14 @@ export default function QuickStartPage() {
               <Button size="sm" variant="secondary" onClick={() => setPicked(new Set(TOPIC_KEYS))}>{t("quick.everything")}</Button>
               {recommended.length < TOPIC_KEYS.length && <Button size="sm" variant="secondary" onClick={() => setPicked(new Set(recommended))}>{t("quick.forYou", { edition: edition?.title ?? "" })}</Button>}
             </div>}>
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-3">
               {plain.data.topics.map((tp) => {
                 const key = tp.key as TopicKey;
                 const on = current.has(key);
                 return (
                   <li key={key} className={cx("flex items-start justify-between gap-3 rounded-xl border p-3", on ? "border-brand bg-brand-soft" : "border-line")}>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold">{tp.title}</p>
+                      <p className="text-sm font-semibold [overflow-wrap:anywhere]">{tp.title}</p>
                       <p className="text-xs text-muted">{tp.lead}</p>
                       <p className="mt-1 text-xs text-muted">{t("quick.watchCount", { count: counts.get(key) ?? 0 })}</p>
                     </div>

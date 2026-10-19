@@ -93,3 +93,51 @@ export function layoutBrief(body: string): BriefLayout {
   });
   return { title, sections };
 }
+
+// ---------------------------------------------------------------- the daily note (one card, two schedules behind it)
+export type NoteSchedule = Pick<Schemas["ScheduleOut"], "kind" | "channel" | "send_time" | "weekday" | "is_active">;
+
+/** What the owner sees: one switch, one time and way, and an optional weekly line that follows them. */
+export interface NoteDraft {
+  on: boolean;
+  /** "HH:MM" */
+  time: string;
+  channel: string;
+  weekly: boolean;
+  /** 1 = Monday ... 7 = Sunday */
+  weekday: number;
+}
+
+export const DEFAULT_NOTE: NoteDraft = { on: false, time: "07:30", channel: "in_app", weekly: false, weekday: 1 };
+
+/** The card's values from the saved schedules. No saved daily schedule means off, with the defaults ready to switch on. */
+export function noteFrom(schedules: readonly NoteSchedule[]): NoteDraft {
+  const daily = schedules.find((s) => s.kind === "daily");
+  const weekly = schedules.find((s) => s.kind === "weekly");
+  return {
+    on: !!daily?.is_active,
+    time: daily ? toTimeInput(daily.send_time) : weekly ? toTimeInput(weekly.send_time) : DEFAULT_NOTE.time,
+    channel: daily?.channel ?? weekly?.channel ?? DEFAULT_NOTE.channel,
+    weekly: !!weekly?.is_active,
+    weekday: weekly?.weekday ?? DEFAULT_NOTE.weekday,
+  };
+}
+
+export interface NoteSave { kind: "daily" | "weekly"; channel: string; send_time: string; weekday: number | null; is_active: boolean }
+
+/** The saves that bring the stored schedules in line with the card; empty when they already match. Switching off pauses, it never deletes, so the choices come back. */
+export function planNoteSaves(draft: NoteDraft, schedules: readonly NoteSchedule[]): NoteSave[] {
+  const wanted: Record<"daily" | "weekly", boolean> = { daily: draft.on, weekly: draft.on && draft.weekly };
+  const saves: NoteSave[] = [];
+  for (const kind of ["daily", "weekly"] as const) {
+    const stored = schedules.find((s) => s.kind === kind);
+    const weekday = kind === "weekly" ? draft.weekday : null;
+    if (!wanted[kind]) {
+      if (stored?.is_active) saves.push({ kind, channel: stored.channel, send_time: toTimeInput(stored.send_time), weekday: stored.weekday ?? weekday, is_active: false });
+      continue;
+    }
+    const same = stored && stored.is_active && stored.channel === draft.channel && toTimeInput(stored.send_time) === draft.time && (kind === "daily" || stored.weekday === draft.weekday);
+    if (!same) saves.push({ kind, channel: draft.channel, send_time: draft.time, weekday, is_active: true });
+  }
+  return saves;
+}

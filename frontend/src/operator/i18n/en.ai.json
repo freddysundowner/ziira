@@ -13,7 +13,7 @@
   "productionNote": "In production a provider is not called until its data terms are acknowledged below.",
   "on": "On",
   "off": "Off",
-  "isDefault": "Default",
+  "isDefault": "In use",
   "enable": "Switch this provider on",
   "save": "Save",
   "close": "Close",
@@ -73,22 +73,8 @@
    "lastOk": "last test passed {{when}}",
    "lastBad": "last test failed {{when}}"
   },
-  "default": {
-   "make": "Make default",
-   "title": "Make {{provider}} the default",
-   "warning": "{{count}} business consent(s) given for {{from}} will end. Those businesses are asked to agree again before the assistant works for them.",
-   "noChange": "No consent will end.",
-   "typeLabel": "Type {{name}} to confirm",
-   "confirm": "Change default"
-  },
   "cap": {
-   "title": "Monthly spending cap",
-   "hint": "An estimate from token counts and the price table. When it is reached, AI requests are refused.",
-   "spent": "This month: {{spend}} of {{cap}}",
-   "none": "no cap",
-   "label": "Cap in US dollars",
-   "labelHint": "Leave empty for no cap.",
-   "saved": "Cap saved"
+   "none": "no cap"
   },
   "usage": {
    "title": "Use this month",
@@ -126,6 +112,76 @@
     "injection": "ignored hidden instruction",
     "answered": "answered"
    }
+  },
+  "formDescription": "Choose the AI service Ziira uses. One provider is in use at a time. Businesses never see the key.",
+  "status": {
+   "on": "AI is on: {{provider}}, model {{model}}.",
+   "off": "AI is off. Pick a provider, add its key and choose Save and use."
+  },
+  "form": {
+   "provider": "Provider",
+   "providerHint": "The provider you pick here is the one in use for every business.",
+   "none": "None: AI off",
+   "keyHint": "Paste the key from the provider's dashboard. It is stored encrypted and never shown again.",
+   "keySaved": "Saved {{last4}}",
+   "replace": "Replace",
+   "model": "Model",
+   "modelFast": "Fast and cheap (recommended)",
+   "modelCapable": "More capable",
+   "modelOther": "Other (type a model name)",
+   "modelName": "Model name",
+   "modelNameHint": "Exactly as the provider names it. If the provider's list is known, the name must be in it.",
+   "price": "About {{input}} in and {{output}} out per million tokens.",
+   "limit": "Monthly spend limit in US dollars (optional)",
+   "limitHint": "AI stops for everyone when this is reached. Leave empty for no limit. Spent this month: {{spend}}.",
+   "test": "Test",
+   "saveAndUse": "Save and use",
+   "testOk": "It works. {{model}} answered in {{ms}} ms.",
+   "testBad": "It did not work: {{reason}}",
+   "needKey": "Add an API key to continue.",
+   "unsaved": "You have changes that are not saved yet.",
+   "upToDate": "Everything is saved and in use.",
+   "nowInUse": "{{name}} is now in use",
+   "nowOff": "AI is switched off",
+   "keyRemoved": "The {{name}} key was removed",
+   "removeTitle": "Remove the {{name}} key?",
+   "removeBody": "The saved key is deleted. You will need to paste it again to use {{name}}.",
+   "removeInUse": "This provider is in use, so choose another provider first. Removing its key is refused while it is in use.",
+   "consentsEnd": "{{count}} business consent(s) given for the current provider will end. Those businesses are asked to agree again.",
+   "otherKeptUnused": "Your {{name}} key is saved; it is not used.",
+   "offNote": "With no provider, the assistant is unavailable unless the server's own settings name one. Saved keys are kept.",
+   "switchOff": "Switch AI off"
+  },
+  "details": {
+   "title": "Details",
+   "hint": "Usage, quality check, models per feature, other providers",
+   "providers": "Provider settings",
+   "providersHint": "Models for each feature, price list, base address, data terms, quality check and saved keys.",
+   "audit": "See the audit trail of changes"
+  },
+  "site": {
+   "title": "Website assistant",
+   "description": "The chat on the public website. It answers only from the website's own pages and the current prices. Off until you switch it on.",
+   "loadFailed": "The website assistant settings could not be loaded",
+   "on": "The assistant is on: visitors see the chat button.",
+   "off": "The assistant is off: visitors do not see the chat button.",
+   "noProvider": "Switched on, but it cannot answer yet. Choose and save an AI provider above first.",
+   "budget": "A spending limit or the daily total has been reached, so the chat button is hidden for now.",
+   "enable": "Switch the website assistant on",
+   "cap": "Monthly spending limit (USD)",
+   "capHint": "Its own limit, apart from the businesses'. Spent this month: {{spent}}.",
+   "noCap": "No limit of its own",
+   "perMinute": "Questions per visitor per minute",
+   "perMinuteHint": "One visitor, one address.",
+   "perDay": "Questions per visitor per day",
+   "perDayHint": "One visitor, one address.",
+   "total": "Questions per day, everyone",
+   "totalHint": "When reached, the chat rests until tomorrow.",
+   "greeting": "First message",
+   "chips": "Quick questions",
+   "chipsHint": "One per line, up to 6.",
+   "saved": "Website assistant saved",
+   "usage": "This month: {{calls}} answers, about {{cost}}."
   }
  }
 }

@@ -38,7 +38,7 @@ export function MapStep({ batch }: { batch: Batch }) {
       {batch.warnings.map((w) => <Alert key={w} tone="warn">{w}</Alert>)}
       <Card title={t("map.title")} description={t("map.hint", { file: batch.filename, count: batch.total_rows })}>
         <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-4">
             {batch.columns.map((c) => (
               <Field key={c.name} label={`${c.name}${c.required ? " *" : ""}`} hint={`${c.description} ${t("map.example", { value: c.example })}`}>
                 <Select value={mapping[c.name] ?? ""} onChange={(e) => setMapping((m) => ({ ...m, [c.name]: e.target.value || null }))}>

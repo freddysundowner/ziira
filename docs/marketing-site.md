@@ -124,3 +124,35 @@ button names in bold), "You should see" in one line, 1 to 3 problems, at most 2 
 ## Availability switch
 
 The site is written for customers, not as a status report: no internal-status language ("not tested", "stand-in", "pilot test", "not built yet", "no certifications"; enforced by `site/tests/availability.test.ts`). Every capability that depends on an outside service has one entry in `site/src/content/availability.ts` and is `available` by default. To hold an item back, set it to `soon` in that file and rebuild: a "Coming soon" chip, a one-line note and a "Get notified" link appear and pages stop promising it. `docs/go-live-checklist.md` stays the owner's internal manual-test list.
+
+
+## Positioning and Ziira AI (2026-10-19, owner request)
+
+Ziira is presented as the AI-first business system for every kind of business (shops to salons, garages with insurer claims, clinics, gyms, agencies, schools), AI at the centre.
+* Home: the hero, then ONE slim dark strip (`section.ask-strip#ai`, button "Ask Ziira anything" with `data-ask-ziira`), then the rest as before. The big AI sections (animated conversation, daily work, AI by area, rules, providers) were removed by owner decision ("too much"); the proof is the live assistant below.
+* `/ai/` (nav "Ziira AI", footer): kind `ai`, short: five plain lines of what it does, one short list of safety rules, the Ask button and a small FAQ. Copy in `src/content/ai.ts` (`does`, `safety`, `strip`, `pageFaq`).
+* Numbers (checks, areas, next-step kinds, lookups) come from `checks.catalog.json` through `lib/catalog`; `tests/ai-content.test.ts` guards that and bans invented proof words.
+* "Who it is for": `/solutions/every-business/` first, then retail, distribution, multi-branch, salons, garages, clinics, gyms, consultants (`content/pages/ai.en.ts`). No dedicated schools page: there is no education pack yet.
+* Budgets (`scripts/lib/rules.mjs`): HTML 86 KB (was 80: the richer menus add ~6 KB to every page and the home page was 81.7 KB), CSS 67 KB (was 66: the strip). The `data-showcase` budgets are gone. The chat is not counted: it loads lazily.
+* The hero CTA is "Get started", not "Start free": trial terms are platform data.
+
+
+## Floating "Ask Ziira" (2026-10-19, owner request)
+
+A round gradient button, bottom right of every page (not 404, not `/get-started/`), opens a phone-style chat (device frame, status bar, header with avatar, "AI" badge and green online dot, bubbles, input bar, home indicator; full screen without the bezel under 521 px). Live answers from the Ziira API, never invented client-side.
+
+* Files: `src/components/Assistant.astro` (in `layouts/Base.astro`) adds `public/assistant.js` (about 3 KB, deferred): after load/idle it asks `GET <api>/api/v1/public/assistant/config` once per session (cached in `sessionStorage`); only when `enabled` is true it loads `assistant.css` and adds the button, and prefetches `assistant-chat.js` (the chat, loaded on idle or first click). If the API is down or off, nothing appears and every "Ask Ziira anything" link (`data-ask-ziira`) stays an ordinary link to `/ai/`.
+* API host = the app host (`siteConfig.appUrl`); `PUBLIC_ASSISTANT_API_URL` overrides it at build (mock or separate host). CSP: `public/_headers` has `connect-src 'self' https:`; narrow it to the app host when deploying. **`deploy/installer/nginxconf.py` (site CSP, line 26) still says `connect-src 'self'` and must allow the app host too.** CORS for the site origin, no cookies (`credentials: "omit"`).
+* Contract: `GET /api/v1/public/assistant/config` -> `{enabled, greeting, suggestions[]}`; `POST /api/v1/public/assistant/stream` body `{message, history:[{role:"user"|"assistant",text}] (last 6), page: location.pathname, lang:"en"}` -> SSE `status {text}`, `text {text}` (one sentence or list line each; lines starting `- `, `* `, a bullet or `1.` render as list items; plain text only), `links {items:[{title,href}]}`, `done {}`, `error {reason: off|busy|budget|provider_failed|too_long, message, retry_after?}`. Errors show the message with Try again (not for off/budget/too_long; `retry_after` counts down) plus "Open pricing" and "Contact us" links.
+* Behaviour: message appears at once, typing dots with the live status line, text typed word by word (click a bubble to skip; instant under `prefers-reduced-motion`), suggestion chips (config, with built-in defaults), link cards, Stop button, 500-character limit with a counter from 400, Enter sends, Esc closes, focus trap with the page made `inert`, `role=dialog`, `role=log aria-live=polite`, conversation kept in `sessionStorage` across pages, privacy note under the input.
+* Develop without the API: `node site/scripts/mock-assistant.mjs [port]` (default 8099; canned events; words "error", "busy", "off", "long", "cut" trigger each path; `MOCK_OFF=1` makes config say disabled), then `PUBLIC_ASSISTANT_API_URL=http://localhost:8099 npm run build` and serve `dist`.
+
+### Knowledge file: `dist/assistant-knowledge.json`
+
+Written on every build by `src/pages/assistant-knowledge.json.ts` from `src/lib/knowledge.ts` (so `make site-build` and `make site-check` produce it; the API reads it from the site dist folder). A JSON array of chunks:
+
+```json
+{ "id": "pricing", "title": "Pricing", "url": "/pricing/", "text": "plain text, 150 to 300 words (a few shorter tail chunks)..." }
+```
+
+`id` is unique (`<page>-<n>` when a page needs several chunks), `url` is the site path (prefix with the site origin) of a built page, `text` is plain text (no HTML or Markdown). Sources: home, product, solutions (every business first), the AI page, intelligence and each source page, integrations with their availability (`availability.ts`, so "Coming soon" items say so), security and privacy, about, get started, pricing (published plans, or a plain "none published"), FAQs, the checks in numbers from `checks.catalog.json`, and the Help centre's journeys with every guide's title and summary. Sentences naming a country, a country-specific service or invented proof are dropped, and the mobile-money integration is described generically. Guarded by `tests/knowledge.test.ts` (packing and banned words) and the audit rule `assistant-knowledge` in `scripts/lib/rules.mjs` (valid JSON, at least 10 chunks, at most 300 words, plain text, banned words, every url a built page); the audit also requires the assistant files.

@@ -209,6 +209,17 @@
       "spend_cap": "The AI helper has reached the platform's spending limit for this month. Please try again later or ask the platform owner.",
       "default": "Ask Ziira is not available right now."
     },
+    "typing": "Ziira is typing",
+    "stop": "Stop",
+    "stopped": "Stopped.",
+    "showAll": "Show all",
+    "howIKnow": "How I know",
+    "connectionLost": "The connection was lost before I could finish. Please try again.",
+    "enterHint": "Enter to send, Shift+Enter for a new line",
+    "followUp": {
+      "lastWeek": "And last week?",
+      "byBranch": "Show it by branch"
+    },
     "ownerCanFix": "The owner can turn it on in Settings.",
     "openSettings": "Turn on Ask Ziira"
   },

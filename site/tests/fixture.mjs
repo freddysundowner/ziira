@@ -40,6 +40,8 @@ export function writeSite(spec) {
   for (const [p, s] of Object.entries(spec.pages)) put(s.is404 ? "404.html" : path.join(p, "index.html"), renderPage(p, s));
   put("og/x.png", "png");
   put("llms.txt", "x"); put("site.webmanifest", "{}"); put("guides/feed.xml", "<feed/>"); put("_headers", "x"); put("favicon.svg", "<svg/>");
+  put("assistant.js", "x"); put("assistant-chat.js", "x"); put("assistant.css", "x");
+  put("assistant-knowledge.json", JSON.stringify(Array.from({ length: 10 }, (_, i) => ({ id: `c${i}`, title: "t", url: "/", text: "Plain words about the product." }))));
   const indexable = Object.entries(spec.pages).filter(([, s]) => !s.is404 && !(s.robots ?? "").includes("noindex"));
   const sitemap = spec.sitemapOverride ?? `<?xml version="1.0"?><urlset>${indexable.map(([p, s]) => `<url><loc>${ORIGIN + p}</loc><lastmod>2026-10-15</lastmod>${s.alts ? Object.entries(s.alts).map(([l, h]) => `<xhtml:link rel="alternate" hreflang="${l}" href="${ORIGIN + h}"/>`).join("") + `<xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN + s.alts.en}"/>` : ""}</url>`).join("")}</urlset>`;
   put("sitemap.xml", sitemap);

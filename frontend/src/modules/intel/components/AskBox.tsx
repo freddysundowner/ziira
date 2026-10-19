@@ -1,18 +1,27 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { SendHorizontal, Square } from "lucide-react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import {
-  api, Alert, Button, EmptyState, ErrorState, Field, Skeleton, Spinner, Textarea, unwrap, useCan, useCompany, useMutation, useQuery,
-  useTranslation,
-} from "@/sdk";
+import { api, Button, EmptyState, ErrorState, Skeleton, unwrap, useCan, useCompany, useQuery, useTranslation } from "@/sdk";
 
-import AiBadge from "./AiBadge";
-import AnswerSources from "./AnswerSources";
-import { EXAMPLE_KEYS, fixableInSettings, reasonKey, type Turn } from "../logic";
+import { useAskChat } from "../chat/useAskChat";
+import { EXAMPLE_KEYS, fixableInSettings, reasonKey } from "../logic";
+import { Avatar, UserBubble, ZiiraBubble } from "./ChatParts";
+
+const DRAFT_KEY = "ziira.askDraft";
+const FOLLOW_UPS = ["lastWeek", "byBranch"] as const;
+const NEAR_BOTTOM = 48;
+
+function savedDraft(): string {
+  try { return sessionStorage.getItem(DRAFT_KEY) ?? ""; } catch { return ""; }
+}
+function saveDraft(text: string) {
+  try { if (text) sessionStorage.setItem(DRAFT_KEY, text); else sessionStorage.removeItem(DRAFT_KEY); } catch { /* not kept */ }
+}
 
 /**
- * Ask Ziira: the chat-like body of the floating panel (see slots/AskFloating). The answer is written by AI from defined queries over what the
- * person may see, and says what it is based on. Disabled, over-budget and failed states each say what to do.
+ * Ask Ziira: the chat inside the floating panel. Your line appears at once on the right; Ziira's on the left shows dots and what it is
+ * doing, then types the answer out sentence by sentence, with how it knows underneath. Fills the panel: the lines scroll, the box stays.
  */
 export default function AskBox({ autoAsk }: { autoAsk?: { text: string; n: number } }) {
   const { t, i18n } = useTranslation("intel");
@@ -23,44 +32,54 @@ export default function AskBox({ autoAsk }: { autoAsk?: { text: string; n: numbe
     enabled: !!companyId, queryKey: ["intel", "ai-status", companyId],
     queryFn: () => unwrap(api.GET("/api/v1/intel/ai/status", { params: { query: { company_id: companyId! } } })),
   });
-  const [turns, setTurns] = useState<Turn[]>([]);
-  const [sessionId, setSessionId] = useState<string>();
-  const [question, setQuestion] = useState("");
+  const refetchStatus = status.refetch;
+  const onRefused = useCallback(() => { void refetchStatus(); }, [refetchStatus]);
+  const chat = useAskChat({ companyId, language: i18n.language === "sw" ? "sw" : "en", onRefused });
+  const [draft, setDraft] = useState(savedDraft);
   const input = useRef<HTMLTextAreaElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const sticky = useRef(true);
 
-  const patch = (id: string, change: Partial<Turn>) => setTurns((all) => all.map((turn) => (turn.id === id ? { ...turn, ...change } : turn)));
-  const ask = useMutation({
-    meta: { silent: true },
-    mutationFn: ({ text }: { id: string; text: string }) => unwrap(api.POST("/api/v1/intel/ask", {
-      body: { question: text, company_id: companyId, session_id: sessionId, language: i18n.language === "sw" ? "sw" : "en" } })),
-    onSuccess: (answer, { id }) => { setSessionId(answer.session_id); patch(id, { answer }); },
-    onError: (error, { id }) => { patch(id, { error: error.message }); void status.refetch(); },
-  });
-
-  const send = (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed || ask.isPending) return;
-    const id = crypto.randomUUID();
-    setTurns((all) => [...all, { id, question: trimmed }]);
-    setQuestion("");
-    ask.mutate({ id, text: trimmed });
-  };
+  const change = (text: string) => { setDraft(text); saveDraft(text); };
+  const send = useCallback((text: string) => {
+    if (!chat.send(text)) return;
+    sticky.current = true;
+    change("");
+    input.current?.focus();
+  }, [chat]);
   const lastAuto = useRef(0);
   const ready = !!status.data?.ask_available;
   useEffect(() => {
     if (ready && autoAsk && autoAsk.n !== lastAuto.current) { lastAuto.current = autoAsk.n; send(autoAsk.text); }
   });
-  const onSubmit = (e: FormEvent) => { e.preventDefault(); send(question); };
-  const restart = () => { setTurns([]); setSessionId(undefined); input.current?.focus(); };
 
-  const hint = <p className="text-sm text-muted">{t("ai.askHint")}</p>;
-  if (status.error) return <ErrorState message={status.error.message} onRetry={() => void status.refetch()} />;
-  if (!status.data) return <Skeleton className="h-24 w-full" />;
+  // Keep the newest line in view, unless the person has scrolled up to read.
+  const follow = () => { const el = scroller.current; if (el && sticky.current) el.scrollTop = el.scrollHeight; };
+  const lines = chat.messages.map((m) => `${m.id}${m.text.length}${m.state}${m.status ?? ""}`).join("|");
+  useEffect(follow, [lines]);
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el || typeof ResizeObserver === "undefined" || !el.firstElementChild) return;
+    const watcher = new ResizeObserver(follow);    // the typing makes the lines taller without any new state
+    watcher.observe(el.firstElementChild);
+    return () => watcher.disconnect();
+  }, [ready, chat.messages.length]);
+  useEffect(() => { if (ready) input.current?.focus(); }, [ready]);
+  // The box grows with what is typed, to four lines.
+  useEffect(() => {
+    const el = input.current;
+    if (el) { el.style.height = "auto"; el.style.height = `${Math.min(el.scrollHeight, 112)}px`; }
+  }, [draft, ready]);
+
+  const onSubmit = (e: FormEvent) => { e.preventDefault(); if (chat.busy) chat.stop(); else send(draft); };
+
+  if (status.error) return <div className="p-4"><ErrorState message={status.error.message} onRetry={() => void status.refetch()} /></div>;
+  if (!status.data) return <div className="p-4"><Skeleton className="h-24 w-full" /></div>;
   if (!status.data.ask_available) {
     const reason = status.data.reason;
     return (
-      <div className="space-y-3">
-        {hint}
+      <div className="space-y-3 p-4">
+        <p className="text-sm text-muted">{t("ai.askHint")}</p>
         <EmptyState title={t(`ai.unavailable.${reasonKey(reason)}`)}
           hint={fixableInSettings(reason) ? (canSettings ? undefined : t("ai.ownerCanFix")) : undefined}
           action={canSettings && fixableInSettings(reason) ? <Link className="text-sm font-medium text-brand-strong hover:underline" to="/admin/settings?tab=ai">{t("ai.openSettings")}</Link> : undefined} />
@@ -68,63 +87,63 @@ export default function AskBox({ autoAsk }: { autoAsk?: { text: string; n: numbe
     );
   }
 
+  const last = chat.messages[chat.messages.length - 1];
+  const showFollowUps = !chat.busy && last?.role === "ziira" && last.state === "done" && !last.flagged;
   return (
-    <div className="space-y-4">
-      {hint}
-      {turns.length > 0 && <div><Button size="sm" variant="ghost" onClick={restart}>{t("ai.newConversation")}</Button></div>}
-      <div className="space-y-4">
-        {turns.length === 0 ? (
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("ai.examples")}</p>
-            <div className="flex flex-wrap gap-2">
-              {EXAMPLE_KEYS.map((key) => (
-                <button key={key} type="button" onClick={() => send(t(`ai.example.${key}`))}
-                  className="rounded-full border border-line px-3 py-1 text-left text-sm hover:bg-sunken">{t(`ai.example.${key}`)}</button>
-              ))}
+    <div className="flex h-full min-h-0 flex-col">
+      <div ref={scroller} onScroll={(e) => { const el = e.currentTarget; sticky.current = el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM; }}
+        className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+        <div className="space-y-4">
+          {chat.messages.length === 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-start gap-2">
+                <Avatar />
+                <p className="rounded-2xl rounded-tl-md bg-sunken px-3.5 py-2 text-sm">{t("ai.askHint")}</p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{t("ai.examples")}</p>
+                <div className="flex flex-wrap gap-2">
+                  {EXAMPLE_KEYS.map((key) => (
+                    <button key={key} type="button" onClick={() => send(t(`ai.example.${key}`))}
+                      className="rounded-full border border-line px-3 py-1 text-left text-sm hover:bg-sunken">{t(`ai.example.${key}`)}</button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        ) : (
-          <ol className="space-y-4" aria-live="polite">
-            {turns.map((turn) => (
-              <li key={turn.id} className="space-y-2">
-                <p className="text-sm"><span className="font-medium">{t("ai.you")}: </span>{turn.question}</p>
-                <Reply turn={turn} onRetry={() => { setTurns((all) => all.filter((x) => x.id !== turn.id)); send(turn.question); }} />
-              </li>
-            ))}
-          </ol>
-        )}
-        <form onSubmit={onSubmit} className="space-y-2">
-          <Field label={t("ai.questionLabel")}>
-            <Textarea ref={input} rows={2} maxLength={1000} value={question} placeholder={t("ai.placeholder")} onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(question); } }} />
-          </Field>
-          <Button type="submit" loading={ask.isPending} disabled={!question.trim()}>{t("ai.send")}</Button>
-        </form>
+          ) : (
+            <>
+              <ol role="log" aria-live="polite" aria-label={t("ai.askTitle")} className="space-y-4">
+                {chat.messages.map((m) => (m.role === "user" ? <UserBubble key={m.id} message={m} /> : <ZiiraBubble key={m.id} message={m} onRetry={() => chat.retry(m.id)} />))}
+              </ol>
+              {showFollowUps && (
+                <div className="flex flex-wrap gap-2 pl-9">
+                  {FOLLOW_UPS.map((key) => (
+                    <button key={key} type="button" onClick={() => send(t(`ai.followUp.${key}`))}
+                      className="rounded-full border border-line px-3 py-1 text-left text-xs hover:bg-sunken">{t(`ai.followUp.${key}`)}</button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
-
-/** The answer to one question: waiting, failed (with retry), or written, with what it is based on. */
-function Reply({ turn, onRetry }: { turn: Turn; onRetry: () => void }) {
-  const { t } = useTranslation("intel");
-  if (turn.error) {
-    return (
-      <Alert tone="bad">
-        <span>{t("ai.error", { message: turn.error })} </span>
-        <button type="button" className="font-medium underline" onClick={onRetry}>{t("ai.retry")}</button>
-      </Alert>
-    );
-  }
-  if (!turn.answer) return <p className="inline-flex items-center gap-2 text-sm text-muted"><Spinner className="h-4 w-4" />{t("ai.thinking")}</p>;
-  const a = turn.answer;
-  return (
-    <div className="rounded-lg bg-sunken/60 p-3">
-      <p className="mb-1 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">{t("ai.answerLabel")}<AiBadge /></p>
-      <p className="whitespace-pre-wrap text-sm">{a.answer}</p>
-      {a.flagged && <Alert tone="warn" className="mt-2">{t("ai.checkFigures")}</Alert>}
-      {a.capped && <p className="mt-2 text-xs text-muted">{t("ai.capped")}</p>}
-      <AnswerSources sources={a.sources} />
+      <form onSubmit={onSubmit} className="shrink-0 border-t border-line px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+        <div className="flex items-end gap-2">
+          <textarea ref={input} rows={1} maxLength={1000} value={draft} aria-label={t("ai.questionLabel")} placeholder={t("ai.placeholder")}
+            onChange={(e) => change(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(draft); } }}
+            className="max-h-28 min-h-[40px] w-full resize-none rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted hover:border-muted/50" />
+          {chat.busy ? (
+            <Button type="submit" variant="secondary" aria-label={t("ai.stop")} title={t("ai.stop")} className="h-10 w-10 shrink-0 !p-0"><Square className="h-4 w-4" aria-hidden="true" /></Button>
+          ) : (
+            <Button type="submit" aria-label={t("ai.send")} title={t("ai.send")} disabled={!draft.trim()} className="h-10 w-10 shrink-0 !p-0"><SendHorizontal className="h-4 w-4" aria-hidden="true" /></Button>
+          )}
+        </div>
+        <div className="mt-1.5 flex items-center justify-between text-xs text-muted">
+          <span>{t("ai.enterHint")}</span>
+          {chat.messages.length > 0 && <button type="button" onClick={() => { chat.reset(); input.current?.focus(); }} className="hover:text-ink hover:underline">{t("ai.newConversation")}</button>}
+        </div>
+      </form>
     </div>
   );
 }

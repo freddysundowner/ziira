@@ -88,7 +88,8 @@ def add_new_settings(ctx: Ctx) -> list[str]:
     defaults a fresh install gets (and their folders made), so an update never stops on a setting the installer itself
     would have written. Existing values are never touched."""
     cfg, sysm = ctx.cfg, ctx.sys
-    wanted = {"ZIIRA_FILES_DIR": f"{cfg.state_dir}/files", "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000"}
+    wanted = {"ZIIRA_FILES_DIR": f"{cfg.state_dir}/files", "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000",
+              "ZIIRA_SITE_DIST_DIR": f"{cfg.web_root}/site/current"}
     existing = ctx.existing_env()
     missing = {k: v for k, v in wanted.items() if not existing.get(k)}
     if missing:

@@ -38,3 +38,4 @@ provides(INBOUND_COMMAND)(ProposalReplies)
 from ziira.modules.intel import privacy as _privacy  # noqa: E402, F401, I001 - registers the personal-data provider
 
 from ziira.modules.intel import platform_ai as _platform_ai  # noqa: E402, F401, I001 - answers the Super Admin
+from ziira.modules.intel import site_assistant_llm as _site_assistant_llm  # noqa: E402, F401, I001 - the website assistant's model call

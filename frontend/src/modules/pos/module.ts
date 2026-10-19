@@ -24,7 +24,7 @@ export default defineModule({
     { label: "pos:returns", to: "/pos/returns", permission: "till.review", order: 50, area: "sell", icon: "receipt" },
     { label: "pos:tills", tab: "pos:tillsDevices", to: "/pos/tills", permission: "till.review", order: 80, area: "sell", icon: "cash" },
     { label: "pos:devices", to: "/pos/devices", permission: "devices.manage", order: 81, area: "sell", under: "/pos/tills", icon: "payments" },
-    { label: "pos:settingsMenu", to: "/pos/settings", permission: "settings.manage", order: 12, area: "settings", section: "business", icon: "settings" },
+    { label: "pos:settingsMenu", to: "/pos/settings", permission: "settings.manage", order: 12, area: "settings", section: "business", under: "/admin/organisation", icon: "settings" },
     ...salesDocsMenu,
   ],
   slots: {

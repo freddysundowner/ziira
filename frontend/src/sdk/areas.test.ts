@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { allModules } from "@/modules";
 
-import { areaEntryPath, AREA_DEFINITIONS, areaPages, buildNavigation, isSingle, placeOf, type NavArea } from "./areas";
+import { areaEntryPath, AREA_DEFINITIONS, areaMembers, areaPages, buildNavigation, isSingle, placeOf, type NavArea } from "./areas";
 import { orderedGroups } from "./edition";
 import { SIDEBAR } from "./kindProfile";
 import { defineModule, type MenuItem } from "./module";
@@ -200,5 +200,25 @@ describe("buildNavigation for a kind of business", () => {
     }
     expect(SIDEBAR.retail.open).toEqual(["sell", "stock"]);
     expect(SIDEBAR.salon.open[0]).toBe("services");
+  });
+});
+
+describe("Settings entries", () => {
+  const everything = activeModules(allModules, new Set(allModules.map((m) => m.unit)));
+  const settings = (kind?: keyof typeof SIDEBAR) => buildNavigation(everything, access("all"), groups, kind ? SIDEBAR[kind] : undefined).areas.find((a) => a.id === "settings")!;
+  it("lists about ten plain entries, the landing page first, the rarely used ones under Advanced", () => {
+    const s = settings("retail");
+    expect(s.items.length).toBeLessThanOrEqual(10);
+    expect(s.items[0].to).toBe("/settings");
+    expect(s.items.filter((i) => i.section === "advanced").map((i) => i.to)).toEqual(["/admin/api-keys", "/admin/webhooks", "/admin/support"]);
+  });
+  it("merges near-duplicate pages into tabs of one entry", () => {
+    const s = settings("retail");
+    expect(s.families["/admin/organisation"].map((i) => i.to)).toEqual(["/admin/organisation", "/admin/settings", "/pos/settings"]);
+    expect(s.families["/admin/users"].map((i) => i.to)).toEqual(["/admin/users", "/admin/roles", "/admin/approval-rules"]);
+  });
+  it("leaves out Selling settings for a business with no counter, and the landing page when nothing else is listed", () => {
+    expect(areaMembers(settings("salon")).map((i) => i.to)).not.toContain("/pos/settings");
+    expect(buildNavigation(everything, access([]), groups).areas.find((a) => a.id === "settings")).toBeUndefined();
   });
 });

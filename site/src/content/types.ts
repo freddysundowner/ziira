@@ -30,7 +30,7 @@ export interface Faq { q: string; a: string }
 /** One numbered step of a "steps" page (kind "steps"): a one-line title, 2-4 short sentences, the concrete result and optionally a real screenshot. */
 export interface HowStep { title: string; text: string[]; result: string; img?: { key: ScreenKey; alt: string; caption?: string } }
 
-export type PageKind = "page" | "home" | "contact" | "pricing" | "legal" | "glossary" | "guides" | "sources" | "integrations" | "hub" | "help" | "complete" | "steps";
+export type PageKind = "page" | "home" | "contact" | "pricing" | "legal" | "glossary" | "guides" | "sources" | "integrations" | "hub" | "help" | "complete" | "steps" | "ai";
 
 /** The opening story on a steps page: a picture the reader recognises, an example note, and the question that leads into the steps. */
 export interface HowStory { title: string; paragraphs: string[]; noteTitle: string; note: string[]; noteCaption: string; after: string[]; teaser: string }

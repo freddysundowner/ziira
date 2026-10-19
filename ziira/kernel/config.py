@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     # X-Forwarded-For, which the proxy appends. Leave false unless a proxy you control sets it.
     trust_forwarded_for: bool = False
 
+    # Where the marketing site's build output lives on this server (the website assistant reads
+    # `assistant-knowledge.json` from it; docs/ai.md "Website assistant"). Empty: a short built-in text is used.
+    site_dist_dir: str = ""
+
     # Self-service registration (kernel/registration.py). Mode: "open" (anyone may register a business), "invite" (only
     # with an invitation code from `ziira invite create`) or "closed" (businesses are created by an operator only).
     registration_mode: str = "open"
@@ -178,6 +182,11 @@ class Settings(BaseSettings):
     ai_timeout_seconds: float = 30.0
     ai_max_retries: int = 2
     ai_terms_confirmed: bool = False
+    # Development only (`ZIIRA_AI_FAKE=1`, ignored in production): use the fake provider, which answers Ask Ziira from
+    # the real tools with canned sentences, so the chat can be seen without a key. `ai_fake_delay_seconds` makes each
+    # fake model call take that long (to feel and measure the chat).
+    ai_fake: bool = False
+    ai_fake_delay_seconds: float = 0.0
 
     # Plans, subscriptions and licences (docs/platform-admin.md, docs/licensing.md). "saas": this deployment sells
     # subscriptions and enforces them; "selfhosted": a business runs its own copy, subscription rows are ignored and a

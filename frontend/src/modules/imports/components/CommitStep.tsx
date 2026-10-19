@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  Alert, api, Badge, Button, Card, ConfirmDialog, ErrorState, Field, formatDate, money, quantity, Skeleton, Stat, Textarea, toast, unwrap, useMutation, useQuery,
+  Alert, api, Badge, Button, Card, ConfirmDialog, ErrorState, Field, formatDate, money, quantity, Skeleton, Stat, StatGrid, Textarea, toast, unwrap, useMutation, useQuery,
   useQueryClient, useTranslation,
 } from "@/sdk";
 
@@ -20,12 +20,12 @@ export function CommitStep({ batch }: { batch: Batch }) {
         <Alert tone="warn">{t("reverse.done", { date: formatDate(batch.reverted_at ?? batch.created_at), reason: batch.revert_reason ?? "" })}</Alert>
       )}
       {running ? <Progress batch={batch} /> : <Report batch={batch} />}
-      <div className="grid gap-3 sm:grid-cols-4">
+      <StatGrid>
         <Stat label={t("done.imported")} value={quantity(c.imported, 0)} tone={c.imported > 0 ? "ok" : undefined} />
         <Stat label={t("done.skipped")} value={quantity(c.skipped, 0)} hint={t("review.skippedHint")} />
         <Stat label={t("done.rejected")} value={quantity(c.invalid, 0)} tone={c.invalid > 0 ? "bad" : undefined} hint={t("review.problemsHint")} />
         <Stat label={t("done.failed")} value={quantity(c.failed, 0)} tone={c.failed > 0 ? "bad" : undefined} hint={t("done.failedHint")} />
-      </div>
+      </StatGrid>
       {batch.status === "done" && batch.reversible && c.imported > 0 && <ReverseImport batch={batch} />}
       {!running && (
         <div className="flex flex-wrap justify-between gap-2">

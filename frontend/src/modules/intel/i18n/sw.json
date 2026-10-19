@@ -209,6 +209,17 @@
       "spend_cap": "Msaidizi wa AI amefikia kikomo cha matumizi cha jukwaa kwa mwezi huu. Jaribu tena baadaye au mwombe mmiliki wa jukwaa.",
       "default": "Uliza Ziira haipatikani kwa sasa."
     },
+    "typing": "Ziira anaandika",
+    "stop": "Simamisha",
+    "stopped": "Imesimamishwa.",
+    "showAll": "Onyesha yote",
+    "howIKnow": "Ninajuaje",
+    "connectionLost": "Muunganisho ulikatika kabla sijamaliza. Tafadhali jaribu tena.",
+    "enterHint": "Enter kutuma, Shift+Enter kwa mstari mpya",
+    "followUp": {
+      "lastWeek": "Na wiki iliyopita?",
+      "byBranch": "Nionyeshe kwa tawi"
+    },
     "ownerCanFix": "Mmiliki anaweza kuiwasha kwenye Mipangilio.",
     "openSettings": "Washa Uliza Ziira"
   },

@@ -169,10 +169,10 @@
     }
   },
   "summary": {
-    "title": "Your daily summary",
-    "arrives": "Your daily summary arrives at {{time}} {{way}}.",
+    "title": "Your daily note",
+    "arrives": "Your daily note arrives at {{time}} {{way}}.",
     "inApp": "in the app",
-    "none": "You do not get a daily summary yet.",
+    "none": "You do not get a daily note yet.",
     "change": "Change",
     "turnOn": "Turn it on",
     "inAppOption": "In the app"
@@ -209,7 +209,7 @@
   "watch": {
     "menu": "What Ziira watches",
     "title": "What Ziira watches",
-    "hint": "Everything Ziira looks at for you, in plain words. Switch things off, or change the limits in the sentences.",
+    "hint": "Everything Ziira looks at for you. Switch things off or change a limit.",
     "setupAgain": "Set up again",
     "resetAll": "Back to recommended",
     "resetAllTitle": "Back to recommended?",
@@ -300,7 +300,7 @@
   "alerts": {
     "menu": "Where you hear from Ziira",
     "title": "Where you hear from Ziira",
-    "hint": "How Ziira reaches you: urgent alerts, your daily summary and approvals.",
+    "hint": "How Ziira reaches you: urgent alerts, your daily note and approvals.",
     "urgentTitle": "Urgent alerts",
     "urgentHint": "Ziira can message the right people straight away when something serious comes up. Everything else waits for the daily summary.",
     "channel": "Send urgent alerts by",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import {
-  Alert, api, Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Pager, Select, Stat, StatusBadge, toast, unwrap, useMutation, usePagedList, useQueryClient,
+  Alert, api, Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Pager, Select, Stat, StatGrid, StatusBadge, toast, unwrap, useMutation, usePagedList, useQueryClient,
   useTranslation, quantity,
 } from "@/sdk";
 
@@ -38,12 +38,12 @@ export function ReviewStep({ batch, onBack }: { batch: Batch; onBack: () => void
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-4">
+      <StatGrid>
         <Stat label={t("review.inFile")} value={batch.total_rows} />
         <Stat label={t("review.ready")} value={c.valid} tone={c.valid > 0 ? "ok" : undefined} hint={t("review.readyHint")} />
         <Stat label={t("review.problems")} value={c.invalid} tone={c.invalid > 0 ? "bad" : undefined} hint={t("review.problemsHint")} />
         <Stat label={t("review.skipped")} value={c.skipped} hint={t("review.skippedHint")} />
-      </div>
+      </StatGrid>
       {c.valid === 0 && <Alert tone="warn">{c.skipped > 0 && c.invalid === 0 ? t("review.nothingNew") : t("review.nothingReady")}</Alert>}
       {c.invalid > 0 && c.valid > 0 && !batch.whole_file && <Alert tone="info">{t("review.leftOut", { count: c.invalid })}</Alert>}
       {check.problems.map((p) => <Alert key={p} tone="bad">{p}</Alert>)}

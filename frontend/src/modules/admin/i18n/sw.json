@@ -1,6 +1,6 @@
 {
   "users": "Watumiaji", "roles": "Majukumu", "usersHint": "Watu wanaoweza kuingia kwenye biashara hii, na wanachoruhusiwa kufanya.",
-  "rolesHint": "Jukumu ni seti ya ruhusa yenye jina. Wape watumiaji majukumu kwa biashara nzima, kampuni moja, tawi moja, au rekodi zao tu.",
+  "rolesHint": "Jukumu ni seti ya ruhusa yenye jina unayowapa watumiaji.",
   "newUser": "Mtumiaji mpya", "fullName": "Jina kamili", "email": "Barua pepe", "phone": "Simu", "password": "Nenosiri", "passwordHint": "Angalau herufi 8. Acha wazi ili wamwalike kuliweka.",
   "newPassword": "Nenosiri jipya", "setPassword": "Weka nenosiri", "passwordSet": "Nenosiri limebadilishwa.", "status": "Hali", "save": "Hifadhi", "cancel": "Ghairi", "close": "Funga", "edit": "Hariri", "view": "Tazama",
   "noUsers": "Hakuna watumiaji bado.", "searchUsers": "Tafuta watumiaji", "actions": "Vitendo", "enable": "Washa", "disable": "Zima",

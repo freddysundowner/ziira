@@ -11,6 +11,7 @@ import Faq from "./Faq.astro";
 import Icon from "./Icon.astro";
 import Cta from "./Cta.astro";
 import { appTiles } from "../content/nav";
+import { strip } from "../content/ai";
 
 interface Props { lang: Lang; h: HomeContent }
 const { lang, h } = Astro.props;
@@ -25,7 +26,7 @@ const hl = (text: string, phrase: string) => { const i = text.indexOf(phrase); r
 const [aH1, aH2, aH3] = hl(h.appsH2, "in one place");
 const [oH1, oH2, oH3] = hl(h.onePlace.h2, "one platform");
 const [pH1, pH2, pH3] = hl(h.pricingTeaser.h2, "what you need");
-const nodes = appTiles.filter((a) => ["core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people", "intelligence-how"].includes(a.id)).map((a, n) => {
+const nodes = appTiles.filter((a) => ["core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people", "ai"].includes(a.id)).map((a, n) => {
   const ang = (-90 + n * 45) * Math.PI / 180;
   const x = 300 + 235 * Math.cos(ang), y = 210 + 150 * Math.sin(ang);
   return { ...a, x: Math.round(x), y: Math.round(y), ly: Math.round(y + (Math.sin(ang) < -0.3 ? -42 : 50)) };
@@ -43,7 +44,7 @@ const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
       <div class="cta-wrap">
         <div class="cta-row center">
           <a class="btn btn-primary btn-lg" href={appLinks.register}>{h.ctaPrimary}</a>
-          <a class="btn btn-ghost btn-lg" href="#how-it-works">{h.ctaSecondary}</a>
+          <a class="btn btn-ghost btn-lg" href={urlFor("ai", lang)} data-ask-ziira>{h.ctaSecondary}</a>
         </div>
         <p class="annot"><svg viewBox="0 0 90 70" aria-hidden="true" focusable="false"><path pathLength="1" d="M80 64 C 72 34, 44 14, 12 20" /><path pathLength="1" d="M12 20 L 27 7 M12 20 L 29 31" /></svg>{h.annotation}</p>
       </div>
@@ -58,13 +59,6 @@ const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
         <Screenshot name="command" alt={screenAlt[lang].command.alt} priority widths={[480, 800, 1200]} sizes="(min-width: 1100px) min(80vw, 1080px), (min-width: 700px) 90vw, calc(100vw - 32px)" />
       </div>
       <div class="floats">
-        <div class="float float-a">
-          <span class="badge">{h.mock.badge}</span>
-          <strong>{h.mock.title}</strong>
-          <p>{h.mock.text}</p>
-          <p><b>{h.mock.next}</b></p>
-          <div class="acts" aria-hidden="true">{h.mock.acts.map((a) => <span>{a}</span>)}</div>
-        </div>
         {h.mock.cards.map((c, k) => (
           <div class={`float float-${"bcd"[k]}`}>
             <span class="badge">{c.area}</span>
@@ -78,7 +72,29 @@ const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
   </div>
 </section>
 
-<section class="section white arc" aria-labelledby="apps-h">
+<section class="ask-strip" id="ai" aria-label="Ask Ziira">
+  <div class="container">
+    <span class="ask-strip-ico" aria-hidden="true"><Icon name="spark" /></span>
+    <p>{strip.text}</p>
+    <div class="ask-strip-actions">
+      <a class="btn btn-primary" href={urlFor("ai", lang)} data-ask-ziira>{strip.button}</a>
+      <a class="more-link" href={urlFor("ai", lang)}>{strip.more}</a>
+    </div>
+  </div>
+</section>
+
+<section class="section tint" aria-labelledby="for-h">
+  <div class="container">
+    <div class="section-head center"><span class="eyebrow">Who it is for</span><h2 id="for-h">{h.forH2}</h2><p>{h.forLead}</p></div>
+    <div class="picker wide">
+      {h.forItems.map((f) => (
+        <a class="pick" href={urlFor(f.link, lang)}><span class="pick-ico"><Icon name={f.icon} /></span><h3>{f.t}</h3><p>{f.d}</p><span class="more">{t.readMore} &rarr;</span></a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section white" aria-labelledby="apps-h">
   <div class="container">
     <div class="section-head center"><h2 id="apps-h">{aH1}<span class="hl">{aH2}</span>{aH3}</h2><p>{h.appsLead}</p></div>
     <ul class="apps">
@@ -245,17 +261,6 @@ const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
     <div class="teaser">
       <div><h2 id="price-h">{pH1}<span class="hl">{pH2}</span>{pH3}</h2><p>{h.pricingTeaser.text}</p><a class="btn btn-primary" href={urlFor("pricing", lang)}>{h.pricingTeaser.link}</a></div>
       <ul class="sets">{h.pricingTeaser.sets.map((x) => <li>{x}</li>)}</ul>
-    </div>
-  </div>
-</section>
-
-<section class="section tint" aria-labelledby="for-h">
-  <div class="container">
-    <div class="section-head center"><h2 id="for-h">{h.forH2}</h2></div>
-    <div class="picker">
-      {h.forItems.map((f) => (
-        <a class="pick" href={urlFor(f.link, lang)}><h3>{f.t}</h3><p>{f.d}</p><span class="more">{t.readMore} &rarr;</span></a>
-      ))}
     </div>
   </div>
 </section>

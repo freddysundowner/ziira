@@ -21,9 +21,10 @@ CIPHERS = ("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDS
 ACME_ROOT = "/var/www/letsencrypt"
 LOG_DIR = "/var/log/ziira/nginx"
 REDIRECTS_FILE = "/var/lib/ziira/nginx/site-redirects.conf"
-# Content-Security-Policy of the static site: copied from site/public/_headers (no third-party anything).
+# Content-Security-Policy of the static site: copied from site/public/_headers. connect-src allows https so the floating
+# assistant can reach the app host's public API; scripts, styles and images still come only from the site itself.
 SITE_CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
-            "font-src 'self'; connect-src 'self'; form-action 'self' https:; frame-ancestors 'none'; base-uri 'self'; "
+            "font-src 'self'; connect-src 'self' https:; form-action 'self' https:; frame-ancestors 'none'; base-uri 'self'; "
             "object-src 'none'")
 PERMISSIONS = "camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()"
 UPLOAD_LOCATION = r"^/api/v1/connect(/.*)?/(upload|files/detect)$"

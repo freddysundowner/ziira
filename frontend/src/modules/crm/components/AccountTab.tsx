@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import {
-  api, Button, Card, DataTable, Field, formatDate, Input, Modal, money, Pager, StatusBadge, Stat, Tabs, Textarea, today, toast, unwrap, useCurrency, useFormState,
+  api, Button, Card, DataTable, Field, formatDate, Input, Modal, money, Pager, StatusBadge, Stat, StatGrid, Tabs, Textarea, today, toast, unwrap, useCurrency, useFormState,
   useMutation, usePagedList, useQuery, useQueryClient, useTranslation, type Schemas,
 } from "@/sdk";
 
@@ -47,14 +47,14 @@ export function AgeingStrip({ customer, buckets }: { customer?: Customer; bucket
   const { t } = useTranslation("crm");
   return (
     <Card title={t("ageing")}>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <StatGrid min="8rem">
         {BUCKET_KEYS.map((k) => (
-          <div key={k}>
-            <p className="text-xs text-muted">{t(`buckets.${k}`)}</p>
-            <p className="tnum text-sm font-semibold"><Amount value={buckets[k]} companyId={customer?.company_id} /></p>
+          <div key={k} className="min-w-0">
+            <p className="text-xs text-muted [overflow-wrap:anywhere]">{t(`buckets.${k}`)}</p>
+            <p className="tnum text-sm font-semibold [overflow-wrap:anywhere]"><Amount value={buckets[k]} companyId={customer?.company_id} /></p>
           </div>
         ))}
-      </div>
+      </StatGrid>
     </Card>
   );
 }

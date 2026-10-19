@@ -82,7 +82,7 @@ export default function AskFloating() {
             <h2 className="inline-flex flex-wrap items-center gap-2 text-base font-semibold">{title}<AiBadge short /></h2>
             <button type="button" aria-label={t("ai.closeAsk")} onClick={() => show(false)} className="rounded-lg p-1.5 text-muted hover:bg-sunken hover:text-ink"><X className="h-4 w-4" /></button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]"><AskBox autoAsk={auto} /></div>
+          <div className="min-h-0 flex-1"><AskBox autoAsk={auto} /></div>
         </div>
       )}
       <button ref={button} type="button" aria-label={title} aria-expanded={open} aria-controls="ask-ziira-panel" onClick={() => show(!open)}

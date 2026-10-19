@@ -64,8 +64,8 @@ export interface GraphInput {
 
 const SOFTWARE_TEXT = {
   name: "Ziira",
-  en: "Business system for shops and distributors: selling, stock, buying, customers on credit, books and payroll, with Intelligence checking the business every day and alerting owners.",
-  features: ["Point of sale with offline selling", "Stock by branch", "Purchasing and supplier bills", "Customer credit", "Accounting that posts itself", "Payroll", "Payment matching", "Intelligence: daily checks, alerts and briefs", "Intelligence on a system you already use"],
+  en: "AI-first business system for every kind of business: selling, stock, buying, customers, accounting, payroll, bookings, jobs, claims, memberships and projects, with AI that checks the business every day, answers in plain words and prepares next steps for approval.",
+  features: ["Ziira AI: ask in plain words, answers with proof, suggestions you approve", "Daily checks, alerts and a daily summary", "Point of sale with offline selling", "Stock by branch", "Purchasing and supplier bills", "Customer credit", "Accounting that posts itself", "Payroll", "Payment matching", "Appointments and bookings", "Jobs and repairs", "Insurer and payer claims", "Memberships and recurring invoices", "Projects and time billing", "Works on top of a system you already use, read only"],
 };
 
 export function graphFor(input: GraphInput, softwareUrl: () => string): Record<string, unknown> {

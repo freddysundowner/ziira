@@ -96,7 +96,7 @@ export default function ReceivePage() {
             <CustomFieldsForm fields={fields.data} values={values} problems={tried ? customProblems : {}} onChange={(k, v) => setValues((x) => ({ ...x, [k]: v }))} />
           </Card>
         )}
-        <div className="sticky bottom-0 -mx-4 flex justify-end gap-2 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="sticky bottom-0 -mx-4 flex flex-wrap justify-end gap-2 border-t border-line bg-surface/95 py-3 pl-4 pr-20 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
           <Button variant="secondary" size="lg" onClick={() => navigate("/jobs")}>{t("common.cancel")}</Button>
           <Button size="lg" type="submit" loading={save.isPending}>{t("receive.save")}</Button>
         </div>

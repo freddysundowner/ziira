@@ -4,6 +4,7 @@ import { coreEn } from "../content/pages/core.en";
 import { intelEn } from "../content/pages/intel.en";
 import { sourcesEn } from "../content/pages/sources.en";
 import { miscEn } from "../content/pages/misc.en";
+import { aiEn, solutionsFirst, solutionsMore } from "../content/pages/ai.en";
 import { cmsDefs } from "./cmsPages";
 import { guides } from "./guides";
 import { helpDefs, HELP_DATE } from "./help";
@@ -27,7 +28,7 @@ const homeDef = (lang: Lang): PageDef => {
 };
 
 const defs: Record<Lang, PageDef[]> = {
-  en: [homeDef("en"), ...coreEn, ...intelEn, ...sourcesEn, ...miscEn],
+  en: [homeDef("en"), ...coreEn, ...aiEn, ...intelEn, ...sourcesEn, ...solutionsFirst, ...miscEn, ...solutionsMore],
 };
 
 export const LANG_PREFIX: Record<Lang, string> = { en: "" };

@@ -28,7 +28,7 @@ export function LedgerReport({ scope, from, to }: ReportProps) {
   return (
     <ReportFrame title={t("reports.ledger")} company={scope.company?.name ?? ""} period={`${r ? `${r.code} ${r.name} · ` : ""}${formatDate(from)} – ${formatDate(to)}`}
       loading={!!accountId && report.isLoading} error={report.error?.message} onRetry={() => void report.refetch()}
-      actions={<div className="w-72"><Field label={t("account")}><Combobox value={accountId} onChange={setAccountId} options={accountOptions(accounts.data)} placeholder={t("chooseAccount")} /></Field></div>}>
+      actions={<div className="w-72 max-w-full"><Field label={t("account")}><Combobox value={accountId} onChange={setAccountId} options={accountOptions(accounts.data)} placeholder={t("chooseAccount")} /></Field></div>}>
       {!accountId ? <p className="py-8 text-center text-sm text-muted">{t("chooseAccountHint")}</p> : r && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-6 text-sm">

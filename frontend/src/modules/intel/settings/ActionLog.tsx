@@ -19,13 +19,13 @@ export default function ActionLog({ companyId }: { companyId: string }) {
       <DataTable
         rows={list.rows} loading={list.query.isLoading} error={list.query.error?.message} onRetry={() => void list.query.refetch()} rowKey={(r) => r.id} dense
         toolbar={
-          <div className="flex flex-wrap gap-2">
-            <Select aria-label={t("log.mode")} className="w-auto" value={mode} onChange={(e) => setMode(e.target.value as "" | "manual" | "automatic")}>
+          <div className="flex min-w-0 max-w-full flex-wrap gap-2">
+            <Select aria-label={t("log.mode")} className="w-auto min-w-0 max-w-full" value={mode} onChange={(e) => setMode(e.target.value as "" | "manual" | "automatic")}>
               <option value="">{t("log.anyMode")}</option>
               <option value="manual">{t("log.manual")}</option>
               <option value="automatic">{t("log.automatic")}</option>
             </Select>
-            <Select aria-label={t("log.actionType")} className="w-auto" value={type} onChange={(e) => setType(e.target.value)}>
+            <Select aria-label={t("log.actionType")} className="w-auto min-w-0 max-w-full" value={type} onChange={(e) => setType(e.target.value)}>
               <option value="">{t("log.anyAction")}</option>
               {(types.data ?? []).map((a) => <option key={a.type} value={a.type}>{a.title}</option>)}
             </Select>

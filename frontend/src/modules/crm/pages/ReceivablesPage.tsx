@@ -2,7 +2,7 @@ import { Send } from "lucide-react";
 import { useState } from "react";
 
 import {
-  api, Alert, Button, ConfirmDialog, DataTable, EmptyState, Field, formatDate, Input, PageHeader, Select, Stat, Tabs, today, toast, unwrap, useAccess, useCan,
+  api, Alert, Button, ConfirmDialog, DataTable, EmptyState, Field, formatDate, Input, PageHeader, Select, Stat, StatGrid, Tabs, today, toast, unwrap, useAccess, useCan,
   useCompany, useMutation, useQuery, useQueryClient, useTranslation, money,
 } from "@/sdk";
 
@@ -42,11 +42,11 @@ function Ageing() {
   const overdue = d ? overdueOf(d.buckets) : undefined;
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <StatGrid>
         <Stat label={t("totalOwed")} loading={q.isLoading} value={d ? <Amount value={d.total} companyId={company?.id} /> : "—"} />
         <Stat label={t("overdue")} loading={q.isLoading} value={overdue !== undefined ? <Amount value={overdue} companyId={company?.id} /> : "—"} tone={overdue && isPositive(overdue) ? "bad" : undefined} />
         <Stat label={t("customersOwing")} loading={q.isLoading} value={d ? d.customers.length : "—"} />
-      </div>
+      </StatGrid>
       {d && <AgeingStrip buckets={d.buckets} />}
       <DataTable
         rows={d?.customers} loading={q.isLoading} error={q.error?.message} onRetry={() => void q.refetch()} rowKey={(r) => r.customer_id}

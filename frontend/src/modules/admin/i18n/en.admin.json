@@ -1,6 +1,10 @@
 {
  "settings": "Settings",
  "settingsHint": "Business policies, document numbers and reason codes.",
+ "generalTitle": "General",
+ "generalHint": "Rules you change now and then.",
+ "moreOptions": "More options",
+ "permissionsOf": "{{chosen}} of {{total}}",
  "tabPolicies": "Policies",
  "tabNumbering": "Document numbers",
  "tabReasons": "Reason codes",
@@ -25,10 +29,10 @@
   "reminders": "Chasing customers who owe you money.",
   "people": "Working days, leave and overtime.",
   "printing": "Lines on receipts and invoices, and how phone numbers are read.",
-  "regional": "Where your business is: the date on every sale, stock movement, receipt and journal entry is the date here.",
-  "alerts": "When Ziira messages you about something serious. More choices are under Intelligence settings, Where you hear from Ziira.",
-  "privacy": "How fast you answer people about their data, who must approve erasures, and how long records are kept.",
-  "files": "What photos and PDFs on jobs, customers and other records may be, how much space they may use, and how long they are kept."
+  "regional": "Sets the date on every sale, receipt and entry.",
+  "alerts": "When Ziira messages you about something serious.",
+  "privacy": "Answer times, erasure approval and how long records are kept.",
+  "files": "Size, space and keeping time for photos and PDFs."
  },
  "set": {
   "negative_stock_allowed": "Allow selling stock that is not there",
@@ -225,7 +229,7 @@
   "critical": "Critical"
  },
  "notifications": "Notifications",
- "notificationsHint": "Messages sent by email and SMS, who asked not to be contacted, and which channels are ready.",
+ "notificationsHint": "Messages sent, people who opted out, and your channels.",
  "setUpChannels": "Set up channels",
  "tabLog": "Sent messages",
  "tabOptOuts": "Do not contact",
