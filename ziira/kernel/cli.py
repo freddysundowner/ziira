@@ -13,6 +13,7 @@ Every business (tenant) has its own database; the master database lists them.
     ziira disable <tenant> <unit>       disable a unit for a tenant (data kept)
     ziira remove <tenant> <unit>        drop a disabled unit's tables from the tenant's database
     ziira drop-tenant <code> --confirm <code>   delete a tenant's database and login (cannot be undone)
+    ziira mfa-policy off|privileged|everyone (--tenant CODE | --all)   who must use a second factor
     ziira outbox-run [--once]           deliver committed events to after-commit subscribers
     ziira worker [--once]               deliver events and run background jobs (replaces outbox-run)
     ziira run-task <tenant> <name>      run one recurring task now (intel.run_checks, command.send_briefs, ...)
@@ -104,6 +105,23 @@ def cmd_tenants(_: Registry, __: argparse.Namespace) -> None:
 def cmd_remove(reg: Registry, a: argparse.Namespace) -> None:
     reg.remove_from_tenant(_tenant(a.tenant), a.unit)
     print(f"Removed {a.unit} from {a.tenant} (its tables and data are gone)")
+
+
+def cmd_mfa_policy(_: Registry, a: argparse.Namespace) -> None:
+    """Who must use a second factor, for one business or all of them (each business can also change it in Settings)."""
+    from sqlalchemy import text
+
+    from ziira.kernel.db import tenant_session
+
+    if not a.all and not a.tenant:
+        raise ZiiraError("Name a business with --tenant CODE, or use --all")
+    targets = list_tenants() if a.all else [_tenant(a.tenant)]
+    for t in targets:
+        tid = t.id if hasattr(t, "id") else t
+        with tenant_session(tid) as s:
+            s.execute(text("update kernel.tenant set mfa_policy = :p where id = kernel.current_tenant()"),
+                      {"p": a.policy})
+    print(f"Second-factor policy is now '{a.policy}' for {len(targets)} business(es)")
 
 
 def cmd_drop_tenant(_: Registry, a: argparse.Namespace) -> None:
@@ -525,6 +543,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--plan-mode", choices=["trial", "active", "comp"], default="trial")
     s.set_defaults(fn=cmd_create_tenant)
     sub.add_parser("tenants").set_defaults(fn=cmd_tenants)
+    s = sub.add_parser("mfa-policy")
+    s.add_argument("policy", choices=["off", "privileged", "everyone"])
+    s.add_argument("--tenant", default=None, help="workspace code or id")
+    s.add_argument("--all", action="store_true", help="every business")
+    s.set_defaults(fn=cmd_mfa_policy)
     s = sub.add_parser("drop-tenant")
     s.add_argument("code")
     s.add_argument("--confirm", required=True)

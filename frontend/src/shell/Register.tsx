@@ -150,6 +150,13 @@ export function Register() {
     }
     if (result.retryAfter) setBlockedUntil(Date.now() + result.retryAfter * 1000);
     const mapped = serverProblems(result.fields ?? {});
+    // a complaint about something this form no longer asks (name, phone ...) has no field to sit under: say it in words
+    const asked = new Set<FieldKey>(["edition", "business", "country", "kind", "email", "password", "confirm", "consent"]);
+    const unseen = mapped.filter((m) => !asked.has(m.field));
+    if (mapped.length > 0 && unseen.length === mapped.length) {
+      setFailure(unseen[0].message);
+      return;
+    }
     if (mapped.length > 0) {
       setServerErrors(Object.fromEntries(mapped.map((m) => [m.field, m.message])));
       setTouched((s) => new Set([...s, ...mapped.map((m) => m.field)]));
@@ -245,7 +252,7 @@ const DEFAULT_COUNTRY = "KE";
 
 export function ownerNameFrom(email: string): string {
   const local = email.trim().split("@")[0] ?? "";
-  const word = local.split(/[._+\-\d]+/).find((w) => w.length > 0) ?? "Owner";
+  const word = local.split(/[._+\-\d]+/).find((w) => w.length >= 2) ?? "Owner";     // the server wants at least two letters
   return word.charAt(0).toUpperCase() + word.slice(1, 60);
 }
 

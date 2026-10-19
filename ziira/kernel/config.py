@@ -135,6 +135,7 @@ class Settings(BaseSettings):
     # to re-entering the password before a change. Production refuses "off" unless the choice is acknowledged.
     operator_mfa: str = "off"
     operator_mfa_off_acknowledged: bool = False
+    mfa_default_off_acknowledged: bool = False      # production: new businesses start without a forced second factor
     # With "off": a sign-in ends this many hours after it began, or after this many minutes without a request.
     operator_session_hours: int = 8
     operator_idle_minutes: int = 30
@@ -268,9 +269,11 @@ class Settings(BaseSettings):
             raise RuntimeError("ZIIRA_METRICS_TOKEN must be at least 24 characters (or empty to switch /metrics off)")
         if self.mfa_default_policy not in ("off", "privileged", "everyone"):
             raise RuntimeError("ZIIRA_MFA_DEFAULT_POLICY must be off, privileged or everyone")
-        if self.mfa_default_policy == "off":
+        if self.mfa_default_policy == "off" and not self.mfa_default_off_acknowledged:
             raise RuntimeError("Set ZIIRA_MFA_DEFAULT_POLICY to privileged or everyone: owners, finance and admin "
-                               "roles must use a second factor before real customer data")
+                               "roles must use a second factor before real customer data. To let new businesses start "
+                               "without it on purpose (each can switch it on in Settings), set "
+                               "ZIIRA_MFA_DEFAULT_OFF_ACKNOWLEDGED=true")
         if self.registration_mode not in ("open", "invite", "closed"):
             raise RuntimeError("ZIIRA_REGISTRATION_MODE must be open, invite or closed")
         # Open registration without email is allowed: with no working email a new owner goes straight in after

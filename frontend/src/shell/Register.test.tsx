@@ -143,6 +143,14 @@ describe("the sign-up wizard", () => {
     expect(sessionStorage.getItem("ziira.register.draft")).toBeNull();
   });
 
+  it("makes a two-letter owner name from a one-letter email address, which the server accepts", async () => {
+    const { ownerNameFrom } = await import("./Register");
+    expect(ownerNameFrom("c@gmail.com")).toBe("Owner");
+    expect(ownerNameFrom("jane.doe@acme.test")).toBe("Jane");
+    expect(ownerNameFrom("j.smith@acme.test")).toBe("Smith");
+    expect(ownerNameFrom("x1y2@acme.test")).toBe("Owner");
+  });
+
   it("keeps the answers (but not the password) across a refresh", async () => {
     const first = open();
     await toAccount();

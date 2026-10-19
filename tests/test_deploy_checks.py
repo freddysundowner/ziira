@@ -183,3 +183,8 @@ def test_the_upload_size_for_files_must_be_a_sensible_number() -> None:
     assert "ZIIRA_FILES_MAX_UPLOAD_BYTES" not in errors({**GOOD, "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000"})
     for bad in ("lots", "10", "900000000"):
         assert "ZIIRA_FILES_MAX_UPLOAD_BYTES" in errors({**GOOD, "ZIIRA_FILES_MAX_UPLOAD_BYTES": bad})
+
+
+def test_a_default_without_a_forced_second_factor_is_allowed_only_on_purpose() -> None:
+    assert "ZIIRA_MFA_DEFAULT_POLICY" in errors({**GOOD, "ZIIRA_MFA_DEFAULT_POLICY": "off"})
+    assert "ZIIRA_MFA_DEFAULT_POLICY" not in errors({**GOOD, "ZIIRA_MFA_DEFAULT_POLICY": "off", "ZIIRA_MFA_DEFAULT_OFF_ACKNOWLEDGED": "true"})

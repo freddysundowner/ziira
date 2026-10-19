@@ -258,3 +258,18 @@ def test_the_time_zone_chosen_at_registration_becomes_the_companys(client, regis
     assert bad.status_code == 422 or bad.status_code == 400, bad.text
     with master_session() as s:
         assert s.execute(text("select count(*) from master.registration where business_name = 'Nowhere Ltd'")).scalar_one() == 0
+
+
+def test_the_mfa_policy_command_changes_one_business_or_all(client, registry) -> None:  # type: ignore[no-untyped-def]
+    from tests.stock_helpers import system
+    from ziira.kernel import cli
+
+    out = verify(client, client.post(REGISTER, json=body("Policy Traders")).json()["dev_token"]).json()
+    code = "policy-traders"
+    assert cli.main(["mfa-policy", "everyone", "--tenant", code]) == 0
+    with system({"tenant_id": out["tenant_id"]}) as s:
+        assert s.execute(text("select mfa_policy from kernel.tenant")).scalar_one() == "everyone"
+    assert cli.main(["mfa-policy", "off", "--tenant", code]) == 0
+    with system({"tenant_id": out["tenant_id"]}) as s:
+        assert s.execute(text("select mfa_policy from kernel.tenant")).scalar_one() == "off"
+    assert cli.main(["mfa-policy", "off"]) != 0                     # a business or --all must be named

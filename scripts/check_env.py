@@ -120,9 +120,13 @@ def check(env: dict[str, str]) -> list[Finding]:
                           "database URLs point at the pooler, set ZIIRA_PG_TOOL_HOST / ZIIRA_PG_TOOL_PORT to "
                           "PostgreSQL's own address")
 
-    if get("MFA_DEFAULT_POLICY", "off") not in ("privileged", "everyone"):
+    mfa_default = get("MFA_DEFAULT_POLICY", "off")
+    if mfa_default == "off" and _is_true(get("MFA_DEFAULT_OFF_ACKNOWLEDGED")):
+        warn("MFA_DEFAULT_POLICY", "off, acknowledged: new businesses start without a forced second factor; owners "
+                                   "should switch it on in Settings > Security")
+    elif mfa_default not in ("privileged", "everyone"):
         error("MFA_DEFAULT_POLICY", "must be privileged or everyone: owners and finance roles need a second factor "
-                                    "(the application refuses to start in production otherwise)")
+                                    "(or off with ZIIRA_MFA_DEFAULT_OFF_ACKNOWLEDGED=true, on purpose)")
 
     # --- platform staff (Super Admin) sign-in
     operator_mfa = get("OPERATOR_MFA", "off")
