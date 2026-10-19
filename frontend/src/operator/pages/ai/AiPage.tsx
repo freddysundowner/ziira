@@ -10,7 +10,6 @@ import { useOperatorCan } from "../../me";
 import { NoProvider } from "./NoProvider";
 import { type FormState, ProviderForm } from "./ProviderForm";
 import { ProviderCard } from "./ProviderCard";
-import { SiteAssistantCard } from "./SiteAssistantCard";
 import { UsagePanel } from "./UsagePanel";
 
 export const AI_KEY = ["operator", "ai"];
@@ -76,7 +75,6 @@ function Loaded({ overview, onChanged }: { overview: AiOverview; onChanged: () =
         {details.open && (
           <div id="ai-details" className="mt-3 space-y-4">
             <UsagePanel />
-            <SiteAssistantCard />
             <h2 className="pt-2 text-sm font-semibold">{t("ai.details.providers")}</h2>
             <p className="-mt-3 text-xs text-muted">{t("ai.details.providersHint")}</p>
             {overview.providers.map((p) => (

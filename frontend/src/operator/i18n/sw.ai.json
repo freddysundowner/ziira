@@ -159,29 +159,6 @@
    "providersHint": "Modeli kwa kila huduma, orodha ya bei, anwani ya msingi, masharti ya data, ukaguzi wa ubora na funguo zilizohifadhiwa.",
    "audit": "Angalia kumbukumbu ya mabadiliko"
   },
-  "site": {
-   "title": "Msaidizi wa tovuti",
-   "description": "Gumzo kwenye tovuti ya umma. Hujibu tu kutokana na kurasa za tovuti yenyewe na bei za sasa. Limezimwa hadi uliwashe.",
-   "loadFailed": "Mipangilio ya msaidizi wa tovuti haikuweza kupakiwa",
-   "on": "Msaidizi ameamilishwa: wageni wanaona kitufe cha gumzo.",
-   "off": "Msaidizi amezimwa: wageni hawaoni kitufe cha gumzo.",
-   "noProvider": "Umewasha, lakini bado hawezi kujibu. Chagua na uhifadhi mtoa huduma wa AI hapo juu kwanza.",
-   "budget": "Kikomo cha matumizi au jumla ya siku imefikiwa, kwa hiyo kitufe cha gumzo kimefichwa kwa sasa.",
-   "enable": "Washa msaidizi wa tovuti",
-   "cap": "Kikomo cha matumizi kwa mwezi (USD)",
-   "capHint": "Kikomo chake chenyewe, tofauti na cha biashara. Imetumika mwezi huu: {{spent}}.",
-   "noCap": "Hakuna kikomo chake",
-   "perMinute": "Maswali kwa mgeni kwa dakika",
-   "perMinuteHint": "Mgeni mmoja, anwani moja.",
-   "perDay": "Maswali kwa mgeni kwa siku",
-   "perDayHint": "Mgeni mmoja, anwani moja.",
-   "total": "Maswali kwa siku, wote",
-   "totalHint": "Ikifikiwa, gumzo hupumzika hadi kesho.",
-   "greeting": "Ujumbe wa kwanza",
-   "chips": "Maswali ya haraka",
-   "chipsHint": "Moja kwa mstari, hadi 6.",
-   "saved": "Msaidizi wa tovuti amehifadhiwa",
-   "usage": "Mwezi huu: majibu {{calls}}, takriban {{cost}}."
-  }
+  "websiteUsage": "Mwezi huu: majibu {{calls}}, takriban {{cost}}."
  }
 }

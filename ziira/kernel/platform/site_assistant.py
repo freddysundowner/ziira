@@ -1,27 +1,28 @@
-"""The website assistant's settings and limits, managed by the platform owner in the Super Admin (Platform > AI).
+"""The website assistant's fixed protections and spend accounting. There are no settings: the assistant is simply on.
 
-The assistant answers visitors of the marketing site (no sign-in, no business data: `kernel/site_assistant.py`). It is
-**off until the owner switches it on**, and it has its own limits, separate from the AI that businesses use:
+The assistant answers visitors of the marketing site (no sign-in, no business data: `kernel/site_assistant.py`). Nothing
+here can be changed from a screen. The limits are constants below, overridable only by environment variables
+(`ZIIRA_SITE_ASSISTANT_*`, docs/operations.md):
 
-- a monthly spend cap in USD, counted from the platform's AI usage table under one pseudo business (`WEBSITE`);
-- how many requests one address may make per minute and per day, and a total per day for everyone;
-- the greeting and the quick-reply suggestions the site shows.
+- per address: 8 questions a minute, 60 a day, and a burst of 3 in 5 seconds;
+- 2000 questions a day for everyone;
+- a monthly spend ceiling of its own (default 25 USD), counted from the platform's AI usage table under one pseudo
+  business (`WEBSITE`), on top of the platform-wide AI cap;
+- a hard cap on the length of one answer and a limit on answers being written at once (`kernel/site_assistant.py`).
 
-Values are `master.platform_setting` rows under `site_assistant.*` (cached briefly; any change clears the cache here).
-Per-address counts are kept in `master.auth_throttle` under keyed hashes (no address in the clear), with a window of
-their own. Nothing here keeps a visitor's words.
+The greeting and the quick-reply suggestions are built in (English). Per-address counts are kept in
+`master.auth_throttle` under keyed hashes (no address in the clear), with a window of their own. Nothing here keeps a
+visitor's words.
 """
 
 import hashlib
 import hmac
-import json
-import re
 import threading
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
@@ -29,7 +30,6 @@ from sqlalchemy import text
 
 from ziira.kernel.config import get_settings
 from ziira.kernel.db import master_session
-from ziira.kernel.errors import ValidationFailed
 from ziira.kernel.extensions import define_extension_point, implementations_of
 from ziira.kernel.platform import ai as platform_ai
 
@@ -63,11 +63,8 @@ define_extension_point(SITE_ASSISTANT_LLM, SiteAssistantLlm, "One plain-text AI 
 WEBSITE = UUID(int=1)  # the pseudo business the assistant's usage is recorded under
 LABEL = "Website assistant"
 CACHE_SECONDS = 15.0
-DEFAULT_PER_MINUTE = 8
-DEFAULT_PER_DAY = 60
-DEFAULT_DAILY_TOTAL = 2000
-BURST_LIMIT, BURST_SECONDS = 3, 5  # at most three questions in five seconds from one address
-MAX_SUGGESTIONS = 6
+BURST_LIMIT_DEFAULT, BURST_SECONDS = 3, 5  # at most three questions in five seconds from one address
+BURST_LIMIT = BURST_LIMIT_DEFAULT
 DEFAULT_GREETING = (
     "Hi, I am Ziira's assistant. Ask me about what Ziira does, who it is for, how the AI works or what it costs."
 )
@@ -81,136 +78,24 @@ DEFAULT_SUGGESTIONS = [
 ]
 
 
-def _int(low: int, high: int, what: str) -> Any:
-    def parse(value: Any) -> int:
-        try:
-            number = int(str(value).strip())
-        except ValueError:
-            raise ValidationFailed(f"{what} is a whole number") from None
-        if not low <= number <= high:
-            raise ValidationFailed(f"{what} is from {low} to {high}")
-        return number
-
-    return parse
-
-
-def _bool(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    raise ValidationFailed("On or off must be true or false")
+def limits() -> dict[str, Any]:
+    """The fixed limits in force (built-in defaults, or the environment's values)."""
+    s = get_settings()
+    return {
+        "per_minute": max(1, s.site_assistant_per_minute),
+        "per_day": max(1, s.site_assistant_per_day),
+        "daily_total": max(1, s.site_assistant_daily_total),
+        "monthly_cap_usd": max(Decimal(0), s.site_assistant_monthly_cap_usd),
+        "max_output_tokens": max(16, s.site_assistant_max_output_tokens),
+        "max_parallel": max(1, s.site_assistant_max_parallel),
+    }
 
 
-def _cap(value: Any) -> str | None:
-    if value is None or str(value).strip() == "":
-        return None
-    try:
-        amount = Decimal(str(value).strip())
-    except InvalidOperation:
-        raise ValidationFailed("The monthly cap is an amount in USD, such as 5 or 12.50") from None
-    if not amount.is_finite() or amount < 0 or amount > Decimal("100000"):
-        raise ValidationFailed("The monthly cap is from 0 to 100000 USD")
-    return str(amount.quantize(Decimal("0.01")))
-
-
-def _plain(text_value: str) -> str:
-    """Plain text only: no tags, no control characters."""
-    clean = re.sub(r"[\x00-\x1f\x7f]", " ", str(text_value))
-    if re.search(r"[<>]", clean):
-        raise ValidationFailed("Text here is plain words: no < or > please")
-    return re.sub(r"\s+", " ", clean).strip()
-
-
-def _greeting(value: Any) -> str:
-    clean = _plain(str(value or ""))
-    if len(clean) > 300:
-        raise ValidationFailed("The greeting is at most 300 characters")
-    return clean
-
-
-def _suggestions(value: Any) -> list[str]:
-    if value is None:
-        return []
-    if not isinstance(value, list):
-        raise ValidationFailed("The suggestions are a list of short questions")
-    out: list[str] = []
-    for item in value:
-        clean = _plain(str(item))
-        if not clean:
-            continue
-        if len(clean) > 80:
-            raise ValidationFailed("Each suggestion is at most 80 characters")
-        if clean not in out:
-            out.append(clean)
-    if len(out) > MAX_SUGGESTIONS:
-        raise ValidationFailed(f"At most {MAX_SUGGESTIONS} suggestions")
-    return out
-
-
-KEYS = {
-    "enabled": _bool,
-    "monthly_cap_usd": _cap,
-    "per_minute": _int(1, 60, "Requests per minute"),
-    "per_day": _int(1, 2000, "Requests per day"),
-    "daily_total": _int(1, 1_000_000, "The daily total"),
-    "greeting": _greeting,
-    "suggestions": _suggestions,
-}
-_cache: dict[str, Any] = {"at": 0.0, "values": {}}
 _lock = threading.Lock()
 
 
 def invalidate() -> None:
-    _cache["at"] = 0.0
     _spend["at"] = 0.0
-
-
-def _stored() -> dict[str, Any]:
-    if time.monotonic() - float(_cache["at"]) > CACHE_SECONDS:
-        with master_session() as m:
-            rows = m.execute(
-                text("select key, value from master.platform_setting where key like 'site_assistant.%'")
-            ).all()
-        _cache["values"] = {r.key.split(".", 1)[1]: r.value for r in rows}
-        _cache["at"] = time.monotonic()
-    values: dict[str, Any] = _cache["values"]
-    return values
-
-
-def get_all() -> dict[str, Any]:
-    """The effective settings (a saved value, else the default)."""
-    s = _stored()
-    suggestions = s.get("suggestions")
-    return {
-        "enabled": s.get("enabled") is True,
-        "monthly_cap_usd": s.get("monthly_cap_usd") or None,
-        "per_minute": int(s.get("per_minute") or DEFAULT_PER_MINUTE),
-        "per_day": int(s.get("per_day") or DEFAULT_PER_DAY),
-        "daily_total": int(s.get("daily_total") or DEFAULT_DAILY_TOTAL),
-        "greeting": str(s.get("greeting") or DEFAULT_GREETING),
-        "suggestions": list(suggestions)
-        if isinstance(suggestions, list) and suggestions
-        else list(DEFAULT_SUGGESTIONS),
-    }
-
-
-def save(changes: dict[str, Any], by: str) -> dict[str, Any]:
-    """Validate and save the given settings (only the keys present); returns the overview."""
-    unknown = sorted(set(changes) - set(KEYS))
-    if unknown:
-        raise ValidationFailed("Unknown setting: " + ", ".join(unknown))
-    clean = {key: KEYS[key](value) for key, value in changes.items()}
-    with master_session() as m:
-        for key, value in clean.items():
-            m.execute(
-                text(
-                    "insert into master.platform_setting (key, value, updated_by) values (:k, cast(:v as jsonb), :b) "
-                    "on conflict (key) do update set value = excluded.value, updated_at = now(), "
-                    "updated_by = excluded.updated_by"
-                ),
-                {"k": f"site_assistant.{key}", "v": json.dumps(value), "b": by},
-            )
-    invalidate()
-    return overview()
 
 
 # --------------------------------------------------------------------------- spend
@@ -240,8 +125,9 @@ def month_spend() -> Decimal:
 
 
 def cap_reached() -> bool:
-    cap = get_all()["monthly_cap_usd"]
-    return cap is not None and month_spend() >= Decimal(cap)
+    """The assistant's own monthly ceiling is used up (the platform-wide AI cap is checked separately)."""
+    ceiling: Decimal = limits()["monthly_cap_usd"]
+    return month_spend() >= ceiling
 
 
 def record(provider: str, model: str, tokens_in: int, tokens_out: int) -> None:
@@ -255,7 +141,7 @@ def record(provider: str, model: str, tokens_in: int, tokens_out: int) -> None:
 
 
 def usage_summary() -> dict[str, Any]:
-    """This month's calls, tokens and estimated spend of the assistant (for the usage panel)."""
+    """This month's calls, tokens and estimated spend of the assistant (read-only, for the AI usage panel)."""
     with master_session() as m:
         row = m.execute(
             text(
@@ -276,42 +162,21 @@ def usage_summary() -> dict[str, Any]:
 
 # --------------------------------------------------------------------------- availability
 def blocked() -> str | None:
-    """Why it cannot answer now: `off` (switched off or no provider set up), `budget` (a cap reached), or None."""
-    cfg = get_all()
-    if not cfg["enabled"]:
-        return "off"
+    """Why it cannot answer now: `off` (no usable AI provider), `budget` (a cap or the daily total reached), or None."""
     runtime = platform_ai.runtime("rank")
     if runtime is None or not runtime.terms_ok or not implementations_of(SITE_ASSISTANT_LLM):
         return "off"
     if not runtime.spend_ok or cap_reached():
         return "budget"
-    if _usage()[1] >= cfg["daily_total"]:
+    if _usage()[1] >= limits()["daily_total"]:
         return "budget"
     return None
 
 
 def public_config() -> dict[str, Any]:
-    """What the website may know, no secrets: whether to show the button, the greeting and the quick replies."""
-    cfg = get_all()
-    return {"enabled": blocked() is None, "greeting": cfg["greeting"], "suggestions": cfg["suggestions"]}
-
-
-def overview() -> dict[str, Any]:
-    """Every setting and this month's use, for the Super Admin."""
-    cfg = get_all()
-    runtime = platform_ai.runtime("rank")
-    spent = month_spend()
-    return {
-        **cfg,
-        "provider": runtime.provider if runtime else None,
-        "model": runtime.model if runtime else None,
-        "available": blocked() is None,
-        "blocked_reason": blocked(),
-        "month_spend_usd": str(spent.quantize(Decimal("0.0001"))),
-        "cap_reached": cap_reached(),
-        "usage": usage_summary(),
-        "defaults": {"per_minute": DEFAULT_PER_MINUTE, "per_day": DEFAULT_PER_DAY, "daily_total": DEFAULT_DAILY_TOTAL},
-    }
+    """What the website may know, no secrets: whether it can answer right now, the greeting and the quick replies.
+    `enabled` is never false because of a switch (there is none): only no provider or a limit reached makes it false."""
+    return {"enabled": blocked() is None, "greeting": DEFAULT_GREETING, "suggestions": list(DEFAULT_SUGGESTIONS)}
 
 
 # --------------------------------------------------------------------------- per-address limits
@@ -341,7 +206,7 @@ def _hit(key: str, window: int) -> tuple[int, int]:
 def visitor_check(ip_address: str | None) -> int | None:
     """Count one question from this address. None when it may go on; else the seconds to wait (it is over a limit).
     An address that cannot be told is treated as one shared visitor (strict, never a way round the limits)."""
-    cfg = get_all()
+    cfg = limits()
     who = ip_address or "unknown"
     for kind, window, limit in (
         ("burst", BURST_SECONDS, BURST_LIMIT),

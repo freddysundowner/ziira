@@ -3478,7 +3478,7 @@ export interface paths {
         };
         /**
          * Get Config
-         * @description Whether the assistant is available, its greeting and quick-reply suggestions. Cached briefly; no secrets.
+         * @description Whether the assistant can answer right now, its greeting and suggestions. Cached briefly; no secrets.
          */
         get: operations["get_config_api_v1_public_assistant_config_get"];
         put?: never;
@@ -3750,30 +3750,6 @@ export interface paths {
         get?: never;
         /** Put Tenant Override */
         put: operations["put_tenant_override_api_v1_operator_ai_tenant_overrides__code__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/operator/site-assistant": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Site Assistant
-         * @description The website assistant's settings and this month's use.
-         */
-        get: operations["get_site_assistant_api_v1_operator_site_assistant_get"];
-        /**
-         * Put Site Assistant
-         * @description Change the given settings (only the fields sent).
-         */
-        put: operations["put_site_assistant_api_v1_operator_site_assistant_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -20121,7 +20097,7 @@ export interface components {
         AssistantConfig: {
             /**
              * Enabled
-             * @description Show the chat button only when true
+             * @description The assistant can answer right now (a provider is in use and no limit is reached); never a switch
              */
             enabled: boolean;
             /** Greeting */
@@ -39597,91 +39573,6 @@ export interface components {
              */
             created_at: string;
         };
-        /** SiteAssistantDefaults */
-        SiteAssistantDefaults: {
-            /** Per Minute */
-            per_minute: number;
-            /** Per Day */
-            per_day: number;
-            /** Daily Total */
-            daily_total: number;
-        };
-        /** SiteAssistantIn */
-        SiteAssistantIn: {
-            /** Enabled */
-            enabled?: boolean | null;
-            /**
-             * Monthly Cap Usd
-             * @description Empty or null: no cap of its own
-             */
-            monthly_cap_usd?: string | null;
-            /** Per Minute */
-            per_minute?: number | null;
-            /** Per Day */
-            per_day?: number | null;
-            /** Daily Total */
-            daily_total?: number | null;
-            /** Greeting */
-            greeting?: string | null;
-            /** Suggestions */
-            suggestions?: string[] | null;
-        };
-        /** SiteAssistantOut */
-        SiteAssistantOut: {
-            /** Enabled */
-            enabled: boolean;
-            /**
-             * Monthly Cap Usd
-             * @description USD per month; null means no cap of its own
-             */
-            monthly_cap_usd: string | null;
-            /** Per Minute */
-            per_minute: number;
-            /** Per Day */
-            per_day: number;
-            /** Daily Total */
-            daily_total: number;
-            /** Greeting */
-            greeting: string;
-            /** Suggestions */
-            suggestions: string[];
-            /**
-             * Provider
-             * @description The platform's active AI provider the assistant would use
-             */
-            provider: string | null;
-            /** Model */
-            model: string | null;
-            /**
-             * Available
-             * @description The site shows the chat button
-             */
-            available: boolean;
-            /**
-             * Blocked Reason
-             * @description off or budget when it is not available
-             */
-            blocked_reason: string | null;
-            /** Month Spend Usd */
-            month_spend_usd: string;
-            /** Cap Reached */
-            cap_reached: boolean;
-            usage: components["schemas"]["SiteAssistantUsage"];
-            defaults: components["schemas"]["SiteAssistantDefaults"];
-        };
-        /** SiteAssistantUsage */
-        SiteAssistantUsage: {
-            /** Label */
-            label: string;
-            /** Calls */
-            calls: number;
-            /** Tokens In */
-            tokens_in: number;
-            /** Tokens Out */
-            tokens_out: number;
-            /** Cost Usd */
-            cost_usd: string;
-        };
         /** SiteAvailability */
         SiteAvailability: {
             /**
@@ -53289,7 +53180,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Server-Sent Events: `status` {text}, `text` {text} (one sentence or list line each), `links` {items: [{title, href}]}, then `done` {}; or `error` {reason, message[, retry_after]} where reason is off, busy, budget, provider_failed or too_long. */
+            /** @description Server-Sent Events: `status` {text}, `text` {text} (one sentence or list line each), `links` {items: [{title, href}]}, then `done` {}; or `error` {reason, message[, retry_after]} where reason is off (no AI provider in use), busy, budget, provider_failed or too_long. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -53738,72 +53629,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AiTenantProviderOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_site_assistant_api_v1_operator_site_assistant_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SiteAssistantOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    put_site_assistant_api_v1_operator_site_assistant_put: {
-        parameters: {
-            query?: never;
-            header?: {
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SiteAssistantIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SiteAssistantOut"];
                 };
             };
             /** @description Validation Error */

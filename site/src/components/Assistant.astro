@@ -1,9 +1,9 @@
 ---
-// The floating "Ask Ziira" launcher: a ~2 KB script that adds the round button only when the API says the assistant is on, and loads the
-// chat (public/assistant-chat.js + assistant.css) lazily. The page works fully without it. Documented in docs/marketing-site.md.
+// The floating "Ask Ziira" launcher: a ~2 KB script that always adds the round button (it never asks the API whether to show it), and loads the
+// chat (public/assistant-chat.js + assistant.css) lazily; the chat itself shows a calm "limited mode" with page links when the API cannot answer. The page works fully without it. Documented in docs/marketing-site.md.
 import { siteConfig } from "../lib/siteConfig";
 import { urlFor } from "../lib/registry";
 // The API host is the app host (siteConfig.appUrl). PUBLIC_ASSISTANT_API_URL overrides it for a mock or a separate API host.
 const api = (import.meta.env.PUBLIC_ASSISTANT_API_URL || siteConfig.appUrl).replace(/\/+$/, "");
 ---
-<script is:inline src="/assistant.js" defer data-api={api} data-pricing={urlFor("pricing", "en")} data-contact={urlFor("get-started", "en")}></script>
+<script is:inline src="/assistant.js" defer data-api={api} data-pricing={urlFor("pricing", "en")} data-contact={urlFor("get-started", "en")} data-who={urlFor("solutions-every-business", "en")} data-security={urlFor("security", "en")}></script>

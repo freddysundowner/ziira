@@ -156,10 +156,16 @@ files), no CORS setting is needed at all. That is the recommended layout.
 
 The marketing site's floating chat calls `GET /api/v1/public/assistant/config` and `POST /api/v1/public/assistant/stream` on the
 API host from the site's host. Set the platform setting **Website address** (Super Admin > Platform > Settings, `public.site_url`):
-those two paths (only) allow that origin and its `www.` twin, without credentials; `ZIIRA_CORS_ORIGINS` is not needed for them.
+those two paths (only) allow that origin and its `www.` twin, without credentials; `ZIIRA_CORS_ORIGINS` is not needed for them. While that setting is
+empty the site still works: an origin is allowed when it is the registrable parent of the app host (`public.web_url`) or its `www.` twin, so with the
+app at `https://app.example.com` the site at `https://example.com` or `https://www.example.com` can call them; an unrelated origin is refused (no parent is
+derived for `localhost`, IP addresses, hosts with fewer than three labels or public suffixes like `co.uk`). Set the Website address anyway: it is exact.
 `ZIIRA_SITE_DIST_DIR` is the folder holding the site build's `assistant-knowledge.json` (for example the directory nginx serves
-the static site from); empty or missing means a short built-in text and the assistant says it is limited. The assistant is off
-until switched on at Platform > AI > Website assistant. Behind a proxy keep `ZIIRA_TRUST_FORWARDED_FOR=true`, or every visitor looks like one address, and make the proxy pass
+the static site from); empty or missing means a short built-in text and the assistant says it is limited. The assistant is always on (no switch,
+no screen); with no AI provider set up, or when a limit is reached, the site's chat opens in "limited mode" with links instead of answers. Its protections are
+fixed and can be changed only by environment variables: `ZIIRA_SITE_ASSISTANT_PER_MINUTE` (8 per address), `..._PER_DAY` (60 per address), `..._DAILY_TOTAL`
+(2000 for everyone), `..._MONTHLY_CAP_USD` (25, its own ceiling besides the platform-wide AI cap), `..._MAX_OUTPUT_TOKENS` (320), `..._MAX_PARALLEL` (8, read at
+start); the burst limit (3 in 5 seconds) is built in. Usage shows read-only in Platform > AI > Details. Behind a proxy keep `ZIIRA_TRUST_FORWARDED_FOR=true`, or every visitor looks like one address, and make the proxy pass
 streaming responses unbuffered (the API sends `X-Accel-Buffering: no`). See `docs/ai.md` section 14.
 
 ### The static site (what the Vite build serves)

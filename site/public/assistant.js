@@ -1,22 +1,28 @@
-/* Ask Ziira launcher (about 2 KB). Checks, once per session, whether the assistant is switched on; only then adds the round button.
-   The chat itself (assistant-chat.js, assistant.css) loads on the first click or when the browser is idle. Without this file, or if the
-   API is unreachable or the assistant is off, the page is unchanged: "Ask Ziira" links on the page just open the /ai/ page. */
+/* Ask Ziira launcher (about 3 KB). Adds the round button on every page it is included in: it is always there. It never reads the
+   API to decide that. The chat (assistant-chat.js, assistant.css) loads when the browser is idle or on the first click, and the chat
+   itself finds out whether the API can answer; if not, it opens in a calm "limited mode" with plain links. "Ask Ziira" links on the
+   page open the chat too (and are ordinary links to /ai/ until this script runs). */
 (function () {
   var me = document.currentScript;
   if (!me || !me.dataset.api) return;
-  var d = me.dataset, api = d.api.replace(/\/+$/, ""), base = me.src.replace(/[^/]*$/, ""), KEY = "zr-assistant-config", cfg = null, btn = null, chat = null;
+  var d = me.dataset, api = d.api.replace(/\/+$/, ""), base = me.src.replace(/[^/]*$/, ""), KEY = "zr-assistant-config", cfg = null, cfgWait = null, btn = null, chat = null;
 
+  // Asked once per page view (and cached for the session only when the assistant could answer). Any failure means "limited mode".
   function getConfig(done) {
-    try { var c = sessionStorage.getItem(KEY); if (c) return done(JSON.parse(c)); } catch (e) {}
-    var ctl = typeof AbortController === "function" ? new AbortController() : null, t = ctl && setTimeout(function () { ctl.abort(); }, 6000);
+    if (cfg) return done(cfg);
+    if (cfgWait) { cfgWait.push(done); return; }
+    cfgWait = [done];
+    function end(o) { cfg = o; var q = cfgWait; cfgWait = null; q.forEach(function (f) { f(o); }); }
+    try { var c = JSON.parse(sessionStorage.getItem(KEY) || "null"); if (c && c.enabled === true) return end(c); } catch (e) {}
+    var ctl = typeof AbortController === "function" ? new AbortController() : null, t = ctl && setTimeout(function () { ctl.abort(); }, 4000);
     fetch(api + "/api/v1/public/assistant/config", { credentials: "omit", signal: ctl ? ctl.signal : undefined })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
-        var o = j && j.enabled === true ? j : { enabled: false };
-        if (j) { try { sessionStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
-        done(o);
+        var o = j && typeof j === "object" ? j : { enabled: false };
+        if (o.enabled === true) { try { sessionStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+        end(o);
       })
-      .catch(function () { done({ enabled: false }); })
+      .catch(function () { end({ enabled: false }); })
       .then(function () { if (t) clearTimeout(t); });
   }
 
@@ -31,12 +37,50 @@
     document.head.appendChild(s);
   }
 
-  function open(from) {
+  function open(from, auto) {
+    seen();
     if (btn) btn.setAttribute("aria-busy", "true");
     loadChat(function () {
-      if (btn) btn.removeAttribute("aria-busy");
-      window.ZiiraChat.open({ api: api, config: cfg, pricing: d.pricing, contact: d.contact, opener: from || btn, fab: btn });
+      getConfig(function (c) {
+        if (btn) btn.removeAttribute("aria-busy");
+        window.ZiiraChat.open({ api: api, config: c, pricing: d.pricing, contact: d.contact, who: d.who, security: d.security, opener: from || btn, fab: btn, auto: auto === true });
+      });
     });
+  }
+
+
+  /* ---- the invitation: on the main pages the phone-style window opens by itself once per browser session (tablet, desktop);
+     on phone widths, where the chat is a full-screen sheet, only a small greeting bubble above the button appears (never a sheet) ---- */
+  var SEEN = "zr-assistant-seen", NARROW = "(max-width: 520px)";
+  var PAGES = /^(?:\/|\/ai\/?|\/pricing\/?|\/solutions\/.*)$/;
+  function autoMode(path, narrow, alreadySeen) {
+    if (alreadySeen || !PAGES.test(path)) return "none";
+    return narrow ? "nudge" : "window";
+  }
+  function isSeen() { try { return !!sessionStorage.getItem(SEEN); } catch (e) { return false; } }
+  function seen() { try { sessionStorage.setItem(SEEN, "1"); } catch (e) {} }
+  window.ZiiraLauncher = { autoMode: autoMode };
+
+  function nudge() {
+    var n = document.createElement("button");
+    n.type = "button"; n.className = "zr-nudge"; n.setAttribute("aria-hidden", "true"); n.tabIndex = -1; n.textContent = "Hi, ask me anything about Ziira";
+    document.body.appendChild(n);
+    requestAnimationFrame(function () { n.classList.add("zr-in"); });
+    var gone = false, t = setTimeout(function () { dismiss(); }, 8000);
+    function dismiss() { if (gone) return; gone = true; clearTimeout(t); window.removeEventListener("scroll", dismiss); n.classList.remove("zr-in"); setTimeout(function () { n.remove(); }, 250); }
+    window.addEventListener("scroll", dismiss, { passive: true, once: true });
+    n.addEventListener("click", function () { dismiss(); open(btn); });
+    btn.addEventListener("click", dismiss);
+  }
+
+  function invite() {
+    var mode = autoMode(location.pathname, window.matchMedia && matchMedia(NARROW).matches, isSeen());
+    if (mode === "none") return;
+    setTimeout(function () {
+      if (isSeen() || !btn || window.ZiiraChat && document.querySelector(".zr-root")) return;
+      seen();
+      if (mode === "nudge") nudge(); else open(btn, true);
+    }, Math.max(0, 2500 - (window.performance ? performance.now() : 0)));
   }
 
   function start() {
@@ -49,7 +93,8 @@
       btn.addEventListener("click", function () { open(btn); });
       document.body.appendChild(btn);
       requestAnimationFrame(function () { btn.classList.add("zr-in"); });
-      (window.requestIdleCallback || function (f) { setTimeout(f, 2500); })(function () { loadChat(function () {}); });
+      invite();
+      (window.requestIdleCallback || function (f) { setTimeout(f, 2500); })(function () { loadChat(function () {}); getConfig(function () {}); });
     };
     link.onerror = function () {};
     document.head.appendChild(link);
@@ -61,7 +106,7 @@
     });
   }
 
-  function init() { getConfig(function (c) { cfg = c; if (c.enabled) start(); }); }
+  function init() { start(); }
   if (document.readyState === "complete") (window.requestIdleCallback || setTimeout)(init);
   else window.addEventListener("load", function () { (window.requestIdleCallback || setTimeout)(init); });
 })();

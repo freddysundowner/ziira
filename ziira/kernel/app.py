@@ -30,7 +30,6 @@ from ziira.kernel.api.operator_ai_routes import router as operator_ai_router
 from ziira.kernel.api.operator_email_routes import router as operator_email_router
 from ziira.kernel.api.operator_payment_routes import router as operator_payment_router
 from ziira.kernel.api.operator_routes import router as operator_router
-from ziira.kernel.api.operator_site_assistant_routes import router as operator_site_assistant_router
 from ziira.kernel.api.operator_unit_routes import router as operator_unit_router
 from ziira.kernel.api.ops_routes import router as ops_router
 from ziira.kernel.api.organisation_routes import router as organisation_router
@@ -104,7 +103,6 @@ def create_app() -> FastAPI:
     app.include_router(public_config_router)
     app.include_router(public_assistant_router)
     app.include_router(operator_ai_router)
-    app.include_router(operator_site_assistant_router)
     app.include_router(operator_admin_router)
     app.include_router(site_router)
     app.include_router(site_public_router)

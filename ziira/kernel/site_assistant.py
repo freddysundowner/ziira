@@ -3,7 +3,8 @@
 No sign-in, no business, no tenant: the only data it ever sees is the site's knowledge file and the public price list
 (`site_knowledge`). What it does, in order, for one question:
 
-1. refuses early with an `error` event (`off`, `budget`, `busy`, `too_long`), before any model is asked;
+1. refuses early with an `error` event (`off` = no usable AI provider, `budget`, `busy`, `too_long`), before any model
+   is asked;
 2. sends `status` straight away, finds the few pieces of knowledge that match the words of the question (a question that
    matches nothing is answered with "I do not know" and links, without calling a model);
 3. asks the model once, with the knowledge quoted as data and the rules last, a hard cap on its output, and no tools;
@@ -35,8 +36,7 @@ log = logging.getLogger("ziira.site_assistant")
 MAX_MESSAGE = 500
 MAX_HISTORY = 6
 MAX_HISTORY_TEXT = 800
-MAX_OUTPUT_TOKENS = 320
-MAX_PARALLEL = 8
+MAX_PARALLEL = settings.limits()["max_parallel"]  # read once at start (ZIIRA_SITE_ASSISTANT_MAX_PARALLEL)
 PAUSE_SECONDS = 0.04
 _slots = threading.BoundedSemaphore(MAX_PARALLEL)
 
@@ -284,7 +284,7 @@ def stream(
         lines: list[str] = []
         links: list[dict[str, str]] = []
         if not query_words or all(w in SMALLTALK for w in query_words):
-            lines = [THANKS[lang] if query_words else str(settings.get_all()["greeting"])]
+            lines = [THANKS[lang] if query_words else settings.DEFAULT_GREETING]
             outcome = "smalltalk"
         elif not hits:
             lines = [UNKNOWN[lang] + (LIMITED[lang] if known.limited else "")]
@@ -351,7 +351,7 @@ def ask_model(system: str, user: str) -> Any:
     impls = implementations_of(SITE_ASSISTANT_LLM)
     if runtime is None or not impls:
         raise SiteAssistantFailed("no provider")
-    reply = impls[0]().complete(runtime, system, user, MAX_OUTPUT_TOKENS)
+    reply = impls[0]().complete(runtime, system, user, settings.limits()["max_output_tokens"])
     try:
         settings.record(runtime.provider, reply.model or runtime.model, reply.tokens_in, reply.tokens_out)
     except Exception:  # noqa: BLE001 - the estimate must never fail an answer that was already given

@@ -65,7 +65,7 @@ Dates are ISO 8601.
 ## Website assistant (public, not part of the keyed API)
 
 `GET /api/v1/public/assistant/config` and `POST /api/v1/public/assistant/stream` serve the marketing site's chat (no key, no
-sign-in, rate limited per address, CORS only for the site's own origin). Events and limits: `docs/ai.md` section 14.
+sign-in, always on, rate limited per address with fixed limits, CORS only for the site's own origin or, while that setting is empty, the app host's parent domain). Events and limits: `docs/ai.md` section 14.
 
 ## Versioning and deprecation policy
 

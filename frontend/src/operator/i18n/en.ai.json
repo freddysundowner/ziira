@@ -159,29 +159,6 @@
    "providersHint": "Models for each feature, price list, base address, data terms, quality check and saved keys.",
    "audit": "See the audit trail of changes"
   },
-  "site": {
-   "title": "Website assistant",
-   "description": "The chat on the public website. It answers only from the website's own pages and the current prices. Off until you switch it on.",
-   "loadFailed": "The website assistant settings could not be loaded",
-   "on": "The assistant is on: visitors see the chat button.",
-   "off": "The assistant is off: visitors do not see the chat button.",
-   "noProvider": "Switched on, but it cannot answer yet. Choose and save an AI provider above first.",
-   "budget": "A spending limit or the daily total has been reached, so the chat button is hidden for now.",
-   "enable": "Switch the website assistant on",
-   "cap": "Monthly spending limit (USD)",
-   "capHint": "Its own limit, apart from the businesses'. Spent this month: {{spent}}.",
-   "noCap": "No limit of its own",
-   "perMinute": "Questions per visitor per minute",
-   "perMinuteHint": "One visitor, one address.",
-   "perDay": "Questions per visitor per day",
-   "perDayHint": "One visitor, one address.",
-   "total": "Questions per day, everyone",
-   "totalHint": "When reached, the chat rests until tomorrow.",
-   "greeting": "First message",
-   "chips": "Quick questions",
-   "chipsHint": "One per line, up to 6.",
-   "saved": "Website assistant saved",
-   "usage": "This month: {{calls}} answers, about {{cost}}."
-  }
+  "websiteUsage": "This month: {{calls}} answers, about {{cost}}."
  }
 }

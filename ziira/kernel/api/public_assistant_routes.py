@@ -20,7 +20,9 @@ router = APIRouter(prefix="/api/v1/public/assistant", tags=["Website assistant"]
 
 
 class AssistantConfig(BaseModel):
-    enabled: bool = Field(description="Show the chat button only when true")
+    enabled: bool = Field(
+        description="The assistant can answer right now (a provider is in use and no limit is reached); never a switch"
+    )
     greeting: str
     suggestions: list[str]
 
@@ -40,7 +42,7 @@ class AssistantQuestion(BaseModel):
 
 @router.get("/config", response_model=AssistantConfig)
 def get_config(response: Response) -> object:
-    """Whether the assistant is available, its greeting and quick-reply suggestions. Cached briefly; no secrets."""
+    """Whether the assistant can answer right now, its greeting and suggestions. Cached briefly; no secrets."""
     response.headers["Cache-Control"] = "public, max-age=30"
     return settings.public_config()
 
@@ -76,7 +78,8 @@ def _sse(event: dict[str, Any]) -> bytes:
             "description": (
                 "Server-Sent Events: `status` {text}, `text` {text} (one sentence or list line each), "
                 "`links` {items: [{title, href}]}, "
-                "then `done` {}; or `error` {reason, message[, retry_after]} where reason is off, busy, budget, "
+                "then `done` {}; or `error` {reason, message[, retry_after]} where reason is "
+                "off (no AI provider in use), busy, budget, "
                 "provider_failed or "
                 "too_long."
             ),

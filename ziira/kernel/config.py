@@ -1,6 +1,7 @@
 """Settings read from environment variables (prefix ZIIRA_) or a .env file."""
 
 import ipaddress
+from decimal import Decimal
 from functools import lru_cache
 from uuid import UUID
 
@@ -70,6 +71,16 @@ class Settings(BaseSettings):
     # Where the marketing site's build output lives on this server (the website assistant reads
     # `assistant-knowledge.json` from it; docs/ai.md "Website assistant"). Empty: a short built-in text is used.
     site_dist_dir: str = ""
+
+    # The website assistant is always on; these are its fixed protections (no screen changes them; docs/operations.md).
+    # Questions per address per minute / per day, questions per day for everyone, its own monthly spend ceiling in USD
+    # (on top of the platform-wide AI cap), the hard cap on one answer's length and how many answers run at once.
+    site_assistant_per_minute: int = 8
+    site_assistant_per_day: int = 60
+    site_assistant_daily_total: int = 2000
+    site_assistant_monthly_cap_usd: Decimal = Decimal("25")
+    site_assistant_max_output_tokens: int = 320
+    site_assistant_max_parallel: int = 8
 
     # Self-service registration (kernel/registration.py). Mode: "open" (anyone may register a business), "invite" (only
     # with an invitation code from `ziira invite create`) or "closed" (businesses are created by an operator only).
