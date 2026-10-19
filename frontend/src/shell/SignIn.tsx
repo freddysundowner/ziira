@@ -86,15 +86,15 @@ export function SignIn() {
     <AuthShell>
       <form onSubmit={submit} className="space-y-5">
         <div className="space-y-1">
-          <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("signIn.title")}</h1>
-          <p className="text-[15px] leading-relaxed text-muted">{t("signIn.subtitle")}</p>
+          <h1 className="text-2xl font-semibold">{t("signIn.title")}</h1>
+          <p className="text-sm text-muted">{t("signIn.subtitle")}</p>
         </div>
         <fieldset disabled={blocked} className="space-y-5">
           <Field label={t("signIn.login")}><Input name="login" required autoFocus autoComplete="username" autoCapitalize="none" spellCheck={false} defaultValue={typed?.login ?? ""} /></Field>
           <Field label={t("signIn.password")}>
             <div className="relative">
               <Input name="password" type={show ? "text" : "password"} required autoComplete="current-password" className="pr-10" />
-              <IconButton label={show ? t("signIn.hide") : t("signIn.show")} className="absolute right-0 top-0 h-12 w-12" onClick={() => setShow(!show)}>
+              <IconButton label={show ? t("signIn.hide") : t("signIn.show")} className="absolute right-0 top-0 h-9" onClick={() => setShow(!show)}>
                 {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </IconButton>
             </div>

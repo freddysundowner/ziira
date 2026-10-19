@@ -10,7 +10,7 @@ export function MfaSetupRequired() {
     <AuthShell>
       <div className="space-y-5">
         <div className="space-y-1">
-          <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("mfa.setupRequiredTitle")}</h1>
+          <h1 className="text-2xl font-semibold">{t("mfa.setupRequiredTitle")}</h1>
           <p className="text-sm text-muted">{t("mfa.setupRequiredHint")}</p>
         </div>
         <Alert tone="info">{t("mfa.setupRequiredWhy")}</Alert>

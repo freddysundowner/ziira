@@ -40,7 +40,7 @@ export function ResetPassword() {
     return (
       <AuthShell>
         <div className="space-y-4">
-          <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("reset.doneTitle")}</h1>
+          <h1 className="text-2xl font-semibold">{t("reset.doneTitle")}</h1>
           <Alert tone="ok">{t("reset.done")}</Alert>
           <Link className="inline-block text-sm font-medium text-brand-strong hover:underline" to="/">{t("reset.goSignIn")}</Link>
         </div>
@@ -52,7 +52,7 @@ export function ResetPassword() {
     <AuthShell>
       <form onSubmit={submit} className="space-y-5">
         <div className="space-y-1">
-          <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("reset.title")}</h1>
+          <h1 className="text-2xl font-semibold">{t("reset.title")}</h1>
           <p className="text-sm text-muted">{t("reset.hint")}</p>
         </div>
         <Field label={t("reset.newPassword")}>
