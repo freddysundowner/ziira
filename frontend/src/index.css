@@ -39,6 +39,8 @@
   --indigo: 72 86 204;
   --indigo-soft: 238 240 255;
   --shadow: 24 35 52;
+  --disabled-bg: 227 232 239;
+  --disabled-ink: 80 92 112;
   --gradient: linear-gradient(110deg, #2b7cff 0%, #24b9c7 52%, #10cd8d 100%);
   --focus: 43 124 255;
   color-scheme: light;
@@ -70,6 +72,8 @@ html.dark {
   --indigo: 150 158 255;
   --indigo-soft: 32 36 78;
   --shadow: 0 0 0;
+  --disabled-bg: 38 48 70;
+  --disabled-ink: 170 182 202;
   --focus: 79 147 255;
   color-scheme: dark;
 }
@@ -80,12 +84,12 @@ html.dark {
   .text-brand-gradient { background-image: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .btn-gradient { background-image: var(--gradient); color: rgb(var(--navy)); box-shadow: 0 3px 8px rgb(43 124 255 / 0.22); transition: filter .15s, box-shadow .15s, transform .15s; }
   .btn-gradient:hover:not(:disabled) { filter: saturate(1.1) brightness(1.04); box-shadow: 0 6px 14px rgb(43 124 255 / 0.3); }
+  /* A disabled primary button is flat and fully opaque (never a faint gradient); a loading one keeps its gradient. */
+  .btn-gradient:disabled:not([aria-busy="true"]) { background-image: none; background-color: rgb(var(--disabled-bg)); color: rgb(var(--disabled-ink)); box-shadow: none; cursor: not-allowed; }
   .btn-gradient:active:not(:disabled) { transform: translateY(1px); }
-  /* Small uppercase grey label: sidebar sections, table heads, eyebrows. */
   /* Sign-in and sign-up forms: taller fields and a calmer focus, as in the login mockup. */
-  .auth-form input[class*="h-10"]:not([type="checkbox"]) { height: 3rem; }
-  .auth-form select[class*="h-10"] { height: 3rem; }
-  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.08em] text-muted; }
+  .auth-form input[class*="h-9"]:not([type="checkbox"]) { height: 3rem; }
+  .auth-form select[class*="h-9"] { height: 3rem; }
 }
 
 /* A row of tabs: scrolls sideways on a narrow screen by touch or wheel, never shows a scrollbar, and never scrolls up and down
@@ -101,7 +105,6 @@ html.dark {
   :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(var(--focus) / 0.45); }
   ::selection { @apply bg-brand/25; }
   h1, h2, h3 { @apply tracking-tight; }
-  h1 { letter-spacing: -0.03em; }
   .tnum { font-variant-numeric: tabular-nums; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

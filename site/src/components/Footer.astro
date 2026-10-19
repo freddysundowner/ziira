@@ -39,7 +39,7 @@ const numbers = [siteConfig.company.registrationNumber, siteConfig.company.taxId
   <div class="container">
     <div class="foot-grid">
       <div class="foot-brand">
-        <a class="logo" href={homeOf(lang)}><Logo uid="f" /><span class="sr-only">{siteConfig.orgName}</span></a>
+        <a class="logo" href={homeOf(lang)}><Logo tone="dark" /></a>
         <p class="note" style="margin-top:14px">{t.footerNote}</p>
         <ContactDetails lang={lang} />
         {social.length > 0 && <ul class="social-links">{social.map((u) => <li><a href={u} rel="me noopener">{new URL(u).hostname.replace(/^www\./, "")}</a></li>)}</ul>}

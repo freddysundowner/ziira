@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import {
-  Alert, BrandMark, Button, CHALLENGE_SECONDS, cleanAuthenticatorCode, Field, formatCountdown, Input, isAuthenticatorCode, useCountdown, useTranslation, waitMinutes,
+  Alert, BrandWord, Button, CHALLENGE_SECONDS, cleanAuthenticatorCode, Field, formatCountdown, Input, isAuthenticatorCode, useCountdown, useTranslation, waitMinutes,
 } from "@/sdk";
 
 import { useOperator } from "./session";
@@ -81,14 +81,14 @@ export function SignInPage() {
     <div className="flex min-h-screen items-center justify-center bg-bg p-5">
       <main className="w-full max-w-sm space-y-6">
         <div className="flex items-center gap-2.5">
-          <BrandMark className="h-8 w-auto" />
+          <BrandWord className="h-9" />
           <div>
-            <p className="text-xl font-bold leading-tight tracking-[-0.04em]">{t("appName")}</p>
+            <p className="text-lg font-semibold leading-tight">{t("appName")}</p>
             <p className="text-xs text-muted">{t("staffOnly")}</p>
           </div>
         </div>
         {!challenge ? (
-          <form onSubmit={submitPassword} className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-pop">
+          <form onSubmit={submitPassword} className="space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-card">
             <h1 className="text-xl font-semibold">{t("signIn.title")}</h1>
             <Field label={t("signIn.email")}>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" autoFocus required />
@@ -101,7 +101,7 @@ export function SignInPage() {
             <Button type="submit" size="lg" loading={busy} disabled={!email || !password || blocked} className="w-full">{t("signIn.continue")}</Button>
           </form>
         ) : (
-          <form onSubmit={(e) => { e.preventDefault(); if (isAuthenticatorCode(code)) void send(code); }} className="space-y-4 rounded-xl border border-line bg-surface p-6 shadow-pop">
+          <form onSubmit={(e) => { e.preventDefault(); if (isAuthenticatorCode(code)) void send(code); }} className="space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-card">
             <h1 className="text-xl font-semibold">{t("signIn.codeTitle")}</h1>
             <p className="text-sm text-muted">{t("signIn.codeHint")}</p>
             <Field label={t("signIn.code")}>

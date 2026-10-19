@@ -12,10 +12,9 @@ const p = text ?? { core: t.ctaCoreText, intelligence: t.ctaIntelText, general: 
 <section class="cta-section" aria-labelledby="cta-h">
   <div class="container">
     <div class="cta-band">
-      <h2 id="cta-h">{h}</h2>
-      <p>{p}</p>
+      <div><h2 id="cta-h">{h}</h2><p>{p}</p></div>
       <div class="cta-row">
-        <a class="btn btn-primary btn-lg" href={appLinks.register}>{t.getStarted}<span class="arrow" aria-hidden="true">&#8599;</span></a>
+        <a class="btn btn-primary btn-lg" href={appLinks.register}>{t.getStarted}</a>
         <a class="btn btn-ghost btn-lg" href={urlFor("get-started", lang)}>{t.talk}</a>
       </div>
     </div>

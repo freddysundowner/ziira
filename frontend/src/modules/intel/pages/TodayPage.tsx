@@ -30,7 +30,7 @@ export default function TodayPage() {
       <PageHeader title={t("today.title")} description={formatDate(todayDate())} />
       {canManage && topics.data && !topics.data.configured && (
         <Card className="mb-4" title={t("today.setupTitle")} description={t("today.setupHint")}
-          actions={<Link to="/intelligence/setup" className="inline-flex h-9 items-center rounded-lg bg-brand px-3.5 text-sm font-medium text-brand-ink hover:opacity-90">{t("today.setupAction")}</Link>}>
+          actions={<Link to="/intelligence/setup" className="btn-gradient inline-flex h-9 items-center rounded-lg px-3.5 text-sm font-medium ">{t("today.setupAction")}</Link>}>
           <></>
         </Card>
       )}

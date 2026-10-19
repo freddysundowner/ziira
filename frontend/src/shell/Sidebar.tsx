@@ -13,7 +13,7 @@ function readChoices(): Record<string, boolean> {
 const OPEN_BY_DEFAULT = new Set(["command"]);
 
 const rowClass = (active: boolean, small: boolean) =>
-  cx("flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-colors", active ? "bg-brand-soft font-bold text-brand-strong" : "font-medium text-ink/80 hover:bg-sunken hover:text-ink", small && "justify-center px-0", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand");
+  cx("flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors", active ? "bg-brand-soft text-brand-strong" : "text-ink hover:bg-sunken", small && "justify-center px-0", "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand");
 
 /** One page under a section. The "Point of sale" button is outlined, and filled only while the till itself is open. */
 export function PageLink({ item, current, onGo }: { item: NavItem; current: boolean; onGo?: () => void }) {
@@ -22,15 +22,15 @@ export function PageLink({ item, current, onGo }: { item: NavItem; current: bool
   if (item.primary) {
     return (
       <Link to={item.to} onClick={onGo} aria-current={current ? "page" : undefined}
-        className={cx("mb-1 ml-1 mr-1 flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
-          current ? "btn-gradient font-semibold" : "border border-line font-semibold text-ink hover:bg-sunken")}>
+        className={cx("mb-1 ml-2 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+          current ? "btn-gradient shadow-card" : "text-ink hover:bg-sunken")}>
         <I className="h-4 w-4 shrink-0" /><span className="truncate">{t(item.label)}</span>
       </Link>
     );
   }
   return (
     <Link to={item.to} onClick={onGo} aria-current={current ? "page" : undefined}
-      className={cx("relative block truncate rounded-lg py-2 pl-10 pr-3 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand", current ? "bg-brand-soft font-bold text-brand-strong before:absolute before:inset-y-2 before:left-1 before:w-[3px] before:rounded-full before:bg-brand-gradient" : "font-medium text-ink/80 hover:bg-sunken hover:text-ink")}>
+      className={cx("relative block truncate rounded-md py-1.5 pl-9 pr-2.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand", current ? "bg-brand-soft font-semibold text-brand-strong before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-brand" : "text-ink hover:bg-sunken")}>
       {t(item.tab ?? item.label)}
     </Link>
   );
@@ -64,8 +64,8 @@ function IconSection({ area, placement }: { area: NavArea; placement: Placement 
         <I className="h-[18px] w-[18px] shrink-0" />
       </Link>
       {top !== null && (
-        <div style={{ top }} className="fixed left-[68px] z-50 min-w-48 rounded-r-xl border border-line bg-surface p-2.5 shadow-pop">
-          <p className="eyebrow px-2.5 pb-1.5 pt-1">{t(area.titleKey)}</p>
+        <div style={{ top }} className="fixed left-[68px] z-50 min-w-48 rounded-r-xl border border-line bg-surface p-2 shadow-pop">
+          <p className="px-2.5 pb-1 text-[13.5px] font-semibold text-ink">{t(area.titleKey)}</p>
           {!isSingle(area) && <ul className="space-y-0.5"><Pages area={area} placement={placement} onGo={() => setTop(null)} /></ul>}
         </div>
       )}
@@ -112,7 +112,7 @@ export function SidebarNav({ small, navigation, placement, homeLabel, onGo }: { 
       return (
         <Link key={area.id} to={areaEntryPath(area)} onClick={onGo} aria-current={active ? "page" : undefined} className={rowClass(active, false)}>
           <I className="h-[18px] w-[18px] shrink-0" /><span className="truncate">{t(area.titleKey)}</span>
-          {(badges[area.id] ?? 0) > 0 && <span className="tnum ml-auto rounded-full bg-sunken px-2 py-0.5 text-[11px] font-semibold text-muted" aria-label={String(badges[area.id])}>{badges[area.id]}</span>}
+          {(badges[area.id] ?? 0) > 0 && <span className="tnum ml-auto rounded-full bg-brand px-1.5 text-xs font-semibold text-brand-ink" aria-label={String(badges[area.id])}>{badges[area.id]}</span>}
         </Link>
       );
     }
@@ -124,11 +124,11 @@ export function SidebarNav({ small, navigation, placement, homeLabel, onGo }: { 
       writeStored(OPEN_KEY, JSON.stringify(next));
     };
     return (
-      <section key={area.id} aria-labelledby={`nav-${area.id}`} className="mt-3 border-t border-line pt-1.5">
-        <h2 id={`nav-${area.id}`} className="eyebrow">
+      <section key={area.id} aria-labelledby={`nav-${area.id}`} className="mt-2 border-t border-line pt-2">
+        <h2 id={`nav-${area.id}`} className="text-[13.5px] font-semibold text-ink">
           <button type="button" onClick={flip} aria-expanded={open} aria-controls={`nav-list-${area.id}`} disabled={active}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left uppercase hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-default disabled:hover:bg-transparent">
-            <I className="h-4 w-4 shrink-0 text-brand-strong" /><span className="flex-1 truncate">{t(area.titleKey)}</span>
+            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-1.5 text-left hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-default disabled:hover:bg-transparent">
+            <I className="h-[18px] w-[18px] shrink-0 text-brand-strong" /><span className="flex-1 truncate">{t(area.titleKey)}</span>
             {!active && <ChevronDown className={cx("h-4 w-4 shrink-0 text-muted transition-transform", !open && "-rotate-90")} aria-hidden />}
           </button>
         </h2>
@@ -138,14 +138,14 @@ export function SidebarNav({ small, navigation, placement, homeLabel, onGo }: { 
   };
   return (
     <>
-      <nav aria-label="Main" onKeyDown={moveFocus} className="flex-1 space-y-0.5 overflow-y-auto px-2.5 py-3 [scrollbar-width:thin]">
+      <nav aria-label="Main" onKeyDown={moveFocus} className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2 [scrollbar-width:thin]">
         <NavLink to="/" end onClick={onGo} className={({ isActive }) => rowClass(isActive, small)} title={small ? homeLabel : undefined}>
           <Home className="h-[18px] w-[18px] shrink-0" />{!small && homeLabel}
         </NavLink>
         {main.map(row)}
       </nav>
       {footer.length > 0 && (
-        <nav aria-label="Add-ons and settings" onKeyDown={moveFocus} className="shrink-0 space-y-0.5 border-t border-line px-2.5 py-2.5">
+        <nav aria-label="Add-ons and settings" onKeyDown={moveFocus} className="shrink-0 space-y-0.5 border-t border-line px-3 py-2">
           {footer.map(row)}
         </nav>
       )}

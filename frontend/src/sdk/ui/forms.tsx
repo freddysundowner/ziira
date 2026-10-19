@@ -8,12 +8,12 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "btn-gradient font-semibold",
-  secondary: "border border-line bg-surface text-ink hover:bg-sunken hover:border-muted/40 shadow-card",
-  ghost: "text-ink hover:bg-sunken",
-  danger: "bg-bad text-bad-ink hover:opacity-90 shadow-card",
+  primary: "btn-gradient",
+  secondary: "border border-line bg-surface text-ink hover:bg-sunken shadow-card [&:disabled:not([aria-busy])]:border-muted/40 [&:disabled:not([aria-busy])]:bg-[rgb(var(--disabled-bg))] [&:disabled:not([aria-busy])]:text-[rgb(var(--disabled-ink))] [&:disabled:not([aria-busy])]:shadow-none",
+  ghost: "text-ink hover:bg-sunken [&:disabled:not([aria-busy])]:text-[rgb(var(--disabled-ink))]",
+  danger: "bg-bad text-bad-ink hover:opacity-90 shadow-card [&:disabled:not([aria-busy])]:bg-[rgb(var(--disabled-bg))] [&:disabled:not([aria-busy])]:text-[rgb(var(--disabled-ink))] [&:disabled:not([aria-busy])]:shadow-none",
 };
-const SIZES: Record<Size, string> = { sm: "h-8 px-2.5 text-xs gap-1.5", md: "h-10 px-4 text-sm gap-2", lg: "h-12 px-5 text-[15px] gap-2" };
+const SIZES: Record<Size, string> = { sm: "h-8 px-2.5 text-xs gap-1.5", md: "h-9 px-3.5 text-sm gap-2", lg: "h-11 px-5 text-base gap-2" };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; loading?: boolean }>(
   function Button({ variant = "primary", size = "md", loading, disabled, className, children, type = "button", ...props }, ref) {
@@ -23,7 +23,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLBut
         type={type}
         disabled={disabled || loading}
         aria-busy={loading || undefined}
-        className={cx("inline-flex select-none items-center justify-center whitespace-nowrap rounded-lg font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50", VARIANTS[variant], SIZES[size], className)}
+        className={cx("inline-flex select-none items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors disabled:cursor-not-allowed", VARIANTS[variant], SIZES[size], className)}
         {...props}
       >
         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -35,28 +35,28 @@ export const Button = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTMLBut
 
 export function IconButton({ label, className, children, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) {
   return (
-    <button type="button" aria-label={label} title={label} className={cx("inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink", className)} {...props}>
+    <button type="button" aria-label={label} title={label} className={cx("inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink", className)} {...props}>
       {children}
     </button>
   );
 }
 
-const CONTROL = "rounded-[10px] border bg-surface px-3 text-sm text-ink placeholder:text-muted transition-colors disabled:cursor-not-allowed disabled:bg-sunken disabled:text-muted";
+const CONTROL = "rounded-lg border bg-surface px-3 text-sm text-ink placeholder:text-muted transition-colors disabled:cursor-not-allowed disabled:bg-sunken disabled:text-muted";
 /** Controls fill their container unless the caller gives them a width (a toolbar filter): Tailwind cannot be asked which of two widths wins. */
 const widthOf = (className?: string) => (className && /(^|\s)(w|min-w|max-w)-/.test(className) ? "" : "w-full");
-const controlClass = (invalid?: boolean) => cx(CONTROL, invalid ? "border-bad" : "border-line hover:border-muted/50 focus:border-brand");
+const controlClass = (invalid?: boolean) => cx(CONTROL, invalid ? "border-bad" : "border-line hover:border-muted/50");
 
 /** The id a Field gives its control when the control is nested in a wrapper (an input with a button beside it). */
 const FieldIdContext = createContext<string | undefined>(undefined);
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }>(function Input({ invalid, className, id, ...props }, ref) {
   const fieldId = useContext(FieldIdContext);
-  return <input ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-10", className)} {...props} />;
+  return <input ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9", className)} {...props} />;
 });
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }>(function Select({ invalid, className, id, ...props }, ref) {
   const fieldId = useContext(FieldIdContext);
-  return <select ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-10 pr-8", className)} {...props} />;
+  return <select ref={ref} id={id ?? fieldId} aria-invalid={invalid || undefined} className={cx(controlClass(invalid), widthOf(className), "h-9 pr-8", className)} {...props} />;
 });
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { invalid?: boolean }>(function Textarea({ invalid, className, id, ...props }, ref) {
@@ -72,7 +72,7 @@ export function Field({ label, hint, error, required, children, className }: { l
   const id = useId();
   return (
     <div className={cx("space-y-1.5", className)}>
-      <label htmlFor={id} className="block text-[13px] font-semibold text-ink">
+      <label htmlFor={id} className="block text-sm font-medium text-ink">
         {label}{required && <span className="ml-0.5 text-bad" aria-hidden>*</span>}
       </label>
       <FieldControl id={id} invalid={!!error}>{children}</FieldControl>

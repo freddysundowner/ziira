@@ -15,7 +15,7 @@ const TONES: Record<BadgeTone, string> = {
 };
 
 export function Badge({ tone = "neutral", children, className }: { tone?: BadgeTone; children: ReactNode; className?: string }) {
-  return <span className={cx("inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-semibold", TONES[tone], className)}>{children}</span>;
+  return <span className={cx("inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium", TONES[tone], className)}>{children}</span>;
 }
 
 /** Statuses the backend sends as codes, mapped to a colour. Unknown codes stay neutral. */
@@ -53,8 +53,8 @@ export function SkeletonRows({ rows = 5, cols = 4 }: { rows?: number; cols?: num
 export function EmptyState({ title, hint, action, icon }: { title: string; hint?: string; action?: ReactNode; icon?: ReactNode }) {
   return (
     <div className="flex flex-col items-center px-6 py-12 text-center">
-      <div className="mb-3 rounded-xl bg-brand-soft p-3 text-brand-strong">{icon ?? <Inbox className="h-6 w-6" />}</div>
-      <p className="font-semibold">{title}</p>
+      <div className="mb-3 rounded-full bg-sunken p-3 text-muted">{icon ?? <Inbox className="h-6 w-6" />}</div>
+      <p className="font-medium">{title}</p>
       {hint && <p className="mt-1 max-w-sm text-sm text-muted">{hint}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -64,11 +64,11 @@ export function EmptyState({ title, hint, action, icon }: { title: string; hint?
 export function ErrorState({ message, onRetry, title = "Something went wrong" }: { message?: string; onRetry?: () => void; title?: string }) {
   return (
     <div role="alert" className="flex flex-col items-center px-6 py-12 text-center">
-      <div className="mb-3 rounded-xl bg-bad-soft p-3 text-bad"><AlertTriangle className="h-6 w-6" /></div>
-      <p className="font-semibold">{title}</p>
+      <div className="mb-3 rounded-full bg-bad-soft p-3 text-bad"><AlertTriangle className="h-6 w-6" /></div>
+      <p className="font-medium">{title}</p>
       {message && <p className="mt-1 max-w-md text-sm text-muted">{message}</p>}
       {onRetry && (
-        <button onClick={onRetry} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3.5 py-2 text-sm font-semibold hover:bg-sunken">
+        <button onClick={onRetry} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-medium hover:bg-sunken">
           <RefreshCw className="h-4 w-4" /> Try again
         </button>
       )}
@@ -78,7 +78,7 @@ export function ErrorState({ message, onRetry, title = "Something went wrong" }:
 
 export function Alert({ tone = "info", children, className }: { tone?: "info" | "ok" | "warn" | "bad"; children: ReactNode; className?: string }) {
   const t = { info: "bg-info-soft text-info", ok: "bg-ok-soft text-ok", warn: "bg-warn-soft text-warn", bad: "bg-bad-soft text-bad" }[tone];
-  return <div role={tone === "bad" ? "alert" : "status"} className={cx("rounded-[10px] px-3.5 py-2.5 text-sm", t, className)}>{children}</div>;
+  return <div role={tone === "bad" ? "alert" : "status"} className={cx("rounded-lg px-3 py-2 text-sm", t, className)}>{children}</div>;
 }
 
 /** Shows an error text under a form, when there is one. */

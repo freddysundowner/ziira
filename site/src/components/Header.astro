@@ -33,7 +33,7 @@ const ann = siteConfig.announcement;
 )}
 <header class="site-header">
   <div class="container bar">
-    <a class="logo" href={homeOf(lang)} aria-label={`${siteConfig.orgName}, ${t.home}`}><Logo uid="h" /></a>
+    <a class="logo" href={homeOf(lang)} aria-label={`${siteConfig.orgName}, ${t.home}`}><Logo /></a>
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label={t.menu} />
     <label for="nav-toggle" class="nav-button" aria-hidden="true"><span class="burger"></span>{t.menu}</label>
     <nav class="nav" aria-label={t.primaryNav}>
@@ -74,7 +74,7 @@ const ann = siteConfig.announcement;
       </ul>
       <div class="nav-actions">
         <a class="btn-link" href={appLinks.signIn}>{t.signIn}</a>
-        <a class="btn btn-primary" href={appLinks.register}>{t.getStarted}<span class="arrow" aria-hidden="true">&#8599;</span></a>
+        <a class="btn btn-primary" href={appLinks.register}>{t.getStarted}</a>
       </div>
     </nav>
   </div>

@@ -1,14 +1,11 @@
 ---
 import type { Lang } from "../content/types";
 import type { HomeContent } from "../content/home";
-import type { IconName } from "../content/integrations";
 import { ui } from "../i18n/ui";
 import { urlFor } from "../lib/registry";
 import { inline } from "../lib/md";
 import { appLinks } from "../lib/siteConfig";
 import { screenAlt } from "../lib/screens";
-import { integrationsPage } from "../content/integrations";
-import { isAvailable } from "../content/availability";
 import Screenshot from "./Screenshot.astro";
 import Faq from "./Faq.astro";
 import Icon from "./Icon.astro";
@@ -19,147 +16,86 @@ interface Props { lang: Lang; h: HomeContent }
 const { lang, h } = Astro.props;
 const t = ui[lang];
 const i = (s: string) => inline(s, lang, urlFor);
-/** The headline: the second sentence is the gradient line; `h1Und` is the part of it that stays gradient. */
 const [sent1, sent2] = h.h1.split(/(?<=\.) /);
-const [u1, u2] = sent2.split(h.h1Und);
-/** Section headings: a phrase gets the gradient colour. */
-const hl = (text: string, phrase: string) => { const k = text.indexOf(phrase); return k < 0 ? [text, "", ""] : [text.slice(0, k), phrase, text.slice(k + phrase.length)]; };
+const [l1a, l1b] = sent1.split(h.h1Em);
+const [l2a, l2b] = sent2.split(h.h1Und);
+const underWords = h.h1Und.split(" ");
+/** Section headings: a phrase gets the small marker highlight. */
+const hl = (text: string, phrase: string) => { const i = text.indexOf(phrase); return i < 0 ? [text, "", ""] : [text.slice(0, i), phrase, text.slice(i + phrase.length)]; };
 const [aH1, aH2, aH3] = hl(h.appsH2, "in one place");
 const [oH1, oH2, oH3] = hl(h.onePlace.h2, "one platform");
 const [pH1, pH2, pH3] = hl(h.pricingTeaser.h2, "what you need");
-const [sH1, sH2, sH3] = hl(h.stepsH2, "every day");
-const [qH1, qH2, qH3] = hl(h.problem.quote, h.problem.em);
 const nodes = appTiles.filter((a) => ["core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people", "intelligence-how"].includes(a.id)).map((a, n) => {
   const ang = (-90 + n * 45) * Math.PI / 180;
   const x = 300 + 235 * Math.cos(ang), y = 210 + 150 * Math.sin(ang);
   return { ...a, x: Math.round(x), y: Math.round(y), ly: Math.round(y + (Math.sin(ang) < -0.3 ? -42 : 50)) };
 });
-/** Real, present integrations only (from the integrations page data); anything held back in availability.ts is left out. */
-const connect = integrationsPage[lang].groups.filter((g) => g.id !== "developers").flatMap((g) => g.cards).filter((c) => !c.avail || isAvailable(c.avail));
-const systems = integrationsPage[lang].groups.find((g) => g.id === "systems")!;
-const systemRows = systems.cards.filter((c) => !c.avail || isAvailable(c.avail));
-const findingIcons: IconName[] = ["coins", "receipt", "people"];
-const arrow = "\u2197";
+const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
 ---
 <section class="hero">
-  <div class="container hero-grid">
+  <div class="container">
     <div class="hero-copy">
-      <h1>{sent1} {u1}<span class="gradient-text">{h.h1Und}</span>{u2}</h1>
+      <h1 class="hand">
+        <span class="line">{l1a}<mark class="swash"><svg viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M5 25 C 38 9, 78 33, 118 17 S 178 13, 195 23" /></svg>{h.h1Em}</mark>{l1b}</span>
+        <span class="line">{l2a}<span class="uline">{underWords.map((w, k) => <span class="uw" style={`--k:${k}`}>{w}<svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 7 C 14 1, 24 12, 38 6 S 62 1, 74 7 S 92 11, 98 5" /></svg></span>).reduce((acc: any[], el, k) => (k ? [...acc, " ", el] : [el]), [])}</span>{l2b}</span>
+      </h1>
       <p class="lead">{h.lead}</p>
-      <div class="cta-row">
-        <a class="btn btn-primary btn-lg" href={appLinks.register}>{h.ctaPrimary}<span class="arrow" aria-hidden="true">{arrow}</span></a>
-        <a class="btn btn-ghost btn-lg" href="#how-it-works">{h.ctaSecondary}<span class="arrow" aria-hidden="true">{"\u2193"}</span></a>
+      <div class="cta-wrap">
+        <div class="cta-row center">
+          <a class="btn btn-primary btn-lg" href={appLinks.register}>{h.ctaPrimary}</a>
+          <a class="btn btn-ghost btn-lg" href="#how-it-works">{h.ctaSecondary}</a>
+        </div>
+        <p class="annot"><svg viewBox="0 0 90 70" aria-hidden="true" focusable="false"><path pathLength="1" d="M80 64 C 72 34, 44 14, 12 20" /><path pathLength="1" d="M12 20 L 27 7 M12 20 L 29 31" /></svg>{h.annotation}</p>
       </div>
-      <p class="microcopy">{h.heroNote}</p>
       <ul class="trust-line">
-        {h.trustLine.map((x) => <li>{x}</li>)}
+        {h.trustLine.map((x) => <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={tick} />{x}</li>)}
       </ul>
     </div>
 
     <div class="stage">
       <div class="frame">
         <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i><span>{h.mock.frameLabel}</span></div>
-        <Screenshot name="command" alt={screenAlt[lang].command.alt} priority widths={[480, 800, 1200]} sizes="(min-width: 1200px) 540px, (min-width: 900px) 45vw, calc(100vw - 32px)" />
+        <Screenshot name="command" alt={screenAlt[lang].command.alt} priority widths={[480, 800, 1200]} sizes="(min-width: 1100px) min(80vw, 1080px), (min-width: 700px) 90vw, calc(100vw - 32px)" />
       </div>
-      <div class="float float-a">
-        <span class="badge">{h.mock.badge}</span>
-        <strong>{h.mock.title}</strong>
-        <p>{h.mock.text}</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="strip" aria-label={h.stripLabel}>
-  <div class="container strip-inner">
-    <span class="strip-label">{h.stripLabel}</span>
-    <ul class="strip-list">
-      {connect.map((c) => <li><a href={urlFor(c.page, lang)}><Icon name={c.icon} />{c.name}</a></li>)}
-    </ul>
-  </div>
-</section>
-
-<section class="section tint" aria-labelledby="problem-h">
-  <div class="container problem-grid">
-    <div>
-      <span class="eyebrow">{h.problem.eyebrow}</span>
-      <h2 id="problem-h" class="problem-quote">{qH1}<span class="gradient-text">{qH2}</span>{qH3}</h2>
-      <p class="problem-lead">{h.findingsLead}</p>
-      <p class="note">{h.findingsNote}</p>
-    </div>
-    <div class="problem-list">
-      {h.findings.map((r, k) => (
-        <article class="problem-item">
-          <span class="problem-icon"><Icon name={findingIcons[k % findingIcons.length]} /></span>
-          <div>
-            <h3>{r[0]}</h3>
-            <p><b>{h.findingsHead[1]}:</b> {r[1]}</p>
-            <p><b>{h.findingsHead[2]}:</b> {r[2]}</p>
+      <div class="floats">
+        <div class="float float-a">
+          <span class="badge">{h.mock.badge}</span>
+          <strong>{h.mock.title}</strong>
+          <p>{h.mock.text}</p>
+          <p><b>{h.mock.next}</b></p>
+          <div class="acts" aria-hidden="true">{h.mock.acts.map((a) => <span>{a}</span>)}</div>
+        </div>
+        {h.mock.cards.map((c, k) => (
+          <div class={`float float-${"bcd"[k]}`}>
+            <span class="badge">{c.area}</span>
+            <strong>{c.title}</strong>
+            <p>{c.text}</p>
           </div>
-        </article>
-      ))}
-    </div>
-  </div>
-</section>
-
-<section class="section dark intelligence" aria-labelledby="intel-h">
-  <div class="container intel-layout">
-    <div>
-      <span class="eyebrow">{h.intel.eyebrow}</span>
-      <div class="section-head"><h2 id="intel-h">{sH1}<span class="gradient-text">{sH2}</span>{sH3}</h2></div>
-      <ol class="daily">
-        {h.steps.map((s) => <li><span class="step-no" aria-hidden="true">{s.n}</span><div><h3>{s.t}</h3><p>{s.d}</p></div></li>)}
-      </ol>
-      <p class="cta-row" style="margin-block:26px 0"><a class="btn btn-ghost" href={urlFor("intelligence-how", lang)}>{h.products[1].link}</a></p>
-    </div>
-    <div class="evidence-panel" role="group" aria-label={h.intel.panelTitle}>
-      <div class="panel-top"><div><strong>{h.intel.panelTitle}</strong><br /><span>{h.intel.panelMeta}</span></div><span class="risk"><i></i>{h.mock.badge}</span></div>
-      <div class="finding"><small>{h.findingsHead[0]}</small><h3>{h.mock.title}</h3><p>{h.mock.text}</p></div>
-      <p class="next-step">{h.mock.next}</p>
-      <div class="panel-actions" aria-hidden="true">{h.mock.acts.map((a) => <span>{a}</span>)}</div>
-      <div class="evidence-records">
-        <small>{h.intel.also}</small>
-        {h.mock.cards.map((c) => <div class="record"><span>{c.area}</span><b>{c.title}</b></div>)}
+        ))}
       </div>
-      <p class="demo-note">{h.intel.note}</p>
     </div>
+
   </div>
 </section>
 
-<section class="section white architecture" aria-labelledby="prod-h">
+<section class="section white arc" aria-labelledby="apps-h">
   <div class="container">
-    <div class="section-head"><span class="eyebrow">{h.products[0].tag}</span><h2 id="prod-h">{h.productsH2}</h2><p>{h.productsLead}</p></div>
-    <div class="arch-grid">
-      {h.products.map((p, k) => (
-        <article class={`arch-card ${k === 1 ? "intel" : "core"}`}>
-          <span class="arch-label">{p.tag}</span>
-          <h3>{p.name}</h3>
-          <p>{p.text}</p>
-          <ul class="feature-pills">{p.points.map((x) => <li>{x}</li>)}</ul>
-          <a class="arch-link" href={urlFor(p.page, lang)}>{p.link} <span aria-hidden="true">&rarr;</span></a>
-        </article>
-      ))}
-    </div>
-  </div>
-</section>
-
-<section class="section tint capabilities" aria-labelledby="apps-h">
-  <div class="container">
-    <div class="section-head"><span class="eyebrow">Everything included</span><h2 id="apps-h">{aH1}<span class="gradient-text">{aH2}</span>{aH3}</h2><p>{h.appsLead}</p></div>
-    <ul class="cap-grid">
+    <div class="section-head center"><h2 id="apps-h">{aH1}<span class="hl">{aH2}</span>{aH3}</h2><p>{h.appsLead}</p></div>
+    <ul class="apps">
       {appTiles.map((a) => (
-        <li><a class={`cap-card c${a.color}`} href={urlFor(a.id, lang)}><span class="cap-symbol"><Icon name={a.icon} /></span><b>{a.label}</b><span class="cap-d">{a.desc}</span></a></li>
+        <li><a class={`app c${a.color}`} href={urlFor(a.id, lang)}><span class="app-ico"><Icon name={a.icon} /></span><b>{a.label}</b><span class="app-d">{a.desc}</span></a></li>
       ))}
     </ul>
+    <p class="note center" style="margin-top:28px;max-width:60ch">{h.heroNote}</p>
   </div>
 </section>
 
-<section class="section dark flat" aria-labelledby="one-h">
+<section class="section dark" aria-labelledby="one-h">
   <div class="container">
     <div class="oneplace">
       <div>
-        <span class="eyebrow">{h.onePlace.hub}</span>
-        <h2 id="one-h">{oH1}<span class="gradient-text">{oH2}</span>{oH3}</h2>
+        <span class="eyebrow">{h.productsH2}</span>
+        <h2 id="one-h">{oH1}<span class="hl">{oH2}</span>{oH3}</h2>
         <p>{h.onePlace.text}</p>
         <ul class="ticks">{h.onePlace.points.map((x) => <li>{x}</li>)}</ul>
       </div>
@@ -177,34 +113,81 @@ const arrow = "\u2197";
         ))}
       </svg>
     </div>
+    <div class="parts" style="margin-top:clamp(48px,6vw,88px)">
+      {h.products.map((p) => (
+        <div class="part">
+          <span class="mode">{p.tag}</span>
+          <h3>{p.name}</h3>
+          <p>{p.text}</p>
+          <ul>{p.points.map((x) => <li>{x}</li>)}</ul>
+          <a class="btn btn-ghost" href={urlFor(p.page, lang)}>{p.link}</a>
+        </div>
+      ))}
+    </div>
   </div>
 </section>
 
-<section class="section white use-cases" aria-labelledby="scn-h">
+<section class="section" aria-labelledby="scn-h">
   <div class="container">
-    <div class="section-head"><span class="eyebrow">In practice</span><h2 id="scn-h">{h.scenariosH2}</h2><p>{h.scenariosLead}</p></div>
-    <ol class="use-grid">
-      {h.scenarios.map((s, k) => (
-        <li class="use-card">
-          <span class="num">{String(k + 1).padStart(2, "0")} &middot; {s.modeLabel}</span>
+    <div class="section-head"><h2 id="scn-h">{h.scenariosH2}</h2><p>{h.scenariosLead}</p></div>
+    {h.scenarios.map((s) => (
+      <article class="feat">
+        <div class={`feat-text c${s.color}`}>
+          <span class="feat-ico"><i><Icon name={s.icon} /></i>{s.modeLabel}</span> <span class="note">{s.modeHint}</span>
           <h3>{s.t}</h3>
           <p>{s.d}</p>
+          <ul class="ticks">{s.bullets.map((b) => <li>{b}</li>)}</ul>
           <a class="more-link" href={urlFor(s.page, lang)}>{s.link}</a>
-        </li>
-      ))}
-      <li class="use-card pick-card">
-        <span class="num">{h.forH2}</span>
-        <ul class="kinds">
-          {h.forItems.map((f) => <li><a href={urlFor(f.link, lang)}><b>{f.t}</b><span>{f.d}</span></a></li>)}
-        </ul>
-      </li>
-    </ol>
+        </div>
+        <div class="feat-vis">
+          {s.shot ? (
+            <div class="frame"><Screenshot name={s.shot} alt={screenAlt[lang][s.shot].alt} sizes="(min-width: 1100px) 46vw, (min-width: 960px) 50vw, (min-width: 700px) 90vw, calc(100vw - 32px)" /></div>
+          ) : null}
+          <div class={s.shot ? "over" : "mini"} aria-hidden="true">
+            {!s.shot && <span class="tag-ex">Illustration</span>}
+            {s.visual === "till" && (<>
+              <div class="mini-card"><b>Till 2</b><span class="pill warn">Offline</span></div>
+              <div class="mini-card"><span>Connection is back: each sale sent once</span><span class="pill ok">Synced</span></div>
+            </>)}
+            {s.visual === "branches" && (
+              <div class="mini-card" style="display:block"><b style="display:block;margin-bottom:12px">Sales today, by branch</b>
+                <div class="bars">
+                  <div class="bar-row">Branch A<i style="--w:82%"></i></div>
+                  <div class="bar-row">Branch B<i style="--w:55%"></i></div>
+                  <div class="bar-row">Branch C<i style="--w:68%"></i></div>
+                </div>
+              </div>
+            )}
+            {s.visual === "owing" && (<>
+              <div class="mini-card"><b>Customer A</b><span class="pill bad">Overdue</span></div>
+              <div class="mini-card"><b>Customer B</b><span class="pill warn">Due this week</span></div>
+              <div class="mini-card"><b>Customer C</b><span class="pill ok">Within limit</span></div>
+              <div class="bubble reply">Send a reminder</div>
+            </>)}
+            {s.visual === "records" && (<>
+              <div class="mini-card"><b>Sale posted</b><span class="pill ok">Till</span></div>
+              <div class="mini-card"><span>Stock lowered at the branch</span><span class="pill ok">Stock</span></div>
+              <div class="mini-card"><span>Entry made in the books</span><span class="pill ok">Books</span></div>
+            </>)}
+            {s.visual === "approval" && (<>
+              <div class="mini-card"><b>Supplier order</b><span class="pill warn">Waiting for approval</span></div>
+              <div class="mini-card"><b>Discount above the limit</b><span class="pill bad">Reason needed</span></div>
+              <div class="mini-card"><b>Stock correction</b><span class="pill ok">Approved by a manager</span></div>
+            </>)}
+            {s.visual === "daily" && (<>
+              <div class="bubble"><b>Ziira: daily summary</b>A cashier cancelled 14 sales after 9pm.</div>
+              <div class="bubble reply">Why am I seeing this?</div>
+            </>)}
+          </div>
+        </div>
+      </article>
+    ))}
   </div>
 </section>
 
-<section class="section tint" aria-labelledby="screens-h">
+<section class="section white" aria-labelledby="screens-h">
   <div class="container">
-    <div class="section-head"><span class="eyebrow">The product</span><h2 id="screens-h">{h.screensH2}</h2><p>{h.screensLead}</p></div>
+    <div class="section-head center"><span class="eyebrow">The product</span><h2 id="screens-h">{h.screensH2}</h2><p>{h.screensLead}</p></div>
     <div class="bento">
       {h.screens.map((s) => <Screenshot name={s.key} alt={screenAlt[lang][s.key].alt} caption={screenAlt[lang][s.key].cap} sizes="(min-width: 900px) 640px, calc(100vw - 40px)" widths={[480, 640]} />)}
     </div>
@@ -215,12 +198,32 @@ const arrow = "\u2197";
   </div>
 </section>
 
-<section class="section white" id="how-it-works" aria-labelledby="start-h">
+<section class="section tint" id="how-it-works" aria-labelledby="start-h">
   <div class="container">
-    <div class="section-head"><span class="eyebrow">How it works</span><h2 id="start-h">{h.startH2}</h2><p>{h.startLead}</p></div>
+    <div class="section-head center"><span class="eyebrow">How it works</span><h2 id="start-h">{h.startH2}</h2><p>{h.startLead}</p></div>
     <ol class="steps three">
       {h.startSteps.map((s, n) => <li><span class="n" aria-hidden="true">{n + 1}</span><h3>{s.t}</h3><p>{s.d}</p><a class="more-link" href={urlFor(s.page, lang)}>{s.link}</a></li>)}
     </ol>
+    <h3 class="subhead">{h.stepsH2}</h3>
+    <ol class="loop">{h.steps.map((s) => <li data-n={s.n}><h3>{s.t}</h3><p>{s.d}</p></li>)}</ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="findings-h">
+  <div class="container">
+    <div class="section-head"><h2 id="findings-h">{h.findingsH2}</h2><p>{h.findingsLead}</p></div>
+    <div class="alerts">
+      {h.findings.map((r) => (
+        <article class="alert">
+          <header><span class="lbl">{h.findingsHead[0]}</span><strong>{r[0]}</strong></header>
+          <dl>
+            <div><dt>{h.findingsHead[1]}</dt><dd>{r[1]}</dd></div>
+            <div><dt>{h.findingsHead[2]}</dt><dd class="next">{r[2]}</dd></div>
+          </dl>
+        </article>
+      ))}
+    </div>
+    <p class="note" style="margin-top:20px">{h.findingsNote}</p>
   </div>
 </section>
 
@@ -237,47 +240,38 @@ const arrow = "\u2197";
   </div>
 </section>
 
-<section class="section dark flat integrations" aria-labelledby="int-h">
-  <div class="container integrations-grid">
-    <div>
-      <span class="eyebrow">{h.products[2].tag}</span>
-      <h2 id="int-h">{systems.h2}</h2>
-      <p>{systems.lead}</p>
-      <ul class="integration-tags">{connect.map((c) => <li>{c.name}</li>)}</ul>
-      <a class="btn btn-ghost" href={urlFor(h.products[2].page, lang)}>{h.products[2].link}</a>
-    </div>
-    <div class="integration-visual">
-      {systemRows.map((c) => (
-        <a class="source-row" href={urlFor(c.page, lang)}>
-          <span class="source-info"><span class="source-mark"><Icon name={c.icon} /></span><span><strong>{c.name}</strong><small>{c.title}</small></span></span>
-          <span class="source-state">{c.chip}</span>
-        </a>
-      ))}
-    </div>
-  </div>
-</section>
-
-<section class="section white trust-band" aria-labelledby="trust-h">
-  <div class="container">
-    <div class="section-head"><span class="eyebrow">Trust</span><h2 id="trust-h">{h.trustH2}</h2></div>
-    <div class="trust">{h.trust.map((x) => <div class="card"><h3>{x.t}</h3><p>{x.d}</p></div>)}</div>
-    <p class="note" style="margin-top:20px" set:html={i(h.trustNote)} />
-  </div>
-</section>
-
-<section class="section tint" aria-labelledby="price-h">
+<section class="section" aria-labelledby="price-h">
   <div class="container">
     <div class="teaser">
-      <div><h2 id="price-h">{pH1}<span class="gradient-text">{pH2}</span>{pH3}</h2><p>{h.pricingTeaser.text}</p><a class="btn btn-primary" href={urlFor("pricing", lang)}>{h.pricingTeaser.link}<span class="arrow" aria-hidden="true">{arrow}</span></a></div>
+      <div><h2 id="price-h">{pH1}<span class="hl">{pH2}</span>{pH3}</h2><p>{h.pricingTeaser.text}</p><a class="btn btn-primary" href={urlFor("pricing", lang)}>{h.pricingTeaser.link}</a></div>
       <ul class="sets">{h.pricingTeaser.sets.map((x) => <li>{x}</li>)}</ul>
     </div>
   </div>
 </section>
 
-<section class="section white" aria-labelledby="faq-h">
+<section class="section tint" aria-labelledby="for-h">
+  <div class="container">
+    <div class="section-head center"><h2 id="for-h">{h.forH2}</h2></div>
+    <div class="picker">
+      {h.forItems.map((f) => (
+        <a class="pick" href={urlFor(f.link, lang)}><h3>{f.t}</h3><p>{f.d}</p><span class="more">{t.readMore} &rarr;</span></a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section white" aria-labelledby="trust-h">
+  <div class="container">
+    <div class="section-head"><h2 id="trust-h">{h.trustH2}</h2></div>
+    <div class="trust">{h.trust.map((x) => <div class="card"><h3>{x.t}</h3><p>{x.d}</p></div>)}</div>
+    <p class="note" style="margin-top:20px" set:html={i(h.trustNote)} />
+  </div>
+</section>
+
+<section class="section tint">
   <div class="container">
     <div class="faq-split">
-      <div class="faq-intro"><span class="eyebrow">FAQ</span><h2 id="faq-h">{h.faqH2}</h2></div>
+      <div class="faq-intro"><h2 id="faq-h">{h.faqH2}</h2></div>
       <Faq lang={lang} items={h.faq} bare />
     </div>
   </div>

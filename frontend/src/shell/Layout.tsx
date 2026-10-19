@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import {
-  BrandMark, areaPages, buildNavigation, cx, LANGUAGES, Menu, orderedGroups, placeOf, setLanguage, Slot, useAccess, useActiveModules, useCompany, useDisplayTimeZone, useEdition, useSession,
+  BrandTile, BrandWord, areaPages, buildNavigation, cx, LANGUAGES, Menu, orderedGroups, placeOf, setLanguage, Slot, useAccess, useActiveModules, useCompany, useDisplayTimeZone, useEdition, useSession,
   useTheme, useTranslation, visibleMenu, visibleRoutes,
 } from "@/sdk";
 import { readStored, writeStored } from "@/sdk/storage";
@@ -62,46 +62,35 @@ export function Layout() {
   const toggleSidebar = () => { setCollapsed(!collapsed); writeStored(COLLAPSE_KEY, collapsed ? null : "1"); };
   const toggle = (
     <button type="button" onClick={toggleSidebar} aria-label={collapsed ? t("expand") : t("collapse")} title={collapsed ? t("expand") : t("collapse")}
-      className="rounded-lg p-2 text-muted hover:bg-sunken hover:text-ink">
+      className="rounded-lg p-1.5 text-muted hover:bg-sunken hover:text-ink">
       {collapsed ? <PanelLeftOpen className="h-[18px] w-[18px]" /> : <PanelLeftClose className="h-[18px] w-[18px]" />}
     </button>
   );
   const brand = (small: boolean, withToggle = false) => (
-    <>
-      <div className={cx("flex shrink-0 items-center gap-2.5 border-b border-line", small ? "flex-col justify-center gap-1 px-0 py-3" : "h-16 px-5 md:h-[76px]")}>
-        <BrandMark className={small ? "h-5 w-auto" : "h-6 w-auto"} />
-        {!small && <span className="min-w-0 flex-1 truncate text-[21px] font-bold leading-none tracking-[-0.04em] text-ink">{t("appName")}</span>}
-        {withToggle && toggle}
-      </div>
-      {/* The business block under the brand: who you are working in. */}
-      {!small && (
-        <div className="shrink-0 border-b border-line px-3.5 pb-3.5 pt-4">
-          <div className="flex w-full items-center gap-2.5 rounded-[10px] border border-line bg-surface p-2.5 text-left">
-            <span className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[9px] bg-brand-soft text-sm font-bold text-brand-strong" aria-hidden>{(company?.name ?? t("appName")).slice(0, 1).toUpperCase()}</span>
-            <span className="min-w-0 flex-1">
-              <strong className="block truncate text-[13px] font-semibold leading-tight">{company?.name ?? t("appName")}</strong>
-              {company?.currency && <small className="mt-0.5 block text-[11px] text-muted">{company.currency}</small>}
-            </span>
-          </div>
+    <div className={cx("flex shrink-0 items-center gap-2.5 px-4", small ? "flex-col justify-center gap-1 px-0 py-2" : "h-14", )}>
+      {small ? <BrandTile size={32} /> : (
+        <div className="min-w-0 flex-1 leading-tight">
+          <BrandWord className="h-6" />
+          <p className="mt-1 truncate text-[11px] text-muted">{company?.name ?? t("appName")}</p>
         </div>
       )}
-    </>
+      {withToggle && toggle}
+    </div>
   );
 
   return (
     <div className="flex min-h-screen">
       <Slot name="shell.background" />
-      <aside className={cx("no-print sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface transition-[width] md:flex", collapsed ? "w-[68px]" : "w-[250px]")}>
+      <aside className={cx("no-print sticky top-0 hidden h-screen shrink-0 flex-col border-r border-line bg-surface transition-[width] md:flex", collapsed ? "w-[68px]" : "w-64")}>
         {brand(collapsed, true)}
         {nav(collapsed)}
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden" onMouseDown={(e) => e.target === e.currentTarget && setMobileOpen(false)}>
-          <div className="absolute inset-0 bg-navy/60 animate-fade" onClick={() => setMobileOpen(false)} />
+          <div className="absolute inset-0 bg-black/50 animate-fade" onClick={() => setMobileOpen(false)} />
           <aside className="relative flex h-full w-72 max-w-[85vw] flex-col bg-surface shadow-pop animate-slideleft">
-            <div className="absolute right-2 top-3 z-10"><button aria-label={t("close")} onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-muted hover:bg-sunken"><X className="h-5 w-5" /></button></div>
-            {brand(false)}
+            <div className="flex items-center justify-between pr-2">{brand(false)}<button aria-label={t("close")} onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-muted hover:bg-sunken"><X className="h-5 w-5" /></button></div>
             {nav(false)}
           </aside>
         </div>
@@ -111,15 +100,15 @@ export function Layout() {
         <OfflineBanner />
         <SupportBanner />
         <BillingNotice />
-        <header className="app-bar sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-line bg-surface/90 px-3 backdrop-blur sm:gap-4 md:h-[76px] md:px-7">
+        <header className="app-bar sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-surface/85 px-3 backdrop-blur sm:px-5">
           <button aria-label={t("menu")} onClick={() => setMobileOpen(true)} className="rounded-lg p-2 text-muted hover:bg-sunken md:hidden"><MenuIcon className="h-5 w-5" /></button>
-          <button onClick={() => setPalette(true)} className="flex h-10 w-full max-w-[460px] items-center gap-2.5 rounded-[10px] border border-line bg-bg px-3.5 text-sm text-muted hover:border-muted/50">
+          <button onClick={() => setPalette(true)} className="flex h-9 w-full max-w-md items-center gap-2 rounded-lg border border-line bg-bg px-3 text-sm text-muted hover:border-muted/50">
             <Search className="h-4 w-4" /> <span className="flex-1 text-left">{t("search")}</span>
             <kbd className="hidden items-center gap-0.5 rounded border border-line bg-surface px-1.5 text-[11px] sm:flex"><Command className="h-3 w-3" />K</kbd>
           </button>
           <div className="flex-1" />
           <Menu label={t("account")} up={false}
-            trigger={<span className="flex items-center gap-2.5 rounded-lg p-1 pr-2 hover:bg-sunken"><span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">{initials || "?"}</span><span className="hidden max-w-[11rem] text-left sm:block"><strong className="block truncate text-xs font-semibold leading-tight">{name}</strong>{company?.name && <small className="mt-0.5 block truncate text-[11px] text-muted">{company.name}</small>}</span></span>}
+            trigger={<span className="flex items-center gap-2 rounded-lg p-1 pr-2 hover:bg-sunken"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-xs font-semibold text-brand-strong">{initials || "?"}</span><span className="hidden max-w-[10rem] truncate text-sm font-medium sm:block">{name}</span></span>}
             items={[
               { label: me?.email ?? name, onSelect: () => undefined, disabled: true },
               { label: t("myAccount"), icon: <UserRound className="h-4 w-4" />, onSelect: () => navigate("/admin/account") },
@@ -134,7 +123,7 @@ export function Layout() {
               { label: t("signOut"), icon: <LogOut className="h-4 w-4" />, onSelect: () => void signOut(), danger: true },
             ]} />
         </header>
-        <main key={timeZone ?? ""} className="w-full min-w-0 flex-1 px-4 py-6 sm:px-6 sm:py-7 lg:px-[30px] lg:pb-10">
+        <main key={timeZone ?? ""} className="w-full min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
           <ErrorBoundary resetKey={location.pathname}><AreaFrame placement={placement}><Outlet /></AreaFrame></ErrorBoundary>
         </main>
       </div>

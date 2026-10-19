@@ -17,17 +17,22 @@ export function BrandName({ name, className = "" }: { name: string; className?: 
   return <span className={`text-[21px] font-bold leading-none tracking-[-0.04em] text-ink ${className}`}>{name}</span>;
 }
 
-/** The full "ziira" wordmark drawn in strokes (the dots over the i's are the brand mark). `tone` picks white strokes for dark panels. */
+/** The Ziira logo for a dark panel (white letters) or a light one (navy letters), exactly as supplied with the theme. */
 export function Wordmark({ tone = "light", className = "h-9 w-auto" }: { tone?: "light" | "dark"; className?: string }) {
-  const id = useId();
-  const stroke = tone === "dark" ? "#FFFFFF" : "#0B0F1A";
+  return <img src={tone === "dark" ? "/brand/ziira-logo-on-dark.png" : "/brand/ziira-logo-on-light.png"} alt="Ziira" className={`${className} object-contain`} />;
+}
+
+/** The dots mark of the Ziira logo on its own (collapsed sidebar, small spots). */
+export function BrandTile({ size = 32, className = "" }: { size?: number; className?: string }) {
+  return <img src="/brand/ziira-mark.png" alt="" aria-hidden width={size} height={size} style={{ width: size, height: size }} className={`shrink-0 object-contain ${className}`} />;
+}
+
+/** The Ziira logo as supplied with the theme (letters plus gradient dots): navy letters on light surfaces, white on dark. */
+export function BrandWord({ className = "h-7" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 320 120" className={className} role="img" aria-label="Ziira">
-      <defs><linearGradient id={id} x1="80" y1="0" x2="168" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#2B7CFF" /><stop offset=".52" stopColor="#24B9C7" /><stop offset="1" stopColor="#10CD8D" /></linearGradient></defs>
-      <g fill="none" stroke={stroke} strokeWidth="15" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 54H62L14 102H64" /><path d="M96 56V102" /><path d="M150 56V102" /><path d="M192 56V102M192 76Q196 56 222 57" /><circle cx="262" cy="79" r="23" /><path d="M285 56V102" />
-      </g>
-      <path d="M96 20Q123 29 150 20V36Q123 28 96 36Z" fill={`url(#${id})`} /><circle cx="96" cy="27" r="13" fill={`url(#${id})`} /><circle cx="150" cy="27" r="13" fill={`url(#${id})`} />
-    </svg>
+    <>
+      <img src="/brand/ziira-logo-on-light.png" alt="Ziira" className={`${className} w-auto object-contain dark:hidden`} />
+      <img src="/brand/ziira-logo-on-dark.png" alt="" aria-hidden className={`${className} hidden w-auto object-contain dark:block`} />
+    </>
   );
 }

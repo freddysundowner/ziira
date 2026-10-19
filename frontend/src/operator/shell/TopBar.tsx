@@ -33,12 +33,12 @@ export function TopBar({ onMenu, onSearch }: { onMenu: () => void; onSearch: () 
   const environment = setup.data?.environment;
   const isMac = typeof navigator !== "undefined" && /mac/i.test(navigator.platform);
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-line bg-surface/95 px-3 backdrop-blur sm:gap-3 sm:px-6 lg:h-[76px] lg:px-7">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-line bg-surface/95 px-3 backdrop-blur sm:gap-3 sm:px-6">
       <button type="button" aria-label={t("nav.menu")} onClick={onMenu} className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink focus-visible:ring-2 focus-visible:ring-brand lg:hidden">
         <MenuIcon className="h-5 w-5" aria-hidden />
       </button>
       <button type="button" onClick={onSearch} aria-label={t("shell.search.open")} aria-keyshortcuts="Control+K Meta+K"
-        className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[10px] border border-line bg-bg px-3.5 text-left text-sm text-muted hover:border-muted/50 focus-visible:ring-2 focus-visible:ring-brand sm:max-w-[460px]">
+        className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-line bg-bg px-3 text-left text-sm text-muted hover:border-muted/50 focus-visible:ring-2 focus-visible:ring-brand sm:max-w-md">
         <Search className="h-4 w-4 shrink-0" aria-hidden />
         <span className="min-w-0 flex-1 truncate">{t("shell.search.placeholder")}</span>
         <kbd className="hidden rounded border border-line px-1.5 py-0.5 text-[11px] sm:block">{isMac ? "⌘K" : "Ctrl K"}</kbd>

@@ -14,12 +14,6 @@ export interface HomeContent {
   trustLine: string[];
   /** The "everything included" strip under the hero: label, page, icon. */
   included: { t: string; page: string; icon: import("./integrations").IconName }[];
-  /** The strip under the hero. */
-  stripLabel: string;
-  /** The "problem" band: a big quote (the part in `em` is coloured), a short intro and the label above it. */
-  problem: { eyebrow: string; quote: string; em: string };
-  /** The daily-check band: label, the example panel's heading and its small "also in the summary" label. */
-  intel: { eyebrow: string; panelTitle: string; panelMeta: string; also: string; note: string };
   /** Hero product mock: the example finding is labelled as an example with demo data. */
   mock: { badge: string; title: string; text: string; next: string; acts: string[]; frameLabel: string; cards: { area: string; title: string; text: string }[] };
   appsH2: string; appsLead: string;
@@ -54,9 +48,6 @@ export const home: Record<Lang, HomeContent> = {
       { t: "Selling and tills", page: "core-pos", icon: "till" }, { t: "Stock in every branch", page: "core-inventory", icon: "boxes" }, { t: "Suppliers", page: "core-purchasing", icon: "truck" },
       { t: "Customers who owe you", page: "core-customers", icon: "people" }, { t: "Books", page: "core-accounting", icon: "ledger" }, { t: "Staff pay", page: "core-people", icon: "person" }, { t: "The daily check", page: "intelligence-how", icon: "bell" },
     ],
-    stripLabel: "Works with",
-    problem: { eyebrow: "Why a daily check", quote: "You hear about a problem the same day, not at the next stock count.", em: "the same day" },
-    intel: { eyebrow: "The daily check", panelTitle: "Today's summary", panelMeta: "Example, demo data", also: "Also in the summary", note: "Shown with demo data. Your own summary comes from your own records." },
     mock: {
       badge: "Example, demo data", title: "A cashier cancelled 14 sales after 9pm", text: "Far more cancellations than this cashier usually makes. The sales and the times are one tap away.", next: "Next step: ask the branch manager to explain.", acts: ["Look into it", "Give to someone"],
       frameLabel: "The Today page, shown with demo data",

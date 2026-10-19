@@ -25,10 +25,9 @@ export default {
         bad: { DEFAULT: token("bad"), soft: token("bad-soft"), ink: token("bad-ink") },
         info: { DEFAULT: token("info"), soft: token("info-soft") },
       },
-      borderRadius: { lg: "9px" },
       boxShadow: {
-        card: "0 1px 2px rgb(var(--shadow) / 0.04), 0 1px 1px rgb(var(--shadow) / 0.03)",
-        pop: "0 12px 35px rgb(var(--shadow) / 0.14), 0 2px 6px rgb(var(--shadow) / 0.06)",
+        card: "0 1px 2px rgb(var(--shadow) / 0.06), 0 1px 1px rgb(var(--shadow) / 0.04)",
+        pop: "0 12px 32px rgb(var(--shadow) / 0.18), 0 2px 6px rgb(var(--shadow) / 0.08)",
       },
       keyframes: {
         fade: { from: { opacity: "0" }, to: { opacity: "1" } },
