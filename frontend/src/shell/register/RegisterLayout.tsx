@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { BrandWord, cx, useTranslation } from "@/sdk";
 
+import { BrandPanel } from "../BrandPanel";
 import { STEPS, type StepId } from "./state";
 
 /**
@@ -24,9 +25,11 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
   const { t } = useTranslation();
   const index = step ? STEPS.indexOf(step) : STEPS.length - 1;
   return (
-    <div className="flex min-h-screen flex-col bg-bg">
-      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-4 sm:px-8">
-        <Link to="/" className="flex items-center gap-2.5" aria-label={t("appName")}>
+    <div className="grid min-h-screen bg-bg lg:grid-cols-[minmax(380px,0.9fr)_minmax(0,1.6fr)]">
+    <BrandPanel className="max-lg:hidden lg:sticky lg:top-0 lg:h-screen" />
+    <div className="flex min-w-0 flex-col">
+      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-4 sm:px-8 lg:justify-end">
+        <Link to="/" className="flex items-center gap-2.5 lg:hidden" aria-label={t("appName")}>
           <BrandWord className="h-9" />
         </Link>
         <Link to="/" className="text-sm font-medium text-brand-strong hover:underline">{t("signup.haveAccount")}</Link>
@@ -41,7 +44,7 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
         </nav>
       )}
 
-      <div className={cx("grid flex-1", side ? "lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_380px]" : "lg:grid-cols-[240px_minmax(0,1fr)]")}>
+      <div className={cx("grid flex-1", side ? "lg:grid-cols-[220px_minmax(0,1fr)] 2xl:grid-cols-[220px_minmax(0,1fr)_340px]" : "lg:grid-cols-[220px_minmax(0,1fr)]")}>
         {step ? (
           <nav aria-label={t("signup.progress")} className="hidden border-r border-line bg-surface p-6 lg:block">
             <ol className="space-y-1">
@@ -69,8 +72,9 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
 
         <main className="min-w-0 px-4 py-8 sm:px-8 lg:px-12 lg:py-12">{children}</main>
 
-        {side && <aside className="hidden border-line bg-surface p-8 xl:col-span-1 xl:block xl:border-l">{side}</aside>}
+        {side && <aside className="hidden border-line bg-surface p-8 2xl:col-span-1 2xl:block 2xl:border-l">{side}</aside>}
       </div>
+    </div>
     </div>
   );
 }

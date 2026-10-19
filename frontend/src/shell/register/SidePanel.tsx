@@ -51,7 +51,7 @@ function Content({ values, edition, country, trial }: { values: Values; edition:
   );
 }
 
-/** The right-hand panel: what they chose and what they get. Shown on a wide screen only (no "Show your setup" fold-away on a phone). */
+/** The right-hand panel: what they chose and what they get. Shown on a very wide screen only (no "Show your setup" fold-away on a phone). */
 export function SidePanel(props: { values: Values; edition: Edition | undefined; country: Country | undefined; trial: Trial | null | undefined }) {
-  return <div className="hidden xl:block"><Content {...props} /></div>;
+  return <div className="hidden 2xl:block"><Content {...props} /></div>;
 }
