@@ -6,12 +6,12 @@ export function ChoiceGroup({ name, legend, options, value, onChange, clearable 
 }) {
   return (
     <fieldset>
-      <legend className="mb-1.5 text-sm font-medium text-ink">{legend}</legend>
-      <div className="flex flex-wrap gap-2">
+      <legend className="mb-1 text-[13px] font-medium text-ink">{legend}</legend>
+      <div className="flex flex-wrap gap-1.5">
         {options.map((o) => {
           const on = o.value === value;
           return (
-            <label key={o.value} className={cx("cursor-pointer rounded-lg border px-3.5 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-brand", on ? "border-brand bg-brand-soft font-medium text-brand-strong" : "border-line bg-surface hover:bg-sunken")}>
+            <label key={o.value} className={cx("cursor-pointer rounded-md border px-3 py-1.5 text-[13px] transition-colors focus-within:ring-2 focus-within:ring-brand", on ? "border-brand bg-brand-soft font-medium text-brand-strong" : "border-line bg-surface hover:bg-sunken")}>
               <input
                 type="radio" name={name} value={o.value} checked={on} className="sr-only"
                 onChange={() => onChange(o.value)}

@@ -29,8 +29,8 @@ export function StepBusiness({ form, countries, currencies, country, onCountry, 
   const currencyList = v.currency && !currencies.includes(v.currency) ? [v.currency, ...currencies] : currencies;
   const taxLabel = country?.taxIdLabel || t("register.taxIdDefault");
   return (
-    <div className="space-y-6">
-      <div className="grid gap-5 sm:grid-cols-2">
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t("signup.field.business")} hint={t("signup.hint.business")} error={form.error("business")} required>
           <Input data-field="business" value={v.business} autoComplete="organization" maxLength={120} className="h-11 text-base"
             onChange={(e) => form.set("business", e.target.value)} onBlur={() => form.blur("business")} />
@@ -62,7 +62,7 @@ export function StepBusiness({ form, countries, currencies, country, onCountry, 
         </Field>
       </div>
       {country?.pack && <p className="text-sm text-muted">{t("register.packNote", { country: country.name })}</p>}
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         <ChoiceGroup name="branches" legend={`${t("signup.field.branches")} (${t("signup.optional")})`} clearable value={v.branches} onChange={(x) => form.set("branches", x)} options={BRANCH_SIZES.map((x) => ({ value: x, label: t(`signup.branches.${x}`) }))} />
         <ChoiceGroup name="staff" legend={`${t("signup.field.staff")} (${t("signup.optional")})`} clearable value={v.staff} onChange={(x) => form.set("staff", x)} options={STAFF_SIZES.map((x) => ({ value: x, label: t(`signup.staff.${x}`) }))} />
         {asksIndustry(v.edition, industries) ? (

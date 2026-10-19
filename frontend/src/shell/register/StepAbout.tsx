@@ -11,7 +11,7 @@ export function StepAbout({ form }: { form: FormApi }) {
   const { values: v } = form;
   const suggestion = suggestEmail(v.email);
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2">
       <Field label={t("signup.field.name")} hint={t("signup.hint.name")} error={form.error("name")} required>
         <Input data-field="name" value={v.name} autoComplete="name" maxLength={120} onChange={(e) => form.set("name", e.target.value)} onBlur={() => form.blur("name")} className="h-11 text-base" />
       </Field>

@@ -17,17 +17,17 @@ export function EditionCards({ choices, value, onChange, wide, title = true }: {
     <fieldset className="space-y-2">
       <legend className={title ? "mb-1 text-lg font-semibold" : "sr-only"}>{t("edition.need")}</legend>
       {title && <p className="mb-2 text-sm text-muted">{t("edition.later")}</p>}
-      <div className={cx("gap-3", wide ? "grid sm:grid-cols-2 2xl:grid-cols-3" : "space-y-2")}>
+      <div className={cx(wide ? "gap-2" : "gap-3", wide ? "grid sm:grid-cols-2 lg:grid-cols-3" : "space-y-2")}>
       {choices.map((e) => {
         const Icon = ICONS[e.id] ?? Blocks;
         const on = value === e.id;
         return (
-          <label key={e.id} className={cx("flex cursor-pointer gap-3 rounded-xl border p-3 text-sm focus-within:ring-2 focus-within:ring-brand", wide && "p-4", on ? "border-brand bg-brand/5" : "border-line hover:bg-sunken")}>
+          <label key={e.id} className={cx("flex cursor-pointer items-center gap-2.5 rounded-lg border text-sm focus-within:ring-2 focus-within:ring-brand", wide ? "px-3 py-2.5" : "p-3", on ? "border-brand bg-brand/5" : "border-line hover:bg-sunken")}>
             <input type="radio" name="edition" className="sr-only" checked={on} onChange={() => onChange(e.id)} />
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong"><Icon className="h-[18px] w-[18px]" /></span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-soft text-brand-strong"><Icon className="h-4 w-4" /></span>
             <span className="min-w-0">
               <span className="block font-medium">{t(`edition.${e.id}.title`, { defaultValue: e.title })}</span>
-              <span className="block text-muted">{t(`edition.${e.id}.pitch`, { defaultValue: e.pitch })}</span>
+              <span className={cx("block text-muted", wide && "line-clamp-2 text-xs")}>{t(`edition.${e.id}.pitch`, { defaultValue: e.pitch })}</span>
             </span>
           </label>
         );

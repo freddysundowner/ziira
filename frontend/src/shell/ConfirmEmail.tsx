@@ -22,7 +22,7 @@ export function ConfirmEmail() {
   }, [token]);
 
   return (
-    <RegisterLayout step={null} done={new Set()} reachable={new Set()} onGo={() => undefined} side={null}>
+    <RegisterLayout step={null} done={new Set()} reachable={new Set()} onGo={() => undefined}>
       <div className="mx-auto max-w-md space-y-4 py-16 text-center">
         {phase === "working" && <p className="flex items-center justify-center gap-2 text-muted"><Spinner /> {t("confirmEmail.working")}</p>}
         {phase === "done" && <>

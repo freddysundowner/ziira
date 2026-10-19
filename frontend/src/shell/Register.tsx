@@ -10,7 +10,6 @@ import { CheckEmail } from "./register/CheckEmail";
 import type { FormApi } from "./register/form";
 import { linksFrom, usePublicConfig } from "./register/publicConfig";
 import { RegisterLayout } from "./register/RegisterLayout";
-import { SidePanel } from "./register/SidePanel";
 import { SignUpClosed } from "./register/SignUpClosed";
 import {
   clearDraft, type Context, EMPTY, type FieldKey, firstIncomplete, KINDS, loadDraft, problemsOf, saveDraft, serverProblems, STEPS, type StepId, type Values,
@@ -110,12 +109,6 @@ export function Register() {
     if (values.edition !== "services" && values.kind && !(KINDS as readonly string[]).includes(values.kind)) setValues((v) => ({ ...v, kind: "" }));
   }, [values.edition, values.kind]);
 
-  const trial = useQuery({
-    queryKey: ["register-trial", values.edition, plan],
-    queryFn: () => unwrap(api.GET("/api/v1/register/trial", { params: { query: { edition: values.edition, plan } } })),
-    staleTime: 60_000, retry: 0,
-  });
-
   useEffect(() => saveDraft(values, step), [values, step]);
 
   // --- moving about -------------------------------------------------------------------------------------------------
@@ -202,14 +195,13 @@ export function Register() {
   const first = firstIncomplete(values, ctx);
   const reachable = new Set(STEPS.filter((s) => STEPS.indexOf(s) <= STEPS.indexOf(first)));
   const chosenEdition = choices.data?.find((e) => e.id === values.edition);
-  const side = <SidePanel values={values} edition={chosenEdition} country={country} trial={trial.data} />;
 
   const mode = config.data?.registration;
   if (!sent && (mode === "closed" || (mode === "invite" && !params.get("invite")))) return <SignUpClosed invite={mode === "invite"} support={links.support} />;
 
   if (sent) {
     return (
-      <RegisterLayout step={null} done={done} reachable={reachable} onGo={goTo} side={side}>
+      <RegisterLayout step={null} done={done} reachable={reachable} onGo={goTo}>
         <CheckEmail email={sent.email} devToken={sent.devToken} onChange={() => { setSent(null); goTo("review"); }} />
       </RegisterLayout>
     );
@@ -219,7 +211,7 @@ export function Register() {
   const blocked = left > 0;
   const canContinue = Object.keys(stepProblems).length === 0 && !checking && !(blocked && step === "review");
   return (
-    <RegisterLayout step={step} done={done} reachable={reachable} onGo={goTo} side={side}>
+    <RegisterLayout step={step} done={done} reachable={reachable} onGo={goTo}>
       <div ref={(node) => { mainRef.current = node; }} className="mx-auto w-full max-w-5xl">
         <p className="sr-only" role="status" aria-live="polite">{t("signup.announce", { n: index + 1, total: STEPS.length, title: t(`signup.steps.${step}`) })}</p>
         <form

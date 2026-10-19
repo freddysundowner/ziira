@@ -63,7 +63,7 @@ export function VerifyRegistration() {
 
   const retryable = !!failure && (failure.status === 503 || failure.status === 0 || failure.status === 429);
   return (
-    <RegisterLayout step={null} done={new Set()} reachable={new Set()} onGo={() => undefined} side={null}>
+    <RegisterLayout step={null} done={new Set()} reachable={new Set()} onGo={() => undefined}>
       {phase === "failed" && failure
         ? <CreatingFailed message={failure.error ?? ""} requestId={failure.requestId} canRetry={retryable} blockedUntil={blockedUntil} onRetry={() => { setSlow(false); void attempt(); }} />
         : <Creating slow={slow} retrying={phase === "retrying"} />}
