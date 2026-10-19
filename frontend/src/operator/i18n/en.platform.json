@@ -1122,7 +1122,9 @@
    "edition": "Default edition",
    "editionHint": "Used when a sign-up does not choose one",
    "trial": "Trial length override (days)",
-   "trialHint": "Empty: each plan's own trial length"
+   "trialHint": "Empty: each plan's own trial length",
+   "country": "Default country",
+   "countryHint": "The country the sign-up form starts on, as a two-letter code such as KE. People can still pick another."
   },
   "public": {
    "title": "Public addresses and links",

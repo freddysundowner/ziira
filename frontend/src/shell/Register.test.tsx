@@ -36,13 +36,14 @@ beforeEach(() => {
   sessionStorage.clear();
   window.scrollTo = vi.fn();
   registered = null;
-  registerReply = () => json({ message: "ok", dev_token: "zg_dev" }, 202);
+  registerReply = () => json({ message: "ok", dev_token: "zg_dev", instant_token: "zg_dev" }, 202);
   net.handle = async (input, init) => {
     const request = input instanceof Request ? input : new Request(String(input), init);
     const path = new URL(request.url).pathname;
     if (path === "/api/v1/editions") return json(editions);
     if (path === "/api/v1/countries") return json({}, 503);
     if (path === "/api/v1/register/trial") return json({ plan_code: "starter", plan_name: "Starter", trial_days: 14 });
+    if (path === "/api/v1/public/config") return json({ registration: "open", default_country: "KE", terms_url: "", privacy_url: "", help_url: "", site_url: "", support_email: "" });
     if (path === "/api/v1/auth/password/check") {
       const body = (await request.json()) as { password: string };
       return json(body.password === "password123" ? { ok: false, message: "That password is too easy to guess: choose something less common" } : { ok: true });
@@ -62,13 +63,19 @@ function open(url = "/register") {
 const type = (label: RegExp, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
 const next = () => fireEvent.click(screen.getByRole("button", { name: "Continue" }));
 
-async function toPassword() {
+async function toBusiness() {
   await screen.findByRole("radio", { name: /retail/i });
   next();
-  type(/your full name/i, "Jane Doe");
-  type(/work email/i, "jane@acme.test");
+  await screen.findByRole("heading", { name: "Tell us about your business" });
+}
+
+/** Step 2 then step 3: the business (the country is already Kenya), then the account. */
+async function toAccount() {
+  await toBusiness();
+  type(/business name/i, "Acme Traders");
+  await waitFor(() => expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(false));
   next();
-  await screen.findByRole("heading", { name: "Create your password" });
+  await screen.findByRole("heading", { name: "Create your sign-in" });
 }
 
 describe("the sign-up wizard", () => {
@@ -83,100 +90,88 @@ describe("the sign-up wizard", () => {
 
   it("holds Continue back until the step is valid", async () => {
     open();
-    await screen.findByRole("radio", { name: /retail/i });
-    next();
+    await toBusiness();
     const cont = screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement;
-    expect(cont.disabled).toBe(true);
-    type(/your full name/i, "Jane Doe");
-    type(/work email/i, "not-an-email");
-    expect(cont.disabled).toBe(true);
-    type(/work email/i, "jane@acme.test");
-    expect(cont.disabled).toBe(false);
+    expect(cont.disabled).toBe(true);                  // no business name yet
+    type(/business name/i, "Acme Traders");
+    await waitFor(() => expect(cont.disabled).toBe(false));
+  });
+
+  it("starts on the platform's default country, which fills the currency and calling code behind the scenes", async () => {
+    open();
+    await toBusiness();
+    await waitFor(() => expect(screen.getByRole("combobox", { name: /country/i }).textContent).toMatch(/Kenya/));
+    expect(screen.queryByLabelText(/^currency/i)).toBeNull();
+    expect(screen.queryByLabelText(/your full name/i)).toBeNull();
   });
 
   it("checks the password with the server as the person types and refuses a common one", async () => {
     open();
-    await toPassword();
+    await toAccount();
+    type(/work email/i, "jane@acme.test");
     type(/^password/i, "password123");
     type(/type the password again/i, "password123");
     expect(await screen.findByText(/too easy to guess/)).toBeTruthy();
-    expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("checkbox"));
+    expect((screen.getByRole("button", { name: "Create my business" }) as HTMLButtonElement).disabled).toBe(true);
     type(/^password/i, "a-good-password-1");
     type(/type the password again/i, "different");
     await waitFor(() => expect(screen.queryByText(/too easy to guess/)).toBeNull());
     expect(await screen.findByText("The two passwords are different.", {}, { timeout: 2000 })).toBeTruthy();
     type(/type the password again/i, "a-good-password-1");
-    await waitFor(() => expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(false));
+    await waitFor(() => expect((screen.getByRole("button", { name: "Create my business" }) as HTMLButtonElement).disabled).toBe(false));
   });
 
-  it("goes through all five steps, sends the answers and shows the check-your-email screen", async () => {
+  it("goes through the three steps and sends the answers: the owner's name comes from the email and nothing else is asked", async () => {
     open("/register?edition=retail&plan=starter");
-    await toPassword();
+    await toAccount();
+    type(/work email/i, "jane.doe@acme.test");
     type(/^password/i, "a-good-password-1");
     type(/type the password again/i, "a-good-password-1");
-    await waitFor(() => expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(false));
-    next();
-    await screen.findByRole("heading", { name: "Tell us about your business" });
-    type(/business name/i, "Acme Traders");
-    fireEvent.click(screen.getByRole("combobox", { name: /country/i }));
-    fireEvent.click(await screen.findByRole("button", { name: "Kenya" }));
-    expect((screen.getByLabelText(/^currency/i) as HTMLSelectElement).value).toBe("KES");
-    next();
-    await screen.findByRole("heading", { name: "Review and create" });
     const create = screen.getByRole("button", { name: "Create my business" }) as HTMLButtonElement;
     expect(create.disabled).toBe(true);                       // the consent comes first
     fireEvent.click(screen.getByRole("checkbox"));
+    await waitFor(() => expect(create.disabled).toBe(false));
     fireEvent.click(create);
-    await screen.findByRole("heading", { name: "Check your email" });
+    await waitFor(() => expect(registered).not.toBeNull());
     expect(registered).toMatchObject({
-      owner_name: "Jane Doe", email: "jane@acme.test", business_name: "Acme Traders", country: "KE", currency: "KES", phone_country_code: "254",
+      owner_name: "Jane", email: "jane.doe@acme.test", business_name: "Acme Traders", country: "KE", currency: "KES", phone_country_code: "254",
       edition: "retail", plan: "starter",
     });
+    expect(registered).not.toHaveProperty("phone");
+    expect(registered).not.toHaveProperty("tax_id");
     expect(sessionStorage.getItem("ziira.register.draft")).toBeNull();
   });
 
   it("keeps the answers (but not the password) across a refresh", async () => {
     const first = open();
-    await toPassword();
+    await toAccount();
+    type(/work email/i, "jane@acme.test");
     type(/^password/i, "a-good-password-1");
     expect(JSON.stringify(Object.entries(sessionStorage))).not.toContain("a-good-password-1");
     first.unmount();
     open();
-    await screen.findByRole("heading", { name: "Create your password" });             // back where they were, not further
+    await screen.findByRole("heading", { name: "Create your sign-in" });             // back where they were, not further
     expect((screen.getByLabelText(/^password/i) as HTMLInputElement).value).toBe("");
-    fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    expect((await screen.findByLabelText(/work email/i) as HTMLInputElement).value).toBe("jane@acme.test");
+    expect((screen.getByLabelText(/work email/i) as HTMLInputElement).value).toBe("jane@acme.test");
   });
 
   it("sends a 422 from the server back to the step and field it belongs to, and counts down a 429", async () => {
     open();
-    await toPassword();
+    await toAccount();
+    type(/work email/i, "jane@acme.test");
     type(/^password/i, "a-good-password-1");
     type(/type the password again/i, "a-good-password-1");
-    await waitFor(() => expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(false));
-    next();
-    await screen.findByRole("heading", { name: "Tell us about your business" });
-    type(/business name/i, "Acme Traders");
-    fireEvent.click(screen.getByRole("combobox", { name: /country/i }));
-    fireEvent.click(await screen.findByRole("button", { name: "Kenya" }));
-    next();
-    await screen.findByRole("heading", { name: "Review and create" });
     fireEvent.click(screen.getByRole("checkbox"));
     registerReply = () => json({ error: "validation_failed", message: "That email address does not look right", field: "email" }, 422);
+    await waitFor(() => expect((screen.getByRole("button", { name: "Create my business" }) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByRole("button", { name: "Create my business" }));
-    await screen.findByRole("heading", { name: "Tell us about you" });
-    expect(screen.getByText("That email address does not look right")).toBeTruthy();
+    expect(await screen.findByText("That email address does not look right")).toBeTruthy();
     expect(screen.getByLabelText(/work email/i).getAttribute("aria-invalid")).toBe("true");
 
     type(/work email/i, "jane2@acme.test");
-    next();
-    await screen.findByRole("heading", { name: "Create your password" });
-    await waitFor(() => expect((screen.getByRole("button", { name: "Continue" }) as HTMLButtonElement).disabled).toBe(false), { timeout: 2000 });
-    next();
-    next();
-    await screen.findByRole("heading", { name: "Review and create" });
-    expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(true);          // the consent was kept
     registerReply = () => json({ error: "too_many_requests", message: "Too many", retry_after: 3600 }, 429, { "Retry-After": "3600" });
+    await waitFor(() => expect((screen.getByRole("button", { name: "Create my business" }) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByRole("button", { name: "Create my business" }));
     expect(await screen.findByText(/Too many tries/)).toBeTruthy();
     expect(screen.getByText(/You can try again in 60:00/)).toBeTruthy();

@@ -36,6 +36,7 @@ export default function PlatformSettingsPage() {
           <SettingRow key={`edition:${String(d.values["registration.default_edition"]?.value)}`} settingKey="registration.default_edition" label={t("psettings.registration.edition")}
             hint={t("psettings.registration.editionHint")} stored={d.values["registration.default_edition"]} editable={editable} choices={d.editions} />
           {row("registration.trial_days", t("psettings.registration.trial"), t("psettings.registration.trialHint"), "number")}
+          {row("registration.default_country", t("psettings.registration.country"), t("psettings.registration.countryHint"))}
         </div>
       </Card>
       <Card title={t("psettings.public.title")} description={t("psettings.public.hint")}>

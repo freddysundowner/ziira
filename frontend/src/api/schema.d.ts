@@ -36367,6 +36367,8 @@ export interface components {
         PublicConfig: {
             /** Registration */
             registration: string;
+            /** Default Country */
+            default_country: string;
             /** Terms Url */
             terms_url: string;
             /** Privacy Url */

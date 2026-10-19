@@ -170,7 +170,12 @@
     "subtitle": "Hali ya biashara yako ilivyo.",
     "connectTitle": "Unganisha mfumo wako wa kwanza",
     "connectHint": "Ziira hukagua biashara yako ikishaweza kusoma mauzo, malipo au vitabu vyako. Unganisha mfumo au pakia faili kuanza.",
-    "connectAction": "Unganisha mfumo"
+    "connectAction": "Unganisha mfumo",
+    "shortcuts": "Njia za mkato",
+    "numbers": "Namba muhimu",
+    "lists": "Mambo ya kuangalia",
+    "more": "Zaidi",
+    "notice": { "dismiss": "Ficha taarifa hii" }
   },
   "loading": "Inapakia…",
   "notFound": "Ukurasa huu haupo, au huna ruhusa ya kuuona.",
@@ -181,6 +186,7 @@
       "waiting": "Zinazokusubiri",
       "inbox": "Kikasha",
       "sell": "Mauzo",
+      "sellNoTill": "Ankara na malipo",
       "services": "Huduma",
       "customers": "Wateja",
       "stock": "Bidhaa",
@@ -408,21 +414,24 @@
       "about": "Kukuhusu",
       "password": "Nenosiri lako",
       "business": "Biashara yako",
-      "review": "Kagua na fungua"
+      "review": "Kagua na fungua",
+      "account": "Akaunti yako"
     },
     "heading": {
       "need": "Unahitaji nini?",
       "about": "Tuambie kukuhusu",
       "password": "Tengeneza nenosiri lako",
       "business": "Tuambie kuhusu biashara yako",
-      "review": "Kagua na fungua"
+      "review": "Kagua na fungua",
+      "account": "Tengeneza akaunti yako"
     },
     "lead": {
       "need": "Chagua kilicho karibu zaidi. Unaweza kuongeza zaidi wakati wowote; hakuna kinachoondolewa.",
       "about": "Tunatumia barua pepe yako kukuingiza na kukutumia taarifa muhimu.",
       "password": "Chagua kitu ambacho wewe tu unakijua. Utakitumia pamoja na barua pepe yako kuingia.",
       "business": "Tunatumia hili kuandaa biashara kwa nchi yako: sarafu, saa ya eneo na maelezo ya kodi.",
-      "review": "Kagua majibu yako, kisha fungua biashara yako."
+      "review": "Kagua majibu yako, kisha fungua biashara yako.",
+      "account": "Hivi ndivyo utakavyoingia. Utaingia moja kwa moja ukimaliza."
     },
     "back": "Rudi",
     "continue": "Endelea",

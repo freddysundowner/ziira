@@ -2,9 +2,9 @@
  * What the sign-up wizard knows: the answers, which step each belongs to, what is wrong with them, and the draft kept in
  * sessionStorage so a refresh does not lose them. The password (and its confirmation) is never written anywhere.
  */
-import { callingProblem, confirmProblem, emailProblem, nameProblem, phoneProblem, type Problem, taxIdProblem } from "./validators";
+import { confirmProblem, emailProblem, nameProblem, type Problem } from "./validators";
 
-export const STEPS = ["need", "about", "password", "business", "review"] as const;
+export const STEPS = ["need", "business", "account"] as const;
 export type StepId = (typeof STEPS)[number];
 
 export interface Values {
@@ -36,10 +36,9 @@ export const EMPTY: Values = {
 
 export const FIELDS_OF: Record<StepId, FieldKey[]> = {
   need: ["edition"],
-  about: ["name", "email", "phone", "role"],
-  password: ["password", "confirm"],
-  business: ["business", "country", "currency", "zone", "calling", "tax", "branches", "staff", "kind"],
-  review: ["consent"],
+  business: ["business", "country", "currency", "zone", "calling", "kind"],
+  // name, phone, role, tax, branches and staff are no longer asked here; they stay in the list so a server complaint still finds its step
+  account: ["email", "password", "confirm", "consent", "name", "phone", "role", "tax", "branches", "staff"],
 };
 
 export const ROLES = ["owner", "manager", "accountant", "other"] as const;
@@ -55,7 +54,7 @@ const SERVER_FIELD: Record<string, FieldKey> = {
 };
 
 export function stepOf(field: FieldKey): StepId {
-  return STEPS.find((s) => FIELDS_OF[s].includes(field)) ?? "review";
+  return STEPS.find((s) => FIELDS_OF[s].includes(field)) ?? "account";
 }
 
 /** Our field and step for each field the server complained about, in the order of the wizard. */
@@ -78,31 +77,25 @@ export type Problems = Partial<Record<FieldKey, Problem>>;
 export function problemsOf(step: StepId, v: Values, ctx: Context): Problems {
   const out: Problems = {};
   const put = (key: FieldKey, problem: Problem) => { if (problem) out[key] = problem; };
-  if (step === "about") {
-    put("name", nameProblem(v.name, "name"));
+  if (step === "business") {
+    put("business", nameProblem(v.business, "business"));
+    if (!v.country) put("country", { code: "country.required" });
+    else if (!/^[A-Za-z]{3}$/.test(v.currency)) put("country", { code: "currency.required" });
+  } else if (step === "account") {
     put("email", emailProblem(v.email));
-    put("phone", phoneProblem(v.phone));
-  } else if (step === "password") {
     if (v.password.length < 8) put("password", { code: "password.short" });
     else if (ctx.passwordOk === false) put("password", { code: "password.refused" });
     put("confirm", confirmProblem(v.password, v.confirm));
-  } else if (step === "business") {
-    put("business", nameProblem(v.business, "business"));
-    if (!v.country) put("country", { code: "country.required" });
-    if (!/^[A-Za-z]{3}$/.test(v.currency)) put("currency", { code: "currency.required" });
-    put("calling", callingProblem(v.calling));
-    put("tax", taxIdProblem(v.tax, ctx.taxPattern));
-  } else if (step === "review" && !v.consent) {
-    put("consent", { code: "consent.required" });
+    if (!v.consent) put("consent", { code: "consent.required" });
   }
   return out;
 }
 
 export const isValid = (step: StepId, v: Values, ctx: Context) => Object.keys(problemsOf(step, v, ctx)).length === 0;
 
-/** The first step whose answers are not valid yet (the review step when all are). */
+/** The first step whose answers are not valid yet (the last step when all are). */
 export function firstIncomplete(v: Values, ctx: Context): StepId {
-  return STEPS.find((s) => s !== "review" && !isValid(s, v, ctx)) ?? "review";
+  return STEPS.find((s) => s !== "account" && !isValid(s, v, ctx)) ?? "account";
 }
 
 // --------------------------------------------------------------------------- the draft

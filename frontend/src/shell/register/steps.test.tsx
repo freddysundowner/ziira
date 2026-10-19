@@ -1,18 +1,16 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { Edition } from "@/sdk";
 
 import { COUNTRIES } from "../countries";
-import { CheckEmail } from "./CheckEmail";
 import { Creating, CreatingFailed } from "./Creating";
 import { PasswordMeter } from "./PasswordMeter";
-import { StepAbout } from "./StepAbout";
+import { StepAccount } from "./StepAccount";
 import { StepBusiness } from "./StepBusiness";
 import { StepNeed } from "./StepNeed";
 import { StepPassword } from "./StepPassword";
-import { StepReview } from "./StepReview";
 import { Harness } from "./testHarness";
 
 afterEach(cleanup);
@@ -39,31 +37,7 @@ describe("step 1: what do you need", () => {
   });
 });
 
-describe("step 2: about you", () => {
-  it("collects name, email, phone and role, and shows a field's problem", () => {
-    render(<Harness errors={{ email: "That email address does not look right." }}>{(form) => <>
-      <StepAbout form={form} />
-      <output data-testid="values">{JSON.stringify([form.values.name, form.values.email, form.values.phone, form.values.role])}</output>
-    </>}</Harness>);
-    fireEvent.change(screen.getByLabelText(/your full name/i), { target: { value: "Jane Doe" } });
-    fireEvent.change(screen.getByLabelText(/work email/i), { target: { value: "jane@acme.test" } });
-    fireEvent.change(screen.getByLabelText(/phone/i), { target: { value: "0712 345 678" } });
-    fireEvent.click(screen.getByRole("radio", { name: "Accountant" }));
-    expect(screen.getByTestId("values").textContent).toBe(JSON.stringify(["Jane Doe", "jane@acme.test", "0712 345 678", "accountant"]));
-    expect(screen.getByRole("alert").textContent).toContain("does not look right");
-    expect(screen.getByLabelText(/work email/i).getAttribute("aria-invalid")).toBe("true");
-  });
-
-  it("suggests the right domain for a typo and applies it on request", () => {
-    render(<Harness initial={{ email: "jane@gmial.com" }}>{(form) => <StepAbout form={form} />}</Harness>);
-    expect(screen.getByText("Did you mean jane@gmail.com?")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Yes, use it" }));
-    expect((screen.getByLabelText(/work email/i) as HTMLInputElement).value).toBe("jane@gmail.com");
-    expect(screen.queryByText(/did you mean/i)).toBeNull();
-  });
-});
-
-describe("step 3: the password", () => {
+describe("the password", () => {
   it("has show/hide and a confirmation, and keeps both fields as password boxes until shown", () => {
     render(<Harness initial={{ password: "abcdefghij", confirm: "abcdefghij" }}>{(form) => <StepPassword form={form} server="ok" serverMessage={null} />}</Harness>);
     const password = screen.getByLabelText(/^password/i) as HTMLInputElement;
@@ -84,35 +58,29 @@ describe("step 3: the password", () => {
   });
 });
 
-describe("step 4: your business", () => {
-  const ke = { ...COUNTRIES.find((c) => c.code === "KE")!, taxIdLabel: "KRA PIN", taxIdPattern: "^[AP]\\d{9}[A-Z]$" };
-  it("labels the tax number with the country's name for it and shows the pattern", () => {
-    render(<Harness initial={{ country: "KE", currency: "KES", zone: "Africa/Nairobi", calling: "254" }}>{(form) =>
-      <StepBusiness form={form} countries={COUNTRIES} currencies={["KES", "USD"]} country={ke} onCountry={() => undefined} />}</Harness>);
-    expect(screen.getByLabelText(/KRA PIN/)).toBeTruthy();
-    expect(screen.getByText(/Format: \^\[AP\]/)).toBeTruthy();
-    expect((screen.getByLabelText(/^currency/i) as HTMLSelectElement).value).toBe("KES");
-    expect((screen.getByLabelText(/phone calling code/i) as HTMLInputElement).value).toBe("254");
-  });
-
-  it("records the business name and the size and kind of business", () => {
+describe("step 2: your business", () => {
+  const ke = COUNTRIES.find((c) => c.code === "KE")!;
+  it("asks only for the business name, the country and the kind; currency, time zone and calling code come from the country", () => {
     render(<Harness initial={{ country: "KE", currency: "KES", zone: "Africa/Nairobi", calling: "254" }}>{(form) => <>
-      <StepBusiness form={form} countries={COUNTRIES} currencies={["KES"]} country={ke} onCountry={() => undefined} />
-      <output data-testid="values">{JSON.stringify([form.values.business, form.values.branches, form.values.staff, form.values.kind])}</output>
+      <StepBusiness form={form} countries={COUNTRIES} country={ke} onCountry={() => undefined} />
+      <output data-testid="values">{JSON.stringify([form.values.business, form.values.kind])}</output>
     </>}</Harness>);
+    expect(screen.queryByLabelText(/^currency/i)).toBeNull();
+    expect(screen.queryByLabelText(/phone calling code/i)).toBeNull();
+    expect(screen.queryByLabelText(/time zone/i)).toBeNull();
+    expect(screen.queryByLabelText(/tax/i)).toBeNull();
+    expect(screen.queryByRole("group", { name: /how many/i })).toBeNull();
     fireEvent.change(screen.getByLabelText(/business name/i), { target: { value: "Acme Traders" } });
-    fireEvent.click(screen.getByRole("radio", { name: "2 to 5" }));
-    fireEvent.click(within(screen.getByRole("group", { name: /how many people/i })).getByRole("radio", { name: "6 to 20" }));
     fireEvent.click(screen.getByRole("radio", { name: "Wholesale" }));
-    expect(screen.getByTestId("values").textContent).toBe(JSON.stringify(["Acme Traders", "2-5", "6-20", "wholesale"]));
+    expect(screen.getByTestId("values").textContent).toBe(JSON.stringify(["Acme Traders", "wholesale"]));
   });
 });
 
-describe("step 4 with the Services edition: what kind of service business", () => {
+describe("step 2 with the Services edition: what kind of service business", () => {
   const ke = COUNTRIES.find((c) => c.code === "KE")!;
   const industries = [{ id: "pack_salon", title: "Salon or spa", summary: "Hair, nails, massage." }, { id: "pack_garage", title: "Garage or repair", summary: "" }];
   const show = (edition: string, list = industries) => render(<Harness initial={{ edition, country: "KE", currency: "KES", zone: "Africa/Nairobi", calling: "254" }}>{(form) => <>
-    <StepBusiness form={form} countries={COUNTRIES} currencies={["KES"]} country={ke} onCountry={() => undefined} industries={list} />
+    <StepBusiness form={form} countries={COUNTRIES} country={ke} onCountry={() => undefined} industries={list} />
     <output data-testid="kind">{form.values.kind}</output>
   </>}</Harness>);
 
@@ -136,42 +104,40 @@ describe("step 4 with the Services edition: what kind of service business", () =
   });
 });
 
-describe("step 5: review", () => {
-  const values = { name: "Jane Doe", email: "jane@acme.test", business: "Acme Traders", country: "KE", currency: "KES", zone: "Africa/Nairobi", password: "a-good-password-1" };
-  it("summarises the answers (never the password), links back to each part and shows the terms links only when configured", () => {
-    const onEdit = vi.fn();
-    render(<Harness initial={values}>{(form) =>
-      <StepReview form={form} edition={choices[0]} country={COUNTRIES.find((c) => c.code === "KE")} terms="https://example.test/terms/" privacy="" onEdit={onEdit} serverError={null} />}</Harness>);
-    expect(screen.getByText("Jane Doe")).toBeTruthy();
-    expect(screen.getByText("Acme Traders")).toBeTruthy();
-    expect(screen.getByText("Kenya")).toBeTruthy();
-    expect(screen.queryByText("a-good-password-1")).toBeNull();
+describe("step 3: your account", () => {
+  const values = { email: "jane@acme.test", password: "a-good-password-1", confirm: "a-good-password-1" };
+  const account = (initial: Record<string, unknown>, extra: { terms?: string; privacy?: string; serverError?: string | null } = {}) => render(<Harness initial={initial}>{(form) => <>
+    <StepAccount form={form} server="ok" serverMessage={null} terms={extra.terms ?? ""} privacy={extra.privacy ?? ""} serverError={extra.serverError ?? null} />
+    <output data-testid="values">{JSON.stringify([form.values.email, form.values.consent])}</output>
+  </>}</Harness>);
+
+  it("asks for the email, the password twice and the agreement; terms are links only when configured", () => {
+    account(values, { terms: "https://example.test/terms/" });
+    fireEvent.change(screen.getByLabelText(/work email/i), { target: { value: "owner@acme.test" } });
+    expect(screen.getByTestId("values").textContent).toBe(JSON.stringify(["owner@acme.test", false]));
     expect(screen.getByRole("link", { name: "Terms of use" }).getAttribute("href")).toBe("https://example.test/terms/");
     expect(screen.queryByRole("link", { name: "Privacy policy" })).toBeNull();     // no URL configured: plain words
     expect(screen.getByText("Privacy policy")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Edit: Your business" }));
-    expect(onEdit).toHaveBeenCalledWith("business");
+    expect(screen.queryByLabelText(/full name/i)).toBeNull();
+    expect(screen.queryByLabelText(/phone/i)).toBeNull();
+  });
+
+  it("suggests the right domain for a typo and applies it on request", () => {
+    account({ ...values, email: "jane@gmial.com" });
+    expect(screen.getByText("Did you mean jane@gmail.com?")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Yes, use it" }));
+    expect((screen.getByLabelText(/work email/i) as HTMLInputElement).value).toBe("jane@gmail.com");
   });
 
   it("records the consent and shows what the server said", () => {
-    render(<Harness initial={values}>{(form) => <>
-      <StepReview form={form} edition={undefined} country={undefined} terms="" privacy="" onEdit={() => undefined} serverError="Too many registration attempts" />
-      <output data-testid="consent">{String(form.values.consent)}</output>
-    </>}</Harness>);
+    account(values, { serverError: "Too many registration attempts" });
     fireEvent.click(screen.getByRole("checkbox"));
-    expect(screen.getByTestId("consent").textContent).toBe("true");
+    expect(screen.getByTestId("values").textContent).toBe(JSON.stringify(["jane@acme.test", true]));
     expect(screen.getByRole("alert").textContent).toContain("Too many registration attempts");
   });
 });
 
 describe("after submit and while creating", () => {
-  it("tells the person to check their email and offers the development link", () => {
-    render(<MemoryRouter><CheckEmail email="jane@acme.test" devToken="zg_abc" onChange={() => undefined} /></MemoryRouter>);
-    expect(screen.getByRole("heading", { name: "Check your email" })).toBeTruthy();
-    expect(screen.getByText(/jane@acme\.test/)).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Open the verification link" }).getAttribute("href")).toBe("/register/verify?token=zg_abc");
-  });
-
   it("shows an honest wait, with no percentage, then a slow notice or a retry notice", () => {
     const { rerender } = render(<Creating slow={false} retrying={false} />);
     expect(screen.getByRole("heading", { name: "Creating your business" })).toBeTruthy();

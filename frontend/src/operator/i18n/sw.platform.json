@@ -1122,7 +1122,9 @@
    "edition": "Toleo la kawaida",
    "editionHint": "Hutumika usajili usipochagua toleo",
    "trial": "Siku za majaribio (badilisha)",
-   "trialHint": "Wazi: kila mpango hutumia siku zake"
+   "trialHint": "Wazi: kila mpango hutumia siku zake",
+   "country": "Nchi chaguo-msingi",
+   "countryHint": "Nchi ambayo fomu ya kujisajili huanzia, kama msimbo wa herufi mbili kama KE. Watu bado wanaweza kuchagua nyingine."
   },
   "public": {
    "title": "Anwani na viungo vya umma",

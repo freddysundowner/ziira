@@ -6,7 +6,6 @@ import type { RegisterResult } from "@/sdk/session";
 import { Alert, api, Button, formatCountdown, Spinner, unwrap, useCountdown, useEditionChoices, useSession, useTranslation, waitMinutes } from "@/sdk";
 
 import { useCountries } from "./useCountries";
-import { CheckEmail } from "./register/CheckEmail";
 import type { FormApi } from "./register/form";
 import { linksFrom, usePublicConfig } from "./register/publicConfig";
 import { RegisterLayout } from "./register/RegisterLayout";
@@ -14,13 +13,10 @@ import { SignUpClosed } from "./register/SignUpClosed";
 import {
   clearDraft, type Context, EMPTY, type FieldKey, firstIncomplete, KINDS, loadDraft, problemsOf, saveDraft, serverProblems, STEPS, type StepId, type Values,
 } from "./register/state";
-import { StepAbout } from "./register/StepAbout";
-import { asksIndustry, type Industry, StepBusiness } from "./register/StepBusiness";
+import { type Industry, StepBusiness } from "./register/StepBusiness";
 import { StepNeed } from "./register/StepNeed";
-import { StepPassword } from "./register/StepPassword";
-import { StepReview } from "./register/StepReview";
+import { StepAccount } from "./register/StepAccount";
 import { usePasswordCheck } from "./register/usePasswordCheck";
-import { guessCountry } from "./register/validators";
 
 /**
  * Sign-up as a full-page, five-step wizard: what you need, about you, your password, your business, review. Each step
@@ -37,7 +33,7 @@ export function Register() {
   const edition = params.get("edition");
   const plan = params.get("plan");
   const choices = useEditionChoices();
-  const { countries, currencies, byCode } = useCountries();
+  const { countries, byCode } = useCountries();
   const config = usePublicConfig();
   const links = linksFrom(config.data);
 
@@ -50,7 +46,6 @@ export function Register() {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [blockedUntil, setBlockedUntil] = useState<number | null>(null);
-  const [sent, setSent] = useState<{ email: string; devToken: string | null } | null>(null);
   const timers = useRef<Partial<Record<FieldKey, number>>>({});
   const mainRef = useRef<HTMLElement | null>(null);
   const left = useCountdown(blockedUntil);
@@ -61,7 +56,7 @@ export function Register() {
 
   const problems = Object.assign({}, ...STEPS.map((s) => problemsOf(s, values, ctx))) as ReturnType<typeof problemsOf>;
   const stepProblems = problemsOf(step, values, ctx);
-  const checking = step === "password" && password.state === "checking";
+  const checking = step === "account" && password.state === "checking";
 
   // --- the answers --------------------------------------------------------------------------------------------------
   const touch = useCallback((key: FieldKey) => setTouched((s) => (s.has(key) ? s : new Set(s).add(key))), []);
@@ -78,14 +73,13 @@ export function Register() {
     setValues((v) => ({ ...v, country: code, currency: chosen.currency, zone: chosen.zone, calling: chosen.calling }));
   }, [byCode]);
 
-  // a country guessed from this device only (browser language, then time zone): nothing leaves it
-  const guessed = useRef(!!restored?.values.country);
+  // The form starts on the platform's default country (a Super Admin setting; Kenya to begin with), unless a draft already has one.
+  const started = useRef(!!restored?.values.country);
   useEffect(() => {
-    if (guessed.current || countries.length === 0) return;
-    guessed.current = true;
-    const code = guessCountry(countries, navigator.language, Intl.DateTimeFormat().resolvedOptions().timeZone);
-    if (code) chooseCountry(code);
-  }, [countries, chooseCountry]);
+    if (started.current || countries.length === 0 || config.isLoading) return;
+    started.current = true;
+    chooseCountry(config.data?.default_country || DEFAULT_COUNTRY);
+  }, [countries, chooseCountry, config.isLoading, config.data?.default_country]);
 
   // ?edition= (or the edition of ?plan=) preselects; unknown values are ignored
   const planList = useQuery({ queryKey: ["public-plans"], enabled: !!plan && !edition, queryFn: () => unwrap(api.GET("/api/v1/public/plans")), staleTime: 60_000 });
@@ -134,25 +128,24 @@ export function Register() {
     let result: RegisterResult;
     try {
       result = await register({
-        owner_name: values.name.trim(), email: values.email.trim(), password: values.password, business_name: values.business.trim(),
+        owner_name: ownerNameFrom(values.email), email: values.email.trim(), password: values.password, business_name: values.business.trim(),
         country: values.country, currency: values.currency.toUpperCase(), phone_country_code: values.calling, timezone: values.zone,
-        tax_id: values.tax.trim() || undefined, invite_code: params.get("invite") ?? undefined, edition: values.edition,
-        phone: values.phone.trim() || undefined, owner_role: values.role || undefined, business_size: values.branches || undefined,
-        staff_size: values.staff || undefined, business_type: values.kind || undefined, plan: plan ?? undefined,
+        invite_code: params.get("invite") ?? undefined, edition: values.edition,
+        business_type: values.kind || undefined, plan: plan ?? undefined,
       });
     } catch {
       result = { error: t("signup.unavailable") };
     }
     setBusy(false);
-    if (!result.error && result.instantToken) {
-      // No email can be sent from this platform: the password was just chosen, so go straight on and create the business.
-      clearDraft();
-      navigate(`/register/verify?token=${encodeURIComponent(result.instantToken)}`, { replace: true });
-      return;
-    }
     if (!result.error) {
-      clearDraft();
-      setSent({ email: values.email.trim(), devToken: result.devToken ?? null });
+      // The owner goes straight in: the business is created now, the email is only confirmed afterwards (a banner asks).
+      const token = result.instantToken ?? result.devToken;
+      if (token) {
+        clearDraft();
+        navigate(`/register/verify?token=${encodeURIComponent(token)}`, { replace: true });
+        return;
+      }
+      setFailure(t("signup.unavailable"));
       return;
     }
     if (result.retryAfter) setBlockedUntil(Date.now() + result.retryAfter * 1000);
@@ -169,7 +162,7 @@ export function Register() {
   }
 
   function advance() {
-    if (step === "review") { void submit(); return; }
+    if (step === "account") { void submit(); return; }
     if (Object.keys(stepProblems).length > 0 || checking) {
       showMistakes(Object.keys(stepProblems) as FieldKey[]);
       return;
@@ -191,25 +184,17 @@ export function Register() {
   const shown = (Object.keys(stepProblems) as FieldKey[]).filter((k) => form.error(k)).length + Object.values(serverErrors).filter(Boolean).length;
 
   // --- what the rail and the side panel know ------------------------------------------------------------------------
-  const done = new Set(STEPS.filter((s) => s === "need" || (s !== "review" && Object.keys(problemsOf(s, values, ctx)).length === 0)));
+  const done = new Set(STEPS.filter((s) => s === "need" || (s !== "account" && Object.keys(problemsOf(s, values, ctx)).length === 0)));
   const first = firstIncomplete(values, ctx);
   const reachable = new Set(STEPS.filter((s) => STEPS.indexOf(s) <= STEPS.indexOf(first)));
-  const chosenEdition = choices.data?.find((e) => e.id === values.edition);
 
   const mode = config.data?.registration;
-  if (!sent && (mode === "closed" || (mode === "invite" && !params.get("invite")))) return <SignUpClosed invite={mode === "invite"} support={links.support} />;
+  if ((mode === "closed" || (mode === "invite" && !params.get("invite")))) return <SignUpClosed invite={mode === "invite"} support={links.support} />;
 
-  if (sent) {
-    return (
-      <RegisterLayout step={null} done={done} reachable={reachable} onGo={goTo}>
-        <CheckEmail email={sent.email} devToken={sent.devToken} onChange={() => { setSent(null); goTo("review"); }} />
-      </RegisterLayout>
-    );
-  }
 
   const index = STEPS.indexOf(step);
   const blocked = left > 0;
-  const canContinue = Object.keys(stepProblems).length === 0 && !checking && !(blocked && step === "review");
+  const canContinue = Object.keys(stepProblems).length === 0 && !checking && !(blocked && step === "account");
   return (
     <RegisterLayout step={step} done={done} reachable={reachable} onGo={goTo}>
       <div ref={(node) => { mainRef.current = node; }} className="mx-auto w-full max-w-5xl">
@@ -233,12 +218,9 @@ export function Register() {
           </div>
 
           {step === "need" && <StepNeed form={form} choices={choices.data} loading={choices.isLoading} failed={!!choices.error} onRetry={() => void choices.refetch()} />}
-          {step === "about" && <StepAbout form={form} />}
-          {step === "password" && <StepPassword form={form} server={password.state} serverMessage={password.message} />}
-          {step === "business" && <StepBusiness form={form} countries={countries} currencies={currencies} country={country} onCountry={chooseCountry} industries={industries} />}
-          {step === "review" && (
-            <StepReview form={form} edition={chosenEdition} country={country} terms={links.terms} privacy={links.privacy} onEdit={goTo}
-              serverError={failure} industries={asksIndustry(values.edition, industries) ? industries : []} />
+          {step === "business" && <StepBusiness form={form} countries={countries} country={country} onCountry={chooseCountry} industries={industries} />}
+          {step === "account" && (
+            <StepAccount form={form} server={password.state} serverMessage={password.message} terms={links.terms} privacy={links.privacy} serverError={failure} />
           )}
 
           {blocked && <Alert tone="warn">{t("signIn.waitMinutes", { count: waitMinutes(left) })} {t("signIn.countdown", { time: formatCountdown(left) })}</Alert>}
@@ -246,7 +228,7 @@ export function Register() {
           <div className="flex flex-wrap items-center gap-3 border-t border-line pt-6">
             {index > 0 && <Button variant="secondary" size="lg" onClick={() => goTo(STEPS[index - 1])} disabled={busy}>{t("signup.back")}</Button>}
             <Button type="submit" size="lg" className="min-w-40" disabled={!canContinue || (step === "need" && !choices.data)} loading={busy}>
-              {busy ? t("signup.sending") : step === "review" ? t("signup.create") : t("signup.continue")}
+              {busy ? t("signup.sending") : step === "account" ? t("signup.create") : t("signup.continue")}
             </Button>
             {busy && <span className="flex items-center gap-2 text-sm text-muted" role="status"><Spinner />{t("signup.sendingNote")}</span>}
           </div>
@@ -257,6 +239,16 @@ export function Register() {
 }
 
 /** A restored draft opens where it was, but never past the first step whose answers are missing (the password is never kept). */
+/** A first name for the greeting, taken from the email address (the owner can change it in My account). */
+/** Used only when the platform cannot say which country the form starts on (it is a Super Admin setting). */
+const DEFAULT_COUNTRY = "KE";
+
+export function ownerNameFrom(email: string): string {
+  const local = email.trim().split("@")[0] ?? "";
+  const word = local.split(/[._+\-\d]+/).find((w) => w.length > 0) ?? "Owner";
+  return word.charAt(0).toUpperCase() + word.slice(1, 60);
+}
+
 function firstEarlier(saved: StepId, values: Values): StepId {
   const first = firstIncomplete(values, { passwordOk: null });
   return STEPS.indexOf(saved) <= STEPS.indexOf(first) ? saved : first;

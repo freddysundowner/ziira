@@ -170,7 +170,12 @@
     "subtitle": "Here is where your business stands.",
     "connectTitle": "Connect your first system",
     "connectHint": "Ziira checks your business once it can read your sales, payments or books. Connect a system or upload a file to start.",
-    "connectAction": "Connect a system"
+    "connectAction": "Connect a system",
+    "shortcuts": "Shortcuts",
+    "numbers": "Key numbers",
+    "lists": "Things to look at",
+    "more": "More",
+    "notice": { "dismiss": "Hide this notice" }
   },
   "loading": "Loading…",
   "notFound": "This page does not exist, or you do not have access to it.",
@@ -181,6 +186,7 @@
       "waiting": "Waiting for you",
       "inbox": "Inbox",
       "sell": "Sell",
+      "sellNoTill": "Invoices and payments",
       "services": "Services",
       "customers": "Customers",
       "stock": "Stock",
@@ -408,21 +414,24 @@
       "about": "About you",
       "password": "Your password",
       "business": "Your business",
-      "review": "Review and create"
+      "review": "Review and create",
+      "account": "Your account"
     },
     "heading": {
       "need": "What do you need?",
       "about": "Tell us about you",
       "password": "Create your password",
       "business": "Tell us about your business",
-      "review": "Review and create"
+      "review": "Review and create",
+      "account": "Create your sign-in"
     },
     "lead": {
       "need": "Pick the closest. You can add more whenever you like; nothing is ever taken away.",
       "about": "We use your email to sign you in and to send you important notices.",
       "password": "Choose something only you know. You will use it with your email to sign in.",
       "business": "We use this to set the business up for your country: currency, time zone and tax details.",
-      "review": "Check your answers, then create your business."
+      "review": "Check your answers, then create your business.",
+      "account": "This is how you sign in. You go straight in once you create it."
     },
     "back": "Back",
     "continue": "Continue",

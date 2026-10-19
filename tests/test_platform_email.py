@@ -199,7 +199,7 @@ def test_public_config_has_only_non_secret_values(client, boss) -> None:  # type
         assert client.put(f"{API}/operator/platform/behaviour/{key}", headers=h, json={"value": value}).status_code == 200
     setup_resend(client, boss)
     body = client.get(f"{API}/public/config").json()
-    assert set(body) == {"registration", "terms_url", "privacy_url", "help_url", "site_url", "support_email"}
+    assert set(body) == {"registration", "default_country", "terms_url", "privacy_url", "help_url", "site_url", "support_email"}
     assert body["terms_url"] == "https://example.test/terms"
     assert behaviour.public_web_url() == "https://app.example.test"
     bad = client.put(f"{API}/operator/platform/behaviour/public.terms_url", headers=h, json={"value": "javascript:alert(1)"})

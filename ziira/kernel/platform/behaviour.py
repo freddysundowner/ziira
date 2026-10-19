@@ -54,6 +54,13 @@ def _edition(value: Any) -> str:
     return clean
 
 
+def _country(value: Any) -> str:
+    clean = str(value or "").strip().upper()
+    if clean and not re.fullmatch(r"[A-Z]{2}", clean):
+        raise ValidationFailed("The default country is a two-letter country code, such as KE")
+    return clean
+
+
 def _trial(value: Any) -> int | str:
     if value is None or str(value).strip() == "":
         return ""
@@ -78,6 +85,7 @@ KEYS: dict[str, Callable[[Any], Any]] = {
     "registration.mode": _mode,
     "registration.default_edition": _edition,
     "registration.trial_days": _trial,
+    "registration.default_country": _country,
     "public.web_url": _url("The public web address"),
     "public.api_url": _url("The public API address"),
     "public.terms_url": _url("The terms link"),
@@ -142,6 +150,14 @@ def registration_mode() -> str:
     return registration_mode_set()
 
 
+DEFAULT_COUNTRY = "KE"          # the owner's choice: sign-up starts on Kenya until the Super Admin sets another
+
+
+def default_country() -> str:
+    """The country the sign-up form starts on (a platform setting; the owner chose Kenya as the starting value)."""
+    return str(get("registration.default_country") or "").strip().upper() or DEFAULT_COUNTRY
+
+
 def default_edition() -> str:
     return str(get("registration.default_edition") or "").strip()
 
@@ -163,8 +179,8 @@ def public_api_url() -> str:
 def overview() -> dict[str, Any]:
     """Every value for the settings page: what is saved, what is used, and where it comes from."""
     env = get_settings()
-    fallbacks = {"registration.mode": env.registration_mode, "public.web_url": env.public_web_url,
-                 "public.api_url": env.public_base_url}
+    fallbacks = {"registration.default_country": DEFAULT_COUNTRY, "registration.mode": env.registration_mode,
+                 "public.web_url": env.public_web_url, "public.api_url": env.public_base_url}
     return {key: {"value": get(key), "effective": str(get(key) or fallbacks.get(key, "")),
                   "source": "platform" if str(get(key)) != "" else ("environment" if fallbacks.get(key) else "unset")}
             for key in KEYS}

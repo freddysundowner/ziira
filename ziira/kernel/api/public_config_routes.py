@@ -10,6 +10,7 @@ router = APIRouter(prefix="/api/v1/public", tags=["Pricing"])
 
 class PublicConfig(BaseModel):
     registration: str
+    default_country: str
     terms_url: str
     privacy_url: str
     help_url: str
@@ -23,4 +24,4 @@ def public_config(response: Response) -> object:
     response.headers["Cache-Control"] = "public, max-age=30"
     links = {k: str(behaviour.get(f"public.{k}")) for k in
              ("terms_url", "privacy_url", "help_url", "site_url", "support_email")}
-    return {"registration": behaviour.registration_mode(), **links}
+    return {"registration": behaviour.registration_mode(), "default_country": behaviour.default_country(), **links}
