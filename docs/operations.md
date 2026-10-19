@@ -331,6 +331,33 @@ ziira backup --dir /backups/ziira --keep-daily 35 --keep-monthly 12     # these 
   any business, and the key must not travel with the dump. Store both keys in a secrets manager or sealed envelope
   held by two people. Losing the credentials key locks out every tenant.
 
+### Photos and files (`ZIIRA_FILES_DIR`)
+
+Photos and PDFs attached to records (`docs/files.md`) live in a private folder, not in the database.
+
+- **Set `ZIIRA_FILES_DIR`** to an absolute, permanent folder on a disk with room, owned by the application user, mode 0700
+  (the installer uses `<state dir>/files`). Not under `/tmp`, not inside the backup folder, not in a web server's document
+  root. `python scripts/check_env.py` refuses an unset, relative, temporary or backup-overlapping folder.
+- **Disk**: plan for about 1 MB per photo (original, a 1600 px copy and a thumbnail are all kept). Settings > Photos and files
+  shows the space used; a company cap and the plan's `storage_mb` limit stop uploads before the disk fills (watch the free
+  space on this disk like the database's). The web server must allow 27 MB request bodies on `POST /api/v1/files` (the
+  installer's nginx does; `ZIIRA_FILES_MAX_UPLOAD_BYTES` is 26,500,000).
+- **Backup**: `ziira backup` writes `<dir>/<target>/<target>-<time>.files.tar` beside each business's dump (exactly the files
+  that dump's rows name, read in the same database snapshot) and records its count, size and sha256 in the manifest. Retention
+  prunes the archive with its dump. Copy the whole backup folder off the server, encrypted, as for dumps: the photos are
+  personal data. A business with no files gets no archive.
+- **Restore test**: `ziira restore-test` checks the archive's checksum, restores the dump, and verifies every restored row
+  against the *archive* (present, right size, right checksum), not against the live folder that has moved on. A damaged or
+  missing archive fails the test.
+- **Restoring a business**: `ziira restore ... --into NEWDB --files-into /var/lib/ziira/files-restored` unpacks the archive
+  into a new folder (never over existing files, names are checked); point `ZIIRA_FILES_DIR` at it, or copy the business's
+  `<tenant id>/` folder into the live one, when you swap the database in (situation B).
+- **`ziira verify`** (also in the nightly check) compares rows and bytes both ways: a file whose bytes are missing, the wrong
+  size or damaged (checksum); a deleted file whose bytes remain; bytes with no row (over an hour old); files of a record that
+  no longer exists. `--fix` removes the leftovers; a missing or damaged original can only come back from a backup.
+- Moving to object storage later means a new `FileStore` (ziira/kernel/files/store.py); the backup then follows that store's
+  own versioning instead of the tar. Not built.
+
 ### Restoring: three situations
 
 **A. The monthly restore test (no risk to anything live)** — see the runbook below.
@@ -432,8 +459,10 @@ working day of each month, by the person on the rota, and record the result in t
 
 - `ziira backup` reads all rows of every table to count them: on a very large business consider running it from a
   replica (not supported by the current connection settings: it connects to the stored admin URL).
-- Per-table counts of tables that change during the snapshot are exact (same snapshot); files outside the database
-  (`kernel.file` content, if stored on disk later) are not covered.
+- Per-table counts of tables that change during the snapshot are exact (same snapshot). Photos and files attached to
+  records are outside the database: they are archived by `ziira backup` (below) and restored with `--files-into`. The
+  archive is taken right after the dump, from the list of files the dump's rows name; a file removed in those seconds is
+  listed in the manifest as `missing` and does not fail the restore test.
 - Dumps of a business restore without its login's password: restored logins and passwords live in the cluster, not
   the database. On a *new* server the business's login role does not exist; for that case use situation C (a cluster
   restore brings the roles) or recreate roles from the master record (not built).

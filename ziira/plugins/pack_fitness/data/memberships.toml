@@ -1,0 +1,158 @@
+# Starting plans, packs and policies. EVERY PRICE BELOW IS AN EXAMPLE: the plans are marked "example price" until you
+# change the fee. Edit, retire or add as you like; nothing here is overwritten once you have changed it.
+
+[settings]
+grace_days = 7              # days a late payer still gets in (with a warning at the desk)
+dunning_days = "1,7,14"     # late-payment messages go this many days after the due date
+auto_freeze_days = 0        # 0: never freeze for unpaid fees by itself
+inactive_weeks = 3          # message members not seen for this many weeks (0: off)
+birthday_messages = false
+waiver_required = true      # terms must be accepted before entry
+repeat_window_minutes = 10
+referral_reward = 0
+late_cancel_hours = 0
+late_cancel_consumes = true
+no_show_consumes = true
+
+[waiver]
+title = "Membership terms"
+body = """EXAMPLE WORDING - replace it with your own terms before you use it.
+
+I understand that exercise carries a risk of injury and that I train at my own risk. I will follow the staff's instructions and the rules of the gym. I agree to the membership fees, the notice period and the freeze rules of my plan. I have told the staff about anything they should know to keep me safe.
+
+(This wording is a placeholder, not legal advice. Have your own terms checked for your country.)"""
+
+[[plan]]
+code = "MONTHLY"
+name = "Monthly"
+fee = "30.00"
+billing_interval = "month"
+service_sku = "GYM-MEMBERSHIP"
+joining_fee = "20.00"
+joining_fee_sku = "GYM-JOINING"
+freeze_max_days = 30
+guest_passes_per_period = 1
+classes_mode = "included"
+description = "Open access to the gym and the classes. Renews every month."
+
+[[plan]]
+code = "CONTRACT12"
+name = "12 month contract"
+fee = "25.00"
+billing_interval = "month"
+kind = "fixed_term"
+term_periods = 12
+notice_days = 30
+early_exit_fee = "50.00"
+service_sku = "GYM-MEMBERSHIP"
+joining_fee = "0"
+freeze_max_days = 30
+classes_mode = "included"
+description = "Lower monthly fee for a 12 month commitment."
+
+[[plan]]
+code = "ANNUAL"
+name = "Annual (paid once a year)"
+fee = "300.00"
+billing_interval = "year"
+service_sku = "GYM-MEMBERSHIP"
+freeze_max_days = 60
+classes_mode = "included"
+description = "A year in one payment. A reminder goes out before it renews."
+
+[[plan]]
+code = "OFFPEAK"
+name = "Off-peak"
+fee = "20.00"
+billing_interval = "month"
+service_sku = "GYM-MEMBERSHIP"
+access_rules = [{ days = [0, 1, 2, 3, 4], from = "10:00", to = "16:00" }]
+classes_mode = "none"
+description = "Weekdays between 10:00 and 16:00."
+
+[[plan]]
+code = "CLASSESONLY"
+name = "Classes only"
+fee = "26.00"
+billing_interval = "month"
+service_sku = "GYM-MEMBERSHIP"
+gym_access = false
+classes_mode = "credits"
+credits_per_period = 8
+covered_services = ["class"]
+description = "Eight classes a month, no open gym."
+
+[[plan]]
+code = "DAYPASS"
+name = "Day pass"
+fee = "5.00"
+kind = "pass"
+valid_days = 1
+service_sku = "GYM-DAYPASS"
+
+[[plan]]
+code = "WEEKPASS"
+name = "Week pass"
+fee = "15.00"
+kind = "pass"
+valid_days = 7
+service_sku = "GYM-DAYPASS"
+
+[[plan]]
+code = "TRIAL"
+name = "Free trial"
+fee = "0.00"
+kind = "pass"
+valid_days = 3
+is_trial = true
+service_sku = "GYM-DAYPASS"
+description = "Three days to try the gym. A message follows when it ends."
+
+[[package]]
+code = "VISITS10"
+name = "10 visits"
+credits = 10
+price = "40.00"
+expiry_days = 90
+covered_services = ["gym"]
+sku = "GYM-VISITS"
+
+[[package]]
+code = "CLASSES10"
+name = "10 classes"
+credits = 10
+price = "80.00"
+expiry_days = 120
+covered_services = ["class"]
+sku = "GYM-CLASS"
+
+[[package]]
+code = "PT5"
+name = "5 personal training sessions"
+credits = 5
+price = "150.00"
+expiry_days = 120
+covered_services = ["pt"]
+sku = "GYM-PT"
+
+[[package]]
+code = "PT10"
+name = "10 personal training sessions"
+credits = 10
+price = "280.00"
+expiry_days = 180
+covered_services = ["pt"]
+sku = "GYM-PT"
+
+# What the owner is told about (checks stay silent when all is well).
+[intel."memberships.members_inactive"]
+idle_weeks = 3
+min_members = 5
+
+[intel."memberships.payment_late"]
+min_days_late = 7
+high_days_late = 30
+
+[intel."memberships.entry_overrides"]
+lookback_days = 7
+max_overrides = 5

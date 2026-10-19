@@ -1,0 +1,259 @@
+# Example data for a salon, spa or barber shop. Every price below is an EXAMPLE: it is marked as one until the business sets its own.
+[settings]
+cancel_window_hours = 24
+reminder_hours_before = 24
+default_buffer_minutes = 10
+waitlist_confirm_minutes = 30
+late_cancel_fee_percent = 50
+no_show_fee_percent = 100
+rebook_prompt_hours = 3
+recalls_enabled = true
+patch_test_valid_days = 180
+deposit_note = "Send the deposit and quote your name; your time is held once it is paid."
+
+[[resource]]
+name = "Stylist 1"
+kind = "staff"
+level = "Senior"
+colour = "#8e44ad"
+order = 1
+hours = [{ days = [0, 1, 2, 3, 4, 5], start = "09:00", end = "18:00" }]
+
+[[resource]]
+name = "Stylist 2"
+kind = "staff"
+level = "Junior"
+colour = "#2980b9"
+order = 2
+hours = [{ days = [0, 1, 2, 3, 4, 5], start = "09:00", end = "18:00" }]
+
+[[resource]]
+name = "Barber chair 1"
+kind = "chair"
+colour = "#27ae60"
+order = 3
+hours = [{ days = [0, 1, 2, 3, 4, 5], start = "09:00", end = "18:00" }]
+
+[[resource]]
+name = "Treatment room 1"
+kind = "room"
+colour = "#d35400"
+order = 4
+hours = [{ days = [0, 1, 2, 3, 4, 5], start = "09:00", end = "18:00" }]
+
+
+[[service]]
+sku = "SAL-CUT-W"
+name = "Women's cut and style"
+minutes = 60
+price = 1500
+buffer_after = 10
+recall_days = 42
+
+[[service]]
+sku = "SAL-CUT-M"
+name = "Men's cut"
+minutes = 30
+price = 600
+buffer_after = 5
+recall_days = 28
+
+[[service]]
+sku = "SAL-BARBER"
+name = "Barber cut and shave"
+minutes = 30
+price = 400
+recall_days = 21
+
+[[service]]
+sku = "SAL-BEARD"
+name = "Beard trim"
+minutes = 15
+price = 200
+
+[[service]]
+sku = "SAL-BLOW"
+name = "Wash and blow-dry"
+minutes = 45
+price = 800
+buffer_after = 10
+
+[[service]]
+sku = "SAL-COLOUR"
+name = "Colour"
+minutes = 150
+price = 4500
+buffer_after = 10
+processing_start = 45
+processing = 60
+deposit_percent = 30
+needs_patch_test = true
+recall_days = 60
+
+[[service]]
+sku = "SAL-HIGHLIGHT"
+name = "Highlights"
+minutes = 180
+price = 6500
+buffer_after = 10
+processing_start = 60
+processing = 60
+deposit_percent = 30
+needs_patch_test = true
+recall_days = 70
+
+[[service]]
+sku = "SAL-RELAX"
+name = "Relaxer or treatment"
+minutes = 120
+price = 3000
+buffer_after = 10
+processing_start = 30
+processing = 45
+deposit_percent = 20
+needs_patch_test = true
+recall_days = 56
+
+[[service]]
+sku = "SAL-BRAID"
+name = "Braids"
+minutes = 240
+price = 3500
+deposit_percent = 30
+recall_days = 56
+
+[[service]]
+sku = "SAL-MANI"
+name = "Manicure"
+minutes = 45
+price = 800
+recall_days = 21
+
+[[service]]
+sku = "SAL-PEDI"
+name = "Pedicure"
+minutes = 60
+price = 1000
+recall_days = 28
+
+[[service]]
+sku = "SAL-FACIAL"
+name = "Facial"
+minutes = 60
+price = 2500
+resources = ["Treatment room 1"]
+recall_days = 35
+
+[[service]]
+sku = "SAL-MASSAGE"
+name = "Massage (60 minutes)"
+minutes = 60
+price = 3000
+resources = ["Treatment room 1"]
+buffer_after = 15
+recall_days = 30
+
+[[variant]]
+service = "SAL-CUT-W"
+label = "Senior stylist"
+level = "Senior"
+price = 2000
+
+[[variant]]
+service = "SAL-CUT-W"
+label = "Stylist"
+level = "Junior"
+price = 1500
+
+[[variant]]
+service = "SAL-COLOUR"
+label = "Long hair"
+price = 5500
+
+[[variant]]
+service = "SAL-BRAID"
+label = "Long braids"
+price = 4500
+
+[[commission]]
+applies_to = "service"
+kind = "percent"
+value = 30
+
+[[commission]]
+applies_to = "service"
+level = "Senior"
+kind = "percent"
+value = 40
+
+[[commission]]
+applies_to = "product"
+kind = "percent"
+value = 10
+
+[[step]]
+id = "prices"
+title = "Set your own prices"
+hint = "The prices shown as examples are not yours yet: open Services offered and change each one."
+to = "/services/services"
+check = "prices_set"
+
+[[step]]
+id = "staff"
+title = "Name your staff and set their hours"
+hint = "Replace Stylist 1, Stylist 2 and the chairs with your own people and working hours."
+to = "/services/resources"
+check = "staff_named"
+
+[[step]]
+id = "link"
+title = "Link each service to its service item"
+hint = "So a finished visit can be billed: pick the service item for each service."
+to = "/services/services"
+check = "services_linked"
+
+[[step]]
+id = "fees"
+title = "Choose the item for late-cancel and no-show fees"
+hint = "Pick a service item in Booking settings, or set the fee percents to 0."
+to = "/services/settings"
+check = "fee_item"
+
+[[step]]
+id = "page"
+title = "Switch on your booking page"
+hint = "Choose an address and let clients book themselves."
+to = "/services/settings"
+check = "booking_page"
+
+[[step]]
+id = "booking"
+title = "Take your first booking"
+hint = "Put an appointment in the calendar."
+to = "/services/calendar"
+check = "first_booking"
+
+[[step]]
+id = "checkout"
+title = "Check out your first client"
+hint = "Bill a visit with a tip and a product."
+to = "/services/front-desk"
+check = "first_checkout"
+
+[intel."bookings.no_show_rate"]
+lookback_days = 30
+min_appointments = 8
+no_show_percent = "15.0"
+
+[intel."bookings.late_cancellations"]
+lookback_days = 30
+late_cancel_count = 4
+
+[intel."bookings.low_utilisation"]
+lookback_days = 14
+utilisation_percent = "40.0"
+min_hours = 12
+
+[intel."bookings.idle_gaps"]
+look_ahead_days = 2
+gap_minutes = 90

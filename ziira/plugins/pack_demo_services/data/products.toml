@@ -1,0 +1,15 @@
+# Service items: no prices (a price is the business's own), a usual duration in minutes.
+[[service]]
+sku = "DEMO-CONSULT"
+name = "Consultation"
+minutes = 30
+
+[[service]]
+sku = "DEMO-STANDARD"
+name = "Standard service"
+minutes = 60
+
+[[service]]
+sku = "DEMO-EXTENDED"
+name = "Extended service"
+minutes = 90

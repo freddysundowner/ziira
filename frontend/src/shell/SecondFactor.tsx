@@ -64,7 +64,7 @@ export function SecondFactor({ challenge, issuedAt, onBack, onExpired }: { chall
   return (
     <form onSubmit={submit} className="space-y-5">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">{t("mfa.codeTitle")}</h1>
+        <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("mfa.codeTitle")}</h1>
         <p className="text-sm text-muted">{t(backup ? "mfa.backupHint" : "mfa.codeHint")}</p>
       </div>
       <Field label={t(backup ? "mfa.backupLabel" : "mfa.codeLabel")} hint={backup ? t("mfa.backupFormat") : undefined}>

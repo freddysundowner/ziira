@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import type { RegisterResult } from "@/sdk/session";
 import { Alert, api, Button, formatCountdown, Spinner, unwrap, useCountdown, useEditionChoices, useSession, useTranslation, waitMinutes } from "@/sdk";
@@ -13,10 +13,10 @@ import { RegisterLayout } from "./register/RegisterLayout";
 import { SidePanel } from "./register/SidePanel";
 import { SignUpClosed } from "./register/SignUpClosed";
 import {
-  clearDraft, type Context, EMPTY, type FieldKey, firstIncomplete, loadDraft, problemsOf, saveDraft, serverProblems, STEPS, type StepId, type Values,
+  clearDraft, type Context, EMPTY, type FieldKey, firstIncomplete, KINDS, loadDraft, problemsOf, saveDraft, serverProblems, STEPS, type StepId, type Values,
 } from "./register/state";
 import { StepAbout } from "./register/StepAbout";
-import { StepBusiness } from "./register/StepBusiness";
+import { asksIndustry, type Industry, StepBusiness } from "./register/StepBusiness";
 import { StepNeed } from "./register/StepNeed";
 import { StepPassword } from "./register/StepPassword";
 import { StepReview } from "./register/StepReview";
@@ -28,10 +28,13 @@ import { guessCountry } from "./register/validators";
  * validates as the person types (typing mistakes only; the server re-checks on submit and its complaints are shown on
  * the field and step they belong to). Answers survive a refresh in sessionStorage, never the password.
  */
+const NO_INDUSTRIES: readonly Industry[] = [];
+
 export function Register() {
   const { t } = useTranslation();
   const { register } = useSession();
   const [params] = useSearchParams();
+  const navigate = useNavigate();
   const edition = params.get("edition");
   const plan = params.get("plan");
   const choices = useEditionChoices();
@@ -97,6 +100,16 @@ export function Register() {
     else if (!choices.data.some((e) => e.id === values.edition)) setValues((v) => ({ ...v, edition: choices.data.find((e) => e.id === "full")?.id ?? choices.data[0]?.id ?? "full" }));
   }, [choices.data, edition, plan, planList.data, planList.isLoading, values.edition]);
 
+  // the kinds of service business (industry packs) are asked only with the Services edition
+  const industriesQuery = useQuery({
+    queryKey: ["register-industries"], enabled: values.edition === "services", staleTime: 60_000, retry: 0,
+    queryFn: () => unwrap(api.GET("/api/v1/industries", { params: { query: { edition: "services" } } })),
+  });
+  const industries = industriesQuery.data ?? NO_INDUSTRIES;
+  useEffect(() => {      // a pack picked for the Services edition means nothing for another edition
+    if (values.edition !== "services" && values.kind && !(KINDS as readonly string[]).includes(values.kind)) setValues((v) => ({ ...v, kind: "" }));
+  }, [values.edition, values.kind]);
+
   const trial = useQuery({
     queryKey: ["register-trial", values.edition, plan],
     queryFn: () => unwrap(api.GET("/api/v1/register/trial", { params: { query: { edition: values.edition, plan } } })),
@@ -138,6 +151,12 @@ export function Register() {
       result = { error: t("signup.unavailable") };
     }
     setBusy(false);
+    if (!result.error && result.instantToken) {
+      // No email can be sent from this platform: the password was just chosen, so go straight on and create the business.
+      clearDraft();
+      navigate(`/register/verify?token=${encodeURIComponent(result.instantToken)}`, { replace: true });
+      return;
+    }
     if (!result.error) {
       clearDraft();
       setSent({ email: values.email.trim(), devToken: result.devToken ?? null });
@@ -224,10 +243,10 @@ export function Register() {
           {step === "need" && <StepNeed form={form} choices={choices.data} loading={choices.isLoading} failed={!!choices.error} onRetry={() => void choices.refetch()} />}
           {step === "about" && <StepAbout form={form} />}
           {step === "password" && <StepPassword form={form} server={password.state} serverMessage={password.message} />}
-          {step === "business" && <StepBusiness form={form} countries={countries} currencies={currencies} country={country} onCountry={chooseCountry} />}
+          {step === "business" && <StepBusiness form={form} countries={countries} currencies={currencies} country={country} onCountry={chooseCountry} industries={industries} />}
           {step === "review" && (
             <StepReview form={form} edition={chosenEdition} country={country} terms={links.terms} privacy={links.privacy} onEdit={goTo}
-              serverError={failure} />
+              serverError={failure} industries={asksIndustry(values.edition, industries) ? industries : []} />
           )}
 
           {blocked && <Alert tone="warn">{t("signIn.waitMinutes", { count: waitMinutes(left) })} {t("signIn.countdown", { time: formatCountdown(left) })}</Alert>}

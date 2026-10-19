@@ -50,6 +50,10 @@
   },
   "search": "Tafuta viongezi",
   "filterAll": "Vyote",
-  "noMatch": "Hakuna kipengele kinacholingana"
+  "noMatch": "Hakuna kipengele kinacholingana",
+  "industry": {
+   "badge": "Sekta",
+   "recommendedEdition": "Inapendekezwa kwa toleo lako"
+  }
  }
 }

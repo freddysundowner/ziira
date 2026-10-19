@@ -1,0 +1,1 @@
+"""Appointments and Bookings module."""

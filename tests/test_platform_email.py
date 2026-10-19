@@ -166,19 +166,30 @@ def test_without_platform_settings_the_environment_or_development_fake_is_used(c
     assert moved.json()["source"] == "environment"                 # still the environment until the provider is tested and made live
 
 
-def test_registration_cannot_be_opened_without_working_email(client, boss, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+def test_registration_can_be_opened_without_email_and_owners_go_straight_in(client, boss, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """No working email must not close sign-up: nothing is mailed, the owner just set a password and goes on."""
     h = boss["headers"]
     monkeypatch.setattr(get_settings(), "env", "production")
     monkeypatch.setattr(get_settings(), "platform_email_provider", "")
     assert not mail.status()["working"]
-    refused = client.put(f"{API}/operator/platform/behaviour/registration.mode", headers=h, json={"value": "open"})
-    assert refused.status_code == 422 and "working email" in refused.json()["message"]
-    assert client.put(f"{API}/operator/platform/behaviour/registration.mode", headers=h,
-                      json={"value": "closed"}).status_code == 200
-    # an environment that says open still reads as closed to the public while nothing can send mail
-    monkeypatch.setattr(get_settings(), "registration_mode", "open")
-    behaviour.set_value("registration.mode", "", "test")
-    assert client.get(f"{API}/public/config").json()["registration"] == "closed"
+    opened = client.put(f"{API}/operator/platform/behaviour/registration.mode", headers=h, json={"value": "open"})
+    assert opened.status_code == 200, opened.text
+    assert client.get(f"{API}/public/config").json()["registration"] == "open"
+    sent: list[tuple[str, ...]] = []
+    monkeypatch.setattr("ziira.kernel.platform_mail.send", lambda *a, **k: sent.append(a))
+    asked = client.post(f"{API}/register", json={
+        "business_name": "Straight In Traders", "owner_name": "Jane Doe", "email": "jane-straight@acme.test",
+        "password": "a-good-password-1", "currency": "usd", "phone_country_code": "44", "country": "gb"})
+    assert asked.status_code == 202, asked.text
+    token = asked.json()["instant_token"]
+    assert token and asked.json()["dev_token"] is None and sent == []          # no email was sent or needed
+    done = client.post(f"{API}/register/verify", json={"token": token, "device_id": "dev-1"})
+    assert done.status_code == 200, done.text
+    assert done.json()["business_name"] == "Straight In Traders" and done.json()["access_token"]
+    # the owner can sign in again with the password just chosen
+    again = client.post(f"{API}/auth/sign-in", json={"login": "jane-straight@acme.test",
+                                                    "password": "a-good-password-1", "device_id": "dev-2"})
+    assert again.status_code == 200
 
 
 def test_public_config_has_only_non_secret_values(client, boss) -> None:  # type: ignore[no-untyped-def]

@@ -709,4 +709,5 @@ def test_the_socket_is_declared_and_implemented_by_the_units_that_hold_people() 
     point = extensions.extension_points()["kernel.personal_data"]
     assert point.owner == "kernel"
     assert {unit for unit, _ in point.implementations} == {
-        "kernel", "connect", "crm", "people", "pos", "purchasing", "payments", "intel"}
+        "kernel", "connect", "crm", "people", "pos", "purchasing", "payments", "intel",
+        "bookings", "jobs", "timebilling", "memberships", "claims"}

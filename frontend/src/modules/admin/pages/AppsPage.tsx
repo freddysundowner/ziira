@@ -5,7 +5,7 @@ import { api, EDITION_KEY, EmptyState, ErrorState, Input, PageHeader, Skeleton, 
 import { UnitCardView } from "./apps/UnitCardView";
 import { EditionPanel } from "./apps/EditionPanel";
 import { UnitDialogs, type Pending } from "./apps/UnitDialogs";
-import { recommendedPlugins, type StatusFilter, titlesOf, type UnitCard, visibleCards } from "./apps/lib";
+import { recommendedForEdition, recommendedPlugins, type StatusFilter, titlesOf, type UnitCard, visibleCards } from "./apps/lib";
 
 const CATALOG = ["units-catalog"];
 
@@ -76,7 +76,7 @@ export default function AppsPage() {
       )}
       {cards.length > 0 && shown.length === 0 && <EmptyState title={t("apps.noMatch")} />}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {shown.map((u) => <UnitCardView key={u.name} unit={u} all={cards} recommended={recommended.has(u.name)} onEnable={() => ask("enable", u)} onDisable={() => ask("disable", u)} onRemove={() => ask("remove", u)} />)}
+        {shown.map((u) => <UnitCardView key={u.name} unit={u} all={cards} recommended={recommended.has(u.name)} forEdition={recommendedForEdition(u, edition?.id)} onEnable={() => ask("enable", u)} onDisable={() => ask("disable", u)} onRemove={() => ask("remove", u)} />)}
       </div>
       <UnitDialogs pending={pending} all={cards} mutations={mutations} onClose={() => setPending(undefined)} />
     </>

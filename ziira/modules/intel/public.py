@@ -71,7 +71,7 @@ __all__ = [
     "LlmMessage", "LlmProvider", "LlmReply", "LlmUsage", "Record", "Sample", "ToolCall", "ToolResult", "ToolSpec",
     "branch_scope", "company_visible", "date_range", "findings_summary", "fingerprint", "hide_secrets", "is_unusual",
     "FEATURES", "HttpLlmProvider", "LiveModel", "ModelInfo", "ProviderCatalog", "estimate_cost",
-    "nudge_people", "requested_branch", "scope_from_pairs", "top_findings",
+    "apply_check_defaults", "nudge_people", "requested_branch", "scope_from_pairs", "top_findings",
 ]
 
 
@@ -239,6 +239,14 @@ def nudge_people(session: Session, *, company_id: UUID, branch_id: UUID | None, 
 
     return nudges.nudge_people(session, company_id=company_id, branch_id=branch_id, permission=permission, text=text,
                                finding_id=finding_id, today=today)
+
+
+def apply_check_defaults(session: Session, defaults: dict[str, dict[str, Any]]) -> list[str]:
+    """For an industry pack: set the suggested limits of checks the business has not tuned yet (never overwrites a
+    saved setting). `defaults` maps a check code to its limits. Returns the codes that were set."""
+    from ziira.modules.intel.services import checks_admin
+
+    return checks_admin.apply_defaults(session, defaults)
 
 
 def top_findings(session: Session, context: RequestContext, limit: int = 5) -> list[FindingBrief]:

@@ -25,6 +25,7 @@ export const AREA_DEFINITIONS: Record<AreaId, AreaDefinition> = {
   waiting: { icon: "bell", variant: "list", sections: [] },
   command: { icon: "dashboard", variant: "list", sections: [], coreUnits: ["command", "intel"], fallbackTitle: "inbox" },
   sell: { icon: "sales", group: "sell", variant: "list", sections: [] },
+  services: { icon: "calendar", group: "services", variant: "list", sections: [] },
   customers: { icon: "customers", group: "sell", variant: "list", sections: [] },
   stock: { icon: "stock", group: "stock", variant: "list", sections: [] },
   buy: { icon: "suppliers", group: "buy", variant: "list", sections: [] },

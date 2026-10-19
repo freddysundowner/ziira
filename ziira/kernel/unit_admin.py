@@ -10,7 +10,7 @@ from uuid import UUID
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from ziira.kernel import audit
+from ziira.kernel import audit, industry
 from ziira.kernel.errors import DependencyError, NotFound
 from ziira.kernel.manifest import Manifest
 from ziira.kernel.platform import entitlements
@@ -72,7 +72,9 @@ def catalog(session: Session, reg: Registry) -> list[dict[str, Any]]:
         in_plan = plan.units is None or m.name in plan.units
         out.append({
             "name": m.name, "title": m.title, "description": m.description, "category": m.category,
-            "countries": list(m.countries), "kind": m.kind, "version": m.version,
+            "countries": list(m.countries),
+            "editions": list(industry.load_pack(m).editions) if industry.is_industry(m) else [],
+            "kind": m.kind, "version": m.version,
             "requires": list(m.requires), "optional": list(m.optional), "dependants": dependants,
             "installed": is_installed, "enabled": is_enabled, "has_data": m.name in present,
             "will_also_enable": [] if is_enabled else [n for n in reg.units if n in also],

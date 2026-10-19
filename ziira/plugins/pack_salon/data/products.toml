@@ -1,0 +1,66 @@
+# Service items. No prices here: a price is the business's own (the example prices in bookings.toml show until it sets its own).
+
+[[service]]
+sku = "SAL-CUT-W"
+name = "Women's cut and style"
+minutes = 60
+
+[[service]]
+sku = "SAL-CUT-M"
+name = "Men's cut"
+minutes = 30
+
+[[service]]
+sku = "SAL-BARBER"
+name = "Barber cut and shave"
+minutes = 30
+
+[[service]]
+sku = "SAL-BEARD"
+name = "Beard trim"
+minutes = 15
+
+[[service]]
+sku = "SAL-BLOW"
+name = "Wash and blow-dry"
+minutes = 45
+
+[[service]]
+sku = "SAL-COLOUR"
+name = "Colour"
+minutes = 150
+
+[[service]]
+sku = "SAL-HIGHLIGHT"
+name = "Highlights"
+minutes = 180
+
+[[service]]
+sku = "SAL-RELAX"
+name = "Relaxer or treatment"
+minutes = 120
+
+[[service]]
+sku = "SAL-BRAID"
+name = "Braids"
+minutes = 240
+
+[[service]]
+sku = "SAL-MANI"
+name = "Manicure"
+minutes = 45
+
+[[service]]
+sku = "SAL-PEDI"
+name = "Pedicure"
+minutes = 60
+
+[[service]]
+sku = "SAL-FACIAL"
+name = "Facial"
+minutes = 60
+
+[[service]]
+sku = "SAL-MASSAGE"
+name = "Massage (60 minutes)"
+minutes = 60

@@ -222,6 +222,8 @@ class SalesInvoice(Audited, Base):
     cancel_reason: Mapped[str | None]
     notes: Mapped[str | None]
     external_ref: Mapped[str | None]
+    source_type: Mapped[str | None]
+    source_id: Mapped[UUID | None]
 
 
 class SalesInvoiceLine(TenantColumns, Base):
@@ -243,6 +245,7 @@ class SalesInvoiceLine(TenantColumns, Base):
     order_line_id: Mapped[UUID | None]
     price_reason_code_id: Mapped[UUID | None]
     list_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    description: Mapped[str | None]
 
 
 class SalesDocument(Audited, Base):

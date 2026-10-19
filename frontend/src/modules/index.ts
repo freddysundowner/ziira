@@ -5,6 +5,7 @@
 import type { ModuleDefinition } from "@/sdk";
 
 import admin from "./admin/module";
+import bookings from "./bookings/module";
 import catalogStats from "./catalog_stats/module";
 import command from "./command/module";
 import connect from "./connect/module";
@@ -20,7 +21,11 @@ import people from "./people/module";
 import payments from "./payments/module";
 import pos from "./pos/module";
 import purchasing from "./purchasing/module";
+import claims from "./claims/module";
+import jobs from "./jobs/module";
+import memberships from "./memberships/module";
+import timebilling from "./timebilling/module";
 
 export const allModules: readonly ModuleDefinition[] = [
-  admin, products, inventory, pos, crm, payments, purchasing, finance, people, messaging, leadsintel, catalogStats, command, intel, imports, connect,
+  admin, products, inventory, pos, crm, payments, purchasing, memberships, bookings, jobs, claims, timebilling, finance, people, messaging, leadsintel, catalogStats, command, intel, imports, connect,
 ];

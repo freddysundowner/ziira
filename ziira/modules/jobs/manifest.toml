@@ -1,0 +1,37 @@
+[unit]
+name = "jobs"
+title = "Jobs and Repairs"
+description = "Work orders for repairs and installations: items taken in, parts and labour, estimates the customer approves, and an invoice at the end."
+category = "sales"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products"]
+optional = ["crm", "inventory", "pos", "finance", "intel", "command", "payments", "purchasing", "claims"]
+
+[provides]
+api_prefix = "/api/v1/jobs"
+publishes = ["job.received", "job.status_changed", "job.estimate_approved", "job.estimate_declined", "job.collected", "job.invoiced"]
+subscribes = ["goods.received", "claim.created", "claim.estimate_submitted", "claim.response_recorded", "claim.authorised", "claim.completed", "claim.invoiced", "claim.closed"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["intel.check", "command.pulse_source", "kernel.personal_data", "kernel.integrity_check", "kernel.custom_field_entity", "kernel.industry_seeder", "kernel.attachable_entity"]
+
+[permissions]
+"jobs.view" = "View jobs, repairs and the items customers left"
+"jobs.manage" = "Take in items, edit jobs, move them along and record labour"
+"jobs.parts" = "Use stock as parts on a job"
+"jobs.estimate" = "Make estimates and record the customer's answer"
+"jobs.invoice" = "Invoice a job"
+"jobs.settings" = "Change job stages, checklists and rates"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all). There is no technician role
+# in the base set: a business that wants one makes it in Settings and ticks the jobs permissions it needs.
+[roles]
+"Branch Manager" = ["jobs.view", "jobs.manage", "jobs.parts", "jobs.estimate", "jobs.invoice"]
+"Finance Manager" = ["jobs.view", "jobs.invoice", "jobs.settings"]
+"Sales Rep" = ["jobs.view", "jobs.manage", "jobs.estimate"]
+"Storekeeper" = ["jobs.view", "jobs.parts"]
+"Cashier" = ["jobs.view", "jobs.manage"]
+"Accountant" = ["jobs.view", "jobs.invoice"]

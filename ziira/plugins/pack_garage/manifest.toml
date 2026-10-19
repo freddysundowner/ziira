@@ -1,0 +1,15 @@
+[unit]
+name = "pack_garage"
+title = "Garage, body shop or repair shop"
+description = "Sets up a workshop for vehicle, phone and tailoring jobs: stages, intake checklists, standard times, photos, insurer jobs and reminders."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+requires = ["products", "jobs"]
+optional = ["crm", "inventory", "pos", "claims", "intel"]
+
+[extends]
+implements = []

@@ -70,10 +70,11 @@ def post_product(body: ProductIn, session: Session = DB_SESSION) -> object:
 
 @router.get("/products", response_model=list[ProductOut], dependencies=VIEW)
 def get_products(search: str | None = None, barcode: str | None = Query(default=None, max_length=64),
+                 product_type: str | None = Query(default=None, pattern="^(stock|service|non_stock)$"),
                  limit: int = page_limit(50), offset: int = page_offset(), session: Session = DB_SESSION) -> object:
     """Products by name. `search` also finds a product by a scanned code; `barcode` returns only the product that
-    has exactly that code."""
-    return _out(session, list_products(session, search, limit, offset, barcode))
+    has exactly that code; `product_type` keeps one kind (for example `service`, to pick what to invoice under)."""
+    return _out(session, list_products(session, search, limit, offset, barcode, product_type))
 
 
 @router.get("/sku-suggestions", response_model=list[str], dependencies=MANAGE)

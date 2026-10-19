@@ -1,0 +1,35 @@
+[unit]
+name = "claims"
+title = "Insurance and Payer Claims"
+description = "When someone else pays: estimates sent to an insurer, scheme or fleet owner, their answer line by line, the invoices split between them and the customer, and what they still owe."
+category = "services"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+optional = ["crm", "pos", "jobs", "bookings", "payments", "finance", "intel", "command"]
+
+[provides]
+api_prefix = "/api/v1/claims"
+publishes = ["claim.created", "claim.estimate_submitted", "claim.response_recorded", "claim.authorised", "claim.completed", "claim.invoiced", "claim.credited", "claim.payment_recorded", "claim.short_paid", "claim.closed"]
+subscribes = []
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["intel.check", "command.pulse_source", "kernel.personal_data", "kernel.integrity_check", "kernel.attachable_entity"]
+
+[permissions]
+"claims.view" = "View claims, payers, estimates and what payers owe"
+"claims.manage" = "Open and edit claims, record notes, authority and completion, close a claim"
+"claims.estimate" = "Make and send estimates to payers and record their answers"
+"claims.invoice" = "Invoice a claim and credit an invoice when the payer reduces"
+"claims.payments" = "Record money received from payers and settle short payments"
+"claims.settings" = "Set up payers, their terms and the claim settings"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Branch Manager" = ["claims.view", "claims.manage", "claims.estimate", "claims.invoice"]
+"Finance Manager" = ["claims.view", "claims.invoice", "claims.payments", "claims.settings"]
+"Sales Rep" = ["claims.view", "claims.manage", "claims.estimate"]
+"Cashier" = ["claims.view"]
+"Accountant" = ["claims.view", "claims.invoice", "claims.payments"]

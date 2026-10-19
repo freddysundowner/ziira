@@ -53,6 +53,10 @@
     "books": { "title": "Books and accounts", "pitch": "Keep your accounts, bills and customers in order." },
     "intelligence": { "title": "I already have a system", "pitch": "Keep what you use today. Ziira reads it (never changes it) and tells you what needs attention." },
     "full": { "title": "Everything", "pitch": "Sales, stock, buying, accounts, people and Intelligence in one place." },
+    "services": {
+      "title": "Services",
+      "pitch": "Take bookings, run jobs, track time and bill clients: for salons, garages, clinics, agencies and trainers."
+    },
     "checklistTitle": "Getting started: {{edition}}",
     "progress": "{{done}} of {{total}} done",
     "allDone": "All done. You can hide this.",
@@ -62,6 +66,22 @@
     "tick": "Mark done: {{step}}",
     "untick": "Mark not done: {{step}}",
     "steps": {
+      "services": {
+        "title": "Add your services",
+        "hint": "What you offer, how long it takes and the price."
+      },
+      "staff": {
+        "title": "Add staff and working hours",
+        "hint": "Who does the work and when they are in."
+      },
+      "booking": {
+        "title": "Take your first booking",
+        "hint": "Put an appointment in the calendar."
+      },
+      "invoice": {
+        "title": "Send your first invoice",
+        "hint": "Bill a client for work done."
+      },
       "products": { "title": "Add your first products", "hint": "Type them in or bring a spreadsheet." },
       "opening_stock": { "title": "Set your opening stock", "hint": "Say what you have today." },
       "till": { "title": "Open a till", "hint": "Register a till and open a shift." },
@@ -104,6 +124,7 @@
       "waiting": "Waiting for you",
       "inbox": "Inbox",
       "sell": "Sell",
+      "services": "Services",
       "customers": "Customers",
       "stock": "Stock",
       "buy": "Buy",
@@ -149,6 +170,70 @@
     "hint": "Check your connection. Your session is safe; try again in a moment."
   },
   "notFoundHint": "The page may have moved, or your role may not include it.",
+  "customFields": {
+    "title": "Extra details",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saved": "Details saved",
+    "loadFailed": "The extra details could not be loaded.",
+    "choose": "Choose",
+    "yes": "Yes",
+    "no": "No",
+    "notSet": "Not set",
+    "problem": {
+      "required": "This is needed.",
+      "number": "Enter a number, such as 12 or 3.5.",
+      "date": "Enter a date."
+    }
+  },
+  "files": {
+    "title": "Photos and files",
+    "takePhoto": "Take photo",
+    "chooseFiles": "Add files",
+    "kindOfPhoto": "Kind of photo",
+    "empty": "No photos or files yet",
+    "emptyHint": "Take a photo with your phone or add a picture or PDF.",
+    "loadFailed": "The photos and files could not be loaded.",
+    "uploading": "Uploading",
+    "waiting": "No connection. This will be sent again by itself.",
+    "retry": "Try again",
+    "discard": "Remove from the list",
+    "thisFile": "This file",
+    "problem": {
+      "type": "{{name}} is not a photo (JPEG, PNG, WebP) or a PDF.",
+      "heic": "{{name}} is in a format the system cannot read (HEIC). Take the photo again in the most compatible format, or choose a JPEG.",
+      "tooBig": "{{name}} is larger than {{size}}. Take it at a lower resolution.",
+      "empty": "{{name}} is empty.",
+      "full": "This record already has {{count}} files, the most allowed."
+    },
+    "close": "Close",
+    "cancel": "Cancel",
+    "previous": "Previous",
+    "next": "Next",
+    "download": "Download",
+    "openPdf": "Open the PDF",
+    "pdf": "PDF document",
+    "pdfPages": "PDF, {{count}} pages",
+    "addedBy": "Added by {{who}} on {{when}}",
+    "someone": "someone",
+    "locationRemoved": "location removed",
+    "caption": "Caption",
+    "captionPlaceholder": "What this shows",
+    "kind": "Kind",
+    "visibility": "Who can be shown this",
+    "shareable": "Can be shared",
+    "staffOnly": "Staff only",
+    "shareableHint": "Shown on the customer or insurer page when you send one.",
+    "staffOnlyHint": "Only people in your business see it.",
+    "consent": "Customer agreed to be photographed",
+    "consentHint": "Who agreed and when (for example: Jane, in person, today).",
+    "delete": "Delete",
+    "deleteTitle": "Delete this file?",
+    "deleteMessage": "The file is removed for good and its links stop working. The removal and your reason are kept on record.",
+    "reason": "Why is it removed?",
+    "deleted": "File deleted"
+  },
   "mfa": {
     "codeTitle": "Two-step verification",
     "codeHint": "Open your authenticator app and enter the 6-digit code it shows for Ziira.",
@@ -300,7 +385,8 @@
       "tax": "{{label}}",
       "branches": "How many branches?",
       "staff": "How many people work there?",
-      "kind": "What kind of business is it?"
+      "kind": "What kind of business is it?",
+      "industry": "What kind of service business are you?"
     },
     "hint": {
       "name": "As you would sign a letter.",

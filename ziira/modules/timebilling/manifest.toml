@@ -1,0 +1,38 @@
+[unit]
+name = "timebilling"
+title = "Time and Billing"
+description = "Projects, timesheets, rate cards, approvals, retainers and invoicing from approved time."
+category = "sales"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["crm"]
+optional = ["pos", "products", "finance", "intel", "command"]
+
+[provides]
+api_prefix = "/api/v1/timebilling"
+publishes = ["timesheet.approved", "timesheet.rejected", "timebilling.invoiced"]
+subscribes = ["approval.decided", "invoice.cancelled"]
+
+[extends]
+implements = ["kernel.integrity_check", "intel.check", "command.pulse_source", "kernel.personal_data",
+              "kernel.custom_field_entity", "kernel.industry_seeder", "kernel.attachable_entity"]
+
+[permissions]
+"time.log" = "Log your own time and expenses"
+"time.view" = "View everyone's time, projects and reports"
+"time.approve" = "Approve other people's timesheets"
+"time.bill" = "Invoice approved time and expenses"
+"projects.manage" = "Manage projects, milestones and retainers"
+"rates.manage" = "Manage rate cards and cost rates"
+"time.cost" = "See what staff time costs"
+"time.settings" = "Change time and billing settings"
+"time.partner" = "Review invoices before they go out and write time down or off"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Branch Manager" = ["time.log", "time.view", "time.approve", "time.bill", "projects.manage", "time.partner"]
+"Finance Manager" = ["time.log", "time.view", "time.approve", "time.bill", "projects.manage", "rates.manage", "time.cost", "time.settings", "time.partner"]
+"Accountant" = ["time.view", "time.bill", "time.cost"]
+"Sales Rep" = ["time.log"]
+"Cashier" = ["time.log"]

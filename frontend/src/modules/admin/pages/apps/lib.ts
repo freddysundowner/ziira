@@ -29,8 +29,16 @@ export function visibleCards(cards: readonly UnitCard[], query: string, status: 
 export function recommendedPlugins(cards: readonly UnitCard[], edition: Pick<Edition, "plugin_categories"> | undefined, country: string | null | undefined): UnitCard[] {
   const wanted = edition?.plugin_categories ?? [];
   const inCountry = (c: UnitCard) => !!country && c.countries.includes(country.toUpperCase());
-  return cards.filter((c) => c.kind === "plugin" && !c.enabled && c.installed
+  return cards.filter((c) => c.kind === "plugin" && !c.enabled && c.installed && !isIndustryPack(c)
     && (c.category === "country" ? inCountry(c) : wanted.includes(c.category) && (c.countries.length === 0 || inCountry(c))));
+}
+
+/** An industry pack: switched on from the same grid as the other add-ons, with an "Industry" badge. */
+export const isIndustryPack = (c: Pick<UnitCard, "category">) => c.category === "industry";
+
+/** An industry pack that names the business's edition among those it suits and is not on yet: "Recommended for your edition". */
+export function recommendedForEdition(card: Pick<UnitCard, "category" | "editions" | "enabled">, editionId: string | undefined): boolean {
+  return isIndustryPack(card) && !card.enabled && !!editionId && (card.editions ?? []).includes(editionId);
 }
 
 /** The country's name in the reader's language ("Kenya"), or the code when the browser does not know it. */

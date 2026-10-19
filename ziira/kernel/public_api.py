@@ -37,6 +37,8 @@ PUBLIC_ENDPOINTS: frozenset[tuple[str, str]] = frozenset(
         ("GET", "/api/v1/payments/payments/{payment_id}"),
         ("GET", "/api/v1/intel/findings"),
         ("GET", "/api/v1/intel/findings/{finding_id}"),
+        ("POST", "/api/v1/memberships/access/decision"),
+        ("GET", "/api/v1/memberships/access/allowed"),
     }
 )
 

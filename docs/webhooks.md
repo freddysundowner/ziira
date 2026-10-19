@@ -33,6 +33,7 @@ use the **redeliver** button on failed deliveries, or read the API.
 | `finding.created` | intel | Ziira Intelligence found something | `check severity company_id branch_id amount` |
 | `customer.created` | crm | A customer was added | `company_id code` |
 | `product.created` | products | A product was added | `company_id sku name` |
+| `checkin.recorded` | memberships | A member tried to come in (allowed, allowed with a warning, or refused) | `company_id branch_id member_number decision code method device overridden offline counted` |
 
 `lines` and `payments` are lists of ids, quantities, methods and amounts (no names). A test event, `webhook.ping`, is
 always available from the **Send test** button.

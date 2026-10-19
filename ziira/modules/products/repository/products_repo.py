@@ -58,15 +58,23 @@ def get_products(session: Session, product_ids: set[UUID]) -> list[Product]:
     return list(session.scalars(select(Product).where(Product.id.in_(product_ids))))
 
 
+def has_price(session: Session, product_id: UUID) -> bool:
+    """True when any price list names the product."""
+    return session.scalar(select(PriceListItem.id).where(PriceListItem.product_id == product_id).limit(1)) is not None
+
+
 def get_product(session: Session, product_id: UUID) -> Product | None:
     return session.get(Product, product_id)
 
 
 def list_products(session: Session, search: str | None, limit: int, offset: int,
                   company_ids: set[UUID] | None = None, only_active: bool = False,
-                  barcode: str | None = None) -> list[Product]:
-    """Products by name; `company_ids` limits the companies (None = all); `barcode` keeps the product with that code."""
+                  barcode: str | None = None, product_type: str | None = None) -> list[Product]:
+    """Products by name; `company_ids` limits the companies (None = all); `barcode` keeps the product with that code;
+    `product_type` keeps one kind (for example only services)."""
     query = select(Product).order_by(Product.name, Product.id).limit(limit).offset(offset)
+    if product_type:
+        query = query.where(Product.product_type == product_type)
     if barcode:
         query = query.where(Product.id.in_(select(ProductBarcode.product_id).where(ProductBarcode.barcode == barcode)))
     if only_active:

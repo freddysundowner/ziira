@@ -85,7 +85,7 @@ function SubscriberView({ d }: { d: Detail }) {
         actions={actions.length > 0 ? (
           <>
             {primary && (
-              <button type="button" onClick={() => setDialog(primary)} className="inline-flex h-9 items-center rounded-lg bg-brand-strong px-3.5 text-sm font-medium text-brand-ink shadow-card hover:bg-brand-strong/90">
+              <button type="button" onClick={() => setDialog(primary)} className="inline-flex h-9 items-center rounded-lg bg-brand px-3.5 text-sm font-medium text-brand-ink shadow-card hover:opacity-90">
                 {t(`subscriber.actions.${primary}`)}
               </button>
             )}

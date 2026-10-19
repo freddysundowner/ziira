@@ -174,8 +174,9 @@ def check(env: dict[str, str]) -> list[Finding]:
     elif mode != "closed":
         provider = get("PLATFORM_EMAIL_PROVIDER")
         if not provider:
-            warn("PLATFORM_EMAIL_PROVIDER", f"registration is '{mode}' and no environment email is set: sign-up stays "
-                                             "closed until email is set up in the Super Admin (Platform > Email)")
+            warn("PLATFORM_EMAIL_PROVIDER", f"registration is '{mode}' and no environment email is set: new owners go "
+                                             "straight in without confirming their email until email is set up in "
+                                             "the Super Admin (Platform > Email)")
         elif provider not in EMAIL_PROVIDERS:
             error("PLATFORM_EMAIL_PROVIDER", f"'{provider}' is not one of: {', '.join(sorted(EMAIL_PROVIDERS))}")
         if provider and not get("PLATFORM_EMAIL_SECRET"):
@@ -224,6 +225,35 @@ def check(env: dict[str, str]) -> list[Finding]:
             warn("MAX_BODY_BYTES", "above 20 MB: large bodies are a cheap way to exhaust memory")
     except ValueError:
         error("MAX_BODY_BYTES", "must be a number")
+
+    # --- photos and files (docs/files.md)
+    files_dir = get("FILES_DIR")
+    if not files_dir:
+        error("FILES_DIR", "is not set: photos and PDFs attached to records have nowhere to go. Use a private folder "
+                           "on a disk with room, owned by the application user (for example /var/lib/ziira/files)")
+    elif not files_dir.startswith("/"):
+        error("FILES_DIR", "must be an absolute path (a relative one moves with the working directory)")
+    elif files_dir.rstrip("/").startswith(("/tmp", "/var/tmp", "/run", "/dev")) or files_dir.rstrip("/") in ("", "/"):
+        error("FILES_DIR", "is a place that is cleared on reboot or is the whole disk; use a permanent private folder")
+    else:
+        backup_dir = get("BACKUP_DIR").rstrip("/")
+        here = files_dir.rstrip("/")
+        if backup_dir and (here == backup_dir or here.startswith(backup_dir + "/")
+                           or backup_dir.startswith(here + "/")):
+            error("FILES_DIR", "overlaps ZIIRA_BACKUP_DIR: the files folder and the backups must be separate folders "
+                               "(the backup copies the files into the backup folder)")
+        if here.startswith(("/var/www", "/srv/www", "/usr/share/nginx")):
+            warn("FILES_DIR", "is under a web server's document folder; the application never serves it, but keep "
+                              "private files out of anything a web server could publish")
+        if not backup_dir:
+            warn("FILES_DIR", "set, but ZIIRA_BACKUP_DIR is not: `ziira backup` archives the files only into a backup "
+                              "folder, so without one they are not backed up")
+    try:
+        if get("FILES_MAX_UPLOAD_BYTES") and not 1_000_000 <= int(get("FILES_MAX_UPLOAD_BYTES")) <= 100_000_000:
+            error("FILES_MAX_UPLOAD_BYTES", "must be between 1,000,000 and 100,000,000; keep the web server's body "
+                                            "limit a little above it")
+    except ValueError:
+        error("FILES_MAX_UPLOAD_BYTES", "must be a number")
 
     # --- proxy and backups
     if not _is_true(get("TRUST_FORWARDED_FOR")):

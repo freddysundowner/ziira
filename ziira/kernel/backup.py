@@ -91,6 +91,12 @@ class BackupFile:
     def taken_at(self) -> datetime:
         return datetime.fromisoformat(self.manifest["taken_at"])
 
+    @property
+    def files_path(self) -> Path | None:
+        """The archive of the business's photos and files taken with this dump, if there is one."""
+        name = (self.manifest.get("files") or {}).get("archive")
+        return self.manifest_path.with_name(name) if name else None
+
 
 def list_backups(directory: Path, target: str) -> list[BackupFile]:
     """The backups of one target (`master` or a tenant code), oldest first. Unreadable manifests are skipped."""
@@ -116,8 +122,9 @@ def prune(directory: Path, target: str, *, now: datetime | None = None, keep_dai
     removed = []
     for b in backups:
         if b.taken_at not in keep:
-            for path in (b.dump_path, b.manifest_path):
-                path.unlink(missing_ok=True)
+            for path in (b.dump_path, b.manifest_path, b.files_path):
+                if path is not None:
+                    path.unlink(missing_ok=True)
             removed.append(b.dump_path)
     return removed
 
@@ -229,6 +236,17 @@ def _versions(conn: Connection, schema: str) -> dict[str, Any]:
     return {"units": units, "latest_migration": migrations}
 
 
+def _file_keys(conn: Connection) -> list[str]:
+    """The stored bytes the rows of this snapshot name (photos and files of live records), if the business has any."""
+    if conn.execute(text("select to_regclass('kernel.attachment')")).scalar_one() is None:
+        return []
+    keys: list[str] = []
+    for row in conn.execute(text("select storage_key, web_key, thumb_key from kernel.attachment "
+                                 "where status = 'active'")):
+        keys += [k for k in (row.storage_key, row.web_key, row.thumb_key) if k]
+    return keys
+
+
 def backup_database(url: URL, *, directory: Path, target: str, kind: str, tenant_id: UUID | None, engine: Any,
                     now: datetime | None = None) -> Path:
     """Dump one database and write its manifest. Returns the dump file."""
@@ -248,6 +266,7 @@ def backup_database(url: URL, *, directory: Path, target: str, kind: str, tenant
             snapshot = conn.execute(text("select pg_export_snapshot()")).scalar_one()
             counts = _table_counts(conn)
             versions = _versions(conn, schema)
+            file_keys = _file_keys(conn) if kind == "tenant" else []
             server_version = str(conn.execute(text("show server_version")).scalar_one())
             args, env = _connection_args(url)
             _run_tool([*_tool_command(settings.pg_dump_command, "pg_dump"), "--format=custom", "--compress=6",
@@ -256,8 +275,17 @@ def backup_database(url: URL, *, directory: Path, target: str, kind: str, tenant
         partial.replace(dump)
     finally:
         partial.unlink(missing_ok=True)
+    files_info: dict[str, Any] | None = None
+    if kind == "tenant":
+        from ziira.kernel.files.archive import write_archive
+        from ziira.kernel.files.store import get_store
+
+        if file_keys:
+            files_info = write_archive(get_store(), file_keys, folder / f"{target}-{stamp}.files.tar")
+        else:
+            files_info = {"archive": None, "count": 0, "bytes": 0, "sha256": None, "missing": []}
     manifest = {
-        "manifest_version": MANIFEST_VERSION, "kind": kind, "target": target,
+        "manifest_version": MANIFEST_VERSION, "kind": kind, "target": target, "files": files_info,
         "tenant_id": str(tenant_id) if tenant_id else None, "database": url.database, "file": dump.name,
         "size_bytes": dump.stat().st_size, "sha256": sha256_of(dump), "taken_at": now.isoformat(),
         "server_version": server_version, "units": versions["units"], "latest_migration": versions["latest_migration"],
@@ -328,6 +356,24 @@ def restore_into_new_database(backup: BackupFile, database: str, *, keep_ownersh
     return server_url.set(database=database)
 
 
+def restore_files(backup: BackupFile, into: Path) -> int:
+    """Unpack the backup's photos and files into a folder that does not exist yet (never over existing files).
+    Returns how many were unpacked."""
+    from ziira.kernel.files.archive import extract
+
+    archive = backup.files_path
+    if archive is None:
+        return 0
+    if not archive.exists():
+        raise BackupError(f"{archive.name} (the photos and files of this backup) is missing")
+    if sha256_of(archive) != backup.manifest["files"]["sha256"]:
+        raise BackupError(f"{archive.name} does not match its manifest checksum: the file is damaged")
+    try:
+        return extract(archive, into)
+    except (FileExistsError, ValueError) as exc:
+        raise ValidationFailed(str(exc)) from exc
+
+
 def _drop_database(database: str) -> None:
     with server_engine().connect() as conn:
         conn.exec_driver_sql(f'drop database if exists "{database}" with (force)')
@@ -341,7 +387,7 @@ class RestoreTestResult:
     problems: list[str] = field(default_factory=list)
 
 
-def check_restored(url: URL, manifest: dict[str, Any]) -> list[str]:
+def check_restored(url: URL, manifest: dict[str, Any], files_archive: Path | None = None) -> list[str]:
     """Problems found in a restored copy: row counts different from the manifest, an unbalanced journal, and every
     integrity check of the units in it (stock ledger, ...)."""
     problems: list[str] = []
@@ -367,13 +413,14 @@ def check_restored(url: URL, manifest: dict[str, Any]) -> list[str]:
                 if unbalanced:
                     problems.append(f"{unbalanced} journal entries do not balance")
         if tenant_id and not problems:
-            problems += _integrity_problems(engine, tenant_id)
+            problems += _integrity_problems(engine, tenant_id, files_archive, manifest.get("files") or {})
     finally:
         engine.dispose()
     return problems
 
 
-def _integrity_problems(engine: Any, tenant_id: UUID) -> list[str]:
+def _integrity_problems(engine: Any, tenant_id: UUID, files_archive: Path | None = None,
+                        files_info: dict[str, Any] | None = None) -> list[str]:
     from sqlalchemy.orm import Session
 
     from ziira.kernel.checks import run_integrity_checks_in
@@ -385,6 +432,12 @@ def _integrity_problems(engine: Any, tenant_id: UUID) -> list[str]:
     problems = []
     with Session(engine) as session:
         session.execute(text("select set_config('app.tenant_id', :t, true)"), {"t": str(tenant_id)})
+        # Photos and files are checked against the backup's own archive, not the live folder (which has moved on).
+        from ziira.kernel.files.archive import ArchiveStore
+
+        session.info["files_store"] = ArchiveStore(files_archive)
+        gone = (files_info or {}).get("missing", [])
+        session.info["files_missing_ok"] = {k.rsplit("/", 1)[-1].split(".")[0] for k in gone}
         for result in run_integrity_checks_in(session):
             problems += [f"integrity check {result.unit}: {result.check}: {line}" for line in result.problems]
         session.rollback()
@@ -401,7 +454,14 @@ def restore_test(directory: Path, target: str) -> RestoreTestResult:
     scratch = _scratch_name()
     try:
         url = restore_into_new_database(newest, scratch)
-        result.problems = check_restored(url, newest.manifest)
+        archive = newest.files_path
+        if archive is not None:
+            expected = (newest.manifest.get("files") or {}).get("sha256")
+            if not archive.exists():
+                raise BackupError(f"{archive.name} (the photos and files of this backup) is missing")
+            if expected and sha256_of(archive) != expected:
+                raise BackupError(f"{archive.name} does not match its manifest checksum: the file is damaged")
+        result.problems = check_restored(url, newest.manifest, archive)
     except Exception as exc:  # noqa: BLE001 - any failure to restore is a failed test
         result.problems = [redact(str(exc))]
     finally:

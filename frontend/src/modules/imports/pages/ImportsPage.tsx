@@ -8,7 +8,7 @@ import { api, DataTable, formatDate, Pager, PageHeader, StatusBadge, unwrap, use
 export default function ImportsPage() {
   const { t } = useTranslation("imports");
   const list = usePagedList(["imports"], (limit, offset) => unwrap(api.GET("/api/v1/imports/batches", { params: { query: { limit, offset } } })), 20);
-  const start = <Link to="/imports/new" className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-strong px-3 text-sm font-medium text-white"><Plus className="h-4 w-4" />{t("new")}</Link>;
+  const start = <Link to="/imports/new" className="inline-flex h-9 items-center gap-2 rounded-lg btn-gradient px-3 text-sm font-semibold"><Plus className="h-4 w-4" />{t("new")}</Link>;
   const guide = <Link to="/imports/opening-balances" className="inline-flex h-9 items-center rounded-lg border border-line px-3 text-sm font-medium hover:bg-sunken">{t("guide.link")}</Link>;
   return (
     <>

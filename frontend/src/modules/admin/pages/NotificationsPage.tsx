@@ -19,7 +19,7 @@ export default function NotificationsPage() {
   return (
     <>
       <PageHeader title={t("notifications")} description={t("notificationsHint")}
-        actions={enabledUnits.has("messaging") ? <Link className="text-sm font-medium text-brand hover:underline" to="/messaging/channels">{t("setUpChannels")}</Link> : undefined} />
+        actions={enabledUnits.has("messaging") ? <Link className="text-sm font-medium text-brand-strong hover:underline" to="/messaging/channels">{t("setUpChannels")}</Link> : undefined} />
       {picker && <div className="mb-4">{picker}</div>}
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "log", label: t("tabLog") }, { id: "optouts", label: t("tabOptOuts") }, { id: "channels", label: t("tabChannels") }]} />
       {tab === "log" && <LogTab companyId={companyId} />}

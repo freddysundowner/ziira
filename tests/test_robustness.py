@@ -32,6 +32,9 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
     registry.enable(s["tenant_id"], "pos")
     registry.enable(s["tenant_id"], "purchasing")
     registry.enable(s["tenant_id"], "crm")
+    registry.enable(s["tenant_id"], "memberships")
+    registry.enable(s["tenant_id"], "jobs")
+    registry.enable(s["tenant_id"], "bookings")
     registry.enable(s["tenant_id"], "messaging")
     owner, co = s["owner"], str(s["company_id"])
     reasons = client.get("/api/v1/settings/reason-codes", headers=owner).json()
@@ -115,6 +118,21 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
         "customer_id": customer["id"], "branch_id": str(s["branch_id"]),
         "lines": [{"product_id": s["delivery"], "quantity": "1"}]}).json()
     s["crm_ids"] = {"customer": customer["id"]}
+    mem = "/api/v1/memberships"
+    plan = client.post(f"{mem}/plans", headers=owner, json={
+        "company_id": co, "code": "FZPLAN", "name": "Fuzz plan", "fee": "10", "credits_per_period": "2"}).json()
+    package = client.post(f"{mem}/packages", headers=owner, json={
+        "company_id": co, "code": "FZPKG", "name": "Fuzz package", "credits": "5", "price": "20"}).json()
+    member = client.post(f"{mem}/members", headers=owner, json={
+        "plan_id": plan["id"], "customer_id": customer["id"], "branch_id": str(s["branch_id"])}).json()
+    sold = client.post(f"{mem}/sold-packages", headers=owner, json={
+        "package_id": package["id"], "customer_id": customer["id"], "branch_id": str(s["branch_id"])}).json()
+    schedule = client.post(f"{mem}/recurring-invoices", headers=owner, json={
+        "company_id": co, "branch_id": str(s["branch_id"]), "customer_id": customer["id"], "name": "Fuzz schedule",
+        "start_date": "2026-10-01", "billing_interval": "month", "mode": "draft",
+        "lines": [{"product_id": s["delivery"], "quantity": "1", "unit_price": "10"}]}).json()
+    s["mem_ids"] = {"plan_id": plan["id"], "package_id": package["id"], "member_id": member["id"],
+                    "sold_id": sold["id"], "schedule_id": schedule["id"]}
     s["pur_ids"] = {"supplier": supplier["id"], "order": order["id"]}
     s["pos_ids"] = {"device": device["id"], "key": device["key"], "till": till_session["id"], "price_list": plist["id"]}
     s["ids"] = {
@@ -133,6 +151,7 @@ def shop(client, registry):  # type: ignore[no-untyped-def]
         "transfer_id": transfer["id"], "count_id": count["id"],
         "series_id": series[0]["id"] if series else str(uuid4()),
         "user_id": other["id"], "rule_id": rule["id"], "line_id": transfer["lines"][0]["id"],
+        **s["mem_ids"],
     }
     return s
 
@@ -165,6 +184,8 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
             return {"company_id": co, "location_id": shop["juja_store"]}
         if path.endswith("/entries"):
             return {"entries": [{"product_id": shop["cement"], "counted_qty": "1"}]}
+        if path.endswith("/custom-fields") and method == "POST":
+            return {"entity_type": "products.product", "key": f"fuzz_{n}", "label": f"Fuzz {n}", "kind": "text"}
         if path.endswith("/settings/reason-codes") and method == "POST":
             return {**body, "category": "stock_adjustment", "code": f"FUZZ{n}", "label": "Fuzz"}
         if path.endswith("/finance/accounts") and method == "POST":
@@ -211,6 +232,44 @@ def valid_body(shop):  # type: ignore[no-untyped-def]
             return {}
         if path.endswith("/do-not-contact"):
             return {}
+        if path.endswith("/memberships/plans") and method == "POST":
+            return {"company_id": co, "code": f"FZ{n}", "name": "Fuzz plan", "fee": "5"}
+        if path.endswith("/memberships/packages") and method == "POST":
+            return {"company_id": co, "code": f"FZ{n}", "name": "Fuzz package", "credits": "3", "price": "5"}
+        if path.endswith("/memberships/members") and method == "POST":
+            return {"plan_id": shop["mem_ids"]["plan_id"], "customer_id": shop["crm_ids"]["customer"],
+                    "branch_id": str(shop["branch_id"])}
+        if path.endswith("/memberships/sold-packages") and method == "POST":
+            return {"package_id": shop["mem_ids"]["package_id"], "customer_id": shop["crm_ids"]["customer"],
+                    "branch_id": str(shop["branch_id"])}
+        if path.endswith("/memberships/recurring-invoices") and method == "POST":
+            return {"company_id": co, "branch_id": str(shop["branch_id"]), "customer_id": shop["crm_ids"]["customer"],
+                    "name": f"Fuzz schedule {n}", "start_date": "2026-11-01", "billing_interval": "month",
+                    "mode": "draft", "lines": [{"product_id": shop["delivery"], "quantity": "1", "unit_price": "5"}]}
+        if path.endswith("/memberships/credits/consume"):
+            return {"customer_id": shop["crm_ids"]["customer"], "quantity": "1", "source_id": str(uuid4())}
+        if path.endswith("/memberships/credits/release"):
+            return {"source_type": "fuzz", "source_id": str(uuid4())}
+        if path.endswith("/memberships/credits/adjust"):
+            return {"holder_type": "membership", "holder_id": shop["mem_ids"]["member_id"], "quantity": "1",
+                    "note": "Fuzz"}
+        if path.endswith("/bookings/resources") and method == "POST":
+            return {"company_id": co, "branch_id": str(shop["branch_id"]), "name": f"Fuzz chair {n}", "kind": "chair"}
+        if path.endswith("/bookings/offers") and method == "POST":
+            return {"company_id": co, "name": f"Fuzz service {n}", "duration_minutes": 30}
+        if path.endswith("/time-off") and "/bookings/" in path and method == "POST":
+            return {"starts_at": "2031-01-05T09:00:00+03:00", "ends_at": "2031-01-05T10:00:00+03:00"}
+        if path.endswith("/bookings/waitlist") and method == "POST":
+            return {**body, "wanted_from": "2031-01-05", "wanted_to": "2031-01-06", "client_name": f"Fuzz {n}"}
+        if path.endswith("/jobs/jobs") and method == "POST":
+            return {"company_id": co, "branch_id": str(shop["branch_id"]), "title": "Fuzz job",
+                    "customer_name": f"Fuzz customer {n}"}
+        if path.endswith("/jobs/assets") and method == "POST":
+            return {"company_id": co, "label": f"Fuzz item {n}"}
+        if path.endswith("/jobs/statuses") and method == "POST":
+            return {"company_id": co, "code": f"fuzz_{n}", "name": f"Fuzz stage {n}", "kind": "open"}
+        if path.endswith("/jobs/checklist-templates") and method == "POST":
+            return {"company_id": co, "name": f"Fuzz list {n}", "items": ["One"]}
         if path.endswith("/crm/customers") and method == "POST":
             return {"company_id": co, "name": f"Fuzz customer {n}"}
         if path.endswith("/contacts") and method == "POST":

@@ -22,7 +22,7 @@ from ziira.kernel.registry import Registry
 DEFAULT = "full"
 MODE_ALIASES = {"core": "full", "standalone": "intelligence"}
 BUILT_IN = Path(__file__).with_name("editions.toml")
-GROUPS = ("sell", "stock", "buy", "money", "people", "admin")
+GROUPS = ("sell", "services", "stock", "buy", "money", "people", "admin")
 
 
 @dataclass(frozen=True)
@@ -112,9 +112,12 @@ def get(name: str) -> Edition:
 
 
 def enable_edition(registry: Registry, tenant_id: UUID, name: str) -> list[str]:
-    """Switch on every unit of an edition (with what they require). Returns the units newly switched on."""
+    """Switch on every unit of an edition (with what they require; units this platform does not ship are skipped).
+    Returns the units newly switched on."""
     newly: list[str] = []
     for unit in get(name).units:
+        if unit not in registry.units:        # a unit not built or not shipped here (yet) is skipped, not an error
+            continue
         newly += registry.enable(tenant_id, unit)
     return newly
 

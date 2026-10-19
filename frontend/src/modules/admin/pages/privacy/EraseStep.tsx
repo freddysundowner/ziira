@@ -59,7 +59,7 @@ export default function EraseStep({ request, found, confirmed, userName, canEdit
       <div className="space-y-3">
         <Alert tone="warn">{t("dsr.erase.waiting")}</Alert>
         <p className="text-sm text-muted">{t("dsr.erase.waitingHelp")}</p>
-        <Link className="text-sm font-medium text-brand hover:underline" to="/admin/approvals">{t("dsr.erase.openApprovals")}</Link>
+        <Link className="text-sm font-medium text-brand-strong hover:underline" to="/admin/approvals">{t("dsr.erase.openApprovals")}</Link>
       </div>
     );
   }

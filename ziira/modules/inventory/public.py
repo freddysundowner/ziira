@@ -121,3 +121,34 @@ def branch_stock_position(session: Session, company_id: UUID, branch_id: UUID, p
         "and m.business_date >= :since"),
         {"c": str(company_id), "b": str(branch_id), "p": str(product_id), "since": sold_since}).scalar_one()
     return Decimal(on_hand), max(Decimal(sold), Decimal(0))
+
+
+@dataclass(frozen=True)
+class JobStockView:
+    """What stock used on a job cost (all positive): the quantity, the cost of one base unit and the total."""
+
+    quantity: Decimal
+    unit_cost: Decimal
+    value: Decimal
+
+
+def issue_stock_to_job(session: Session, *, company_id: UUID, location_id: UUID, product_id: UUID, quantity: Decimal,
+                       job_id: UUID, line_id: UUID) -> JobStockView:
+    """Take a positive `quantity` (base unit) of a stock product out of a location for a job (repair, installation) at
+    the current average cost: a `job_issue` movement that the books post as cost of goods sold. `job_id` and `line_id`
+    name the job and its parts line. Raises ValidationFailed when the stock is not there (the negative stock policy
+    never applies to jobs). The caller checks that the person may do this."""
+    from ziira.modules.inventory.services import job_stock
+
+    made = job_stock.issue(session, company_id=company_id, location_id=location_id, product_id=product_id,
+                           quantity=quantity, job_id=job_id, line_id=line_id)
+    return JobStockView(made.quantity, made.unit_cost, made.value)
+
+
+def return_stock_from_job(session: Session, *, job_id: UUID, line_id: UUID) -> JobStockView | None:
+    """Put back into stock everything issued for one line of a job, at the cost it left at (a `job_return` movement).
+    Returns None when nothing was issued for the line or it was already put back."""
+    from ziira.modules.inventory.services import job_stock
+
+    made = job_stock.take_back(session, job_id=job_id, line_id=line_id)
+    return JobStockView(made.quantity, made.unit_cost, made.value) if made is not None else None

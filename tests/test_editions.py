@@ -37,16 +37,17 @@ def enabled(tenant_id) -> set[str]:  # type: ignore[no-untyped-def]
 
 def expected(edition: str) -> set[str]:
     units = discover()
-    return {u for u in install_order(units, list(editions.get(edition).units)) if not units[u].core}
+    return {u for u in install_order(units, [u for u in editions.get(edition).units if u in units]) if not units[u].core}
 
 
 def test_the_built_in_editions_are_valid() -> None:
     all_editions = editions.load_editions()
-    assert set(all_editions) == {"retail", "distribution", "books", "intelligence", "full"}
+    assert set(all_editions) == {"retail", "distribution", "books", "intelligence", "full", "services"}
     units = discover()
     for e in all_editions.values():
         assert e.title and e.pitch and e.checklist, e.id
-        assert set(e.units) <= set(units), e.id
+        if e.id != "services":                    # the Services edition lists units that other work adds
+            assert set(e.units) <= set(units), e.id
         assert all(s.unit == "" or s.unit in e.units or s.unit in expected(e.id) for s in e.checklist), e.id
         assert all(c in CATEGORIES for c in e.plugin_categories)
     assert editions.get("full").units == tuple(get_settings().registration_units.split(","))
@@ -93,7 +94,7 @@ def test_the_older_mode_and_the_default_map_to_editions(client, registry) -> Non
 def test_the_list_is_public_and_switching_only_adds(client, registry) -> None:  # type: ignore[no-untyped-def]
     listed = client.get("/api/v1/editions")
     assert listed.status_code == 200
-    assert {e["id"] for e in listed.json()} == {"retail", "distribution", "books", "intelligence", "full"}
+    assert {e["id"] for e in listed.json()} == {"retail", "distribution", "books", "intelligence", "full", "services"}
     out, headers = register(client, "Grows Ltd", edition="retail")
     before = enabled(out["tenant_id"])
     switched = client.post("/api/v1/edition", headers=headers, json={"edition": "distribution"})
@@ -126,3 +127,20 @@ def test_the_catalog_carries_category_and_countries(client, registry) -> None:  
     cards = {c["name"]: c for c in client.get("/api/v1/units/catalog", headers=headers).json()}
     assert cards["pos"]["category"] == "sales" and cards["messaging"]["category"] == "messaging"
     assert cards["messaging"]["countries"] == []
+
+
+def test_an_edition_may_list_units_this_platform_does_not_ship() -> None:
+    """The Services edition names units built elsewhere: switching them on skips what is not shipped, without error."""
+    class Fake:
+        units = {"products": object()}
+        enabled: list[str] = []
+
+        def enable(self, tenant_id, unit):  # type: ignore[no-untyped-def]
+            self.enabled.append(unit)
+            return [unit]
+
+    fake = Fake()
+    assert editions.enable_edition(fake, uuid4(), "services") == ["products"]  # type: ignore[arg-type]
+    assert fake.enabled == ["products"]
+    assert editions.get("services").landing == "/services/calendar"
+    assert editions.get("services").menu_groups[0] == "services"

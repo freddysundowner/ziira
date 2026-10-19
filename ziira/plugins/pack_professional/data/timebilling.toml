@@ -1,0 +1,472 @@
+# What Time and Billing starts with for a practice that bills time. Everything here is a starting point the
+# business edits; nothing is a rule. See docs/pack_professional.md.
+
+[settings]
+service_sku = "PRO-CONSULT"        # what invoices are made under, until a project names its own service item
+expense_sku = "PRO-DISB"           # what re-billed costs are invoiced under
+minute_step = 5
+approval_required = true
+default_group_by = "project"
+budget_alert_percent = 80
+unsubmitted_after_days = 3
+unbilled_after_days = 21
+nudge_minutes = 360                # a working day with less than 6 hours logged is reminded the next morning
+nudge_hour = 9
+approval_reminder_days = 2
+approval_escalate_days = 5
+
+# ----------------------------------------------------------------------------------------------- engagement templates
+[[template]]
+name = "Monthly bookkeeping"
+description = "Books kept and reconciled every month for a fixed monthly fee. Add the fee on the project's retainer."
+billing_mode = "retainer"
+budget_hours = 8
+frequency = "monthly"
+due_day = 15
+lead_days = 10
+checklist = [
+  "Collect bank statements and receipts",
+  "Post transactions and reconcile bank and mobile-money accounts",
+  "Check what customers owe and what is owed to suppliers",
+  "Prepare the monthly summary",
+  "Send it to the client and note their questions",
+]
+
+[[template]]
+name = "Annual accounts and tax return"
+description = "Year-end accounts and the tax return for a fixed fee, billed in three steps. Set the due date that applies to your client."
+billing_mode = "fixed_fee"
+frequency = "annual"
+due_day = 30
+due_month = 6
+lead_days = 45
+checklist = [
+  "Engagement letter signed",
+  "Year-end records received from the client",
+  "Trial balance prepared",
+  "Accounts drafted",
+  "Partner review",
+  "Client approves the accounts",
+  "Return filed and confirmation saved",
+]
+[[template.milestone]]
+name = "Records received and work started"
+percent = 30
+[[template.milestone]]
+name = "Draft accounts delivered"
+percent = 40
+[[template.milestone]]
+name = "Filed and handed over"
+percent = 30
+
+[[template]]
+name = "Audit"
+description = "An audit billed by the hour but capped; set the cap on the project. Repeats every year."
+billing_mode = "capped_fee"
+budget_hours = 120
+frequency = "annual"
+due_day = 31
+due_month = 12
+lead_days = 60
+checklist = [
+  "Engagement letter and independence check",
+  "Planning and risk assessment",
+  "Fieldwork",
+  "Partner review",
+  "Management letter sent",
+  "Sign-off",
+]
+
+[[template]]
+name = "Monthly payroll service"
+description = "Payroll run for a client every month."
+billing_mode = "retainer"
+budget_hours = 4
+frequency = "monthly"
+due_day = 25
+lead_days = 7
+checklist = [
+  "Receive changes and time off from the client",
+  "Run the payroll",
+  "Client approves the payroll",
+  "Pay and file what is due",
+  "Send payslips",
+]
+
+[[template]]
+name = "Legal matter (by the hour)"
+description = "A matter billed on time spent, with a budget to warn at."
+billing_mode = "time_and_materials"
+budget_hours = 40
+checklist = [
+  "Conflict check done",
+  "Engagement letter signed",
+  "Fee estimate sent to the client",
+  "Client documents received",
+]
+
+[[template]]
+name = "Legal matter (capped fee)"
+description = "Time is recorded and billed at the rates, but never more than the cap on the project."
+billing_mode = "capped_fee"
+budget_hours = 30
+checklist = [
+  "Conflict check done",
+  "Engagement letter signed with the cap stated",
+  "Client documents received",
+]
+
+[[template]]
+name = "Consulting project (fixed fee)"
+description = "A defined piece of work for a fixed fee, billed at three milestones."
+billing_mode = "fixed_fee"
+checklist = [
+  "Scope and fee agreed in writing",
+  "Kick-off meeting held",
+  "Weekly update sent",
+  "Final report delivered",
+]
+[[template.milestone]]
+name = "Kick-off"
+percent = 30
+[[template.milestone]]
+name = "Draft delivered"
+percent = 40
+[[template.milestone]]
+name = "Final delivery"
+percent = 30
+
+[[template]]
+name = "Agency retainer (monthly)"
+description = "A monthly fee for an agreed amount of work; extra hours are billed separately."
+billing_mode = "retainer"
+budget_hours = 30
+frequency = "monthly"
+due_day = 5
+lead_days = 7
+checklist = [
+  "Plan for the month agreed",
+  "Deliverables shipped",
+  "Monthly report sent to the client",
+]
+
+[[template]]
+name = "Campaign or website project"
+description = "Creative project with a budget of hours, billed by time."
+billing_mode = "time_and_materials"
+budget_hours = 60
+checklist = [
+  "Brief agreed",
+  "First concepts presented",
+  "Revisions round done",
+  "Delivered and signed off",
+]
+
+# --------------------------------------------------------------------------------- example rates (they price nothing
+# until the business confirms them on Time > Rates; the numbers are placeholders in your own currency)
+[[rate]]
+role_title = "Partner"
+rate = 200
+
+[[rate]]
+role_title = "Director"
+rate = 160
+
+[[rate]]
+role_title = "Senior consultant"
+rate = 120
+
+[[rate]]
+role_title = "Consultant"
+rate = 90
+
+[[rate]]
+role_title = "Associate"
+rate = 70
+
+[[rate]]
+role_title = "Bookkeeper"
+rate = 45
+
+[[rate]]
+role_title = "Paralegal"
+rate = 60
+
+# -------------------------------------------------------------------------------------------------------- activities
+[[activity]]
+name = "Bookkeeping"
+group = "Accounting"
+[[activity]]
+name = "Bank reconciliation"
+group = "Accounting"
+[[activity]]
+name = "Payroll processing"
+group = "Accounting"
+[[activity]]
+name = "Tax computation"
+group = "Accounting"
+[[activity]]
+name = "Tax return preparation"
+group = "Accounting"
+[[activity]]
+name = "Audit planning"
+group = "Audit"
+[[activity]]
+name = "Audit fieldwork"
+group = "Audit"
+[[activity]]
+name = "Review"
+group = "Audit"
+[[activity]]
+name = "Strategy and planning"
+group = "Agency"
+[[activity]]
+name = "Design"
+group = "Agency"
+[[activity]]
+name = "Copywriting"
+group = "Agency"
+[[activity]]
+name = "Development"
+group = "Agency"
+[[activity]]
+name = "Campaign management"
+group = "Agency"
+[[activity]]
+name = "Reporting"
+group = "Agency"
+[[activity]]
+name = "Revisions"
+group = "Agency"
+[[activity]]
+name = "Drafting"
+group = "Legal"
+[[activity]]
+name = "Research"
+group = "Legal"
+[[activity]]
+name = "Negotiation"
+group = "Legal"
+[[activity]]
+name = "Court or hearing"
+group = "Legal"
+[[activity]]
+name = "Client call or meeting"
+group = "General"
+[[activity]]
+name = "Advice"
+group = "General"
+[[activity]]
+name = "Correspondence"
+group = "General"
+[[activity]]
+name = "Business development"
+group = "Not billed"
+billable = false
+[[activity]]
+name = "Training"
+group = "Not billed"
+billable = false
+[[activity]]
+name = "Internal meeting"
+group = "Not billed"
+billable = false
+
+# ----------------------------------------------------------------------------------------- standard invoice wording
+[[snippet]]
+name = "Thank you and payment"
+language = "en"
+body = "Thank you for your business. Please pay by the due date shown on this invoice."
+[[snippet]]
+name = "Thank you and payment"
+language = "sw"
+body = "Asante kwa kuamini huduma zetu. Tafadhali lipa kufikia tarehe ya mwisho iliyoonyeshwa kwenye ankara hii."
+
+[[snippet]]
+name = "Time and disbursements attached"
+language = "en"
+body = "A schedule of the time spent and the disbursements is attached to this invoice."
+[[snippet]]
+name = "Time and disbursements attached"
+language = "sw"
+body = "Orodha ya muda uliotumika na gharama zilizolipwa imeambatishwa kwenye ankara hii."
+
+[[snippet]]
+name = "Fixed fee milestone"
+language = "en"
+body = "This invoice is for the agreed fixed-fee milestone set out in our engagement letter."
+[[snippet]]
+name = "Fixed fee milestone"
+language = "sw"
+body = "Ankara hii ni ya hatua ya ada maalum iliyokubaliwa kwenye barua yetu ya makubaliano."
+
+[[snippet]]
+name = "Monthly retainer"
+language = "en"
+body = "Monthly retainer for the period shown. Work beyond the retainer is billed separately at the agreed rates."
+[[snippet]]
+name = "Monthly retainer"
+language = "sw"
+body = "Ada ya kila mwezi kwa kipindi kilichoonyeshwa. Kazi inayozidi makubaliano hutozwa tofauti kwa viwango vilivyokubaliwa."
+
+[[snippet]]
+name = "Disbursements at cost"
+language = "en"
+body = "Disbursements are charged as paid, with the handling charge agreed with you. Receipts are available on request."
+[[snippet]]
+name = "Disbursements at cost"
+language = "sw"
+body = "Gharama zilizolipwa zinatozwa kama zilivyolipwa, pamoja na ada ya usimamizi iliyokubaliwa nawe. Risiti zinapatikana ukiomba."
+
+[[snippet]]
+name = "Fee cap applied"
+language = "en"
+body = "Our fee for this matter is capped as agreed; time above the cap has not been charged."
+[[snippet]]
+name = "Fee cap applied"
+language = "sw"
+body = "Ada yetu kwa jambo hili ina kikomo kama tulivyokubaliana; muda unaozidi kikomo haujatozwa."
+
+# ----------------------------------------------------------------------------------- Intelligence limits for a practice
+[intel."timebilling.unbilled_ageing"]
+unbilled_days = 21
+[intel."timebilling.approval_waiting"]
+approval_days = 2
+[intel."timebilling.timesheets_not_submitted"]
+grace_days = 2
+[intel."timebilling.retainer_nearly_used"]
+used_percent = 80
+[intel."timebilling.realisation_low"]
+min_percent = 85
+
+# ------------------------------------------------------------------------------------------------- sample data recipe
+# Loaded only when the owner asks for it (Time and billing > Get started > Add sample data) and removable again.
+# Everything is dated relative to today. Amounts are placeholders in the business's own currency.
+[sample]
+note = "A small practice: monthly books, annual accounts, a brand project and a capped-fee lease review."
+
+[[sample.client]]
+key = "mwangi"
+name = "Sample: Mwangi and Sons Hardware"
+[[sample.client]]
+key = "dental"
+name = "Sample: Kilimani Dental Ltd"
+[[sample.client]]
+key = "baraka"
+name = "Sample: Baraka Creative Studio"
+[[sample.client]]
+key = "trust"
+name = "Sample: Otieno Family Trust"
+
+[[sample.project]]
+key = "books"
+client = "mwangi"
+code = "SMP-BOOKS"
+name = "Monthly bookkeeping"
+billing_mode = "retainer"
+monthly_fee = 4500
+rate = 70
+budget_hours = 8
+repeat = { frequency = "monthly", due_day = 15, lead_days = 10, started_days_ago = 25 }
+checklist = ["Collect bank statements and receipts", "Reconcile bank and mobile-money accounts", "Send the monthly summary"]
+
+[[sample.project]]
+key = "accounts"
+client = "dental"
+code = "SMP-ACCTS"
+name = "Annual accounts"
+billing_mode = "fixed_fee"
+fixed_fee = 18000
+rate = 100
+milestones = [
+  { name = "Records received", amount = 5400, ready = true },
+  { name = "Draft accounts", amount = 7200 },
+  { name = "Filed and handed over", amount = 5400 },
+]
+repeat = { frequency = "annual", due_day = 30, due_month = 6, lead_days = 60 }
+checklist = ["Year-end records received", "Trial balance prepared", "Partner review", "Client approves"]
+
+[[sample.project]]
+key = "brand"
+client = "baraka"
+code = "SMP-BRAND"
+name = "Brand refresh"
+billing_mode = "time_and_materials"
+rate = 90
+budget_hours = 40
+
+[[sample.project]]
+key = "lease"
+client = "trust"
+code = "SMP-LEASE"
+name = "Lease review"
+billing_mode = "capped_fee"
+fee_cap = 6000
+rate = 120
+budget_hours = 50
+fields = { matter_number = "M-2026-014", other_side = "Landlord's advocates" }
+
+[[sample.entry]]
+project = "books"
+days_ago = 6
+hours = 2
+task = "Bank reconciliation"
+note = "Reconciled the three bank and mobile-money accounts"
+[[sample.entry]]
+project = "brand"
+days_ago = 7
+hours = 3
+task = "Design"
+note = "First logo concepts"
+[[sample.entry]]
+project = "brand"
+days_ago = 5
+hours = 2.5
+task = "Copywriting"
+note = "Website homepage copy"
+[[sample.entry]]
+project = "lease"
+days_ago = 4
+hours = 1.5
+task = "Drafting"
+note = "Marked up the break clause"
+[[sample.entry]]
+project = "lease"
+days_ago = 3
+hours = 2
+task = "Research"
+note = "Checked the landlord's title documents"
+[[sample.entry]]
+project = "accounts"
+days_ago = 3
+hours = 1
+task = "Review"
+note = "Reviewed the trial balance"
+[[sample.entry]]
+project = "brand"
+days_ago = 2
+hours = 1
+task = "Client call or meeting"
+billable = false
+note = "Pitch practice for another client"
+
+[[sample.expense]]
+project = "brand"
+days_ago = 5
+description = "Stock photography licence"
+amount = 45
+markup_percent = 10
+category = "Software and licences"
+[[sample.expense]]
+project = "lease"
+days_ago = 4
+description = "Registry search fee"
+amount = 25
+markup_percent = 0
+category = "Registry and court fees"
+
+[[sample.task]]
+project = "lease"
+name = "Send the client our mark-up"
+due_in_days = 3
+checklist = ["Partner has read the mark-up", "Covering email drafted"]

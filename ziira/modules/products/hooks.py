@@ -5,11 +5,22 @@ from uuid import UUID
 from ziira.modules.imports.public import IMPORTS_IMPORTER
 from ziira.modules.products.importers import ProductImporter
 from ziira.modules.products.public import PRODUCT_BEFORE_CREATE, SKU_SUGGESTER, TAX_CODE_SEED, SkuSuggester, TaxCodeSeed
+from ziira.modules.products.repository import products_repo
+from ziira.modules.products.services.seed_industry import hide, is_untouched, seed_services
 from ziira.modules.products.services.seed_tax_codes import seed_tax_codes
 from ziira.modules.products.services.seed_uoms import seed_default_uoms
 from ziira.sdk import (
+    ATTACHABLE_ENTITY,
     COUNTRY_SEEDER,
+    CUSTOM_FIELD_ENTITY,
+    INDUSTRY_SEEDER,
+    AttachableEntity,
+    Category,
     CountrySeeder,
+    CustomFieldEntity,
+    IndustrySeeder,
+    PackData,
+    SeedReport,
     Session,
     define_extension_point,
     define_validation_hook,
@@ -49,3 +60,51 @@ class ProductsDefaultsSeeder(CountrySeeder):
 
     def seed(self, session: Session, company_id: UUID, country: str | None) -> int:
         return seed_default_uoms(session)
+
+
+@provides(INDUSTRY_SEEDER)
+class ProductsIndustrySeeder(IndustrySeeder):
+    """Adds the service items (with a usual duration) an industry pack supplies."""
+
+    name = "products.services"
+    unit = "products"
+
+    def seed(self, session: Session, pack: PackData, company_id: UUID) -> SeedReport:
+        return seed_services(session, pack, company_id)
+
+    def untouched(self, session: Session, item_type: str, item_id: UUID) -> bool:
+        return item_type == "product" and is_untouched(session, item_id)
+
+    def remove(self, session: Session, item_type: str, item_id: UUID) -> None:
+        hide(session, item_id)
+
+
+@provides(CUSTOM_FIELD_ENTITY)
+class ProductCustomFields(CustomFieldEntity):
+    """Products and services can carry a business's own fields (a brand, a shelf, a skill level)."""
+
+    entity_type = "products.product"
+    label = "Product or service"
+    view_permission = "products.view"
+    edit_permission = "products.manage"
+
+    def scope(self, session: Session, entity_id: UUID) -> tuple[UUID | None, UUID | None] | None:
+        product = products_repo.get_product(session, entity_id)
+        return None if product is None else (product.company_id, None)
+
+
+@provides(ATTACHABLE_ENTITY)
+class ProductFiles(AttachableEntity):
+    """Products and services can carry pictures and documents (a product photo, a spec sheet)."""
+
+    entity_type = "products.product"
+    label = "Product or service"
+    view_permission = "products.view"
+    edit_permission = "products.manage"
+
+    def scope(self, session: Session, entity_id: UUID) -> tuple[UUID | None, UUID | None] | None:
+        product = products_repo.get_product(session, entity_id)
+        return None if product is None else (product.company_id, None)
+
+    def categories(self, session: Session) -> list[Category]:
+        return [Category("photo", "Photo"), Category("document", "Document")]

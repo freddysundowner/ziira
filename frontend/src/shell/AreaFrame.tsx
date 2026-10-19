@@ -55,7 +55,7 @@ function SettingsList({ area, tab, children }: { area: NavArea; tab: NavItem; ch
 function FamilyTabs({ pages, current }: { pages: NavItem[]; current: NavItem }) {
   const { t } = useTranslation();
   return (
-    <nav aria-label={t(pages[0].tab ?? pages[0].label)} className="no-print mb-4 flex gap-1 border-b max-sm:overflow-x-auto border-line">
+    <nav aria-label={t(pages[0].tab ?? pages[0].label)} className="tab-strip no-print mb-4">
       {pages.map((p) => (
         <Link key={p.to} to={p.to} aria-current={p.to === current.to ? "page" : undefined}
           className={cx("-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors", p.to === current.to ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink")}>

@@ -74,6 +74,9 @@ def register(body: sc.RegisterIn, request: Request) -> object:
         invite_code=body.invite_code, ip_address=auth.client_ip(request), phone=body.phone,
         owner_role=body.owner_role, business_size=body.business_size, staff_size=body.staff_size,
         business_type=body.business_type, plan=body.plan)
+    if started.instant_token:
+        return sc.RegisterOut(message="Your business is being created.", dev_token=None,
+                              instant_token=started.instant_token)
     return sc.RegisterOut(message="Check your email for a link to finish creating your business.",
                           dev_token=started.dev_token)
 

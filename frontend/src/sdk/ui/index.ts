@@ -8,3 +8,4 @@ export { Menu, type MenuEntry } from "./menu";
 export { Combobox, type Option } from "./combobox";
 export { useDebounced, useDisclosure, useUnsavedWarning } from "./hooks";
 export { cx } from "./cx";
+export { BrandMark, BrandName, Wordmark } from "./brand";

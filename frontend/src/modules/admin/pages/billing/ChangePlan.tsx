@@ -23,7 +23,7 @@ export function ChangePlan({ plans, plan, currency }: { plans: PublicPlan[]; pla
         <div role="group" aria-label={t("billing.intervalPick")} className="inline-flex rounded-lg border border-line p-0.5 text-sm">
           {(["month", "year"] as const).map((i) => (
             <button key={i} type="button" aria-pressed={interval === i} onClick={() => setInterval(i)}
-              className={cx("rounded-md px-3 py-1 font-medium", interval === i ? "bg-brand-strong text-brand-ink" : "text-muted hover:text-ink")}>{t(`billing.intervalName.${i}`)}</button>
+              className={cx("rounded-md px-3 py-1 font-medium", interval === i ? "bg-brand text-brand-ink" : "text-muted hover:text-ink")}>{t(`billing.intervalName.${i}`)}</button>
           ))}
         </div>
       ) : undefined}>

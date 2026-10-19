@@ -31,6 +31,7 @@ personal data sits in these places. "Free text" means staff typed it, so it can 
 | Kernel | `kernel.notification` | Recipient (email or phone), subject, text of every message sent | Recipient masked, subject and text replaced; the fact of sending stays |
 | Kernel | `kernel.notification_optout` | Addresses that asked not to be contacted | **Kept**: it is how the business honours the request |
 | Kernel | `kernel.webhook_delivery` | The body of outgoing webhook deliveries (ids, codes, dates, amounts: no names or contact details) for a few days, then only its hash and first bytes | Content removed; the log line (time, event type, result) stays |
+| Kernel | `kernel.attachment`, `kernel.attachment_access` | Photos and PDFs attached to records (the bytes are in the private file folder): a picture can show a person; free-text caption, original file name and consent note; who added it; for each opening of a full-size file, who (or which link, from what address) | The file is **removed** (a photo cannot be made anonymous); the row keeps who removed it, when and why, without caption or name. The access list is kept `retention_file_access_days` (365) |
 | Kernel | `kernel.audit_log` | User ids, device ids, IP addresses, and what was typed when records were made (a name, an email) | **Kept**: immutable by design |
 | Kernel | `kernel.privacy_request` | The subject of each request and what it found | Subject masked once an erasure completes |
 | Master database | `master.login_directory` | A keyed hash of each user's email and phone (no raw values) | The user's entries are removed |
@@ -41,6 +42,7 @@ personal data sits in these places. "Free text" means staff typed it, so it can 
 | POS | `pos.sale`, `sales_invoice`, `customer_receipt`, `sales_document`, `customer_refund`, `sales_return` | A customer **id** only (no name or number); free text in invoice and quotation notes, receipt references | Documents, numbers, dates, amounts stay; notes removed where the document may still be edited |
 | Purchasing | `purchasing.supplier` | Name, phone, email, tax number | Replaced; supplier set inactive; code stays |
 | Purchasing | `purchasing.supplier_bank_account` | Account holder, bank, account number (encrypted) and mask | Emptied |
+| Jobs | `jobs.job`, `job_event`, `job_checklist_item`, `estimate` | Customer name and phone, notes on the timeline, checklist notes, the name given when collecting or approving an estimate | Name and phone replaced, notes emptied; numbers, parts, labour and invoice link stay. A job still open is refused |
 | Payments | `payments.external_transaction` | Payer name, masked phone, one-way phone fingerprint (the raw payload is stored with names and numbers hidden) | Name and fingerprint removed, mask replaced; receipt numbers and amounts stay |
 | Payments | `payments.payment`, `payment_intent` | Phone fingerprint, masked phone | Fingerprint removed, mask replaced |
 | People | `people.employee` | Name, national id (encrypted), tax number, registration numbers, phone, email | See section 3 |
@@ -251,7 +253,9 @@ counsel and adapted to the law that applies to you.
 - **Backups** contain erased data until they expire. Erasure is not applied to backups; keep a backup retention period
   consistent with what you tell people, and re-apply erasures when restoring (the privacy requests table lists them).
 - **Free text** that staff typed elsewhere (product descriptions, exception notes, document notes in units not listed
-  above, uploaded files) is not searched. The search finds what is recorded in the fields in the data map.
+  above) is not searched. The search finds what is recorded in the fields in the data map. Photos and files attached to records
+  are found by what their caption, name or consent note says and through the records other units find (`docs/files.md`); the pictures
+  themselves are not read, so a photo with nothing typed about it is found only through its record.
 - **AI provider**: when the AI assistant is on, the provider receives finding summaries, figures and tool results with people's names
   replaced by labels and personal details scrubbed (`docs/ai.md`, section 3), under the provider's no-training terms. An erasure in Ziira
   cannot reach what the provider holds under its own retention; list the provider as a sub-processor (section 8). Ask Ziira
@@ -263,3 +267,18 @@ counsel and adapted to the law that applies to you.
   Ziira does not erase there.
 - The tests (`tests/test_privacy.py`) run against a real database through the API for every unit above. They have not
   been checked against any regulator's requirements; that review is the business's.
+
+## Custom fields
+
+Text and date custom fields (`docs/custom-fields.md`) can hold personal data. They plug into the same contract as every other unit
+(`kernel.custom_fields`): a request finds text values equal to the subject's email, phone or id (a name matches loosely), exports them with their
+field labels, and erases them (`[erased]`; dates are removed; numbers, yes/no and choices stay). Their changes are audited by key, never by value.
+
+## Photos and files
+
+Photos and PDFs attached to records (`docs/files.md`) plug into the same contract (`kernel.files`): a request finds files whose caption,
+name or consent note contains the subject's email, phone or id (a name loosely) and every file on a record another unit found for
+them; the export lists each file's details and where the person handling the request downloads it (whoever holds `privacy.manage` may
+open those files); an erasure **removes the file** and keeps who removed it, when and why. `retention_files_years` puts files older than
+that into the exceptions inbox for review (nothing is deleted by itself) and `retention_file_access_days` limits the list of who opened
+a file. Location is removed from pictures by default (`files_strip_location`). Backups hold the files until they expire, like the database.

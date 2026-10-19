@@ -1,5 +1,5 @@
 import {
-  api, channelOptions, Button, Card, Checkbox, EmptyState, ErrorState, Field, Input, NumberInput, Select, SkeletonRows, Switch, toast, unwrap, useCurrency,
+  api, channelOptions, formatBytes, Button, Card, Checkbox, EmptyState, ErrorState, Field, Input, NumberInput, Select, SkeletonRows, Switch, toast, unwrap, useCurrency,
   useChannels, useMutation, useQuery, useQueryClient, useTranslation, useUnsavedWarning,
 } from "@/sdk";
 import { useEffect, useState } from "react";
@@ -7,6 +7,22 @@ import { useEffect, useState } from "react";
 import { type FormValues, GROUPS, type SettingField, toForm, toPatch, WEEKDAYS } from "./model";
 
 const CHANNEL_FIELDS: string[] = ["reminder_channel", "intel_alert_channel"];
+
+/** How much space the company's photos and files use now, and the plan's limit when it has one. */
+function FilesUsage({ companyId }: { companyId: string }) {
+  const { t } = useTranslation("kernel");
+  const usage = useQuery({
+    queryKey: ["files-usage", companyId], retry: false,
+    queryFn: () => unwrap(api.GET("/api/v1/files/usage", { params: { query: { company_id: companyId } } })),
+  });
+  if (!usage.data) return null;
+  const { files, bytes, plan_limit_bytes: plan } = usage.data;
+  return (
+    <p className="mt-3 border-t border-line pt-3 text-xs text-muted">
+      {t("filesUsage", { files, size: formatBytes(bytes) })}{plan != null ? ` ${t("filesUsagePlan", { size: formatBytes(plan) })}` : ""}
+    </p>
+  );
+}
 
 export default function PoliciesTab({ companyId }: { companyId: string | undefined }) {
   const { t } = useTranslation("kernel");
@@ -87,6 +103,7 @@ export default function PoliciesTab({ companyId }: { companyId: string | undefin
               </div>
             ))}
           </div>
+          {g.id === "files" && <FilesUsage companyId={companyId} />}
         </Card>
       ))}
       <div className="sticky bottom-0 -mx-1 flex items-center justify-end gap-2 bg-bg/90 px-1 py-3 backdrop-blur">

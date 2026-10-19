@@ -69,6 +69,369 @@
         "en": {"subject": "Your verification code", "body": "Your Ziira verification code is {code}. It expires in 15 minutes. If you did not ask for it, ignore this message."},
         "sw": {"subject": "Msimbo wako wa uthibitisho", "body": "Msimbo wako wa uthibitisho wa Ziira ni {code}. Unaisha baada ya dakika 15. Kama hukuuomba, puuza ujumbe huu."}
       }
+    },
+    {
+      "code": "appointment_confirmation",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Haircut", "Mama Salon", "20 Oct 2026 09:30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your booking is confirmed", "body": "Hello {customer}, your {service} at {business} is booked for {when}. Reply STOP to stop these messages."},
+        "sw": {"subject": "Miadi yako imethibitishwa", "body": "Habari {customer}, miadi yako ya {service} katika {business} imewekwa tarehe {when}. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_received",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Haircut", "Mama Salon", "20 Oct 2026 09:30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "We have your booking request", "body": "Hello {customer}, we received your request for {service} at {business} on {when}. We will confirm it shortly. Reply STOP to stop these messages."},
+        "sw": {"subject": "Tumepokea ombi lako la miadi", "body": "Habari {customer}, tumepokea ombi lako la {service} katika {business} tarehe {when}. Tutakuthibitishia hivi karibuni. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_reminder",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Haircut", "Mama Salon", "20 Oct 2026 09:30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Reminder of your appointment", "body": "Hello {customer}, a reminder of your {service} at {business} on {when}. Please tell us if you cannot come. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ukumbusho wa miadi yako", "body": "Habari {customer}, ukumbusho wa miadi yako ya {service} katika {business} tarehe {when}. Tafadhali tuambie usipoweza kuja. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_cancelled",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Haircut", "Mama Salon", "20 Oct 2026 09:30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your appointment was cancelled", "body": "Hello {customer}, your {service} at {business} on {when} has been cancelled. Contact us to book another time. Reply STOP to stop these messages."},
+        "sw": {"subject": "Miadi yako imeghairiwa", "body": "Habari {customer}, miadi yako ya {service} katika {business} tarehe {when} imeghairiwa. Wasiliana nasi kupanga wakati mwingine. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "waitlist_offer",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Haircut", "Mama Salon", "20 Oct 2026 09:30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "A time has opened up", "body": "Hello {customer}, a time has opened up for {service} at {business} on {when}. Contact us soon to take it. Reply STOP to stop these messages."},
+        "sw": {"subject": "Nafasi imepatikana", "body": "Habari {customer}, nafasi imepatikana ya {service} katika {business} tarehe {when}. Wasiliana nasi haraka uichukue. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "job_ready",
+      "category": "utility",
+      "variables": ["customer", "job", "item", "business"],
+      "examples": ["Amina", "JOB-HQ-000012", "Toyota Corolla", "Mama Garage"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your item is ready", "body": "Hello {customer}, your {item} ({job}) is ready for collection at {business}. Reply STOP to stop these messages."},
+        "sw": {"subject": "Kitu chako kiko tayari", "body": "Habari {customer}, {item} yako ({job}) iko tayari kuchukuliwa katika {business}. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "job_estimate",
+      "category": "utility",
+      "variables": ["customer", "job", "item", "business", "link"],
+      "examples": ["Amina", "JOB-HQ-000012", "Toyota Corolla", "Mama Garage", "https://example.com/job-approval/abc"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your estimate is ready", "body": "Hello {customer}, the estimate for your {item} ({job}) at {business} is ready. See it and answer here: {link} Reply STOP to stop these messages."},
+        "sw": {"subject": "Makadirio yako yako tayari", "body": "Habari {customer}, makadirio ya {item} yako ({job}) katika {business} yako tayari. Yaone na ujibu hapa: {link} Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "job_extra_work",
+      "category": "utility",
+      "variables": ["customer", "job", "item", "business", "link"],
+      "examples": ["Amina", "JOB-HQ-000012", "Toyota Corolla", "Mama Garage", "https://example.com/job-approval/abc"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "More work found on your vehicle", "body": "Hello {customer}, more work was found on your {item} ({job}) at {business}. See what is needed and approve or decline here: {link} Reply STOP to stop these messages."},
+        "sw": {"subject": "Kazi zaidi imepatikana", "body": "Habari {customer}, kazi zaidi imepatikana kwenye {item} yako ({job}) katika {business}. Ona kinachohitajika na uidhinishe au ukatae hapa: {link} Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "job_service_due",
+      "category": "utility",
+      "variables": ["customer", "item", "business", "when"],
+      "examples": ["Amina", "Toyota Corolla KAA 123B", "Mama Garage", "20 Nov 2026"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Service due", "body": "Hello {customer}, your {item} is due for service on {when}. Call {business} to book it in. Reply STOP to stop these messages."},
+        "sw": {"subject": "Huduma inakaribia", "body": "Habari {customer}, {item} yako inastahili huduma tarehe {when}. Piga simu {business} kuweka nafasi. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "job_pickup_reminder",
+      "category": "utility",
+      "variables": ["customer", "job", "item", "business"],
+      "examples": ["Amina", "JOB-HQ-000012", "Toyota Corolla", "Mama Garage"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Please collect your item", "body": "Hello {customer}, your {item} ({job}) has been ready at {business} for some days. Please collect it soon. Reply STOP to stop these messages."},
+        "sw": {"subject": "Tafadhali chukua kitu chako", "body": "Habari {customer}, {item} yako ({job}) imekuwa tayari katika {business} kwa siku kadhaa. Tafadhali ichukue hivi karibuni. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "claim_estimate",
+      "category": "utility",
+      "variables": ["payer", "claim", "item", "business", "link"],
+      "examples": ["Jubilee Claims", "CLM-HQ-000012", "Toyota Corolla KAA 123B", "Mama Garage", "https://example.com/claim-response/abc"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Estimate for your claim", "body": "Hello {payer}, {business} sent an estimate for {item} ({claim}). Open it, answer each line and sign off here: {link} Reply STOP to stop these messages."},
+        "sw": {"subject": "Makadirio ya dai lako", "body": "Habari {payer}, {business} imetuma makadirio ya {item} ({claim}). Yafungue, jibu kila mstari na utie sahihi hapa: {link} Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "membership_renewal",
+      "category": "utility",
+      "variables": ["customer", "plan", "amount", "business", "date"],
+      "examples": ["Amina", "Monthly Gold", "800.00", "Glow Spa", "1 Nov 2026"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your membership renews soon", "body": "Dear {customer}, your {plan} membership at {business} renews on {date} for {amount}. Reply STOP to stop these messages."},
+        "sw": {"subject": "Uanachama wako unaisha hivi karibuni", "body": "Mpendwa {customer}, uanachama wako wa {plan} katika {business} utarejeshwa tarehe {date} kwa {amount}. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "package_expiring",
+      "category": "utility",
+      "variables": ["customer", "package", "credits", "business", "date"],
+      "examples": ["Amina", "10 massages", "4", "Glow Spa", "20 Nov 2026"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your package expires soon", "body": "Dear {customer}, you still have {credits} left on your {package} at {business}. It expires on {date}, so please book before then. Reply STOP to stop these messages."},
+        "sw": {"subject": "Kifurushi chako kinakaribia kuisha", "body": "Mpendwa {customer}, bado una {credits} kwenye {package} yako katika {business}. Kinaisha tarehe {date}, tafadhali weka nafasi kabla ya hapo. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "time_missing",
+      "category": "utility",
+      "variables": ["name", "date", "logged", "wanted", "business"],
+      "examples": ["Amina", "Tue 20 Oct", "1.5", "4", "Kamau & Co"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Time not logged", "body": "{business}: Hello {name}, you have {logged} h logged for {date} (the usual minimum is {wanted} h). Please add your time."},
+        "sw": {"subject": "Muda haujaandikwa", "body": "{business}: Habari {name}, umeandika saa {logged} kwa {date} (kiwango cha kawaida ni saa {wanted}). Tafadhali ongeza muda wako."}
+      }
+    },
+    {
+      "code": "time_submit",
+      "category": "utility",
+      "variables": ["name", "week", "hours", "business"],
+      "examples": ["Amina", "19 Oct", "32.5", "Kamau & Co"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Send in your week", "body": "{business}: Hello {name}, your week of {week} ({hours} h) is not sent in yet. Please submit it so it can be approved and billed."},
+        "sw": {"subject": "Tuma wiki yako", "body": "{business}: Habari {name}, wiki yako ya {week} (saa {hours}) bado haijatumwa. Tafadhali itume ili iidhinishwe na kutozwa."}
+      }
+    },
+    {
+      "code": "approval_reminder",
+      "category": "utility",
+      "variables": ["name", "person", "week", "hours", "days", "business"],
+      "examples": ["Juma", "Amina", "12 Oct", "38", "3", "Kamau & Co"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Timesheet waiting for you", "body": "{business}: Hello {name}, {person}'s week of {week} ({hours} h) has been waiting {days} days for approval."},
+        "sw": {"subject": "Ratiba ya muda inakusubiri", "body": "{business}: Habari {name}, wiki ya {person} ya {week} (saa {hours}) imesubiri idhini kwa siku {days}."}
+      }
+    },
+    {
+      "code": "partner_review",
+      "category": "utility",
+      "variables": ["name", "client", "amount", "business"],
+      "examples": ["Juma", "Acme Ltd", "58,000.00", "Kamau & Co"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Invoice to review", "body": "{business}: Hello {name}, an invoice for {client} ({amount}) is waiting for your review before it goes out."},
+        "sw": {"subject": "Ankara ya kukagua", "body": "{business}: Habari {name}, ankara ya {client} ({amount}) inasubiri ukaguzi wako kabla ya kutumwa."}
+      }
+    },
+    {
+      "code": "review_sent_back",
+      "category": "utility",
+      "variables": ["name", "client", "note", "business"],
+      "examples": ["Amina", "Acme Ltd", "Please check the hours on the audit.", "Kamau & Co"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Invoice sent back", "body": "{business}: Hello {name}, the invoice for {client} was sent back for changes: {note}"},
+        "sw": {"subject": "Ankara imerudishwa", "body": "{business}: Habari {name}, ankara ya {client} imerudishwa ifanyiwe marekebisho: {note}"}
+      }
+    },
+    {
+      "code": "engagement_due",
+      "category": "utility",
+      "variables": ["name", "task", "client", "date", "business"],
+      "examples": ["Amina", "Monthly bookkeeping", "Acme Ltd", "15 Nov 2026", "Kamau & Co"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Work due soon", "body": "{business}: Hello {name}, {task} for {client} is due on {date}."},
+        "sw": {"subject": "Kazi inakaribia tarehe", "body": "{business}: Habari {name}, {task} ya {client} inatakiwa kufikia {date}."}
+      }
+    },
+    {
+      "code": "class_booked",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Yoga", "Fit Studio", "20 Oct 2026 18:00"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your place is booked", "body": "Hello {customer}, your place in {service} at {business} on {when} is booked. Tell us early if you cannot come. Reply STOP to stop these messages."},
+        "sw": {"subject": "Nafasi yako imehifadhiwa", "body": "Habari {customer}, nafasi yako katika {service} katika {business} tarehe {when} imehifadhiwa. Tuambie mapema usipoweza kuja. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "class_place_offered",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when", "until"],
+      "examples": ["Amina", "Yoga", "Fit Studio", "20 Oct 2026 18:00", "19 Oct 2026 12:00"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "A place is free for you", "body": "Hello {customer}, a place has come free in {service} at {business} on {when}. It is held for you until {until}: reply or call us to take it. Reply STOP to stop these messages."},
+        "sw": {"subject": "Nafasi imepatikana kwa ajili yako", "body": "Habari {customer}, nafasi imepatikana katika {service} katika {business} tarehe {when}. Imeshikiliwa kwa ajili yako hadi {until}: jibu au tupigie ili uichukue. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "class_cancelled",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "Yoga", "Fit Studio", "20 Oct 2026 18:00"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Class cancelled", "body": "Hello {customer}, we are sorry: {service} at {business} on {when} has been cancelled. Please contact us to book another time."},
+        "sw": {"subject": "Darasa limeghairiwa", "body": "Habari {customer}, samahani: {service} katika {business} tarehe {when} limeghairiwa. Tafadhali wasiliana nasi ili upange wakati mwingine."}
+      }
+    },
+    {
+      "code": "appointment_recall",
+      "category": "utility",
+      "variables": ["customer", "service", "business"],
+      "examples": ["Amina", "Haircut", "Mama Salon"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Time for your next visit", "body": "Hello {customer}, it is time for your next {service} at {business}. Reply or call us to book a time. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ni wakati wa ziara yako ijayo", "body": "Habari {customer}, ni wakati wa {service} yako ijayo katika {business}. Jibu au tupigie ili upange wakati. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_recall_clinic",
+      "category": "utility",
+      "variables": ["customer", "service", "business"],
+      "examples": ["Amina", "check-up", "Green Dental"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your next visit is due", "body": "Hello {customer}, your next {service} at {business} is due. Please call us to book an appointment. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ziara yako ijayo inakaribia", "body": "Habari {customer}, {service} yako ijayo katika {business} inatakiwa. Tafadhali tupigie ili upange miadi. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_rebook",
+      "category": "utility",
+      "variables": ["customer", "service", "business"],
+      "examples": ["Amina", "Haircut", "Mama Salon"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Thank you for visiting", "body": "Hello {customer}, thank you for your {service} at {business}. Would you like to book your next visit? Reply or call us. Reply STOP to stop these messages."},
+        "sw": {"subject": "Asante kwa kutembelea", "body": "Habari {customer}, asante kwa {service} yako katika {business}. Ungependa kupanga ziara yako ijayo? Jibu au tupigie. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_rebook_clinic",
+      "category": "utility",
+      "variables": ["customer", "service", "business"],
+      "examples": ["Amina", "check-up", "Green Dental"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Book your next appointment", "body": "Hello {customer}, thank you for visiting {business}. If you need a follow-up visit, please call us to book it. Reply STOP to stop these messages."},
+        "sw": {"subject": "Panga miadi yako ijayo", "body": "Habari {customer}, asante kwa kutembelea {business}. Ukihitaji ziara ya ufuatiliaji, tafadhali tupigie ili upange. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_reminder_clinic",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when"],
+      "examples": ["Amina", "check-up", "Green Dental", "20 Oct 2026 09:30"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Reminder of your appointment", "body": "Hello {customer}, a reminder of your {service} appointment at {business} on {when}. If you are using an insurer or scheme, please bring your card. Please tell us if you cannot come. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ukumbusho wa miadi yako", "body": "Habari {customer}, ukumbusho wa miadi yako ya {service} katika {business} tarehe {when}. Ukitumia bima, tafadhali lete kadi yako. Tafadhali tuambie usipoweza kuja. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "appointment_deposit",
+      "category": "utility",
+      "variables": ["customer", "service", "business", "when", "amount", "how"],
+      "examples": ["Amina", "Colour", "Mama Salon", "20 Oct 2026 09:30", "1000", "Send to till 123"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Deposit for your booking", "body": "Hello {customer}, your {service} at {business} on {when} needs a deposit of {amount}. {how} Your time is held once it is paid. Reply STOP to stop these messages."},
+        "sw": {"subject": "Amana ya miadi yako", "body": "Habari {customer}, {service} yako katika {business} tarehe {when} inahitaji amana ya {amount}. {how} Muda wako utashikiliwa ukishalipwa. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "membership_payment_late",
+      "category": "utility",
+      "variables": ["customer", "amount", "invoice", "business", "date"],
+      "examples": ["Amina", "KES 2,500.00", "INV-0042", "Peak Gym", "1 Nov 2026"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your payment is late", "body": "Dear {customer}, {amount} for invoice {invoice} at {business} was due on {date} and is still unpaid. Please pay as soon as you can so your membership is not interrupted. Reply STOP to stop these messages."},
+        "sw": {"subject": "Malipo yako yamechelewa", "body": "Mpendwa {customer}, {amount} ya ankara {invoice} katika {business} ilipaswa kulipwa tarehe {date} na bado haijalipwa. Tafadhali lipa mapema ili uanachama wako usikatizwe. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "membership_frozen",
+      "category": "utility",
+      "variables": ["customer", "amount", "business"],
+      "examples": ["Amina", "KES 2,500.00", "Peak Gym"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your membership is on hold", "body": "Dear {customer}, your membership at {business} is on hold because {amount} is unpaid. Pay at the front desk and it opens again at once. Reply STOP to stop these messages."},
+        "sw": {"subject": "Uanachama wako umesitishwa", "body": "Mpendwa {customer}, uanachama wako katika {business} umesitishwa kwa sababu {amount} haijalipwa. Lipa mapokezini na utafunguliwa mara moja. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "membership_inactive",
+      "category": "utility",
+      "variables": ["customer", "business", "weeks"],
+      "examples": ["Amina", "Peak Gym", "3"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "We miss you", "body": "Hello {customer}, we have not seen you at {business} for {weeks} weeks. Come back this week: we are glad to help you restart. Reply STOP to stop these messages."},
+        "sw": {"subject": "Tunakukumbuka", "body": "Habari {customer}, hatujakuona katika {business} kwa wiki {weeks}. Rudi wiki hii: tutafurahi kukusaidia kuanza tena. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "membership_birthday",
+      "category": "utility",
+      "variables": ["customer", "business"],
+      "examples": ["Amina", "Peak Gym"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Happy birthday", "body": "Happy birthday {customer}! From everyone at {business}. Reply STOP to stop these messages."},
+        "sw": {"subject": "Heri ya siku ya kuzaliwa", "body": "Heri ya siku ya kuzaliwa {customer}! Kutoka kwetu sote katika {business}. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "membership_trial_followup",
+      "category": "utility",
+      "variables": ["customer", "business"],
+      "examples": ["Amina", "Peak Gym"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "How was your trial?", "body": "Hello {customer}, thank you for trying {business}. If you would like to join, ask at the front desk and we will set you up today. Reply STOP to stop these messages."},
+        "sw": {"subject": "Majaribio yalikuwaje?", "body": "Habari {customer}, asante kwa kujaribu {business}. Ukipenda kujiunga, uliza mapokezini na tutakusajili leo. Jibu ACHA kuacha ujumbe huu."}
+      }
     }
   ]
 }

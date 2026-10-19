@@ -1,0 +1,17 @@
+# The service items a workshop invoices under. No prices: a price is the business's own. Jobs invoices all labour under
+# the Labour item, all parts under the Parts item and towing, storage and other charges under the Fees item, so their
+# tax codes are the job's tax.
+[[service]]
+sku = "GAR-LABOUR"
+name = "Workshop labour"
+minutes = 60
+
+[[service]]
+sku = "GAR-PARTS"
+name = "Parts and materials"
+minutes = 15
+
+[[service]]
+sku = "GAR-FEES"
+name = "Towing, storage and other fees"
+minutes = 30

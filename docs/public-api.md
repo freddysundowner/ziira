@@ -32,6 +32,8 @@ full description (`/openapi.json`, `/docs`) tags the same operations **Public**.
 | `GET /api/v1/inventory/balances`, `GET /api/v1/inventory/products/{product_id}/stock` | `stock.view` | costs only with `stock.cost` |
 | `GET /api/v1/payments/payments`, `GET .../{payment_id}` | `payments.view` (or a payments manage permission) | |
 | `GET /api/v1/intel/findings`, `GET .../{finding_id}` | `findings.view` | scoped to the key's branches |
+| `POST /api/v1/memberships/access/decision` | `memberships.checkin` | may member X enter now? (door/turnstile controller); records the entry, `record: false` is a dry run |
+| `GET /api/v1/memberships/access/allowed` | `memberships.checkin` | numbers and cards allowed at a branch right now, no names |
 
 (The authoritative list is `PUBLIC_ENDPOINTS` in code and the Public tag; a test checks that every entry exists. The
 permission codes are the ones each endpoint declares; the description lists them.)

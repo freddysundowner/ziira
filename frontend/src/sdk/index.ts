@@ -25,6 +25,10 @@ export {
 export { SessionProvider, useCan, useSession } from "./session";
 export * from "./ui";
 export { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+export { CustomFields, CustomFieldsForm, saveCustomValues, useCustomFieldDefs } from "./customFields/CustomFields";
+export { type CustomFieldDef, type CustomFieldProblem, type CustomValues, displayValue, toFormValues, toPayload, validateCustomValues, visibleFields } from "./customFields/logic";
+export { Attachments } from "./attachments/Attachments";
+export { type AttachedFile, formatBytes } from "./attachments/logic";
 export { BackupCodes } from "./mfa/BackupCodes";
 export { TwoStepSetup } from "./mfa/TwoStepSetup";
 export { useCountdown } from "./mfa/useCountdown";

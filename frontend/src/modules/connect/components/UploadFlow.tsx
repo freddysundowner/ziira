@@ -119,7 +119,7 @@ export function UploadFlow({ connectionId, kind, companyId, onDone }: { connecti
           <div>
             <p className="font-medium">{t("upload.nextTitle")}</p>
             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">{[1, 2, 3].map((n) => <li key={n}>{t(`upload.next.${family}.${n}`)}</li>)}</ul>
-            <p className="mt-2 text-sm text-muted">{t("upload.nextWhen")} <Link className="text-brand underline" to="/intel">{t("upload.nextLink")}</Link></p>
+            <p className="mt-2 text-sm text-muted">{t("upload.nextWhen")} <Link className="text-brand-strong underline" to="/intel">{t("upload.nextLink")}</Link></p>
           </div>
           <Button variant="secondary" onClick={reset}>{t("upload.another")}</Button>
         </div>

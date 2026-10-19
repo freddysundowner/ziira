@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {
-  api, Badge, Card, DetailList, ErrorState, PageHeader, Skeleton, SlotContent, StatusBadge, Tabs, unwrap, useQuery, useSlot, useTranslation,
+  api, Attachments, Badge, Card, DetailList, ErrorState, PageHeader, Skeleton, SlotContent, StatusBadge, Tabs, unwrap, useQuery, useSlot, useTranslation,
 } from "@/sdk";
 
 import { PRODUCT_TABS } from "../public";
@@ -48,6 +48,7 @@ export default function ProductPage() {
             ]} />
           </Card>
           <BarcodesCard productId={p.id} barcodes={p.barcodes ?? []} />
+          <Attachments entityType="products.product" entityId={p.id} />
         </div>
       )}
       {tab === "prices" && <PricesTab productId={p.id} />}

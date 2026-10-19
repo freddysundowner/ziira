@@ -38,7 +38,7 @@ def new_plugin(name: str, category: str, countries: list[str], dest_root: Path |
         if countries
         else "",
     }
-    for relative, template in TEMPLATES.items():
+    for relative, template in (INDUSTRY_TEMPLATES if category == "industry" else TEMPLATES).items():
         path = folder / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(_fill(template, values))
@@ -332,5 +332,80 @@ def test_another_business_cannot_see_the_items(client, registry) -> None:  # typ
                        json={"company_id": str(one.company_id), "name": "Secret"}).json()
     assert_tenant_isolation(client, sign_in(client, two), f"{BASE}/items/{made['id']}", list_path=f"{BASE}/items",
                             record_id=made["id"])
+''',
+}
+
+
+# An industry pack (docs/industry-packs.md): data files and a test, no code and no tables.
+INDUSTRY_TEMPLATES: dict[str, str] = {
+    "manifest.toml": """[unit]
+name = "{{name}}"
+title = "{{title}}"
+description = "One plain sentence: what kind of business this pack sets up."
+category = "industry"
+kind = "plugin"
+version = "0.1.0"
+sdk = ">=1.0,<2.0"
+publisher = "Your name or company"
+homepage = ""
+# The units a business must have for the pack to work; the ones it can use when present go in `optional`.
+requires = ["products"]
+optional = []
+
+[extends]
+implements = []
+""",
+    "__init__.py": '"""{{title}}: an industry pack. Its data lives in `data/`."""\n',
+    "README.md": """# {{title}}
+
+An **industry pack**: the data a kind of business starts with. It has no tables and no logic. When it is
+switched on, each unit that has a `data/<unit>.toml` here copies it into the business's own tables
+(adding only what is missing).
+
+| File | Goes to |
+|---|---|
+| `data/pack.toml` | the pack's own settings: the units it feeds, the editions it is recommended for |
+| `data/products.toml` | Products: service items with a usual duration |
+| `data/custom_fields.toml` | Custom fields on records (read by the kernel) |
+
+```bash
+ziira plugin check .       # static checks
+ziira plugin test .        # this pack's tests (they validate the data files)
+ziira apply-packs          # seed switched-on packs again (safe to repeat)
+```
+
+See docs/industry-packs.md for every data file and what each unit's seeder accepts.
+""",
+    "migrations/0001_init.up.sql": """-- An industry pack keeps no tables: the units copy its data files into their own.
+create schema if not exists plg_{{name}};
+comment on schema plg_{{name}} is '{{title}} (industry pack)';
+""",
+    "migrations/0001_init.down.sql": "drop schema if exists plg_{{name}} cascade;\n",
+    "data/pack.toml": """[pack]
+# Units the pack feeds (each has a data/<unit>.toml; "custom_fields" is read by the kernel).
+units = ["products"]
+# Editions this pack is recommended for (shown as "Recommended for your edition" on the Add-ons page).
+editions = ["services"]
+""",
+    "data/products.toml": """# Service items: no prices (a price is the business's own), a usual duration in minutes.
+[[service]]
+sku = "EXAMPLE-1"
+name = "An example service"
+minutes = 30
+""",
+    "data/custom_fields.toml": """[[field]]
+entity_type = "products.product"
+key = "example_note"
+label = "Example note"
+kind = "text"
+""",
+    "tests/__init__.py": "",
+    "tests/test_pack.py": '''"""The pack's files are valid (the same check runs when the pack is installed)."""
+
+from ziira.sdk import check_pack
+
+
+def test_the_pack_files_are_valid() -> None:
+    assert check_pack("{{name}}") == []
 ''',
 }

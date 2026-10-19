@@ -423,3 +423,14 @@ def test_every_systemd_directive_exists_in_systemd_245() -> None:
     for text in texts:
         keys = set(re.findall(r"^([A-Z][A-Za-z]+)=", text, re.M))
         assert keys <= SYSTEMD_245_KEYS, keys - SYSTEMD_245_KEYS
+
+
+def test_photo_uploads_get_a_larger_body_limit_than_the_rest_of_the_api() -> None:
+    cfg = cfg_for()
+    app = nginxconf.all_files(cfg, options(cfg))["/etc/nginx/sites-available/ziira-app.conf"]
+    assert app.count("client_max_body_size 27m;") == 1
+    assert re.search(nginxconf.FILES_LOCATION, "/api/v1/files")
+    for other in ("/api/v1/files/", "/api/v1/files/abc/delete", "/api/v1/files/dl/x", "/api/v1/products/files"):
+        assert not re.search(nginxconf.FILES_LOCATION, other)
+    from ziira.kernel.config import Settings
+    assert Settings().files_max_upload_bytes < 27 * 1024 * 1024               # nginx lets through what the API accepts

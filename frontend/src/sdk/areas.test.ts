@@ -137,11 +137,12 @@ describe("the real modules", () => {
   const n = buildNavigation(everything, unlimited, groups);
   const routes = visibleRoutes(everything, unlimited);
 
-  it("keeps sections to about seven entries", () => {
-    expect(n.areas.filter((a) => a.variant === "list").map((a) => [a.id, areaPages(a).length]).filter(([, c]) => (c as number) > 8)).toEqual([]);
+  it("keeps sections to about seven entries (Services, which four modules fill, may hold twelve)", () => {
+    const limit = (id: string) => (id === "services" ? 12 : 8);
+    expect(n.areas.filter((a) => a.variant === "list").map((a) => [a.id, areaPages(a).length] as const).filter(([id, c]) => c > limit(id))).toEqual([]);
   });
-  it("gives a full business twelve or fewer sidebar entries including Home and Waiting for you", () => {
-    expect(n.entries.length + 1).toBeLessThanOrEqual(12);
+  it("gives a full business thirteen or fewer sidebar entries including Home and Waiting for you", () => {
+    expect(n.entries.length + 1).toBeLessThanOrEqual(13);
     expect(n.entries.every((e) => e.kind === "area")).toBe(true);
   });
   it("puts every page in an area, except the person's own account", () => {

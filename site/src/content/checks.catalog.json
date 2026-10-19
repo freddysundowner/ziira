@@ -28,8 +28,8 @@
    "key": "customers",
    "title": "Customers and credit",
    "lead": "Who owes you, and are you lending to the wrong people?",
-   "count": 11,
-   "ziira": 8,
+   "count": 17,
+   "ziira": 14,
    "connected": 3
   },
   {
@@ -57,17 +57,25 @@
    "connected": 1
   },
   {
+   "key": "services",
+   "title": "Appointments, jobs and billable time",
+   "lead": "Are clients turning up, jobs moving and finished work being invoiced?",
+   "count": 33,
+   "ziira": 33,
+   "connected": 0
+  },
+  {
    "key": "controls",
    "title": "Controls and approvals",
    "lead": "Is the system itself being used in a careful way?",
-   "count": 4,
-   "ziira": 4,
+   "count": 5,
+   "ziira": 5,
    "connected": 0
   }
  ],
  "totals": {
-  "checks": 90,
-  "ziira": 68,
+  "checks": 130,
+  "ziira": 108,
   "connected": 22,
   "actions": 7,
   "automatic_actions": 4,
@@ -75,15 +83,484 @@
   "baselines": 13,
   "by_area": {
    "books": 10,
-   "cash_sales": 10,
-   "controls": 35,
-   "customers": 10,
-   "people": 6,
+   "cash_sales": 11,
+   "controls": 36,
+   "customers": 45,
+   "people": 9,
    "stock": 10,
    "suppliers": 9
   }
  },
  "checks": [
+  {
+   "code": "bookings.completed_not_invoiced",
+   "area": "customers",
+   "group": "services",
+   "title": "Finished appointments not invoiced",
+   "description": "Appointments finished more than a few days ago, with a customer and a price, that have no invoice. Only checked when Point of Sale is on.",
+   "plain": "Appointments finished several days ago, with a client and a price, still have no invoice. Only checked when Point of Sale is on.",
+   "example": "3 appointments finished last week for a total of 12,000 have no invoice.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": "Appointments and invoices",
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "invoice_after_days",
+     "label": "Days after the appointment before it should have an invoice",
+     "default": 2
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "bookings.deposits_unpaid",
+   "area": "customers",
+   "group": "services",
+   "title": "Deposits not paid",
+   "description": "Appointments in the next few days whose deposit is not paid.",
+   "plain": "Appointments that need a deposit are coming up and the deposit has not been paid. These are the bookings most likely to be missed.",
+   "example": "4 appointments in the next 3 days still have an unpaid deposit.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "look_ahead_days",
+     "label": "How many days ahead to look",
+     "default": 2
+    },
+    {
+     "name": "min_count",
+     "label": "Fewest unpaid deposits before it is flagged",
+     "default": 1
+    }
+   ]
+  },
+  {
+   "code": "bookings.double_booking_refused",
+   "area": "customers",
+   "group": "services",
+   "title": "Times asked for twice",
+   "description": "A branch where many bookings were refused because the time was already taken.",
+   "plain": "Many booking attempts were refused because the time was already taken. People want those times, so you may need more capacity or longer hours.",
+   "example": "9 bookings were refused in the last 7 days because the time was already taken.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "info",
+   "severity_label": "Information",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "refused_count",
+     "label": "How many refused bookings are flagged",
+     "default": 5
+    }
+   ]
+  },
+  {
+   "code": "bookings.idle_gaps",
+   "area": "customers",
+   "group": "services",
+   "title": "Long gaps in the diary",
+   "description": "A resource with a long empty stretch between two appointments on the same coming day.",
+   "plain": "A staff member has a long empty stretch between two appointments on a coming day, which could be filled or used for time off.",
+   "example": "Joseph has a 3 hour gap between his 10:00 and 14:00 appointments on Thursday.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "info",
+   "severity_label": "Information",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "look_ahead_days",
+     "label": "How many days ahead to look",
+     "default": 3
+    },
+    {
+     "name": "gap_minutes",
+     "label": "Length of gap (in minutes) that is flagged",
+     "default": 120
+    },
+    {
+     "name": "max_findings",
+     "label": "Most gaps shown in one run",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "bookings.late_cancellations",
+   "area": "customers",
+   "group": "services",
+   "title": "Late cancellations",
+   "description": "A branch where many appointments were cancelled inside the cancellation window.",
+   "plain": "Clients are cancelling too close to the appointment for the slot to be filled again.",
+   "example": "7 appointments at the Westlands branch were cancelled inside the cancellation window in the last 30 days.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "late_cancel_count",
+     "label": "How many late cancellations are flagged",
+     "default": 5
+    }
+   ]
+  },
+  {
+   "code": "bookings.low_utilisation",
+   "area": "customers",
+   "group": "services",
+   "title": "Working time going unused",
+   "description": "A resource whose booked time over the last days is a small share of its working hours. (The limit is set by the business; Intelligence does not learn it from history.)",
+   "plain": "A staff member or room is booked for only a small part of the hours they work, so paid time is going unused.",
+   "example": "Amina was booked for 10 of her 40 working hours in the last 14 days (25%).",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 14
+    },
+    {
+     "name": "utilisation_percent",
+     "label": "Booked share of working hours (in %) below which it is flagged",
+     "default": "30.0"
+    },
+    {
+     "name": "min_hours",
+     "label": "Fewest working hours needed before it is judged",
+     "default": 8
+    }
+   ]
+  },
+  {
+   "code": "bookings.no_show_rate",
+   "area": "customers",
+   "group": "services",
+   "title": "Clients not turning up",
+   "description": "A resource where the share of appointments ending as no-shows is above the limit.",
+   "plain": "Many of the appointments for one staff member or room end with the client not turning up. Each no-show is an hour that earned nothing.",
+   "example": "Chair 2 had 12 appointments in the last 30 days and 4 of them (33%) were no-shows.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 30
+    },
+    {
+     "name": "min_appointments",
+     "label": "Fewest appointments needed before it is judged",
+     "default": 5
+    },
+    {
+     "name": "no_show_percent",
+     "label": "Share of no-shows (in %) that is flagged",
+     "default": "20.0"
+    }
+   ]
+  },
+  {
+   "code": "bookings.tips_held",
+   "area": "cash_sales",
+   "group": "services",
+   "title": "Tips not paid out",
+   "description": "Tips the business holds for its staff that were taken more than a number of days ago and not paid out.",
+   "plain": "Tips taken by card or mobile money are still held by the business after several days. They belong to the staff and should be handed over.",
+   "example": "KES 6,400 in tips has been held for 9 days.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "older_than_days",
+     "label": "How many days a tip may be held before it is flagged",
+     "default": 7
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest total (in money) that is flagged",
+     "default": "1.00"
+    }
+   ]
+  },
+  {
+   "code": "claims.approved_not_started",
+   "area": "customers",
+   "group": "services",
+   "title": "Approved work that has not started",
+   "description": "A payer approved the work days ago and the job has not been started.",
+   "plain": "The payer approved the work days ago and the job has not started.",
+   "example": "Claim CLM-HQ-000015 was approved 4 days ago and the car has not been touched.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days before it is flagged",
+     "default": 2
+    }
+   ]
+  },
+  {
+   "code": "claims.completed_not_invoiced",
+   "area": "customers",
+   "group": "services",
+   "title": "Finished claims not invoiced",
+   "description": "A claim was signed off as done and has no invoice.",
+   "plain": "Work was signed off as done and the claim has no invoice.",
+   "example": "Claim CLM-HQ-000003 was signed off 6 days ago and is worth 19,750 with no invoice.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "grace_days",
+     "label": "Days to wait after sign-off",
+     "default": 3
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 120
+    }
+   ]
+  },
+  {
+   "code": "claims.counter_unanswered",
+   "area": "customers",
+   "group": "services",
+   "title": "Counter-offers nobody answered",
+   "description": "A payer offered a lower amount and the business has not accepted or argued it.",
+   "plain": "A payer offered less for a line and nobody has accepted or argued it.",
+   "example": "The insurer offered 1,500 less on claim CLM-HQ-000009 five days ago.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days before it is flagged",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "claims.estimate_waiting",
+   "area": "customers",
+   "group": "services",
+   "title": "Estimates a payer has not answered",
+   "description": "An insurer or other payer has had an estimate for days without answering.",
+   "plain": "A payer has had an estimate for days and has not answered every line.",
+   "example": "The estimate for claim CLM-HQ-000012 has waited 8 days for the insurer's answer.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days before it is flagged",
+     "default": 5
+    },
+    {
+     "name": "serious_days",
+     "label": "Days before it is urgent",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "claims.payer_invoice_overdue",
+   "area": "customers",
+   "group": "services",
+   "title": "Payers paying late",
+   "description": "A payer's invoice is past its due date and still unpaid.",
+   "plain": "A payer's invoice is past its due date and still unpaid.",
+   "example": "The insurer owes 17,250 on an invoice 40 days past due.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "late_days",
+     "label": "Days past due before it is flagged",
+     "default": 7
+    },
+    {
+     "name": "serious_days",
+     "label": "Days before it is urgent",
+     "default": 60
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 365
+    }
+   ]
+  },
+  {
+   "code": "claims.payer_rejects_more",
+   "area": "customers",
+   "group": "services",
+   "title": "A payer rejecting more than usual",
+   "description": "One payer rejects a much larger share of the money asked than your other payers.",
+   "plain": "One payer rejects a much larger share of the money asked than your other payers.",
+   "example": "One insurer rejected 38% of the money asked, your others 12%.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 90
+    },
+    {
+     "name": "min_lines",
+     "label": "Fewest answered lines before a payer is compared",
+     "default": 10
+    },
+    {
+     "name": "min_rate_percent",
+     "label": "Smallest share rejected (in %) worth flagging",
+     "default": 25
+    },
+    {
+     "name": "times_usual",
+     "label": "How many times more than your other payers",
+     "default": 1.5
+    }
+   ]
+  },
+  {
+   "code": "claims.rejection_reasons_repeat",
+   "area": "customers",
+   "group": "services",
+   "title": "The same rejection reason again and again",
+   "description": "A payer keeps giving the same reason for rejecting lines.",
+   "plain": "A payer keeps giving the same reason for rejecting lines.",
+   "example": "An insurer rejected paint 5 times with the reason 'not covered'.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 90
+    },
+    {
+     "name": "min_repeats",
+     "label": "How many times the same reason counts",
+     "default": 3
+    }
+   ]
+  },
+  {
+   "code": "claims.short_pay_open",
+   "area": "customers",
+   "group": "services",
+   "title": "Payers that paid short",
+   "description": "A payer paid less than it was invoiced and the difference is still open.",
+   "plain": "A payer paid less than invoiced and the difference is still open.",
+   "example": "An insurer paid 696 less than invoiced 16 days ago.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days before it is flagged",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "claims.supplementary_not_sent",
+   "area": "customers",
+   "group": "services",
+   "title": "Extra work not sent to the payer",
+   "description": "A supplementary estimate has been sitting as a draft for days.",
+   "plain": "Extra work was written up and never sent to the payer.",
+   "example": "Extra work of 2,500 on claim CLM-HQ-000020 has sat as a draft for 3 days.",
+   "source": "ziira",
+   "unit": "Insurance and payer claims",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days before it is flagged",
+     "default": 2
+    }
+   ]
+  },
   {
    "code": "controls.after_hours_activity",
    "area": "controls",
@@ -911,6 +1388,399 @@
      "name": "min_value",
      "label": "Smallest value worth flagging",
      "default": "100"
+    }
+   ]
+  },
+  {
+   "code": "jobs.courtesy_car_overdue",
+   "area": "customers",
+   "group": "services",
+   "title": "Courtesy cars not returned",
+   "description": "A courtesy car is past the date it was due back.",
+   "plain": "A courtesy car lent to a customer has not come back by the date it was due. The car is out of use and cannot be lent to the next customer.",
+   "example": "The courtesy car lent on the 3rd was due back 5 days ago.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "late_days",
+     "label": "How many days late before it is flagged",
+     "default": 1
+    }
+   ]
+  },
+  {
+   "code": "jobs.estimate_not_approved",
+   "area": "customers",
+   "group": "services",
+   "title": "Estimates nobody has answered",
+   "description": "A customer has had an estimate for days and has not approved or declined it.",
+   "plain": "A customer has had an estimate for days and has neither approved nor declined it. The work cannot start until they answer.",
+   "example": "The estimate for job 1051 was sent 8 days ago and nobody has answered.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days an estimate waits before it is flagged",
+     "default": 5
+    }
+   ]
+  },
+  {
+   "code": "jobs.part_overdue",
+   "area": "customers",
+   "group": "services",
+   "title": "Parts ordered for a job are late",
+   "description": "A part ordered for a job is past the date the supplier promised.",
+   "plain": "A part ordered for a repair has not arrived by its expected date. The vehicle takes up a bay and the customer is waiting.",
+   "example": "The brake pads ordered for a repair are 3 days past their expected date.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "late_days",
+     "label": "How many days late before it is flagged",
+     "default": 1
+    }
+   ]
+  },
+  {
+   "code": "jobs.parts_not_invoiced",
+   "area": "customers",
+   "group": "services",
+   "title": "Work done but never invoiced",
+   "description": "A job was collected or closed with parts and labour on it, and no invoice was made.",
+   "plain": "A job was collected or closed with parts and labour on it, but no invoice was made, so the work is unpaid.",
+   "example": "Job 1033 was collected 5 days ago with 8,500 of parts and labour and has no invoice.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "high",
+   "severity_label": "High",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "grace_days",
+     "label": "Days allowed before an invoice is expected",
+     "default": 2
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "jobs.ready_not_collected",
+   "area": "customers",
+   "group": "services",
+   "title": "Items waiting to be collected",
+   "description": "A finished job has been waiting for the customer to collect it for many days.",
+   "plain": "A finished job has been waiting for the customer to collect it for many days. It takes up space and the customer may have forgotten.",
+   "example": "A phone repair has been ready for collection for 12 days.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "Days waiting before it is flagged",
+     "default": 7
+    },
+    {
+     "name": "serious_days",
+     "label": "Days after which it is high priority",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "jobs.repeat_returns",
+   "area": "customers",
+   "group": "services",
+   "title": "Repeat returns inside the warranty",
+   "description": "Several return visits inside the warranty trace back to the same person's work.",
+   "plain": "Several return visits inside the warranty trace back to the same person's work, which may mean a training or quality problem.",
+   "example": "Peter's work came back 4 times in 90 days under warranty.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_returns",
+     "label": "Fewest return visits that are flagged",
+     "default": 3
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 90
+    }
+   ]
+  },
+  {
+   "code": "jobs.stuck_in_stage",
+   "area": "customers",
+   "group": "services",
+   "title": "Jobs stuck in a stage",
+   "description": "A job has been in the same stage for many days without moving.",
+   "plain": "A job has stayed in the same stage for a long time without moving, so a customer may be waiting for nothing.",
+   "example": "Job 1042 has been In repair for 19 days.",
+   "source": "ziira",
+   "unit": "Jobs and repairs",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "open_days",
+     "label": "Days in an active stage before it is flagged",
+     "default": 7
+    },
+    {
+     "name": "waiting_days",
+     "label": "Days in a waiting stage before it is flagged",
+     "default": 14
+    },
+    {
+     "name": "serious_days",
+     "label": "Days after which it is high priority",
+     "default": 30
+    }
+   ]
+  },
+  {
+   "code": "memberships.ending",
+   "area": "customers",
+   "group": "customers",
+   "title": "Memberships ending soon",
+   "description": "An active membership that is due to be cancelled, or reaches its end date, within the next few days. A chance to talk to the member before they leave.",
+   "plain": "An active membership is cancelled for the end of its period, or reaches its end date, within the next couple of weeks. A chance to speak to the member before they go.",
+   "example": "Gold membership of Amina ends in 9 days and brings in 100.00 a month.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days ahead to look",
+     "default": 14
+    },
+    {
+     "name": "max_members",
+     "label": "Most memberships checked in one run",
+     "default": 200
+    }
+   ]
+  },
+  {
+   "code": "memberships.entry_overrides",
+   "area": "controls",
+   "group": "controls",
+   "title": "Many refused entries overridden",
+   "description": "A person at the front desk let in many people the check-in had refused (unpaid, expired, frozen). Now and then is normal; a lot may mean free entry for friends.",
+   "plain": "A person at the front desk let in many people the check-in had refused. Now and then is normal; a lot may mean free entry for friends.",
+   "example": "Wanjiru let in 8 people the check-in had refused in the last 7 days.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "max_overrides",
+     "label": "Refused people one person may let in before it is flagged",
+     "default": 5
+    }
+   ]
+  },
+  {
+   "code": "memberships.members_inactive",
+   "area": "customers",
+   "group": "customers",
+   "title": "Members who stopped coming",
+   "description": "Paying members who have not been in for several weeks. They are the ones who cancel next. Silent when the gym does not use check-in at all.",
+   "plain": "Several paying members have not been in for a few weeks. They are the members who cancel next, so a call this week is worth more than a call after they leave.",
+   "example": "14 paying members have not visited for 3 weeks or more. Together they pay 62,000.00 a month.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "idle_weeks",
+     "label": "Weeks without a visit before a member counts as gone quiet",
+     "default": 3
+    },
+    {
+     "name": "min_members",
+     "label": "Fewest members needed before it is shown",
+     "default": 5
+    },
+    {
+     "name": "max_members",
+     "label": "Most memberships checked in one run",
+     "default": 5000
+    }
+   ]
+  },
+  {
+   "code": "memberships.packages_expiring",
+   "area": "customers",
+   "group": "customers",
+   "title": "Packages about to expire with credits left",
+   "description": "A package a customer paid for that still has unused credits and expires within the next few days. They will lose what they paid for unless they book.",
+   "plain": "A session package a customer paid for still has credits left and runs out soon. They lose what they paid for unless they book.",
+   "example": "Package PKG-000012 (10 massages) expires in 6 days with 4 of 10 credits unused.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days ahead to look",
+     "default": 14
+    },
+    {
+     "name": "min_credits",
+     "label": "Fewest unused credits worth a reminder",
+     "default": 1
+    },
+    {
+     "name": "max_packages",
+     "label": "Most packages checked in one run",
+     "default": 200
+    }
+   ]
+  },
+  {
+   "code": "memberships.payment_late",
+   "area": "customers",
+   "group": "customers",
+   "title": "Members who have not paid",
+   "description": "Membership invoices that are overdue, per branch, with how long the oldest has waited.",
+   "plain": "Membership fees are unpaid past their due date. Late-payment messages go out by themselves; this tells you how much is still out and for how long.",
+   "example": "9 members owe 41,500.00 in membership fees. The oldest invoice is 34 days late.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_days_late",
+     "label": "Days late before it is shown",
+     "default": 7
+    },
+    {
+     "name": "high_days_late",
+     "label": "Days late that make it high priority",
+     "default": 30
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "0.00"
+    }
+   ]
+  },
+  {
+   "code": "memberships.recurring_invoice_failed",
+   "area": "customers",
+   "group": "customers",
+   "title": "Recurring invoices that failed",
+   "description": "An invoice that was due on a schedule or at a membership renewal but could not be issued. Until it is fixed, that customer is not being billed.",
+   "plain": "A repeating invoice, or a membership renewal, was due but could not be made, often because the customer is over their credit limit. Until it is fixed that customer is not being billed.",
+   "example": "The invoice for Monthly retainer for the period starting 1 October could not be issued.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "high_after_days",
+     "label": "Days a failure waits before it becomes high priority",
+     "default": 3
+    },
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 90
+    },
+    {
+     "name": "max_runs",
+     "label": "Most invoices checked in one run",
+     "default": 200
+    }
+   ]
+  },
+  {
+   "code": "memberships.revenue_at_risk",
+   "area": "customers",
+   "group": "customers",
+   "title": "Membership income at risk",
+   "description": "The share of monthly membership income that comes from memberships that are cancelling, on hold, or whose renewal invoice failed.",
+   "plain": "A large share of the money you expect from members each month comes from memberships that are cancelling, on hold, or whose renewal invoice failed.",
+   "example": "6 memberships worth 600.00 a month (30% of membership income) are cancelling, on hold or not being billed.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_percent",
+     "label": "Share of monthly income (in %) at risk before it is shown",
+     "default": "20.0"
+    },
+    {
+     "name": "high_percent",
+     "label": "Share (in %) that makes it high priority",
+     "default": "40.0"
+    },
+    {
+     "name": "min_members",
+     "label": "Fewest memberships at risk before it is shown",
+     "default": 3
     }
    ]
   },
@@ -2729,6 +3599,264 @@
      "name": "min_amount",
      "label": "Smallest amount worth flagging",
      "default": "1.00"
+    }
+   ]
+  },
+  {
+   "code": "timebilling.approval_waiting",
+   "area": "people",
+   "group": "services",
+   "title": "Timesheet waiting for approval",
+   "description": "A submitted week has been waiting a long while for someone to approve it.",
+   "plain": "A submitted week has been waiting a long while for someone to approve it, which holds up invoicing.",
+   "example": "David's timesheet for the week of 6 October has waited 6 days for approval.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "approval_days",
+     "label": "Days waiting before it is flagged",
+     "default": 3
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 120
+    }
+   ]
+  },
+  {
+   "code": "timebilling.billable_ratio_drop",
+   "area": "people",
+   "group": "services",
+   "title": "Less of the time is billable",
+   "description": "The share of logged hours that can be billed has dropped well below the weeks before.",
+   "plain": "The share of logged hours that can be billed has dropped well below the weeks before, so more time is going on work nobody pays for.",
+   "example": "Billable share fell from 72% to 55% over the last 14 days.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "recent_days",
+     "label": "Recent period to measure",
+     "default": 14
+    },
+    {
+     "name": "compare_days",
+     "label": "Earlier period to compare with",
+     "default": 56
+    },
+    {
+     "name": "share_drop_points",
+     "label": "Fall in billable share (in points) that is flagged",
+     "default": "10.0"
+    },
+    {
+     "name": "min_logged_hours",
+     "label": "Fewest logged hours needed before it is judged",
+     "default": 20
+    }
+   ]
+  },
+  {
+   "code": "timebilling.project_over_budget",
+   "area": "customers",
+   "group": "services",
+   "title": "Project over budget",
+   "description": "A project has used more hours or money than its budget.",
+   "plain": "A project has used more hours or money than its budget, so it is losing money unless the client agrees to more.",
+   "example": "Website redesign has used 120 of its 100 budgeted hours (120%).",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "over_percent",
+     "label": "Share of budget used (in %) that is flagged",
+     "default": "100.0"
+    }
+   ]
+  },
+  {
+   "code": "timebilling.realisation_low",
+   "area": "customers",
+   "group": "services",
+   "title": "Work billed for less than it is worth",
+   "description": "Of the work invoiced in recent weeks, the share billed (the rest written down or off) is low.",
+   "plain": "Recently invoiced work was billed for much less than it was worth because hours were written down or off. The business pays for that time, not the client.",
+   "example": "Of 240,000 of work invoiced in the last 60 days, only 168,000 (70%) was billed.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "min_percent",
+     "label": "Share of the work's value (in %) that should be billed",
+     "default": "85.0"
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 90
+    },
+    {
+     "name": "min_value",
+     "label": "Smallest amount of work that is judged",
+     "default": "1000.00"
+    }
+   ]
+  },
+  {
+   "code": "timebilling.retainer_nearly_used",
+   "area": "customers",
+   "group": "services",
+   "title": "Retainer nearly used up",
+   "description": "A client's prepaid hours are almost all used, or are about to expire unused.",
+   "plain": "A client's prepaid hours are almost all used, or are about to expire unused. Time to talk about a top-up or to use the hours.",
+   "example": "Acme has used 42 of its 50 retainer hours (84%).",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "used_percent",
+     "label": "Share of prepaid hours used (in %) that is flagged",
+     "default": "80.0"
+    },
+    {
+     "name": "expiry_days",
+     "label": "Days before expiry to warn",
+     "default": 14
+    }
+   ]
+  },
+  {
+   "code": "timebilling.review_waiting",
+   "area": "customers",
+   "group": "services",
+   "title": "Invoice waiting for a partner",
+   "description": "An invoice review was sent to a partner a while ago and has not been approved or sent back.",
+   "plain": "An invoice is held until a partner approves it and has been waiting for days. The client cannot be billed until someone looks at it.",
+   "example": "An invoice for a client has waited 5 days for a partner to approve it.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "waiting_days",
+     "label": "How many days it may wait before it is flagged",
+     "default": 3
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 60
+    }
+   ]
+  },
+  {
+   "code": "timebilling.timesheets_not_submitted",
+   "area": "people",
+   "group": "services",
+   "title": "Timesheet not sent in",
+   "description": "Someone logged time for a week that has ended and has not submitted it for approval.",
+   "plain": "Someone logged time for a week that has ended but has not sent it in for approval, so it cannot be billed.",
+   "example": "Grace logged 32 hours in the week of 6 October and has not submitted them.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "grace_days",
+     "label": "Days after the week ends before it is flagged",
+     "default": 3
+    },
+    {
+     "name": "look_back_weeks",
+     "label": "How many weeks back to look",
+     "default": 8
+    }
+   ]
+  },
+  {
+   "code": "timebilling.unbilled_ageing",
+   "area": "customers",
+   "group": "services",
+   "title": "Work done but not invoiced",
+   "description": "Approved time and expenses for a client that have been waiting a long while for an invoice.",
+   "plain": "Approved time and expenses for a client have been waiting a long while for an invoice. Work done but not billed is money not collected.",
+   "example": "Client Acme has 18,000 of approved time that is 45 days old and not invoiced.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "unbilled_days",
+     "label": "Days waiting before it is flagged",
+     "default": 30
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest amount worth flagging",
+     "default": "1.00"
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 365
+    }
+   ]
+  },
+  {
+   "code": "timebilling.work_overdue",
+   "area": "customers",
+   "group": "services",
+   "title": "Engagement work overdue",
+   "description": "A dated piece of work for a client is past its due date and is still open.",
+   "plain": "Dated client work, such as a filing or a monthly close, is still open after its due date. Late work costs trust, and the fee cannot be billed until it is done.",
+   "example": "The monthly bookkeeping for a client is still open 6 days after its due date.",
+   "source": "ziira",
+   "unit": "Time and billing",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "grace_days",
+     "label": "How many days after the due date before it is flagged",
+     "default": 0
+    },
+    {
+     "name": "look_back_days",
+     "label": "How many days back to look",
+     "default": 180
     }
    ]
   }

@@ -1,0 +1,64 @@
+[unit]
+name = "bookings"
+title = "Appointments and Bookings"
+description = "Appointments, staff and room calendars, a waitlist, reminders and an online booking page for service businesses."
+category = "customers"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products"]
+optional = ["crm", "pos", "inventory", "payments", "memberships", "claims", "people", "intel", "command"]
+
+[provides]
+api_prefix = "/api/v1/bookings"
+publishes = ["appointment.created", "appointment.confirmed", "appointment.rescheduled", "appointment.cancelled", "appointment.no_show", "appointment.checked_in", "appointment.completed", "appointment.invoiced", "checkout.completed", "checkout.voided", "class.attendee_booked", "class.attendee_cancelled", "class.attendee_attended", "class.attendee_no_show", "class.attendee_reset", "class.waitlist_joined", "class.waitlist_offered", "class.waitlist_promoted", "class.waitlist_expired", "class.cancelled", "class.resource_changed", "client.fee_added"]
+subscribes = []
+extension_points = ["bookings.checkout_tender"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["intel.check", "command.pulse_source", "kernel.personal_data", "kernel.integrity_check", "kernel.custom_field_entity", "kernel.attachable_entity", "kernel.industry_seeder"]
+
+[permissions]
+"bookings.view" = "View the calendar and appointments"
+"bookings.manage" = "Book, move, cancel and serve appointments"
+"bookings.setup" = "Set up resources, services offered and booking settings"
+"bookings.checkout" = "Check clients out: bill them, take payment and tips"
+"bookings.reports" = "See day-end totals, staff commission and tips owed, and pay tips out"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Branch Manager" = ["bookings.view", "bookings.manage", "bookings.setup", "bookings.checkout", "bookings.reports"]
+"Sales Rep" = ["bookings.view", "bookings.manage", "bookings.checkout"]
+"Cashier" = ["bookings.view", "bookings.manage", "bookings.checkout"]
+"Finance Manager" = ["bookings.view", "bookings.reports"]
+"Accountant" = ["bookings.view", "bookings.reports"]
+
+[reason_codes.appointment_cancel]
+CLIENT = "Cancelled by the client"
+BUSINESS = "Cancelled by the business"
+NO_SHOW = "Did not come"
+OTHER = "Other, explained in the note"
+
+[reason_codes.checkout_discount]
+MEMBER = "Member discount"
+LOYAL = "Regular client"
+STAFF = "Staff or family"
+PROMO = "Promotion"
+RECOVERY = "Put something right"
+OTHER = "Other, explained in the note"
+
+[reason_codes.fee_waive]
+FIRST_TIME = "First time, no fee"
+GOOD_REASON = "Good reason given"
+OTHER = "Other, explained in the note"
+
+[reason_codes.appointment_reschedule]
+CLIENT = "The client asked to move it"
+BUSINESS = "The business had to move it"
+OTHER = "Other, explained in the note"
+
+# Events a business may subscribe to with an outgoing webhook (docs/webhooks.md): only these fields leave the system.
+[provides.public_events."appointment.completed"]
+description = "An appointment was finished"
+fields = ["company_id", "branch_id", "appointment_id", "number", "offer_id", "resource_ids", "minutes", "lines"]

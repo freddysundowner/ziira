@@ -1,0 +1,47 @@
+# Fields for the client (the customer's billing profile) and the engagement (project). The business edits these on
+# Settings > Custom fields.
+
+[[field]]
+entity_type = "timebilling.client"
+key = "engagement_type"
+label = "Kind of work"
+kind = "choice"
+choices = ["Bookkeeping and accounts", "Tax", "Audit and assurance", "Legal", "Consulting", "Creative and marketing", "Other"]
+
+[[field]]
+entity_type = "timebilling.client"
+key = "year_end"
+label = "Financial year-end"
+kind = "date"
+
+[[field]]
+entity_type = "timebilling.client"
+key = "main_contact"
+label = "Main contact at the client"
+kind = "text"
+
+[[field]]
+entity_type = "timebilling.client"
+key = "tax_number"
+label = "Tax number"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "timebilling.project"
+key = "matter_number"
+label = "Matter or file number"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "timebilling.project"
+key = "other_side"
+label = "Other side (opposing party or authority)"
+kind = "text"
+
+[[field]]
+entity_type = "timebilling.project"
+key = "client_reference"
+label = "Client's own reference or PO number"
+kind = "text"

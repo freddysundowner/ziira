@@ -50,6 +50,10 @@
   },
   "search": "Search add-ons",
   "filterAll": "All",
-  "noMatch": "No feature matches"
+  "noMatch": "No feature matches",
+  "industry": {
+   "badge": "Industry",
+   "recommendedEdition": "Recommended for your edition"
+  }
  }
 }

@@ -82,15 +82,15 @@ export function DataTable<Row>({ rows, columns, rowKey, loading, error, onRetry,
     body = (
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-line bg-sunken/60 text-xs uppercase tracking-wide text-muted">
+          <thead className="border-b border-line bg-sunken/60 text-[11px] uppercase tracking-[0.06em] text-muted">
             <tr>
               {columns.map((c, i) => {
                 const active = sort?.col === i;
                 return (
                   <th key={c.header} scope="col" aria-sort={active ? (sort.dir === 1 ? "ascending" : "descending") : undefined}
-                    className={cx("px-4 py-2.5 font-medium", c.align === "right" && "text-right", c.hideBelow && HIDE[c.hideBelow])}>
+                    className={cx("px-4 py-3 font-semibold", c.align === "right" && "text-right", c.hideBelow && HIDE[c.hideBelow])}>
                     {c.sortValue ? (
-                      <button className="inline-flex items-center gap-1 uppercase tracking-wide hover:text-ink" onClick={() => setSort(active && sort.dir === -1 ? null : { col: i, dir: active ? -1 : 1 })}>
+                      <button className="inline-flex items-center gap-1 uppercase tracking-[0.06em] hover:text-ink" onClick={() => setSort(active && sort.dir === -1 ? null : { col: i, dir: active ? -1 : 1 })}>
                         {c.header}{active && (sort.dir === 1 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
                       </button>
                     ) : c.header}

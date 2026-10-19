@@ -44,6 +44,14 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "retention_employee_records_years", kind: "integer" },
     { key: "retention_inactive_customers_years", kind: "integer" },
   ] },
+  { id: "files", fields: [
+    { key: "files_strip_location", kind: "switch" },
+    { key: "files_max_file_mb", kind: "integer" },
+    { key: "files_max_per_record", kind: "integer" },
+    { key: "files_storage_limit_mb", kind: "integer" },
+    { key: "retention_files_years", kind: "integer" },
+    { key: "retention_file_access_days", kind: "integer" },
+  ] },
   { id: "printing", fields: [
     { key: "phone_country_code", kind: "text" },
     { key: "receipt_footer", kind: "text" },

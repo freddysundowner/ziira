@@ -33,12 +33,30 @@ switched-off unit's data. It reads your manifest: add `description = "one plain 
 card), and keep `requires` honest (switching on enables what a unit requires; switching off or removing is refused while
 another unit needs it). Removal runs your `down.sql` migrations, so every unit needs working ones. Add
 `category = "payments"` (one of `CATEGORIES` in `ziira/kernel/manifest.py`: sales, stock, purchasing, accounting, people,
-customers, payments, tax, messaging, connector, country, intelligence, data, ai, example) so the screen groups it, and, for a
+customers, payments, tax, messaging, connector, country, intelligence, data, ai, example, industry, services) so the screen groups it, and, for a
 plugin made for particular countries, `countries = ["KE", ...]` (two-letter codes; empty or absent means worldwide, otherwise it is
 recommended only to businesses in those countries). Both appear in `/api/v1/units/catalog`; a wrong value fails loading.
 Editions (`docs/registration.md`) decide which units a new business starts with. Platform install and
 uninstall stay CLI jobs: a unit not installed shows as "Not available yet". Code: `ziira/kernel/unit_admin.py`,
 `ziira/kernel/api/unit_routes.py` (`/api/v1/units/catalog`, `/{name}/enable|disable|remove`), web `modules/admin/pages/AppsPage.tsx`.
+
+## Letting a record carry custom fields
+
+A business (or an industry pack) can add its own fields to your records (a vehicle plate on an asset). Offer the record type by
+implementing the extension point `kernel.custom_field_entity` in `hooks.py` (`CustomFieldEntity`: `entity_type` "yourunit.record", a `label`,
+the view and edit permissions, and `scope(session, id)` returning the record's company and branch), list `kernel.custom_field_entity` under
+`[extends] implements`, and show `<CustomFields entityType=... entityId=... canEdit=... />` on the record's screen. Never put money or
+stock in a custom field. See `docs/custom-fields.md`. A unit whose data an industry pack should pre-fill implements `kernel.industry_seeder`
+(`docs/industry-packs.md`).
+
+## Letting a record carry photos and files
+
+Photos and PDFs (an intake photo, a receipt, an engagement letter, a member's picture) are a kernel service. Offer the record type by
+implementing `kernel.attachable_entity` in `hooks.py` (`AttachableEntity`: `entity_type` "yourunit.record", a `label`, the view and edit
+permissions, `scope(session, id)`, optionally `photo_consent = True` and `categories(session)` for the kinds of photo), list
+`kernel.attachable_entity` under `[extends] implements`, and put `<Attachments entityType=... entityId=... />` on the record's screen.
+Code uses `from ziira.sdk import files` (`attach`, `list_files`, `read`, `delete_file`, `public_links` for approval and insurer pages).
+When your unit removes a record, call `files.remove_for_entity`. See `docs/files.md`.
 
 ## Permissions, scope and kernel services
 

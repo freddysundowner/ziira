@@ -1,0 +1,16 @@
+[unit]
+name = "pack_salon"
+title = "Salon, spa or barber"
+description = "Services with processing time, staff and chairs, reminders, rebooking, tips and commission for a salon, spa or barber shop."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+# The units a business must have for the pack to work; the ones it can use when present go in `optional`.
+requires = ["products"]
+optional = ["bookings", "intel", "crm", "pos", "memberships"]
+
+[extends]
+implements = []

@@ -8,10 +8,10 @@ version = "1.0.0"
 
 [provides]
 publishes = ["approval.decided", "exception.raised"]
-extension_points = ["kernel.integrity_check", "kernel.notification_channel", "kernel.personal_data", "kernel.branch_usage", "kernel.inbound_command", "kernel.country_seeder", "kernel.payment_gateway", "kernel.ai_platform"]
+extension_points = ["kernel.integrity_check", "kernel.notification_channel", "kernel.personal_data", "kernel.branch_usage", "kernel.inbound_command", "kernel.country_seeder", "kernel.payment_gateway", "kernel.ai_platform", "kernel.custom_field_entity", "kernel.industry_seeder", "kernel.attachable_entity"]
 
 [extends]
-implements = ["kernel.personal_data"]
+implements = ["kernel.personal_data", "kernel.industry_seeder", "kernel.integrity_check"]
 
 [permissions]
 "users.manage" = "Create users and assign roles"
@@ -28,6 +28,8 @@ implements = ["kernel.personal_data"]
 "organisation.manage" = "Add and edit companies and branches, and close a branch"
 "webhooks.manage" = "Register web addresses that are told when things happen, and see what was sent"
 "billing.manage" = "See the plan, usage, invoices and licence; ask for a plan change; cancel the subscription"
+"customfields.manage" = "Add, change and hide custom fields on records"
+"files.audit" = "See who opened a photo or file, and through which link"
 
 # Owner receives every permission automatically.
 [roles]

@@ -22,6 +22,7 @@ class UnitCard(BaseModel):
     description: str
     category: str = Field(description="How the screen groups it (sales, stock, payments, tax, ...); empty if none")
     countries: list[str] = Field(description="Plugins: countries it is meant for; empty means worldwide")
+    editions: list[str] = Field(default_factory=list, description="Industry packs: the editions it is recommended for")
     kind: str = Field(description="module or plugin")
     version: str
     requires: list[str]

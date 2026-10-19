@@ -6,6 +6,7 @@ import { ADDONS_OLD_PATHS, ADDONS_PATH } from "./paths";
 import enAi from "./i18n/en.ai.json";
 import enApps from "./i18n/en.apps.json";
 import enBilling from "./i18n/en.billing.json";
+import enFields from "./i18n/en.fields.json";
 import enChannels from "./i18n/en.channels.json";
 import enIntegrations from "./i18n/en.integrations.json";
 import enMore from "./i18n/en.admin.json";
@@ -14,6 +15,7 @@ import sw from "./i18n/sw.json";
 import swAi from "./i18n/sw.ai.json";
 import swApps from "./i18n/sw.apps.json";
 import swBilling from "./i18n/sw.billing.json";
+import swFields from "./i18n/sw.fields.json";
 import swChannels from "./i18n/sw.channels.json";
 import swIntegrations from "./i18n/sw.integrations.json";
 import swMore from "./i18n/sw.admin.json";
@@ -28,6 +30,7 @@ export default defineModule({
     // Earlier addresses of the page (it was Apps & plugins in Settings, then Features): old links and bookmarks still work.
     ...ADDONS_OLD_PATHS.map((path) => ({ path, page: () => import("./pages/AppsRedirect"), permission: "units.manage", tab: ADDONS_PATH })),
     { path: "/admin/roles", page: () => import("./pages/RolesPage"), permission: "roles.manage" },
+    { path: "/admin/custom-fields", page: () => import("./pages/CustomFieldsPage"), permission: "customfields.manage" },
     { path: "/admin/settings", page: () => import("./pages/SettingsPage"), permission: "settings.manage" },
     { path: "/admin/approvals", page: () => import("./pages/ApprovalsPage"), permission: "approvals.decide" },
     { path: "/admin/approval-rules", page: () => import("./pages/ApprovalRulesPage"), permission: "approvals.manage" },
@@ -47,6 +50,7 @@ export default defineModule({
     { label: "kernel:exceptions", to: "/admin/exceptions", permission: "exceptions.manage", order: 41, area: "waiting", under: "/admin/approvals", icon: "security", keywords: "nav.waitingKeywords" },
     { label: "kernel:org.menu", to: "/admin/organisation", permission: "organisation.manage", order: 10, area: "settings", section: "business", icon: "settings" },
     { label: "kernel:settings", tab: "nav.tabs.general", to: "/admin/settings", permission: "settings.manage", order: 11, area: "settings", section: "business", icon: "settings" },
+    { label: "kernel:fields.menu", keywords: "kernel:fields.keywords", to: "/admin/custom-fields", permission: "customfields.manage", order: 12, area: "settings", section: "business", icon: "document" },
     { label: "kernel:users", to: "/admin/users", permission: "users.manage", order: 10, area: "settings", section: "access", icon: "people" },
     { label: "kernel:roles", to: "/admin/roles", permission: "roles.manage", order: 11, area: "settings", section: "access", icon: "security" },
     { label: "kernel:approvalRules", to: "/admin/approval-rules", permission: "approvals.manage", order: 12, area: "settings", section: "access", icon: "document" },
@@ -68,5 +72,5 @@ export default defineModule({
       { label: "kernel:widgetExceptionsTitle", component: () => import("./slots/ExceptionsWidget"), permission: "exceptions.manage", order: 6 },
     ],
   },
-  translations: { en: { ...en, ...enMore, ...enOrg, ...enAi, ...enApps, ...enChannels, ...enIntegrations, ...enBilling }, sw: { ...sw, ...swMore, ...swOrg, ...swAi, ...swApps, ...swChannels, ...swIntegrations, ...swBilling } },
+  translations: { en: { ...en, ...enMore, ...enOrg, ...enAi, ...enApps, ...enFields, ...enChannels, ...enIntegrations, ...enBilling }, sw: { ...sw, ...swMore, ...swOrg, ...swAi, ...swApps, ...swFields, ...swChannels, ...swIntegrations, ...swBilling } },
 });

@@ -17,12 +17,12 @@ describe("sidebar active state", () => {
     draw(till, false);
     const idle = screen.getByRole("link");
     expect(idle.getAttribute("aria-current")).toBeNull();
-    expect(idle.className).not.toContain("bg-brand-strong");
+    expect(idle.className).not.toContain("btn-gradient");
     cleanup();
     draw(till, true);
     const open = screen.getByRole("link");
     expect(open.getAttribute("aria-current")).toBe("page");
-    expect(open.className).toContain("bg-brand-strong");
+    expect(open.className).toContain("btn-gradient");
   });
   it("marks an ordinary page current only when it is", () => {
     draw(page, false);

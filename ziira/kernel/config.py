@@ -159,6 +159,13 @@ class Settings(BaseSettings):
     ocr_max_pages: int = 30                  # most pages read from one scanned file
     pg_tool_port: int = 0
 
+    # Private file storage for photos and documents attached to records (docs/files.md). A folder on this server that
+    # only the application can read; empty in development means `var/files`. Production must set it (and back it up
+    # together with the databases: `ziira backup` includes it). `files_max_upload_bytes` is the most one upload request
+    # may carry; each business can set a smaller file size in its settings.
+    files_dir: str = ""
+    files_max_upload_bytes: int = 26_500_000
+
     # AI layer (docs/ai.md). The provider's name (a plugin implementing the `intel.llm` extension point; "fake" is for
     # development and tests and is refused in production), the platform's secret key for it, the model, the address of
     # its API, how long one call may take and how often a failed one is retried. A business turns AI on for itself with
@@ -266,8 +273,8 @@ class Settings(BaseSettings):
                                "roles must use a second factor before real customer data")
         if self.registration_mode not in ("open", "invite", "closed"):
             raise RuntimeError("ZIIRA_REGISTRATION_MODE must be open, invite or closed")
-        # Open registration without email is not refused here: email is set up in the Super Admin (Platform > Email)
-        # and sign-up stays closed until it works (platform/behaviour.registration_mode).
+        # Open registration without email is allowed: with no working email a new owner goes straight in after
+        # choosing a password; with email, a link is sent first (registration.register).
         if self.deployment_mode not in ("saas", "selfhosted"):
             raise RuntimeError("ZIIRA_DEPLOYMENT_MODE must be saas or selfhosted")
         if self.deployment_mode == "selfhosted" and self.licence_required and not self.licence_public_key:

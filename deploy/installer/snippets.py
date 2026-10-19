@@ -22,7 +22,8 @@ Ziira's own nginx listens on 127.0.0.1:{port} (plain HTTP) and serves these name
   {chr(10).join('  ' + h for h in hosts)}
 Your proxy must: terminate TLS for those names (its own certificates), forward every request to http://127.0.0.1:{port}
 UNCHANGED (keep the Host header), set X-Forwarded-For to include the client address (the LAST entry must be the client as
-your proxy saw it), and allow request bodies up to 11 MB. Do not cache. Timeouts of at least 60 s (180 s for statement uploads).
+your proxy saw it), and allow request bodies up to 27 MB (photos and PDFs; all else under 11 MB).
+Do not cache. Timeouts of at least 60 s (180 s for statement uploads).
 Static files: {cfg.web_root}/site/current (landing page), {cfg.web_root}/app/current (web app). API: 127.0.0.1:{cfg.api_port}.
 The files in this folder are examples for common proxies. None is installed for you.
 """,
@@ -33,7 +34,7 @@ server {{
     server_name {names};
     ssl_certificate     {cert}/fullchain.pem;
     ssl_certificate_key {cert}/privkey.pem;
-    client_max_body_size 11m;
+    client_max_body_size 27m;
     location / {{
         proxy_pass http://ziira_behind;
         proxy_http_version 1.1;
@@ -47,7 +48,7 @@ server {{
 """,
         "Caddyfile": f"""{", ".join(hosts)} {{
     request_body {{
-        max_size 11MB
+        max_size 27MB
     }}
     reverse_proxy 127.0.0.1:{port} {{
         transport http {{
@@ -64,7 +65,7 @@ server {{
     SSLCertificateFile {cert}/fullchain.pem
     SSLCertificateKeyFile {cert}/privkey.pem
     ProxyPreserveHost On
-    LimitRequestBody 11534336
+    LimitRequestBody 28311552
     RequestHeader set X-Forwarded-Proto "https"
     ProxyPass / http://127.0.0.1:{port}/ timeout=180
     ProxyPassReverse / http://127.0.0.1:{port}/

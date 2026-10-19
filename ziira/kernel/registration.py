@@ -24,7 +24,8 @@ from uuid import UUID
 
 from sqlalchemy import text
 
-from ziira.kernel import auth, company_settings, editions, operators, packs, passwords, platform_mail
+from ziira.kernel import auth, company_settings, editions, industry, operators, packs, passwords, platform_mail
+from ziira.kernel.platform import mail
 from ziira.kernel.config import get_settings
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import (
@@ -60,10 +61,12 @@ def units_for_mode(mode: str) -> list[str]:
 
 @dataclass(frozen=True)
 class Started:
-    """What `register` hands back. The token is only given outside production (tests and local development), where
-    no real mailbox is read."""
+    """What `register` hands back. `dev_token` is only given outside production (tests and local development), where
+    no real mailbox is read. `instant_token` is given when the platform has no working email: nothing could be sent,
+    so the person goes straight on (the client uses it at once) instead of waiting for a link that cannot arrive."""
 
     dev_token: str | None
+    instant_token: str | None = None
 
 
 @dataclass(frozen=True)
@@ -87,6 +90,16 @@ def _field(name: str) -> Iterator[None]:
         yield
     except ValidationFailed as problem:
         raise ValidationFailed(problem.message, {**(problem.details or {}), "field": name}) from None
+
+
+def _industry_pack_names() -> tuple[str, ...]:
+    """The installed industry packs a business can name as its kind of business (the Services edition asks)."""
+    try:
+        reg = Registry()
+        installed = reg.installed()
+        return tuple(m.name for m in industry.installed_packs(reg.units) if m.name in installed)
+    except Exception:  # noqa: BLE001 - never stop a registration for a pack lookup
+        return ()
 
 
 def _choice(value: str | None, allowed: tuple[str, ...], what: str) -> str | None:
@@ -132,7 +145,8 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
              mode: str | None = None, edition: str | None = None, phone: str | None = None,
              owner_role: str | None = None, business_size: str | None = None, staff_size: str | None = None,
              business_type: str | None = None, plan: str | None = None) -> Started:
-    """Ask for a business. Saves the request and emails a verification link; creates nothing else."""
+    """Ask for a business. Saves the request and emails a verification link (or, when the platform has no working
+    email, hands back a token to use at once); creates nothing else."""
     settings = get_settings()
     mode_now = behaviour.registration_mode()
     if mode_now == "closed":
@@ -170,7 +184,7 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
     for name, value, allowed, label in (
             ("owner_role", owner_role, ROLES, "Role"), ("business_size", business_size, BUSINESS_SIZES, "Branches"),
             ("staff_size", staff_size, STAFF_SIZES, "Staff"),
-            ("business_type", business_type, BUSINESS_TYPES, "Kind of business")):
+            ("business_type", business_type, (*BUSINESS_TYPES, *_industry_pack_names()), "Kind of business")):
         with _field(name):
             hints[name] = _choice(value, allowed, label)
     legacy_mode = "standalone" if chosen == "intelligence" else "core"
@@ -203,6 +217,8 @@ def register(*, business_name: str, owner_name: str, email: str, password: str, 
              "ed": chosen, "ph": contact, "ro": hints["owner_role"], "bs": hints["business_size"],
              "ss": hints["staff_size"], "bt": hints["business_type"], "pl": plan_code,
              "x": datetime.now(UTC) + timedelta(hours=settings.registration_token_hours)})
+    if not mail.status()["working"] and settings.env == "production":
+        return Started(dev_token=None, instant_token=token)      # no email to send: the owner set the password just now
     link = f"{behaviour.public_web_url()}/register/verify?token={token}"
     platform_mail.send(address, "Confirm your email to create your business",
                        f"Hello {owner},\n\nTo finish creating {business}, confirm your email address:\n\n{link}\n\n"
@@ -265,7 +281,8 @@ def complete(token: str, *, device_id: str, device_name: str | None = None,
                   {"t": str(created.tenant_id), "i": str(row.id)})
     # The business exists. Everything below is optional: a failure is logged, flagged to the operators and retried
     # later by the worker (`repair_pending`); it never loses the business or stops the owner signing in.
-    detail = {"country": row.country, "edition": row.edition, "currency": row.currency, "plan": row.plan_code}
+    detail = {"country": row.country, "edition": row.edition, "currency": row.currency, "plan": row.plan_code,
+              "business_type": row.business_type}
     _optional_step(row.id, created.tenant_id, code, "pack", detail)
     _optional_step(row.id, created.tenant_id, code, "plan", detail)
     _optional_step(row.id, created.tenant_id, code, "hints", {"role": row.owner_role, "phone": row.phone,
@@ -284,6 +301,9 @@ def _do_step(step: str, tenant_id: UUID, detail: dict[str, Any]) -> None:
         registry = Registry()
         packs.enable_country_pack(registry, tenant_id, detail.get("country"))
         packs.apply_to_tenant(tenant_id)
+        kind = str(detail.get("business_type") or "")
+        if kind in _industry_pack_names():            # the Services edition asks what kind of service business
+            registry.enable(tenant_id, kind)           # switching it on seeds it (safe to repeat)
     elif step == "plan":
         if subscriptions.get(tenant_id) is None:                                        # already started: nothing to do
             _start_trial(tenant_id, detail)

@@ -33,7 +33,7 @@ export function AlertsBell() {
       <button type="button" aria-haspopup="dialog" aria-expanded={open} aria-label={total > 0 ? t("shell.alerts.withCount", { count: total }) : t("shell.alerts.title")} onClick={() => setOpen((o) => !o)}
         className="relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-sunken hover:text-ink focus-visible:ring-2 focus-visible:ring-brand">
         <Bell className="h-4 w-4" aria-hidden />
-        {badge && <span className={cx("tnum absolute -right-0.5 -top-0.5 min-w-4 rounded-full px-1 text-center text-[10px] font-semibold leading-4 text-white", alerts.data?.worst === "bad" ? "bg-bad" : "bg-warn")}>{badge}</span>}
+        {badge && <span className={cx("tnum absolute -right-0.5 -top-0.5 min-w-4 rounded-full px-1 text-center text-[10px] font-semibold leading-4 text-bad-ink", alerts.data?.worst === "bad" ? "bg-bad" : "bg-warn")}>{badge}</span>}
       </button>
       {open && (
         <div role="dialog" aria-label={t("shell.alerts.title")} className="absolute right-0 top-11 z-50 w-[22rem] max-w-[calc(100vw-1.5rem)] rounded-xl border border-line bg-surface shadow-pop animate-fade motion-reduce:animate-none">

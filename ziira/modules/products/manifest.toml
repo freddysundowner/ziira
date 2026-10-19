@@ -19,7 +19,7 @@ validation_hooks = ["products.product.before_create"]
 
 # Sockets of other units this module plugs into (code in hooks.py)
 [extends]
-implements = ["imports.importer", "kernel.country_seeder"]
+implements = ["imports.importer", "kernel.country_seeder", "kernel.industry_seeder", "kernel.custom_field_entity", "kernel.attachable_entity"]
 
 [permissions]
 "products.view" = "View products and prices"

@@ -40,9 +40,9 @@ def test_cert_lineages() -> None:
     assert load(*GOOD).lineage_of("www.ziira.io") == "ziira-ziira.io"       # always ziira-<host>: never an existing lineage
 
 
-def test_registration_is_closed_by_default_even_with_a_mailer() -> None:
-    assert load("--root-domain", "ziira.io").registration_mode == "closed"
-    assert load("--root-domain", "ziira.io", "--smtp-host", "smtp.example.com").registration_mode == "closed"
+def test_registration_is_open_by_default_with_or_without_a_mailer() -> None:
+    assert load("--root-domain", "ziira.io").registration_mode == "open"
+    assert load("--root-domain", "ziira.io", "--smtp-host", "smtp.example.com").registration_mode == "open"
     assert load("--root-domain", "ziira.io", "--registration-mode", "invite").registration_mode == "invite"    # advanced flag still works
 
 
@@ -66,9 +66,9 @@ def test_validation_names_the_problem(args: tuple[str, ...], needle: str) -> Non
     assert any(needle in p for p in cfg.validate()), cfg.validate()
 
 
-def test_open_registration_needs_a_mailer() -> None:
+def test_open_registration_does_not_need_a_mailer() -> None:
     cfg = load(*GOOD[:-2], "--registration-mode", "open")
-    assert any("verification email" in p for p in cfg.validate())
+    assert not any("email" in p and "regist" in p for p in cfg.validate())
 
 
 def test_smtp_secrets_that_cannot_be_stored_are_refused() -> None:

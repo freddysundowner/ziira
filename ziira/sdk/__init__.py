@@ -23,22 +23,26 @@ from ziira.kernel import (
     channels,
     company_settings,
     credentials,
+    custom_fields,
     exceptions_inbox,
+    files,
     idempotency,
     inbound,
     messaging,
     notifications,
     numbering,
+    public_slugs,
     reasons,
     support,
 )
 from ziira.kernel import templates as _message_templates  # noqa: F401 - registers the recurring template sync
 from ziira.kernel.auth import client_ip, context_from_access_token
 from ziira.kernel.checks import IntegrityCheck
-from ziira.kernel.clock import company_date_of, company_today, format_day, humanise_dates
+from ziira.kernel.clock import company_date_of, company_today, company_zone, format_day, humanise_dates
 from ziira.kernel.config import Settings, get_settings
 from ziira.kernel.context import Assignment, RequestContext, get_context, set_context, system_context
 from ziira.kernel.csvutil import safe, to_csv
+from ziira.kernel.custom_fields import CUSTOM_FIELD_ENTITY, CustomFieldEntity, FieldDef
 from ziira.kernel.db import tenant_session
 from ziira.kernel.errors import (
     Conflict,
@@ -59,7 +63,16 @@ from ziira.kernel.extensions import (
     run_validators,
     validate,
 )
+from ziira.kernel.files import ATTACHABLE_ENTITY, AttachableEntity, Category, FileInfo
 from ziira.kernel.inbound import INBOUND_COMMAND, InboundCommand, InboundMessage, InboundReply
+from ziira.kernel.industry import (
+    INDUSTRY_SEEDER,
+    IndustrySeeder,
+    PackData,
+    SeededItem,
+    SeedReport,
+    check_pack,
+)
 from ziira.kernel.jobs import enqueue, job, periodic, unbound_periodic
 from ziira.kernel.manifest import SDK_VERSION
 from ziira.kernel.notifications import (
@@ -114,6 +127,9 @@ __all__ = [
     "PaymentGateway", "PaymentState", "SettingField", "StartResult", "WebhookEvent", "classify_response",
     "safe", "to_csv",
     "COUNTRY_SEEDER", "CountrySeeder", "pack_providers", "read_pack_data",
+    "CUSTOM_FIELD_ENTITY", "CustomFieldEntity", "FieldDef", "custom_fields",
+    "ATTACHABLE_ENTITY", "AttachableEntity", "Category", "FileInfo", "files",
+    "INDUSTRY_SEEDER", "IndustrySeeder", "PackData", "SeededItem", "SeedReport", "check_pack",
     "BranchUsageProvider", "PLACEHOLDER", "Kept", "Outcome", "PersonalDataProvider", "PersonalRecord", "RetentionRule",
     "Subject",
     "json_one", "json_rows", "like_pattern", "mask_text", "sql_digits", "sql_identifier", "sql_phone_matches",
@@ -127,7 +143,7 @@ __all__ = [
     "Quantity", "Rate", "Recipient", "RequestContext", "SDK_VERSION", "SendResult", "Session", "Unauthorized",
     "UnitCost",
     "ValidationFailed", "ZiiraError", "audit_record", "check_branch_open", "check_company", "check_reason",
-    "company_date_of", "company_setting", "company_today", "format_day", "humanise_dates",
+    "company_date_of", "company_setting", "company_zone", "company_today", "format_day", "humanise_dates",
     "current_context", "DB_SESSION", "db_session", "decrypt_text", "define_extension_point", "define_validation_hook",
     "encrypt_text", "enqueue", "flag_for_review", "hash_secret", "idempotency_key_header", "idempotent",
     "implementations", "is_production", "job", "money", "new_secret", "next_document_number", "opt_out_contact",
@@ -138,6 +154,7 @@ __all__ = [
     "set_context", "store_credential", "submit_for_approval", "subscribe", "subscribe_after", "system_session",
     "validate",
     "verify_value",
+    "claim_booking_slug", "client_ip", "rate_limit", "release_booking_slug", "resolve_booking_slug",
     "AI_PLATFORM", "AiPlatformHooks", "ai_active_secrets", "ai_cap_reached", "ai_record_usage", "ai_runtime",
 ]
 
@@ -503,3 +520,24 @@ def require_permission(permission: str) -> Callable[[RequestContext], RequestCon
         return ctx
 
     return check
+
+
+# --------------------------------------------------------------------------- public pages (no sign-in)
+def claim_booking_slug(tenant_id: UUID, company_id: UUID, slug: str) -> str:
+    """Give a company the public booking address `slug` (replacing its old one). Conflict if it is taken."""
+    return public_slugs.claim(tenant_id, company_id, slug)
+
+
+def release_booking_slug(tenant_id: UUID, company_id: UUID) -> None:
+    """Free the company's public booking address."""
+    public_slugs.release(tenant_id, company_id)
+
+
+def resolve_booking_slug(slug: str) -> tuple[UUID, UUID] | None:
+    """(tenant id, company id) behind a public booking address, or None."""
+    return public_slugs.resolve(slug)
+
+
+def rate_limit(action: str, subject: str, ip_address: str | None, *, per_subject: int = 20, per_ip: int = 120) -> None:
+    """Count one use of a public action (by subject and caller address) and refuse with 429 past the limits."""
+    public_slugs.rate_limit(action, subject, ip_address, per_subject=per_subject, per_ip=per_ip)

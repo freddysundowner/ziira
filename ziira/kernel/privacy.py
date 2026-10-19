@@ -32,6 +32,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from ziira.kernel import audit, company_settings, privacy_providers  # noqa: F401 - the providers register themselves
+from ziira.kernel import custom_fields as _custom_fields  # noqa: F401 - its provider registers itself
+from ziira.kernel import files as _files  # noqa: F401 - its provider and integrity check register themselves
 from ziira.kernel.approvals import submit_for_approval
 from ziira.kernel.context import get_context
 from ziira.kernel.errors import Conflict, NotFound, ValidationFailed

@@ -1,0 +1,15 @@
+[unit]
+name = "pack_fitness"
+title = "Gym, studio or personal trainer"
+description = "Membership plans, visit and class packs, terms, check-in settings and example prices for a gym, studio or personal trainer."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+requires = ["products", "memberships"]
+optional = ["intel", "bookings", "pos"]
+
+[extends]
+implements = []

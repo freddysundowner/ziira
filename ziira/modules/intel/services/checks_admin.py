@@ -150,3 +150,21 @@ def update_check(session: Session, code: str, enabled: bool | None, params: dict
         session, "intel.check_setting", "intel.check", None, {"check": code, "enabled": new_enabled, "params": merged}
     )
     return next(c for c in list_checks(session) if c["code"] == code)
+
+
+def apply_defaults(session: Session, defaults: dict[str, dict[str, Any]]) -> list[str]:
+    """Set the limits an industry pack suggests for checks the business has never tuned (a check with a saved setting is
+    left exactly as it is). Unknown checks and limits are ignored. Returns the codes that were set."""
+    checks = {c.code: c for c in implementations(session, INTEL_CHECK)}
+    saved = repo.check_settings(session)
+    done: list[str] = []
+    for code, wanted in defaults.items():
+        check = checks.get(code)
+        if check is None or code in saved:
+            continue
+        params = {name: _coerce(name, check.params[name], value) for name, value in wanted.items()
+                  if name in check.params}
+        if params:
+            repo.save_check_setting(session, code, True, params, None)
+            done.append(code)
+    return done

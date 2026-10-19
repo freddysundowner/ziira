@@ -222,10 +222,6 @@ def get_behaviour(_: Op = Depends(require(PERM))) -> object:
 
 
 def _change_behaviour(key: str, value: Any, by: str) -> Any:
-    if key == "registration.mode" and str(value or "").strip().lower() in ("open", "invite") \
-            and not mail.status()["working"]:
-        raise ValidationFailed("Registration cannot be opened without working email: " + mail.working_reason(),
-                               {"field": key})
     return behaviour.set_value(key, value, by)
 
 

@@ -5,6 +5,8 @@
  "tabNumbering": "Namba za hati",
  "tabReasons": "Sababu",
  "noCompany": "Hakuna kampuni ya kuonyesha.",
+ "filesUsage": "Picha na faili {{files}} zinatumia {{size}} sasa.",
+ "filesUsagePlan": "Mpango wako unaruhusu {{size}} kwa jumla.",
  "settingsSaved": "Mipangilio imehifadhiwa.",
  "unsaved": "Mabadiliko hayajahifadhiwa",
  "discard": "Tupa mabadiliko",
@@ -15,7 +17,8 @@
   "printing": "Uchapishaji na namba za simu",
   "regional": "Eneo la saa",
   "alerts": "Arifa za haraka",
-  "privacy": "Faragha na uhifadhi wa kumbukumbu"
+  "privacy": "Faragha na uhifadhi wa kumbukumbu",
+  "files": "Picha na faili"
  },
  "groupHint": {
   "stock": "Jinsi bidhaa, hesabu na ankara za wasambazaji zinavyodhibitiwa.",
@@ -24,7 +27,8 @@
   "printing": "Mistari kwenye risiti na ankara, na jinsi namba za simu zinavyosomwa.",
   "regional": "Mahali biashara yako ilipo: tarehe ya kila mauzo, uhamisho wa bidhaa, risiti na kiingilio cha vitabu ni tarehe ya hapa.",
   "alerts": "Wakati Ziira inakutumia ujumbe kuhusu jambo zito. Chaguo zaidi ziko kwenye mipangilio ya Intelligence, Unapopata habari kutoka Ziira.",
-  "privacy": "Jinsi unavyojibu watu kuhusu data yao kwa haraka, nani aidhinishe ufutaji, na kumbukumbu zinahifadhiwa kwa muda gani."
+  "privacy": "Jinsi unavyojibu watu kuhusu data yao kwa haraka, nani aidhinishe ufutaji, na kumbukumbu zinahifadhiwa kwa muda gani.",
+  "files": "Picha na PDF kwenye kazi, wateja na rekodi nyingine zinaweza kuwa kubwa kiasi gani, zitumie nafasi kiasi gani, na zihifadhiwe kwa muda gani."
  },
  "set": {
   "negative_stock_allowed": "Ruhusu kuuza bidhaa isiyokuwepo",
@@ -49,7 +53,13 @@
   "retention_notifications_days": "Hifadhi ujumbe uliotumwa kwa (siku)",
   "retention_audit_years": "Rekodi ya ukaguzi inahifadhiwa kwa (miaka)",
   "retention_employee_records_years": "Hifadhi rekodi za malipo za wafanyakazi wa zamani kwa (miaka)",
-  "retention_inactive_customers_years": "Kagua wateja wasiofanya kazi baada ya (miaka)"
+  "retention_inactive_customers_years": "Kagua wateja wasiofanya kazi baada ya (miaka)",
+  "files_strip_location": "Ondoa mahali kwenye picha",
+  "files_max_file_mb": "Picha au faili kubwa zaidi (MB)",
+  "files_max_per_record": "Faili nyingi zaidi kwenye rekodi moja",
+  "files_storage_limit_mb": "Nafasi ya kampuni hii (MB)",
+  "retention_files_years": "Kagua picha na faili baada ya (miaka)",
+  "retention_file_access_days": "Hifadhi orodha ya nani alifungua faili kwa (siku)"
  },
  "setHint": {
   "negative_stock_allowed": "Mauzo yanakamilika na tatizo linawekwa kwa ukaguzi.",
@@ -74,7 +84,13 @@
   "retention_notifications_days": "Baada ya muda huu, anwani na maandishi ya ujumbe uliokamilika hufichwa. 0 inamaanisha kuhifadhi.",
   "retention_audit_years": "Kwa kumbukumbu yako tu: rekodi ya ukaguzi haifutwi kamwe. Inaonekana kwenye ukurasa wa uhifadhi.",
   "retention_employee_records_years": "Rekodi za malipo na ajira za mfanyakazi wa zamani huhifadhiwa kwa muda huu kabla hazijaweza kufutwa. 0 inamaanisha hakuna kiwango cha chini.",
-  "retention_inactive_customers_years": "Mteja asiyefanya kazi na asiyeguswa kwa muda huu hupelekwa kwenye sanduku la mambo ya kuangaliwa. 0 huzima."
+  "retention_inactive_customers_years": "Mteja asiyefanya kazi na asiyeguswa kwa muda huu hupelekwa kwenye sanduku la mambo ya kuangaliwa. 0 huzima.",
+  "files_strip_location": "Picha zinahifadhiwa bila kuonyesha zilipigwa wapi na lini. Zima tu ukihitaji faili asili kama kamera ilivyolitengeneza.",
+  "files_max_file_mb": "Picha moja au PDF moja inaweza kuwa kubwa hivi. Picha za simu ni karibu MB 3 hadi 8.",
+  "files_max_per_record": "Kazi, mteja au bidhaa inaweza kuwa na picha na faili nyingi hivi.",
+  "files_storage_limit_mb": "Nafasi kubwa zaidi ambayo picha na faili za kampuni hii zinaweza kutumia. 0 inamaanisha kikomo cha mpango wako tu.",
+  "retention_files_years": "Picha na faili za zamani kuliko hii hupelekwa kwenye sanduku la mambo ya kuangaliwa ili ukague. Hakuna kinachofutwa chenyewe. 0 huzima.",
+  "retention_file_access_days": "Nani alitazama picha au faili, na lini. Mistari ya zamani huondolewa. 0 huihifadhi."
  },
  "choice": {
   "late_posting": {

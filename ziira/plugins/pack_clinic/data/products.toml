@@ -1,0 +1,41 @@
+# Service items. No prices here: a price is the business's own.
+
+[[service]]
+sku = "CLI-CONSULT-NEW"
+name = "Consultation (new patient)"
+minutes = 30
+
+[[service]]
+sku = "CLI-CONSULT-FU"
+name = "Consultation (follow-up)"
+minutes = 20
+
+[[service]]
+sku = "CLI-DENTAL-CHECK"
+name = "Dental check-up"
+minutes = 30
+
+[[service]]
+sku = "CLI-SCALE"
+name = "Scale and polish"
+minutes = 45
+
+[[service]]
+sku = "CLI-FILLING"
+name = "Filling"
+minutes = 45
+
+[[service]]
+sku = "CLI-EXTRACT"
+name = "Extraction"
+minutes = 30
+
+[[service]]
+sku = "CLI-PHYSIO"
+name = "Physiotherapy session"
+minutes = 45
+
+[[service]]
+sku = "CLI-REVIEW"
+name = "Review visit"
+minutes = 15

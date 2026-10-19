@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { countryName, recommendedPlugins, removeConfirmed, titlesOf, unitState, visibleCards, wouldSwitchOn, type UnitCard } from "./lib";
+import { countryName, isIndustryPack, recommendedForEdition, recommendedPlugins, removeConfirmed, titlesOf, unitState, visibleCards, wouldSwitchOn, type UnitCard } from "./lib";
 
 const card = (over: Partial<UnitCard>): UnitCard => ({
   name: "x", title: "X", description: "", category: "", countries: [], kind: "module", version: "1.0.0", requires: [], optional: [], dependants: [], installed: true, enabled: false,
@@ -85,5 +85,23 @@ describe("removeConfirmed", () => {
     expect(removeConfirmed({ name: "inventory" }, " inventory ")).toBe(true);
     expect(removeConfirmed({ name: "inventory" }, "Inventory")).toBe(false);
     expect(removeConfirmed({ name: "inventory" }, "")).toBe(false);
+  });
+});
+
+describe("industry packs", () => {
+  const pack = (over: Partial<UnitCard> = {}) => card({ name: "pack_salon", category: "industry", kind: "plugin", editions: ["services"], ...over });
+  it("are recognised by their category", () => {
+    expect(isIndustryPack(pack())).toBe(true);
+    expect(isIndustryPack(card({ category: "stock" }))).toBe(false);
+  });
+  it("are recommended for the editions they name, until they are on", () => {
+    expect(recommendedForEdition(pack(), "services")).toBe(true);
+    expect(recommendedForEdition(pack(), "retail")).toBe(false);
+    expect(recommendedForEdition(pack({ enabled: true }), "services")).toBe(false);
+    expect(recommendedForEdition(pack(), undefined)).toBe(false);
+    expect(recommendedForEdition(card({ editions: ["services"] }), "services")).toBe(false);          // not a pack
+  });
+  it("are not suggested through the edition's plugin categories (they name their editions instead)", () => {
+    expect(recommendedPlugins([pack()], { plugin_categories: ["industry"] }, "KE")).toEqual([]);
   });
 });

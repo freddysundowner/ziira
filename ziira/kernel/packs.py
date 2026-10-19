@@ -109,8 +109,10 @@ def enable_country_pack(registry: "Registry", tenant_id: UUID, country: str | No
 def after_enable(registry: "Registry", tenant_id: UUID, newly: list[str]) -> None:
     """Called when units were switched on for a business: seed when a pack came on, or when a seeding unit came on
     while a pack is already on. A failure is logged, not raised (the unit is on; `ziira apply-packs` runs it again)."""
+    from ziira.kernel import industry
     from ziira.kernel.registry import load_event_handlers
 
+    industry.after_enable(registry, tenant_id, newly)             # industry packs seed through their own socket
     seeding = {m.name for m in registry.units.values() if COUNTRY_SEEDER in m.implements}
     if not any(is_pack(registry.units[n]) or n in seeding for n in newly if n in registry.units):
         return

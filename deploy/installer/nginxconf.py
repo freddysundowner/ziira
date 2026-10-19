@@ -27,6 +27,7 @@ SITE_CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 's
             "object-src 'none'")
 PERMISSIONS = "camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()"
 UPLOAD_LOCATION = r"^/api/v1/connect(/.*)?/(upload|files/detect)$"
+FILES_LOCATION = r"^/api/v1/files$"             # a photo or PDF attached to a record (ZIIRA_FILES_MAX_UPLOAD_BYTES)
 OPERATOR_AUTH_PATHS = r"^/api/v1/operator/(sign-in|mfa/verify|password)$"
 
 
@@ -307,6 +308,14 @@ def _api_locations(cfg: Config, *, with_business: bool) -> str:
     # Statement and export uploads: a file is the request body (ZIIRA_MAX_UPLOAD_BYTES is 10,500,000).
     location ~ {UPLOAD_LOCATION} {{
         client_max_body_size 11m;
+        include snippets/ziira-proxy-long.conf;
+        proxy_pass http://ziira_api;
+    }}
+
+    # Photos and PDFs attached to records: the file is the request body (ZIIRA_FILES_MAX_UPLOAD_BYTES is 26,500,000).
+    location ~ {FILES_LOCATION} {{
+        client_max_body_size 27m;
+        limit_req zone=ziira_api burst=200 nodelay;
         include snippets/ziira-proxy-long.conf;
         proxy_pass http://ziira_api;
     }}

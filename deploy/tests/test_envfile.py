@@ -105,3 +105,9 @@ def test_mask() -> None:
     assert envfile.mask("ZIIRA_SECRET_KEY", "abc") == "[hidden]"
     assert envfile.mask("ZIIRA_X", "postgresql://u:pw@h/db") == "[hidden]"
     assert envfile.mask("ZIIRA_LOG_LEVEL", "INFO") == "INFO"
+
+
+def test_photos_and_files_have_a_private_folder_in_the_state_directory() -> None:
+    env = generated()
+    assert env["ZIIRA_FILES_DIR"].endswith("/files") and env["ZIIRA_FILES_DIR"] != env["ZIIRA_BACKUP_DIR"]
+    assert env["ZIIRA_FILES_MAX_UPLOAD_BYTES"] == "26500000"

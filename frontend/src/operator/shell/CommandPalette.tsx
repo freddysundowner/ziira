@@ -103,7 +103,7 @@ export function CommandPalette({ open, onClose, permissions, missingFeatures }: 
     ));
   }
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 p-3 pt-[10vh] animate-fade" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-navy/60 p-3 pt-[10vh] animate-fade" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div role="dialog" aria-modal="true" aria-label={t("shell.search.title")} className="flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-surface shadow-pop animate-rise motion-reduce:animate-none" onKeyDown={key}>
         <div className="flex items-center gap-2 border-b border-line px-4">
           <SearchIcon className="h-4 w-4 text-muted" aria-hidden />

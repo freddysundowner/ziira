@@ -1,0 +1,5 @@
+[pack]
+# Units the pack feeds (each has a data/<unit>.toml; "custom_fields" is read by the kernel).
+units = ["products", "timebilling"]
+# Editions this pack is recommended for (shown as "Recommended for your edition" on the Add-ons page).
+editions = ["services"]

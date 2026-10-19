@@ -1,0 +1,3 @@
+[pack]
+units = ["products", "bookings"]
+editions = ["services"]

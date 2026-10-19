@@ -2,20 +2,20 @@ import { Link } from "react-router-dom";
 
 import { Badge, Button, Card, useTranslation } from "@/sdk";
 
-import { titlesOf, unitState, type UnitCard } from "./lib";
+import { isIndustryPack, titlesOf, unitState, type UnitCard } from "./lib";
 
 /** One module or plugin: what it does, where it stands, what it needs and what needs it, and the actions that apply. */
-export function UnitCardView({ unit: u, all, recommended, onEnable, onDisable, onRemove }: {
-  unit: UnitCard; all: readonly UnitCard[]; recommended?: boolean; onEnable: () => void; onDisable: () => void; onRemove: () => void;
+export function UnitCardView({ unit: u, all, recommended, forEdition, onEnable, onDisable, onRemove }: {
+  unit: UnitCard; all: readonly UnitCard[]; recommended?: boolean; forEdition?: boolean; onEnable: () => void; onDisable: () => void; onRemove: () => void;
 }) {
   const { t } = useTranslation("kernel");
   const state = unitState(u);
-  const kindNote = u.kind === "plugin" ? <Badge tone="info">{t("apps.plugin")}</Badge> : null;
+  const kindNote = isIndustryPack(u) ? <Badge tone="info">{t("apps.industry.badge")}</Badge> : u.kind === "plugin" ? <Badge tone="info">{t("apps.plugin")}</Badge> : null;
   const chip = state === "on" ? <Badge tone="ok">{t("apps.on")}</Badge>
     : state === "unavailable" ? <Badge tone="warn">{t("apps.unavailable")}</Badge>
     : <Badge>{t(u.has_data ? "apps.offKept" : "apps.off")}</Badge>;
   return (
-    <Card className="flex h-full flex-col" title={u.title} description={t("apps.version", { version: u.version })} actions={<>{recommended && <Badge tone="info">{t("apps.recommended.badge")}</Badge>}{kindNote}{chip}</>}>
+    <Card className="flex h-full flex-col" title={u.title} description={t("apps.version", { version: u.version })} actions={<>{forEdition ? <Badge tone="ok">{t("apps.industry.recommendedEdition")}</Badge> : recommended && <Badge tone="info">{t("apps.recommended.badge")}</Badge>}{kindNote}{chip}</>}>
       <div className="flex h-full flex-col gap-3">
         {u.description && <p className="text-sm">{u.description}</p>}
         {u.requires.length > 0 && <p className="text-xs text-muted">{t("apps.needs", { names: titlesOf(all, u.requires) })}</p>}

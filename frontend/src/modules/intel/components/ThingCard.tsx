@@ -55,7 +55,7 @@ export default function ThingCard({ group, actions = true }: { group: Group; act
       <div className="mt-3"><FactChips facts={facts} currency={currency} lead={lead} /></div>
       {actions && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Link to={`/intelligence/things/${top.id}`} className="inline-flex h-9 items-center rounded-lg bg-brand px-3.5 text-sm font-medium text-brand-ink hover:bg-brand-strong">{t("card.lookInto")}</Link>
+          <Link to={`/intelligence/things/${top.id}`} className="inline-flex h-9 items-center rounded-lg bg-brand px-3.5 text-sm font-medium text-brand-ink hover:opacity-90">{t("card.lookInto")}</Link>
           {canManage && <Button variant="secondary" onClick={() => setAssigning(true)}>{t("action.assign")}</Button>}
           {canManage && <Button variant="ghost" onClick={() => setIgnoring(true)}>{t("action.dismiss")}</Button>}
           <SnoozeMenu findingId={top.id} />

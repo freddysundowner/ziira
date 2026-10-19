@@ -18,15 +18,13 @@ const twitter = siteConfig.seo.twitterHandle;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <link rel="preload" href="/fonts/bricolage-grotesque-latin-wght.woff2" as="font" type="font/woff2" crossorigin />
-    {path === "/" && <link rel="preload" href="/fonts/gochi-hand-hero.woff2" as="font" type="font/woff2" crossorigin />}
+    <link rel="preload" href="/fonts/inter-latin-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-latin-800.woff2" as="font" type="font/woff2" crossorigin />
     <title>{head.title}</title>
     <meta name="description" content={head.description} />
     <meta name="robots" content={head.robots} />
     <link rel="canonical" href={head.canonical} />
-    <meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0b0e14" media="(prefers-color-scheme: dark)" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0B0F1A" />
     {siteConfig.company.favicon
       ? <link rel="icon" href={siteConfig.company.favicon.path} type={siteConfig.company.favicon.content_type} />
       : <><link rel="icon" href="/favicon.svg" type="image/svg+xml" /><link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" /></>}

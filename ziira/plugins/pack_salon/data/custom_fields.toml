@@ -1,0 +1,37 @@
+# The client card: what a salon keeps about a client. Plain notes, not medical advice.
+[[field]]
+entity_type = "bookings.client"
+key = "preferred_staff"
+label = "Preferred stylist"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "allergies"
+label = "Allergies (a note)"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "formula"
+label = "Colour formula or notes"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "hair_type"
+label = "Hair type"
+kind = "choice"
+choices = ["Straight", "Wavy", "Curly", "Coily", "Relaxed", "Other"]
+
+[[field]]
+entity_type = "bookings.client"
+key = "patch_test_date"
+label = "Patch test date"
+kind = "date"
+
+[[field]]
+entity_type = "bookings.client"
+key = "photo_consent"
+label = "Agrees to before and after photos"
+kind = "bool"

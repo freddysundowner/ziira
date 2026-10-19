@@ -64,7 +64,9 @@
     "transfer_out": "Uhamisho umetoka",
     "write_off": "Kufuta hasara",
     "adjustment": "Marekebisho",
-    "count_variance": "Tofauti ya hesabu"
+    "count_variance": "Tofauti ya hesabu",
+    "job_issue": "Imetumika kwenye kazi",
+    "job_return": "Imerudishwa kutoka kazini"
   },
   "sources": {
     "opening_stock": "Bidhaa za kuanzia",
@@ -74,7 +76,8 @@
     "purchase_return": "Kurudisha kwa msambazaji",
     "stock_adjustment": "Marekebisho",
     "transfer": "Uhamisho",
-    "stock_count": "Hesabu"
+    "stock_count": "Hesabu",
+    "job": "Kazi"
   },
   "code": "Msimbo",
   "codeHint": "Msimbo mfupi, kwa mfano MAIN.",

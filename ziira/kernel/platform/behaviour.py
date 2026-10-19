@@ -137,15 +137,9 @@ def registration_mode_set() -> str:
 
 
 def registration_mode() -> str:
-    """What registration really does now: a mode other than 'closed' needs working email in production (nothing could
-    be sent otherwise), so without it sign-up is closed whatever was chosen."""
-    mode = registration_mode_set()
-    if mode != "closed" and get_settings().env == "production":
-        from ziira.kernel.platform import mail
-
-        if not mail.status()["working"]:
-            return "closed"
-    return mode
+    """What registration does now: the mode as chosen. Without working email nothing is mailed and a new owner goes
+    straight into the system after choosing a password (registration.register)."""
+    return registration_mode_set()
 
 
 def default_edition() -> str:

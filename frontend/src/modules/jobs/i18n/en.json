@@ -1,0 +1,536 @@
+{
+  "menu": {
+    "jobs": "Jobs",
+    "items": "Items",
+    "settings": "Job settings",
+    "receive": "Receive an item",
+    "workshop": "Workshop"
+  },
+  "keywords": {
+    "jobs": "jobs repairs work orders garage repair board",
+    "items": "items vehicles phones devices assets customers bring",
+    "settings": "job settings stages checklists labour rate warranty",
+    "workshop": "workshop technician bay board service due courtesy car hours"
+  },
+  "common": {
+    "add": "Add",
+    "cancel": "Cancel",
+    "done": "Done",
+    "remove": "Remove",
+    "save": "Save"
+  },
+  "jobs": {
+    "hint": "Every item in the shop, from the day it is brought in to the day it is collected.",
+    "view": "View",
+    "board": "Board",
+    "list": "List"
+  },
+  "filters": {
+    "search": "Search jobs, customers, items",
+    "branch": "Branch",
+    "allBranches": "All branches",
+    "assignee": "Person in charge",
+    "everyone": "Everyone",
+    "late": "Late only",
+    "closed": "Show finished jobs"
+  },
+  "board": {
+    "empty": "No jobs yet",
+    "emptyHint": "When you receive an item it appears here as a card. Drag it along as the work moves.",
+    "loadFailed": "The board could not be loaded",
+    "noneHere": "Nothing here",
+    "dropHere": "Drop here to move",
+    "truncated": "There are more jobs than fit on the board. Use the filters or the list to see the rest."
+  },
+  "card": {
+    "by": "{{name}}",
+    "days": "{{n}} d in this stage",
+    "due": "Due {{date}}",
+    "late": "Late: was due {{date}}",
+    "moveTo": "Move to…",
+    "returnVisit": "Return visit"
+  },
+  "list": {
+    "empty": "No jobs found",
+    "emptyHint": "Receive an item to start a job, or change the filters.",
+    "number": "Number",
+    "job": "Job",
+    "stage": "Stage",
+    "assignee": "In charge",
+    "promised": "Promised",
+    "received": "Received"
+  },
+  "mover": {
+    "moved": "{{number}} moved to {{stage}}",
+    "collected": "{{number}} collected"
+  },
+  "collect": {
+    "title": "Collect {{number}}",
+    "hint": "Record who takes “{{title}}” away. The warranty starts today.",
+    "who": "Who collected it",
+    "note": "Note (for example ID checked)",
+    "confirm": "Hand over"
+  },
+  "actions": {
+    "collect": "Collect",
+    "edit": "Edit",
+    "invoice": "Invoice",
+    "returnVisit": "Return visit"
+  },
+  "invoice": {
+    "title": "Invoice {{number}}",
+    "message": "Make an invoice for {{total}} for the parts and labour on this job. The job is locked afterwards: only notes, the warranty and collection can change.",
+    "confirm": "Make invoice",
+    "done": "Invoice made"
+  },
+  "returnVisit": {
+    "title": "Start a return visit",
+    "hint": "A new job for the same customer and item, linked to {{number}}. It says whether the warranty was still running.",
+    "titleHint": "What is wrong this time (optional)",
+    "start": "Start return visit"
+  },
+  "job": {
+    "loadFailed": "This job could not be loaded",
+    "inCharge": "In charge: {{name}}",
+    "received": "Received {{date}}",
+    "lockedInvoiced": "Invoiced ({{number}}) and locked. Only notes, the warranty and collection can still change.",
+    "lockedClosed": "This job is finished and locked. Only notes can still be added.",
+    "tabs": {
+      "overview": "Overview",
+      "parts": "Parts and labour",
+      "estimates": "Estimates",
+      "timeline": "Timeline",
+      "photos": "Photos",
+      "workshop": "Workshop"
+    }
+  },
+  "overview": {
+    "title": "What is wrong",
+    "none": "Nothing written yet."
+  },
+  "checklist": {
+    "title": "Checklist",
+    "empty": "No checklist on this job.",
+    "add": "Add a line",
+    "note": "Note",
+    "state": {
+      "pending": "To do",
+      "ok": "OK",
+      "issue": "Problem",
+      "na": "Not needed"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "hint": "Small pieces of work with a person and a date.",
+    "empty": "No tasks yet.",
+    "new": "New task",
+    "due": "Due"
+  },
+  "parts": {
+    "title": "Parts",
+    "empty": "No parts used yet.",
+    "add": "Add part",
+    "addTitle": "Use a part",
+    "added": "Part added",
+    "removed": "Part removed",
+    "fromStock": "From stock",
+    "mode": {
+      "stock": "From stock",
+      "hand": "Bought in"
+    },
+    "modeHint": {
+      "stock": "The part leaves the shop's stock now, at its cost.",
+      "hand": "For something bought in for this job. Type what it is and its price."
+    },
+    "product": "Product",
+    "priceStock": "Price (leave blank for the usual price)",
+    "priceHand": "Price",
+    "priceDefault": "Usual price",
+    "priceHint": "Each, {{currency}}, tax included"
+  },
+  "labour": {
+    "title": "Labour",
+    "empty": "No labour recorded yet.",
+    "add": "Add labour",
+    "addMine": "Add my time",
+    "addTitle": "Add labour",
+    "added": "Labour added",
+    "removed": "Labour removed",
+    "defaultDescription": "Labour",
+    "what": "What was done",
+    "hours": "Hours",
+    "rate": "Rate per hour",
+    "rateDefault": "Usual rate",
+    "rateColumn": "Rate",
+    "rateHint": "{{currency}} per hour, tax included. Blank uses the usual rate."
+  },
+  "lines": {
+    "description": "Description",
+    "quantity": "Quantity",
+    "price": "Price",
+    "total": "Total",
+    "cost": "Cost"
+  },
+  "totals": {
+    "parts": "Parts",
+    "labour": "Labour",
+    "total": "Total",
+    "tax": "Tax",
+    "taxIncluded": "Tax included",
+    "cost": "Cost of stock parts"
+  },
+  "estimates": {
+    "empty": "No estimate yet",
+    "emptyHint": "Tell the customer what it will cost and record their answer.",
+    "fromJob": "New estimate from this job",
+    "oneDraft": "Finish or send the draft before making another.",
+    "version": "Estimate {{version}}",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "approved": "Approved",
+      "declined": "Declined",
+      "superseded": "Replaced"
+    },
+    "kind": "Kind",
+    "kinds": {
+      "part": "Part",
+      "labour": "Labour",
+      "other": "Other"
+    },
+    "newTitle": "New estimate",
+    "editTitle": "Change estimate {{version}}",
+    "editHint": "Prices are {{currency}} and include tax. A blank price uses the usual price or labour rate.",
+    "line": "Line {{n}}",
+    "addLine": "Add a line",
+    "descriptionOptional": "Description",
+    "priceDefault": "Usual price",
+    "notes": "Note to the customer",
+    "notesHint": "Shown on the estimate the customer sees.",
+    "validUntil": "Valid until",
+    "validUntilHint": "Blank: the usual number of days.",
+    "validUntilText": "Valid until {{date}}",
+    "saved": "Estimate saved",
+    "edit": "Change",
+    "send": "Send",
+    "sendAgain": "Send again",
+    "sendTitle": "Send estimate {{version}}",
+    "sendHint": "The customer gets a link to see the estimate and answer it. Sending replaces any earlier estimate.",
+    "sentTitle": "Estimate sent",
+    "link": "The customer's link",
+    "linkOnce": "Copy it now. It is shown only once; sending again makes a new link.",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy. Select the link and copy it by hand.",
+    "tell": "Also send the link to the customer by message",
+    "told": "The message is on its way to the customer",
+    "saidYes": "Customer said yes",
+    "saidNo": "Customer said no",
+    "byHand": "Record the answer",
+    "decideHint": "Use this when the customer answered you in person or by phone.",
+    "approve": "Approved",
+    "decline": "Declined",
+    "approveTitle": "Customer approves",
+    "declineTitle": "Customer declines",
+    "whoSaid": "Who said so",
+    "decisionNote": "Note",
+    "decisionNoteHint": "For example “Called at 10:15”.",
+    "approvedDone": "Approval recorded",
+    "declinedDone": "Decline recorded",
+    "decidedBy": "{{name}} · {{date}} {{via}}",
+    "channel": {
+      "staff": "(recorded by staff)",
+      "link": "(through the link)"
+    }
+  },
+  "timeline": {
+    "title": "Timeline",
+    "empty": "Nothing has happened yet.",
+    "to": "{{from}} → {{to}}",
+    "addNote": "Add a note",
+    "notePlaceholder": "Write what happened, who you called…",
+    "saveNote": "Save note",
+    "noteAdded": "Note added",
+    "kind": {
+      "received": "Received",
+      "status": "Moved",
+      "note": "Note",
+      "assigned": "Person in charge",
+      "estimate": "Estimate",
+      "approval": "Answer",
+      "parts": "Parts",
+      "labour": "Labour",
+      "invoice": "Invoice",
+      "collected": "Collected",
+      "rework": "Return visit",
+      "warranty": "Warranty",
+      "charge": "Charge",
+      "bay": "Bay",
+      "loan": "Courtesy car",
+      "deposit": "Deposit",
+      "release": "Handed over unpaid",
+      "photo": "Photos",
+      "claim": "Insurer claim",
+      "intake": "Drop-off"
+    }
+  },
+  "summary": {
+    "title": "Summary",
+    "collected": "Collected",
+    "invoice": "Invoice {{number}}",
+    "needCustomer": "Pick a customer on the job before invoicing: an invoice is made out to a customer record.",
+    "original": "Return visit for",
+    "related": "Related jobs",
+    "returnVisits": "Return visits",
+    "afterWarranty": "after the warranty",
+    "warranty": "Warranty",
+    "warrantyDays": "Warranty (days)",
+    "warrantyStarts": "The warranty starts when the customer collects.",
+    "warrantyEnds": "Ends {{date}}",
+    "days": "{{n}} days",
+    "warrantySaved": "Warranty saved"
+  },
+  "edit": {
+    "title": "Change {{number}}",
+    "item": "Item",
+    "saved": "Job saved"
+  },
+  "receive": {
+    "title": "What is the job",
+    "hint": "Take an item in. Only the customer, the item and what is wrong are needed; the rest can wait.",
+    "what": "The job",
+    "titleHint": "For example “Brake pads worn”",
+    "titleNeeded": "Say what the job is",
+    "details": "More details",
+    "condition": "Condition when it came in",
+    "conditionHint": "Scratches, missing parts, anything to show it was like this on arrival.",
+    "customerTitle": "Customer",
+    "customer": "Customer",
+    "customerHint": "Pick a customer, or type a name and phone for someone who is not on your list.",
+    "customerName": "Customer name",
+    "customerPhone": "Customer phone",
+    "item": "Item",
+    "itemMode": {
+      "existing": "Item we know",
+      "new": "New item"
+    },
+    "findItem": "Find the item",
+    "findItemHint": "Search by name, plate, serial number…",
+    "itemLabel": "What is it",
+    "itemLabelHint": "For example “Toyota Corolla KAA 123B”",
+    "itemLabelNeeded": "Describe the item",
+    "itemKind": "Kind",
+    "identifiers": "Identifiers",
+    "identifiersHint": "Plate, serial number, IMEI, size, address… whatever tells it apart.",
+    "checklist": "Intake checklist",
+    "checklistHint": "Check these when the item arrives. They are copied into the job.",
+    "template": "Checklist",
+    "templatePick": "Choose a checklist",
+    "templateReplace": "Replace the lines below with this checklist",
+    "checkLine": "Checklist line",
+    "addCheckLine": "Add a line",
+    "plan": "Planning",
+    "more": "More details",
+    "assignee": "Person in charge",
+    "promised": "Promised for",
+    "branch": "Branch",
+    "save": "Receive the item",
+    "done": "Job {{number}} created",
+    "customFailed": "The job was made but its extra details could not be saved."
+  },
+  "kinds": {
+    "vehicle": "Vehicle",
+    "phone": "Phone",
+    "appliance": "Appliance",
+    "garment": "Garment",
+    "property": "Property",
+    "other": "Other"
+  },
+  "identifiers": {
+    "name": "Name",
+    "value": "Value",
+    "namePlaceholder": "For example plate",
+    "valuePlaceholder": "For example KAA 123B",
+    "add": "Add another",
+    "remove": "Remove this line",
+    "suggest": {
+      "plate": "plate",
+      "serial": "serial number",
+      "imei": "IMEI",
+      "size": "size",
+      "address": "address",
+      "colour": "colour"
+    }
+  },
+  "pick": {
+    "customer": "Search customers",
+    "item": "Search items",
+    "product": "Search products",
+    "service": "Search service items",
+    "nobody": "Nobody"
+  },
+  "items": {
+    "hint": "Vehicles, phones, garments and places customers bring in. Every item keeps its job history.",
+    "new": "New item",
+    "search": "Search items",
+    "item": "Item",
+    "status": "Status",
+    "inUse": "In use",
+    "retired": "Retired",
+    "empty": "No items yet",
+    "emptyHint": "Items are added when you receive a job, or here.",
+    "noMatch": "No items match",
+    "loadFailed": "This item could not be loaded",
+    "newTitle": "New item",
+    "editTitle": "Change item",
+    "created": "Item added",
+    "saved": "Item saved",
+    "notes": "Notes",
+    "active": "In use",
+    "details": "Details",
+    "newJob": "New job for this item",
+    "noJobs": "No jobs for this item yet",
+    "noJobsHint": "Receive it to start the first one."
+  },
+  "settings": {
+    "hint": "The stages jobs move through, the intake checklists, rates and the items jobs are invoiced under.",
+    "tabs": {
+      "stages": "Stages",
+      "checklists": "Checklists",
+      "rates": "Rates and invoicing",
+      "start": "Getting started",
+      "types": "Kinds of job",
+      "workshop": "Labour and parts",
+      "bays": "Bays"
+    }
+  },
+  "stages": {
+    "title": "Stages",
+    "add": "Add a stage",
+    "loadFailed": "The stages could not be loaded",
+    "roleHelp": "A stage can have a special meaning. The first stage is where new jobs start; the approved stage is where a job goes when the customer says yes; the ready stage tells the customer; the collected stage starts the warranty. You can rename every stage and add your own.",
+    "kind": {
+      "open": "Working",
+      "waiting": "Waiting",
+      "done": "Finished",
+      "closed": "Over"
+    },
+    "kindHint": {
+      "open": "Someone is working on the job.",
+      "waiting": "Waiting for the customer or for parts.",
+      "done": "The work is finished but the job is not over.",
+      "closed": "The job is over and locked."
+    },
+    "role": {
+      "initial": "First stage",
+      "quoted": "Quoted",
+      "approved": "Approved",
+      "ready": "Ready",
+      "collected": "Collected",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "roleHint": {
+      "initial": "New jobs start here.",
+      "quoted": "Sending an estimate moves the job here.",
+      "approved": "An approved estimate moves the job here.",
+      "ready": "The customer is told the item is ready.",
+      "collected": "Records who collected and starts the warranty.",
+      "closed": "The job is finished and locked.",
+      "cancelled": "The job is cancelled and cannot be invoiced."
+    },
+    "roleNone": "No special meaning",
+    "roleLabel": "Special meaning",
+    "kindLabel": "What the stage means",
+    "name": "Name",
+    "code": "Short code",
+    "codeHint": "Letters, digits and underscores. It cannot be changed later.",
+    "off": "Switched off",
+    "active": "In use",
+    "goesTo": "Can go to: {{names}}",
+    "goesNowhere": "A job here cannot move on",
+    "edit": "Change {{name}}",
+    "remove": "Remove {{name}}",
+    "removeTitle": "Remove {{name}}?",
+    "removeMessage": "Only a stage no job has ever used can be removed; otherwise switch it off.",
+    "removed": "Stage removed",
+    "saved": "Stage saved",
+    "newTitle": "New stage",
+    "editTitle": "Change stage",
+    "movesLegend": "Where a job can go next",
+    "movesHint": "Tick the stages a job may move to from here."
+  },
+  "checklists": {
+    "title": "Intake checklists",
+    "add": "Add a checklist",
+    "empty": "No checklists yet",
+    "emptyHint": "A checklist is the list of things to check when an item comes in. Each job copies one.",
+    "loadFailed": "The checklists could not be loaded",
+    "lines": "{{n}} lines",
+    "edit": "Change {{name}}",
+    "newTitle": "New checklist",
+    "editTitle": "Change checklist",
+    "name": "Name",
+    "kind": "For items of kind",
+    "kindHint": "Optional, for example vehicle.",
+    "linesLabel": "Lines",
+    "linesHint": "One line per thing to check. Jobs already made keep the lines they copied.",
+    "active": "In use",
+    "saved": "Checklist saved"
+  },
+  "rates": {
+    "title": "Rates and invoicing",
+    "loadFailed": "The settings could not be loaded",
+    "noInvoicing": "Point of Sale is not switched on, so jobs cannot be invoiced yet.",
+    "labourRate": "Usual labour rate",
+    "labourRateHint": "{{currency}} per hour, tax included.",
+    "warranty": "Usual warranty (days)",
+    "warrantyHint": "Starts when the customer collects. Can be changed on each job.",
+    "valid": "Estimates stay valid for (days)",
+    "validHint": "Counted from the day it is sent.",
+    "labourItem": "Labour item",
+    "partsItem": "Parts item",
+    "itemHint": "Jobs are invoiced under this service item. Its tax setting is the tax on the job.",
+    "tell": "Tell the customer when the item is ready",
+    "tellHint": "A message is queued when a job reaches the ready stage, if the customer can be reached.",
+    "saved": "Settings saved"
+  },
+  "widget": {
+    "title": "Jobs",
+    "open": "In progress",
+    "ready": "To collect",
+    "late": "Late",
+    "openBoard": "Open the job board"
+  },
+  "approval": {
+    "title": "Your estimate",
+    "documentTitle": "Estimate from {{business}}",
+    "language": "Language",
+    "loading": "Loading…",
+    "notFound": "This link is not valid",
+    "notFoundHint": "It may be wrong or already used. Please contact the business.",
+    "failed": "We could not load the estimate",
+    "failedHint": "Check your connection and try again.",
+    "retry": "Try again",
+    "heading": "Estimate: {{title}}",
+    "lines": "What the estimate includes",
+    "tax": "Tax included",
+    "total": "Total",
+    "validUntil": "Valid until {{date}}",
+    "name": "Your name",
+    "nameNeeded": "Please type your name",
+    "note": "Note for the business (optional)",
+    "approve": "Approve",
+    "decline": "Decline",
+    "once": "You can answer once. To change your mind, contact the business.",
+    "state": {
+      "approved": "Thank you. You approved this estimate and the work can go ahead.",
+      "declined": "You declined this estimate. The business has been told.",
+      "expired": "This estimate has expired. Please contact the business.",
+      "superseded": "A newer estimate replaced this one. Please contact the business.",
+      "draft": "This estimate is not ready yet.",
+      "open": ""
+    }
+  }
+}

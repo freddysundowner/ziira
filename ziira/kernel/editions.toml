@@ -42,6 +42,21 @@ checklist = [
   { id = "sale", title = "Make a sale", hint = "Ring up your first sale.", to = "/pos/terminal", unit = "pos" },
 ]
 
+[services]
+title = "Services"
+pitch = "Take bookings, run jobs, track time and bill clients: for salons, garages, clinics, agencies and trainers."
+units = ["products", "crm", "pos", "payments", "finance", "people", "imports", "intel", "command", "bookings", "jobs", "timebilling", "memberships"]
+plugin_categories = ["payments", "messaging"]
+menu_groups = ["services", "sell", "money", "people", "admin"]
+landing = "/services/calendar"
+sample_data = ["products"]
+checklist = [
+  { id = "services", title = "Add your services", hint = "What you offer, how long it takes and the price.", to = "/products", unit = "products" },
+  { id = "staff", title = "Add staff and working hours", hint = "Who does the work and when they are in.", to = "/services/resources", unit = "bookings" },
+  { id = "booking", title = "Take your first booking", hint = "Put an appointment in the calendar.", to = "/services/calendar", unit = "bookings" },
+  { id = "invoice", title = "Send your first invoice", hint = "Bill a client for work done.", to = "/pos/sales", unit = "pos" },
+]
+
 [books]
 title = "Books and accounts"
 pitch = "Keep your accounts, bills and customers in order."

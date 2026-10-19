@@ -76,6 +76,14 @@ checklist, the plugin categories recommended and the sample data on offer. They 
   company's country (a plugin with `countries = [...]` is recommended only there; empty means worldwide).
 * `ziira create-tenant ... --edition retail` switches the edition's units on (without `--edition` no unit is switched on, as before;
   `--mode standalone` still means `--edition intelligence`).
+* An edition may list units this platform does not ship (the **Services** edition names `bookings`, `jobs`, `timebilling` and
+  `memberships`): `enable_edition` skips them without error, so the same file works while those units are being added.
+* **Services edition and industry packs.** With the `services` edition the wizard's business step asks "What kind of service
+  business are you?" instead of the usual kind question. The choices are the installed industry packs (`GET /api/v1/industries?edition=services`:
+  each pack's manifest `title` and `description`) plus "Something else". The answer travels in the existing optional `business_type`
+  (it may be `retail`, `wholesale`, `services`, `other` or the name of an installed industry pack, which the server validates); in the
+  optional "pack" step after the business exists, a pack name switches that pack on, which seeds its data (`docs/industry-packs.md`).
+  A failure is retried like the country pack step; "Something else" enables no pack.
 
 ## Plans and trials
 

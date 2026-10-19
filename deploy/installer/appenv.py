@@ -28,6 +28,9 @@ def build(cfg: Config, *, secret_key: str, credentials_key: str, metrics_token: 
         # Kept equal to the nginx limits in nginxconf.py (2 MB bodies, 11 MB for statement uploads).
         "ZIIRA_MAX_BODY_BYTES": "2000000",
         "ZIIRA_MAX_UPLOAD_BYTES": "10500000",
+        # Photos and PDFs attached to records: private folder (backed up with the databases), 27 MB bodies in nginx.
+        "ZIIRA_FILES_DIR": f"{cfg.state_dir}/files",
+        "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000",
         "ZIIRA_HSTS_MAX_AGE": "0" if cfg.hsts == "off" else "31536000",
         "ZIIRA_MFA_DEFAULT_POLICY": "privileged",
         "ZIIRA_REGISTRATION_MODE": cfg.registration_mode,

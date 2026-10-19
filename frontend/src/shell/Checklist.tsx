@@ -40,7 +40,7 @@ export function Checklist({ edition, done, dismissed, openable }: { edition: Edi
             <li key={s.id} className="flex items-center gap-3 py-2.5">
               <button type="button" aria-pressed={isDone} aria-label={t(isDone ? "edition.untick" : "edition.tick", { step: label(s, "title") })} disabled={tick.isPending}
                 onClick={() => tick.mutate({ id: s.id, done: !isDone })}
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${isDone ? "border-ok bg-ok text-brand-ink" : "border-line text-transparent hover:border-brand"}`}>
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${isDone ? "border-ok bg-ok text-ok-ink" : "border-line text-transparent hover:border-brand"}`}>
                 {isDone ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
               </button>
               <div className="min-w-0 flex-1">

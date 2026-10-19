@@ -1,0 +1,44 @@
+# Administrative fields only. Ziira is not a medical record system: no diagnoses, prescriptions, results or clinical notes.
+[[field]]
+entity_type = "bookings.appointment"
+key = "visit_type"
+label = "New or follow-up"
+kind = "choice"
+choices = ["New patient", "Follow-up", "Review"]
+
+[[field]]
+entity_type = "bookings.appointment"
+key = "bill_to"
+label = "Bill to"
+kind = "choice"
+choices = ["Patient", "Insurer or scheme", "Employer"]
+
+[[field]]
+entity_type = "bookings.client"
+key = "insurer"
+label = "Insurer or scheme"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "member_number"
+label = "Member number"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "preferred_practitioner"
+label = "Preferred practitioner"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "referred_by"
+label = "Referred by"
+kind = "text"
+
+[[field]]
+entity_type = "bookings.client"
+key = "contact_person"
+label = "Contact person (name and phone)"
+kind = "text"

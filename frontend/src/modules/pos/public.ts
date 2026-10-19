@@ -2,3 +2,6 @@
 
 export const saleHref = (saleId: string): string => `/pos/sales/${saleId}`;
 export const tillHref = (tillId: string): string => `/pos/tills/${tillId}`;
+
+/** Page of one customer invoice. */
+export const invoiceHref = (invoiceId: string): string => `/pos/invoices/${invoiceId}`;

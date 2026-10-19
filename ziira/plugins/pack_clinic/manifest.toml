@@ -1,0 +1,15 @@
+[unit]
+name = "pack_clinic"
+title = "Clinic or dental practice"
+description = "Appointment types, practitioners and rooms, recalls and reminders, and insurer billing set-up for a clinic or dental practice (appointments and billing only)."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+requires = ["products"]
+optional = ["bookings", "intel", "crm", "pos", "claims"]
+
+[extends]
+implements = []

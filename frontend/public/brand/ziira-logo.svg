@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" role="img" aria-label="Ziira">
+  <defs><linearGradient id="g" x1="80" y1="0" x2="168" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2B7CFF"/><stop offset=".52" stop-color="#24B9C7"/><stop offset="1" stop-color="#10CD8D"/></linearGradient></defs>
+  <g fill="none" stroke="#0B0F1A" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 54H62L14 102H64"/><path d="M96 56V102"/><path d="M150 56V102"/><path d="M192 56V102M192 76Q196 56 222 57"/><circle cx="262" cy="79" r="23"/><path d="M285 56V102"/>
+  </g>
+  <path d="M96 20Q123 29 150 20V36Q123 28 96 36Z" fill="url(#g)"/><circle cx="96" cy="27" r="13" fill="url(#g)"/><circle cx="150" cy="27" r="13" fill="url(#g)"/>
+</svg>

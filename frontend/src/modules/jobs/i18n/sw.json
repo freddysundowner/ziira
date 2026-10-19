@@ -1,0 +1,536 @@
+{
+  "menu": {
+    "jobs": "Kazi",
+    "items": "Vitu",
+    "settings": "Mipangilio ya kazi",
+    "receive": "Pokea kitu",
+    "workshop": "Karakana"
+  },
+  "keywords": {
+    "jobs": "kazi marekebisho oda za kazi gereji ubao",
+    "items": "vitu magari simu vifaa wateja wanaleta",
+    "settings": "mipangilio ya kazi hatua orodha ya ukaguzi bei ya kazi dhamana",
+    "workshop": "karakana fundi sehemu ya kazi huduma gari la kukopesha saa"
+  },
+  "common": {
+    "add": "Ongeza",
+    "cancel": "Ghairi",
+    "done": "Imekamilika",
+    "remove": "Ondoa",
+    "save": "Hifadhi"
+  },
+  "jobs": {
+    "hint": "Kila kitu dukani, tangu siku kilipoletwa hadi siku kinapochukuliwa.",
+    "view": "Mwonekano",
+    "board": "Ubao",
+    "list": "Orodha"
+  },
+  "filters": {
+    "search": "Tafuta kazi, wateja, vitu",
+    "branch": "Tawi",
+    "allBranches": "Matawi yote",
+    "assignee": "Anayeshughulikia",
+    "everyone": "Kila mtu",
+    "late": "Zilizochelewa tu",
+    "closed": "Onyesha kazi zilizokwisha"
+  },
+  "board": {
+    "empty": "Hakuna kazi bado",
+    "emptyHint": "Ukipokea kitu kitaonekana hapa kama kadi. Kiburute mbele kazi inapoendelea.",
+    "loadFailed": "Ubao haukuweza kupakiwa",
+    "noneHere": "Hakuna hapa",
+    "dropHere": "Weka hapa kuhamisha",
+    "truncated": "Kazi ni nyingi kuliko zinazotosha ubaoni. Tumia vichujio au orodha kuona zilizobaki."
+  },
+  "card": {
+    "by": "{{name}}",
+    "days": "Siku {{n}} katika hatua hii",
+    "due": "Inatakiwa {{date}}",
+    "late": "Imechelewa: ilitakiwa {{date}}",
+    "moveTo": "Hamishia…",
+    "returnVisit": "Amerudi"
+  },
+  "list": {
+    "empty": "Hakuna kazi zilizopatikana",
+    "emptyHint": "Pokea kitu kuanza kazi, au badilisha vichujio.",
+    "number": "Namba",
+    "job": "Kazi",
+    "stage": "Hatua",
+    "assignee": "Anayeshughulikia",
+    "promised": "Iliyoahidiwa",
+    "received": "Ilipokelewa"
+  },
+  "mover": {
+    "moved": "{{number}} imehamishiwa {{stage}}",
+    "collected": "{{number}} imechukuliwa"
+  },
+  "collect": {
+    "title": "Chukua {{number}}",
+    "hint": "Andika nani anachukua “{{title}}”. Dhamana inaanza leo.",
+    "who": "Nani amechukua",
+    "note": "Maelezo (kwa mfano kitambulisho kimekaguliwa)",
+    "confirm": "Kabidhi"
+  },
+  "actions": {
+    "collect": "Chukuliwa",
+    "edit": "Badilisha",
+    "invoice": "Toa ankara",
+    "returnVisit": "Amerudi tena"
+  },
+  "invoice": {
+    "title": "Toa ankara ya {{number}}",
+    "message": "Toa ankara ya {{total}} kwa vipuri na kazi ya fundi kwenye kazi hii. Baada ya hapo kazi inafungwa: maelezo, dhamana na kuchukuliwa tu ndivyo vinaweza kubadilika.",
+    "confirm": "Toa ankara",
+    "done": "Ankara imetolewa"
+  },
+  "returnVisit": {
+    "title": "Anza ziara ya kurudi",
+    "hint": "Kazi mpya ya mteja na kitu kilekile, iliyounganishwa na {{number}}. Inaonyesha kama dhamana ilikuwa bado inaendelea.",
+    "titleHint": "Tatizo ni nini mara hii (si lazima)",
+    "start": "Anza ziara ya kurudi"
+  },
+  "job": {
+    "loadFailed": "Kazi hii haikuweza kupakiwa",
+    "inCharge": "Anayeshughulikia: {{name}}",
+    "received": "Ilipokelewa {{date}}",
+    "lockedInvoiced": "Ankara imetolewa ({{number}}) na kazi imefungwa. Maelezo, dhamana na kuchukuliwa tu ndivyo vinaweza kubadilika.",
+    "lockedClosed": "Kazi hii imekwisha na imefungwa. Maelezo tu yanaweza kuongezwa.",
+    "tabs": {
+      "overview": "Muhtasari",
+      "parts": "Vipuri na kazi ya fundi",
+      "estimates": "Makadirio",
+      "timeline": "Historia",
+      "photos": "Picha",
+      "workshop": "Karakana"
+    }
+  },
+  "overview": {
+    "title": "Tatizo ni nini",
+    "none": "Hakuna kilichoandikwa bado."
+  },
+  "checklist": {
+    "title": "Orodha ya ukaguzi",
+    "empty": "Hakuna orodha ya ukaguzi kwenye kazi hii.",
+    "add": "Ongeza mstari",
+    "note": "Maelezo",
+    "state": {
+      "pending": "Bado",
+      "ok": "Sawa",
+      "issue": "Tatizo",
+      "na": "Haihitajiki"
+    }
+  },
+  "tasks": {
+    "title": "Majukumu",
+    "hint": "Kazi ndogo ndogo zenye mtu na tarehe.",
+    "empty": "Hakuna majukumu bado.",
+    "new": "Jukumu jipya",
+    "due": "Tarehe"
+  },
+  "parts": {
+    "title": "Vipuri",
+    "empty": "Hakuna vipuri vilivyotumika bado.",
+    "add": "Ongeza kipuri",
+    "addTitle": "Tumia kipuri",
+    "added": "Kipuri kimeongezwa",
+    "removed": "Kipuri kimeondolewa",
+    "fromStock": "Kutoka bidhaani",
+    "mode": {
+      "stock": "Kutoka bidhaani",
+      "hand": "Kilichonunuliwa"
+    },
+    "modeHint": {
+      "stock": "Kipuri kinatoka kwenye bidhaa za duka sasa, kwa gharama yake.",
+      "hand": "Kwa kitu kilichonunuliwa kwa ajili ya kazi hii. Andika ni nini na bei yake."
+    },
+    "product": "Bidhaa",
+    "priceStock": "Bei (acha wazi kutumia bei ya kawaida)",
+    "priceHand": "Bei",
+    "priceDefault": "Bei ya kawaida",
+    "priceHint": "Kila kimoja, {{currency}}, kodi imejumuishwa"
+  },
+  "labour": {
+    "title": "Kazi ya fundi",
+    "empty": "Hakuna kazi ya fundi iliyoandikwa bado.",
+    "add": "Ongeza kazi ya fundi",
+    "addMine": "Ongeza muda wangu",
+    "addTitle": "Ongeza kazi ya fundi",
+    "added": "Kazi ya fundi imeongezwa",
+    "removed": "Kazi ya fundi imeondolewa",
+    "defaultDescription": "Kazi ya fundi",
+    "what": "Nini kilifanywa",
+    "hours": "Saa",
+    "rate": "Bei kwa saa",
+    "rateDefault": "Bei ya kawaida",
+    "rateColumn": "Bei",
+    "rateHint": "{{currency}} kwa saa, kodi imejumuishwa. Ukiacha wazi bei ya kawaida inatumika."
+  },
+  "lines": {
+    "description": "Maelezo",
+    "quantity": "Idadi",
+    "price": "Bei",
+    "total": "Jumla",
+    "cost": "Gharama"
+  },
+  "totals": {
+    "parts": "Vipuri",
+    "labour": "Kazi ya fundi",
+    "total": "Jumla",
+    "tax": "Kodi",
+    "taxIncluded": "Kodi imejumuishwa",
+    "cost": "Gharama ya vipuri vya bidhaani"
+  },
+  "estimates": {
+    "empty": "Hakuna makadirio bado",
+    "emptyHint": "Mwambie mteja itagharimu kiasi gani na uandike jibu lake.",
+    "fromJob": "Makadirio mapya kutoka kwenye kazi hii",
+    "oneDraft": "Maliza au tuma rasimu kabla ya kutengeneza nyingine.",
+    "version": "Makadirio {{version}}",
+    "status": {
+      "draft": "Rasimu",
+      "sent": "Imetumwa",
+      "approved": "Imekubaliwa",
+      "declined": "Imekataliwa",
+      "superseded": "Imebadilishwa"
+    },
+    "kind": "Aina",
+    "kinds": {
+      "part": "Kipuri",
+      "labour": "Kazi ya fundi",
+      "other": "Nyingine"
+    },
+    "newTitle": "Makadirio mapya",
+    "editTitle": "Badilisha makadirio {{version}}",
+    "editHint": "Bei ni za {{currency}} na zinajumuisha kodi. Bei ikiachwa wazi bei ya kawaida au ya kazi ya fundi inatumika.",
+    "line": "Mstari {{n}}",
+    "addLine": "Ongeza mstari",
+    "descriptionOptional": "Maelezo",
+    "priceDefault": "Bei ya kawaida",
+    "notes": "Ujumbe kwa mteja",
+    "notesHint": "Unaonekana kwenye makadirio anayoyaona mteja.",
+    "validUntil": "Yanafaa hadi",
+    "validUntilHint": "Wazi: idadi ya kawaida ya siku.",
+    "validUntilText": "Yanafaa hadi {{date}}",
+    "saved": "Makadirio yamehifadhiwa",
+    "edit": "Badilisha",
+    "send": "Tuma",
+    "sendAgain": "Tuma tena",
+    "sendTitle": "Tuma makadirio {{version}}",
+    "sendHint": "Mteja anapata kiungo cha kuona makadirio na kujibu. Kutuma kunachukua nafasi ya makadirio ya awali.",
+    "sentTitle": "Makadirio yametumwa",
+    "link": "Kiungo cha mteja",
+    "linkOnce": "Kinakili sasa. Kinaonyeshwa mara moja tu; ukituma tena kinatengenezwa kiungo kipya.",
+    "copy": "Nakili kiungo",
+    "copied": "Kiungo kimenakiliwa",
+    "copyFailed": "Haikuweza kunakili. Chagua kiungo na ukinakili mwenyewe.",
+    "tell": "Tuma pia kiungo kwa mteja kwa ujumbe",
+    "told": "Ujumbe unaelekea kwa mteja",
+    "saidYes": "Mteja amekubali",
+    "saidNo": "Mteja amekataa",
+    "byHand": "Andika jibu",
+    "decideHint": "Tumia hii mteja alipokujibu ana kwa ana au kwa simu.",
+    "approve": "Amekubali",
+    "decline": "Amekataa",
+    "approveTitle": "Mteja anakubali",
+    "declineTitle": "Mteja anakataa",
+    "whoSaid": "Nani alisema",
+    "decisionNote": "Maelezo",
+    "decisionNoteHint": "Kwa mfano “Nilipiga simu saa 4:15”.",
+    "approvedDone": "Kukubali kumeandikwa",
+    "declinedDone": "Kukataa kumeandikwa",
+    "decidedBy": "{{name}} · {{date}} {{via}}",
+    "channel": {
+      "staff": "(imeandikwa na mfanyakazi)",
+      "link": "(kupitia kiungo)"
+    }
+  },
+  "timeline": {
+    "title": "Historia",
+    "empty": "Hakuna kilichotokea bado.",
+    "to": "{{from}} → {{to}}",
+    "addNote": "Ongeza maelezo",
+    "notePlaceholder": "Andika kilichotokea, ulimpigia nani simu…",
+    "saveNote": "Hifadhi maelezo",
+    "noteAdded": "Maelezo yameongezwa",
+    "kind": {
+      "received": "Imepokelewa",
+      "status": "Imehamishwa",
+      "note": "Maelezo",
+      "assigned": "Anayeshughulikia",
+      "estimate": "Makadirio",
+      "approval": "Jibu",
+      "parts": "Vipuri",
+      "labour": "Kazi ya fundi",
+      "invoice": "Ankara",
+      "collected": "Imechukuliwa",
+      "rework": "Amerudi",
+      "warranty": "Dhamana",
+      "charge": "Ada",
+      "bay": "Sehemu ya kazi",
+      "loan": "Gari la kukopesha",
+      "deposit": "Amana",
+      "release": "Imekabidhiwa bila malipo",
+      "photo": "Picha",
+      "claim": "Dai la bima",
+      "intake": "Kupokea"
+    }
+  },
+  "summary": {
+    "title": "Muhtasari",
+    "collected": "Imechukuliwa",
+    "invoice": "Ankara {{number}}",
+    "needCustomer": "Chagua mteja kwenye kazi kabla ya kutoa ankara: ankara hutolewa kwa jina la mteja aliyesajiliwa.",
+    "original": "Amerudi kwa ajili ya",
+    "related": "Kazi zinazohusiana",
+    "returnVisits": "Mara alizorudi",
+    "afterWarranty": "baada ya dhamana",
+    "warranty": "Dhamana",
+    "warrantyDays": "Dhamana (siku)",
+    "warrantyStarts": "Dhamana inaanza mteja anapochukua.",
+    "warrantyEnds": "Inaisha {{date}}",
+    "days": "Siku {{n}}",
+    "warrantySaved": "Dhamana imehifadhiwa"
+  },
+  "edit": {
+    "title": "Badilisha {{number}}",
+    "item": "Kitu",
+    "saved": "Kazi imehifadhiwa"
+  },
+  "receive": {
+    "title": "Kazi ni nini",
+    "hint": "Pokea kitu. Mteja, kitu na tatizo tu vinahitajika; mengine yanaweza kusubiri.",
+    "what": "Kazi",
+    "titleHint": "Kwa mfano “Breki zimeisha”",
+    "titleNeeded": "Andika kazi ni nini",
+    "details": "Maelezo zaidi",
+    "condition": "Hali kilipoletwa",
+    "conditionHint": "Mikwaruzo, vitu vilivyokosekana, chochote kinachoonyesha kilikuwa hivyo kilipofika.",
+    "customerTitle": "Mteja",
+    "customer": "Mteja",
+    "customerHint": "Chagua mteja, au andika jina na simu ya mtu asiye kwenye orodha yako.",
+    "customerName": "Jina la mteja",
+    "customerPhone": "Simu ya mteja",
+    "item": "Kitu",
+    "itemMode": {
+      "existing": "Kitu tunachokijua",
+      "new": "Kitu kipya"
+    },
+    "findItem": "Tafuta kitu",
+    "findItemHint": "Tafuta kwa jina, namba ya gari, namba ya mfululizo…",
+    "itemLabel": "Ni kitu gani",
+    "itemLabelHint": "Kwa mfano “Toyota Corolla KAA 123B”",
+    "itemLabelNeeded": "Elezea kitu",
+    "itemKind": "Aina",
+    "identifiers": "Vitambulisho",
+    "identifiersHint": "Namba ya gari, namba ya mfululizo, IMEI, saizi, anwani… chochote kinachokitofautisha.",
+    "checklist": "Orodha ya ukaguzi wa kupokea",
+    "checklistHint": "Kagua haya kitu kinapofika. Yananakiliwa kwenye kazi.",
+    "template": "Orodha ya ukaguzi",
+    "templatePick": "Chagua orodha",
+    "templateReplace": "Badilisha mistari iliyo chini na orodha hii",
+    "checkLine": "Mstari wa ukaguzi",
+    "addCheckLine": "Ongeza mstari",
+    "plan": "Mipango",
+    "more": "Maelezo zaidi",
+    "assignee": "Anayeshughulikia",
+    "promised": "Iliyoahidiwa kwa",
+    "branch": "Tawi",
+    "save": "Pokea kitu",
+    "done": "Kazi {{number}} imeundwa",
+    "customFailed": "Kazi imeundwa lakini maelezo ya ziada hayakuweza kuhifadhiwa."
+  },
+  "kinds": {
+    "vehicle": "Gari",
+    "phone": "Simu",
+    "appliance": "Kifaa cha nyumbani",
+    "garment": "Vazi",
+    "property": "Mali",
+    "other": "Nyingine"
+  },
+  "identifiers": {
+    "name": "Jina",
+    "value": "Thamani",
+    "namePlaceholder": "Kwa mfano namba ya gari",
+    "valuePlaceholder": "Kwa mfano KAA 123B",
+    "add": "Ongeza nyingine",
+    "remove": "Ondoa mstari huu",
+    "suggest": {
+      "plate": "namba ya gari",
+      "serial": "namba ya mfululizo",
+      "imei": "IMEI",
+      "size": "saizi",
+      "address": "anwani",
+      "colour": "rangi"
+    }
+  },
+  "pick": {
+    "customer": "Tafuta wateja",
+    "item": "Tafuta vitu",
+    "product": "Tafuta bidhaa",
+    "service": "Tafuta huduma",
+    "nobody": "Hakuna"
+  },
+  "items": {
+    "hint": "Magari, simu, mavazi na mahali ambapo wateja wanaleta. Kila kitu kinahifadhi historia ya kazi zake.",
+    "new": "Kitu kipya",
+    "search": "Tafuta vitu",
+    "item": "Kitu",
+    "status": "Hali",
+    "inUse": "Kinatumika",
+    "retired": "Kimeachwa",
+    "empty": "Hakuna vitu bado",
+    "emptyHint": "Vitu huongezwa unapopokea kazi, au hapa.",
+    "noMatch": "Hakuna vitu vinavyolingana",
+    "loadFailed": "Kitu hiki hakikuweza kupakiwa",
+    "newTitle": "Kitu kipya",
+    "editTitle": "Badilisha kitu",
+    "created": "Kitu kimeongezwa",
+    "saved": "Kitu kimehifadhiwa",
+    "notes": "Maelezo",
+    "active": "Kinatumika",
+    "details": "Maelezo",
+    "newJob": "Kazi mpya kwa kitu hiki",
+    "noJobs": "Hakuna kazi za kitu hiki bado",
+    "noJobsHint": "Kipokee kuanza ya kwanza."
+  },
+  "settings": {
+    "hint": "Hatua ambazo kazi hupitia, orodha za ukaguzi, bei na vitu ambavyo ankara za kazi hutolewa kwa jina lake.",
+    "tabs": {
+      "stages": "Hatua",
+      "checklists": "Orodha za ukaguzi",
+      "rates": "Bei na ankara",
+      "start": "Kuanza",
+      "types": "Aina za kazi",
+      "workshop": "Kazi na vipuri",
+      "bays": "Sehemu za kazi"
+    }
+  },
+  "stages": {
+    "title": "Hatua",
+    "add": "Ongeza hatua",
+    "loadFailed": "Hatua hazikuweza kupakiwa",
+    "roleHelp": "Hatua inaweza kuwa na maana maalum. Hatua ya kwanza ndipo kazi mpya zinaanzia; hatua ya kukubaliwa ndipo kazi huenda mteja anapokubali; hatua ya tayari inamjulisha mteja; hatua ya kuchukuliwa inaanzisha dhamana. Unaweza kubadilisha jina la kila hatua na kuongeza zako.",
+    "kind": {
+      "open": "Inafanyiwa kazi",
+      "waiting": "Inasubiri",
+      "done": "Imekamilika",
+      "closed": "Imekwisha"
+    },
+    "kindHint": {
+      "open": "Kuna mtu anayeifanyia kazi.",
+      "waiting": "Inasubiri mteja au vipuri.",
+      "done": "Kazi imekamilika lakini bado haijakwisha.",
+      "closed": "Kazi imekwisha na imefungwa."
+    },
+    "role": {
+      "initial": "Hatua ya kwanza",
+      "quoted": "Imekadiriwa",
+      "approved": "Imekubaliwa",
+      "ready": "Tayari",
+      "collected": "Imechukuliwa",
+      "closed": "Imefungwa",
+      "cancelled": "Imeghairiwa"
+    },
+    "roleHint": {
+      "initial": "Kazi mpya zinaanzia hapa.",
+      "quoted": "Kutuma makadirio kunaipeleka kazi hapa.",
+      "approved": "Makadirio yakikubaliwa kazi inakuja hapa.",
+      "ready": "Mteja anajulishwa kuwa kitu kiko tayari.",
+      "collected": "Inaandika nani amechukua na kuanzisha dhamana.",
+      "closed": "Kazi imekwisha na imefungwa.",
+      "cancelled": "Kazi imeghairiwa na haiwezi kutolewa ankara."
+    },
+    "roleNone": "Hakuna maana maalum",
+    "roleLabel": "Maana maalum",
+    "kindLabel": "Hatua hii inamaanisha nini",
+    "name": "Jina",
+    "code": "Msimbo mfupi",
+    "codeHint": "Herufi, tarakimu na mstari wa chini. Hauwezi kubadilishwa baadaye.",
+    "off": "Imezimwa",
+    "active": "Inatumika",
+    "goesTo": "Inaweza kwenda: {{names}}",
+    "goesNowhere": "Kazi iliyo hapa haiwezi kuendelea",
+    "edit": "Badilisha {{name}}",
+    "remove": "Ondoa {{name}}",
+    "removeTitle": "Ondoa {{name}}?",
+    "removeMessage": "Hatua ambayo hakuna kazi iliyowahi kuitumia tu ndiyo inaweza kuondolewa; vinginevyo izime.",
+    "removed": "Hatua imeondolewa",
+    "saved": "Hatua imehifadhiwa",
+    "newTitle": "Hatua mpya",
+    "editTitle": "Badilisha hatua",
+    "movesLegend": "Kazi inaweza kwenda wapi baadaye",
+    "movesHint": "Weka alama kwenye hatua ambazo kazi inaweza kuhamia kutoka hapa."
+  },
+  "checklists": {
+    "title": "Orodha za ukaguzi wa kupokea",
+    "add": "Ongeza orodha",
+    "empty": "Hakuna orodha za ukaguzi bado",
+    "emptyHint": "Orodha ya ukaguzi ni mambo ya kuangalia kitu kinapoletwa. Kila kazi inanakili moja.",
+    "loadFailed": "Orodha za ukaguzi hazikuweza kupakiwa",
+    "lines": "Mistari {{n}}",
+    "edit": "Badilisha {{name}}",
+    "newTitle": "Orodha mpya",
+    "editTitle": "Badilisha orodha",
+    "name": "Jina",
+    "kind": "Kwa vitu vya aina",
+    "kindHint": "Si lazima, kwa mfano gari.",
+    "linesLabel": "Mistari",
+    "linesHint": "Mstari mmoja kwa kila kitu cha kukagua. Kazi zilizokwisha tengenezwa zinabaki na mistari zilizonakili.",
+    "active": "Inatumika",
+    "saved": "Orodha imehifadhiwa"
+  },
+  "rates": {
+    "title": "Bei na ankara",
+    "loadFailed": "Mipangilio haikuweza kupakiwa",
+    "noInvoicing": "Mauzo (Point of Sale) hayajawashwa, kwa hiyo kazi haziwezi kutolewa ankara bado.",
+    "labourRate": "Bei ya kawaida ya kazi ya fundi",
+    "labourRateHint": "{{currency}} kwa saa, kodi imejumuishwa.",
+    "warranty": "Dhamana ya kawaida (siku)",
+    "warrantyHint": "Inaanza mteja anapochukua. Inaweza kubadilishwa kwenye kila kazi.",
+    "valid": "Makadirio yanafaa kwa (siku)",
+    "validHint": "Huhesabiwa tangu siku yanapotumwa.",
+    "labourItem": "Huduma ya kazi ya fundi",
+    "partsItem": "Huduma ya vipuri",
+    "itemHint": "Ankara za kazi hutolewa kwa jina la huduma hii. Mpangilio wake wa kodi ndio kodi ya kazi.",
+    "tell": "Mjulishe mteja kitu kikiwa tayari",
+    "tellHint": "Ujumbe unawekwa kwenye foleni kazi inapofika hatua ya tayari, kama mteja anaweza kufikiwa.",
+    "saved": "Mipangilio imehifadhiwa"
+  },
+  "widget": {
+    "title": "Kazi",
+    "open": "Zinaendelea",
+    "ready": "Za kuchukuliwa",
+    "late": "Zilizochelewa",
+    "openBoard": "Fungua ubao wa kazi"
+  },
+  "approval": {
+    "title": "Makadirio yako",
+    "documentTitle": "Makadirio kutoka {{business}}",
+    "language": "Lugha",
+    "loading": "Inapakia…",
+    "notFound": "Kiungo hiki si sahihi",
+    "notFoundHint": "Kinaweza kuwa kimekosewa au kimeshatumika. Tafadhali wasiliana na biashara.",
+    "failed": "Hatukuweza kupakia makadirio",
+    "failedHint": "Angalia mtandao wako na ujaribu tena.",
+    "retry": "Jaribu tena",
+    "heading": "Makadirio: {{title}}",
+    "lines": "Makadirio yanajumuisha nini",
+    "tax": "Kodi imejumuishwa",
+    "total": "Jumla",
+    "validUntil": "Yanafaa hadi {{date}}",
+    "name": "Jina lako",
+    "nameNeeded": "Tafadhali andika jina lako",
+    "note": "Ujumbe kwa biashara (si lazima)",
+    "approve": "Kubali",
+    "decline": "Kataa",
+    "once": "Unaweza kujibu mara moja tu. Ukibadili mawazo, wasiliana na biashara.",
+    "state": {
+      "approved": "Asante. Umekubali makadirio haya na kazi inaweza kuendelea.",
+      "declined": "Umekataa makadirio haya. Biashara imejulishwa.",
+      "expired": "Makadirio haya yamekwisha muda. Tafadhali wasiliana na biashara.",
+      "superseded": "Makadirio mapya yamechukua nafasi ya haya. Tafadhali wasiliana na biashara.",
+      "draft": "Makadirio haya bado hayako tayari.",
+      "open": ""
+    }
+  }
+}

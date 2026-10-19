@@ -36,6 +36,11 @@ export function setTokens(access: string | null, refresh?: string | null): void 
   if (refresh !== undefined) writeStored(REFRESH_KEY, refresh);
 }
 
+/** The access token for a request made outside the typed client (an upload with progress). */
+export function currentAccessToken(): string | null {
+  return accessToken;
+}
+
 export function hasRefreshToken(): boolean {
   return readStored(REFRESH_KEY) !== null;
 }

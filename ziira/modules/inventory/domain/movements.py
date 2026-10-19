@@ -21,7 +21,9 @@ DIRECTION: dict[str, str] = {
     "receipt": "in",
     "sale_return": "in",
     "transfer_in": "in",
+    "job_return": "in",
     "sale": "out",
+    "job_issue": "out",
     "purchase_return": "out",
     "transfer_out": "out",
     "write_off": "out",
@@ -33,7 +35,7 @@ MOVEMENT_TYPES = tuple(DIRECTION)
 # These need a reason code (also enforced by a database constraint).
 REASON_REQUIRED = frozenset({"adjustment", "count_variance", "write_off"})
 # These bring stock in at a cost the caller knows (a supplier invoice, a transfer's dispatch cost).
-COST_REQUIRED = frozenset({"opening", "receipt", "transfer_in"})
+COST_REQUIRED = frozenset({"opening", "receipt", "transfer_in", "job_return"})
 # Moves between locations of one company: the company's stock value does not change.
 INTERNAL_TRANSFER = frozenset({"transfer_in", "transfer_out"})
 

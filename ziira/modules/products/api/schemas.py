@@ -56,6 +56,7 @@ class ProductOut(BaseModel):
     tax_code_id: UUID
     is_batch_tracked: bool
     reorder_level: Decimal | None
+    service_minutes: int | None = Field(default=None, description="Services: how long it usually takes, in minutes")
     is_active: bool
     barcodes: list[str] = Field(default_factory=list, description="Codes a scanner reads for this product")
 

@@ -22,7 +22,7 @@ export function ForgotPassword() {
     return (
       <AuthShell>
         <div className="space-y-4">
-          <h1 className="text-2xl font-semibold">{t("forgot.sentTitle")}</h1>
+          <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("forgot.sentTitle")}</h1>
           <Alert tone="ok">{ask.data.message}</Alert>
           {ask.data.dev_token && (
             <Alert tone="info">
@@ -40,7 +40,7 @@ export function ForgotPassword() {
     <AuthShell>
       <form onSubmit={submit} className="space-y-5">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">{t("forgot.title")}</h1>
+          <h1 className="text-[30px] font-bold leading-[1.15] tracking-[-0.04em] sm:text-[34px]">{t("forgot.title")}</h1>
           <p className="text-sm text-muted">{t("forgot.hint")}</p>
         </div>
         <Field label={t("signIn.login")}>

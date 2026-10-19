@@ -38,7 +38,7 @@ class Config:
     smtp_from_name: str = "Ziira"
     # --- application defaults
     default_plan: str = ""
-    registration_mode: str = ""         # advanced; "" = closed (the Super Admin opens it after Email is configured)
+    registration_mode: str = ""         # advanced; "" = open (owners go straight in until email is set up in the Super Admin)
     operator_mfa: str = "off"           # off | totp
     operator_networks: str = ""         # comma separated CIDRs ("" = no limit)
     # --- where the code comes from
@@ -110,7 +110,7 @@ class Config:
             self.app_host = (self.app_host or f"app.{self.root_domain}").strip().lower()
             self.admin_host = (self.admin_host or f"admin.{self.root_domain}").strip().lower()
         if not self.registration_mode:
-            self.registration_mode = "closed"        # the Super Admin opens registration once its email is set up
+            self.registration_mode = "open"          # no email yet: owners go straight in; with email a link is sent
         if self.db_prefix and not self.db_prefix.endswith("_"):
             self.db_prefix += "_"
         if self.proxy_mode == "snippet" and not self.ports:
@@ -202,9 +202,6 @@ class Config:
             problems.append("--operator-mfa must be off or totp")
         if self.registration_mode not in ("open", "invite", "closed"):
             problems.append("--registration-mode must be open, invite or closed")
-        elif self.registration_mode != "closed" and not self.smtp_host:
-            problems.append("registration needs a way to send the verification email: give --smtp-host (and the "
-                            "other SMTP details) or use --registration-mode closed")
         try:
             util.parse_cidrs(self.operator_networks)
         except ValueError as error:

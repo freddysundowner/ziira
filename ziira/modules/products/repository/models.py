@@ -56,6 +56,7 @@ class Product(TenantColumns, Base):
     authority_item_class: Mapped[str | None]
     is_batch_tracked: Mapped[bool]
     reorder_level: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
+    service_minutes: Mapped[int | None]
     is_active: Mapped[bool] = mapped_column(server_default=text("true"))
 
 

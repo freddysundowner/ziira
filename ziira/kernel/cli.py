@@ -123,6 +123,7 @@ def cmd_outbox_run(reg: Registry, a: argparse.Namespace) -> None:
 
 
 def cmd_verify(reg: Registry, a: argparse.Namespace) -> int:
+    from ziira.kernel import files as _files  # noqa: F401 - its integrity check registers itself
     from ziira.kernel.checks import run_integrity_checks
 
     load_event_handlers(reg.units, strict=True)
@@ -151,13 +152,15 @@ def cmd_index_logins(reg: Registry, a: argparse.Namespace) -> None:
 
 def cmd_apply_packs(reg: Registry, a: argparse.Namespace) -> None:
     """Seed the data of the country packs switched on (adds only what is missing; safe to run again)."""
-    from ziira.kernel import packs
+    from ziira.kernel import industry, packs
     from ziira.kernel.registry import load_event_handlers
 
     load_event_handlers(reg.units)
     for tenant in [_tenant(a.tenant)] if a.tenant else reg.tenant_ids():
         done = packs.apply_to_tenant(tenant)
-        print(f"{tenant}: " + (", ".join(f"{k}: {v}" for c in done.values() for k, v in c.items()) or "nothing to add"))
+        done_industry = industry.apply_to_tenant(reg, tenant)
+        added = [f"{k}: {v}" for c in [*done.values(), *done_industry.values()] for k, v in c.items()]
+        print(f"{tenant}: " + (", ".join(added) or "nothing to add"))
 
 
 def cmd_operator(_: Registry, a: argparse.Namespace) -> None:
@@ -468,6 +471,11 @@ def cmd_restore(_: Registry, a: argparse.Namespace) -> int:
         raise ZiiraError(f"No matching backup of '{a.tenant}' in {a.dir}")
     chosen = found[-1]
     url = backup.restore_into_new_database(chosen, a.into, keep_ownership=a.keep_ownership)
+    if a.files_into:
+        done = backup.restore_files(chosen, Path(a.files_into))
+        print(f"Unpacked {done} photo(s) and file(s) into the new folder {a.files_into}.")
+    elif chosen.files_path is not None:
+        print("This backup also holds the business's photos and files: add --files-into NEWFOLDER to unpack them.")
     print(f"Restored {chosen.dump_path.name} into the new database '{url.database}'. Nothing live was changed.\n"
           "To use it, follow 'Restoring a business' in docs/operations.md (point the tenant at it in the master "
           "database, or copy the data you need).")
@@ -610,8 +618,8 @@ def main(argv: list[str] | None = None) -> int:
     s.set_defaults(fn=cmd_licence)
     s = sub.add_parser("billing-run", help="renewal invoices, reminders and dunning now (the worker does this hourly)")
     s.set_defaults(fn=cmd_billing_run)
-    s = sub.add_parser("apply-packs", help="copy the data of the country packs switched on into the business's tables "
-                                           "(adds what is missing; changes nothing else)")
+    s = sub.add_parser("apply-packs", help="copy the data of the country and industry packs switched on into the "
+                                           "business's tables (adds what is missing; changes nothing else)")
     s.add_argument("tenant", nargs="?", help="workspace code or id (all tenants if omitted)")
     s.set_defaults(fn=cmd_apply_packs)
     s = sub.add_parser("index-logins", help="rebuild the login directory used to sign in without a workspace code")
@@ -636,6 +644,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--into", required=True, help="name of the new database to create")
     s.add_argument("--keep-ownership", action="store_true",
                    help="restore owners and grants too (needed before it can replace a live database)")
+    s.add_argument("--files-into", metavar="NEWFOLDER", default=None,
+                   help="also unpack the backup's photos and files into this new (empty or missing) folder")
     s.set_defaults(fn=cmd_restore)
     for name in ("verify", "stock-verify"):
         s = sub.add_parser(name)

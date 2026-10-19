@@ -5,6 +5,11 @@ import { ChoiceGroup } from "./ChoiceGroup";
 import type { FormApi } from "./form";
 import { BRANCH_SIZES, KINDS, STAFF_SIZES } from "./state";
 
+export interface Industry { id: string; title: string; summary: string }
+
+/** Whether to ask what kind of service business this is: only for the Services edition, and only when packs are installed. */
+export const asksIndustry = (edition: string, industries: readonly Industry[]) => edition === "services" && industries.length > 0;
+
 /** Every time zone this browser knows (reference data from the platform, not a list of ours), with the country's own first. */
 export function timeZones(own: string): string[] {
   let all: string[] = [];
@@ -13,8 +18,10 @@ export function timeZones(own: string): string[] {
 }
 
 /** Step 4: the business. Choosing a country fills in currency, time zone and calling code (all still changeable). */
-export function StepBusiness({ form, countries, currencies, country, onCountry }: {
+export function StepBusiness({ form, countries, currencies, country, onCountry, industries = [] }: {
   form: FormApi; countries: readonly Country[]; currencies: readonly string[]; country: Country | undefined; onCountry: (code: string) => void;
+  /** The kinds of service business on offer (the installed industry packs), asked only with the Services edition. */
+  industries?: readonly Industry[];
 }) {
   const { t } = useTranslation();
   const { values: v } = form;
@@ -58,7 +65,15 @@ export function StepBusiness({ form, countries, currencies, country, onCountry }
       <div className="grid gap-5 lg:grid-cols-3">
         <ChoiceGroup name="branches" legend={`${t("signup.field.branches")} (${t("signup.optional")})`} clearable value={v.branches} onChange={(x) => form.set("branches", x)} options={BRANCH_SIZES.map((x) => ({ value: x, label: t(`signup.branches.${x}`) }))} />
         <ChoiceGroup name="staff" legend={`${t("signup.field.staff")} (${t("signup.optional")})`} clearable value={v.staff} onChange={(x) => form.set("staff", x)} options={STAFF_SIZES.map((x) => ({ value: x, label: t(`signup.staff.${x}`) }))} />
-        <ChoiceGroup name="kind" legend={`${t("signup.field.kind")} (${t("signup.optional")})`} clearable value={v.kind} onChange={(x) => form.set("kind", x)} options={KINDS.map((x) => ({ value: x, label: t(`signup.kind.${x}`) }))} />
+        {asksIndustry(v.edition, industries) ? (
+          <div className="space-y-1.5 lg:col-span-1">
+            <ChoiceGroup name="kind" legend={`${t("signup.field.industry")} (${t("signup.optional")})`} clearable value={v.kind} onChange={(x) => form.set("kind", x)}
+              options={[...industries.map((i) => ({ value: i.id, label: i.title })), { value: "other", label: t("signup.kind.other") }]} />
+            {industries.find((i) => i.id === v.kind)?.summary && <p className="text-xs text-muted">{industries.find((i) => i.id === v.kind)?.summary}</p>}
+          </div>
+        ) : (
+          <ChoiceGroup name="kind" legend={`${t("signup.field.kind")} (${t("signup.optional")})`} clearable value={v.kind} onChange={(x) => form.set("kind", x)} options={KINDS.map((x) => ({ value: x, label: t(`signup.kind.${x}`) }))} />
+        )}
       </div>
     </div>
   );

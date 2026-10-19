@@ -82,6 +82,8 @@ class HttpMiddleware:
         response_started = False
         exceeded = False                    # the body went over the limit (the app may hide that, see send_wrapper)
         limit = settings.max_upload_bytes if _is_file_upload(method, path) else settings.max_body_bytes
+        if method == "POST" and path == "/api/v1/files":           # a photo or PDF attached to a record (docs/files.md)
+            limit = settings.files_max_upload_bytes
         received = 0
 
         async def limited_receive() -> Message:

@@ -406,6 +406,150 @@
   "within_days": {
    "en": "How many days apart counts as close together",
    "sw": "Siku ngapi kati yake zinazohesabiwa kuwa karibu"
+  },
+  "open_days": {
+   "en": "Days a job can stay in one working stage",
+   "sw": "Siku kazi inaweza kukaa katika hatua moja ya kazi"
+  },
+  "look_back_days": {
+   "en": "How many days back to look",
+   "sw": "Siku ngapi nyuma za kuangalia"
+  },
+  "min_returns": {
+   "en": "Return visits from one person's work before it is flagged",
+   "sw": "Idadi ya marudio ya kazi ya mtu mmoja kabla ya kuonyeshwa"
+  },
+  "unbilled_days": {
+   "en": "Days a finished job may wait before it is flagged",
+   "sw": "Siku ngapi kazi iliyokamilika inaweza kusubiri kabla ya kuonyeshwa"
+  },
+  "over_percent": {
+   "en": "Share of the budget (in %) above which a project is flagged",
+   "sw": "Asilimia ya bajeti ambayo mradi ukivuka huonyeshwa"
+  },
+  "look_back_weeks": {
+   "en": "How many weeks back to look",
+   "sw": "Wiki ngapi nyuma za kuangalia"
+  },
+  "approval_days": {
+   "en": "Days a timesheet may wait for approval before it is flagged",
+   "sw": "Siku ngapi ratiba inaweza kusubiri idhini kabla ya kuonyeshwa"
+  },
+  "used_percent": {
+   "en": "Share of the prepaid hours used (in %) before it is flagged",
+   "sw": "Asilimia ya saa zilizolipiwa zilizotumika kabla ya kuonyeshwa"
+  },
+  "expiry_days": {
+   "en": "Days before expiry to warn about unused hours",
+   "sw": "Siku ngapi kabla ya muda kuisha za kuonya kuhusu saa zisizotumika"
+  },
+  "compare_days": {
+   "en": "How many earlier days to compare with",
+   "sw": "Siku ngapi za awali za kulinganisha nazo"
+  },
+  "share_drop_points": {
+   "en": "How many percentage points the billable share must fall",
+   "sw": "Pointi ngapi za asilimia sehemu inayotozwa inapaswa kushuka"
+  },
+  "min_logged_hours": {
+   "en": "Fewest logged hours worth judging",
+   "sw": "Saa chache zaidi zilizoandikwa zinazostahili kupimwa"
+  },
+  "no_show_percent": {
+   "en": "Share of missed appointments (in %) before it is flagged",
+   "sw": "Asilimia ya miadi isiyofikiwa kabla ya kuonyeshwa"
+  },
+  "late_cancel_count": {
+   "en": "Number of late cancellations before it is flagged",
+   "sw": "Idadi ya miadi iliyoghairiwa kwa kuchelewa kabla ya kuonyeshwa"
+  },
+  "utilisation_percent": {
+   "en": "Share of working time booked (in %) below which it is flagged",
+   "sw": "Asilimia ya muda wa kazi uliowekewa miadi ambayo chini yake inaonyeshwa"
+  },
+  "refused_count": {
+   "en": "Number of refused bookings before it is flagged",
+   "sw": "Idadi ya miadi iliyokataliwa kabla ya kuonyeshwa"
+  },
+  "gap_minutes": {
+   "en": "Shortest gap worth flagging (minutes)",
+   "sw": "Pengo fupi zaidi linalostahili kuonyeshwa (dakika)"
+  },
+  "invoice_after_days": {
+   "en": "Days after finishing before a missing invoice is flagged",
+   "sw": "Siku baada ya kumaliza kabla ankara inayokosekana haijaonyeshwa"
+  },
+  "look_ahead_days": {
+   "en": "How many days ahead to look",
+   "sw": "Siku ngapi mbele za kuangalia"
+  },
+  "min_appointments": {
+   "en": "Fewest appointments before it is judged",
+   "sw": "Miadi michache zaidi kabla ya kuhukumiwa"
+  },
+  "max_findings": {
+   "en": "Most gaps to show at once",
+   "sw": "Mapengo mengi zaidi ya kuonyesha kwa wakati mmoja"
+  },
+  "max_members": {
+   "en": "Most memberships checked in one run",
+   "sw": "Uanachama mwingi zaidi unaokaguliwa kwa mara moja"
+  },
+  "min_credits": {
+   "en": "Fewest unused credits worth a reminder",
+   "sw": "Mikopo michache zaidi isiyotumika inayostahili kikumbusho"
+  },
+  "max_packages": {
+   "en": "Most packages checked in one run",
+   "sw": "Vifurushi vingi zaidi vinavyokaguliwa kwa mara moja"
+  },
+  "high_after_days": {
+   "en": "Days a failure waits before it becomes urgent",
+   "sw": "Siku ambazo tatizo husubiri kabla halijawa la haraka"
+  },
+  "max_runs": {
+   "en": "Most invoices checked in one run",
+   "sw": "Ankara nyingi zaidi zinazokaguliwa kwa mara moja"
+  },
+  "min_percent": {
+   "en": "Share of monthly income (in %) at risk before it is shown",
+   "sw": "Sehemu ya mapato ya kila mwezi (kwa %) iliyo hatarini kabla ya kuonyeshwa"
+  },
+  "min_members": {
+   "en": "Fewest memberships at risk before it is shown",
+   "sw": "Uanachama mchache zaidi ulio hatarini kabla ya kuonyeshwa"
+  },
+  "min_lines": {
+   "en": "Fewest answered lines before a payer is compared",
+   "sw": "Mistari michache kabisa iliyojibiwa kabla anayelipa kulinganishwa"
+  },
+  "min_rate_percent": {
+   "en": "Smallest share rejected (in %) worth flagging",
+   "sw": "Sehemu ndogo kabisa iliyokataliwa (kwa %) inayostahili kuonyeshwa"
+  },
+  "times_usual": {
+   "en": "How many times more than your other payers",
+   "sw": "Mara ngapi zaidi ya wanaolipa wengine"
+  },
+  "min_repeats": {
+   "en": "How many times the same reason counts as a pattern",
+   "sw": "Mara ngapi sababu ileile ihesabiwe kuwa mwelekeo"
+  },
+  "idle_weeks": {
+   "en": "Weeks without a visit before a member counts as gone quiet",
+   "sw": "Wiki ngapi bila kuja ndipo mwanachama aonekane ameacha kuja"
+  },
+  "max_overrides": {
+   "en": "Refused people one person may let in before it is flagged",
+   "sw": "Watu waliokataliwa ambao mtu mmoja anaweza kuwaruhusu kabla ya kuonyeshwa"
+  },
+  "older_than_days": {
+   "en": "Days a tip may be held before it is flagged",
+   "sw": "Siku kidokezo kinaweza kushikiliwa kabla ya kuonyeshwa"
+  },
+  "min_count": {
+   "en": "Fewest appointments worth flagging",
+   "sw": "Idadi ndogo ya miadi inayostahili kuonyeshwa"
   }
  },
  "_figures": {
@@ -1304,6 +1448,202 @@
     "sw": "Kwa nini"
    },
    "kind": "text"
+  },
+  "stage": {
+   "label": {
+    "en": "Stage",
+    "sw": "Hatua"
+   },
+   "kind": "text"
+  },
+  "worth": {
+   "label": {
+    "en": "Worth of the work",
+    "sw": "Thamani ya kazi"
+   },
+   "kind": "money"
+  },
+  "returns": {
+   "label": {
+    "en": "Return visits",
+    "sw": "Marudio"
+   },
+   "kind": "count"
+  },
+  "days": {
+   "label": {
+    "en": "Days",
+    "sw": "Siku"
+   },
+   "kind": "days"
+  },
+  "hours": {
+   "label": {
+    "en": "Hours",
+    "sw": "Saa"
+   },
+   "kind": "number"
+  },
+  "usual_percent": {
+   "label": {
+    "en": "Usual share (%)",
+    "sw": "Asilimia ya kawaida (%)"
+   },
+   "kind": "percent"
+  },
+  "no_shows": {
+   "label": {
+    "en": "Missed appointments",
+    "sw": "Miadi iliyokosekana"
+   },
+   "kind": "count"
+  },
+  "cancelled_late": {
+   "label": {
+    "en": "Cancelled late",
+    "sw": "Zilizoghairiwa kwa kuchelewa"
+   },
+   "kind": "count"
+  },
+  "booked_hours": {
+   "label": {
+    "en": "Hours booked",
+    "sw": "Saa zilizowekewa miadi"
+   },
+   "kind": "number"
+  },
+  "working_hours": {
+   "label": {
+    "en": "Working hours",
+    "sw": "Saa za kazi"
+   },
+   "kind": "number"
+  },
+  "refused": {
+   "label": {
+    "en": "Bookings refused",
+    "sw": "Miadi iliyokataliwa"
+   },
+   "kind": "count"
+  },
+  "gap_minutes": {
+   "label": {
+    "en": "Gap (minutes)",
+    "sw": "Pengo (dakika)"
+   },
+   "kind": "count"
+  },
+  "ends_on": {
+   "label": {
+    "en": "Ends on",
+    "sw": "Unaisha tarehe"
+   },
+   "kind": "date"
+  },
+  "fee": {
+   "label": {
+    "en": "Fee",
+    "sw": "Ada"
+   },
+   "kind": "money"
+  },
+  "credits_left": {
+   "label": {
+    "en": "Credits left",
+    "sw": "Mikopo iliyobaki"
+   },
+   "kind": "number"
+  },
+  "credits": {
+   "label": {
+    "en": "Credits in the package",
+    "sw": "Mikopo ya kifurushi"
+   },
+   "kind": "number"
+  },
+  "expires_on": {
+   "label": {
+    "en": "Expires on",
+    "sw": "Inaisha tarehe"
+   },
+   "kind": "date"
+  },
+  "unused_value": {
+   "label": {
+    "en": "Value not yet used",
+    "sw": "Thamani ambayo haijatumika"
+   },
+   "kind": "text"
+  },
+  "days_failed": {
+   "label": {
+    "en": "Days it has been failing",
+    "sw": "Siku ambazo imeshindwa"
+   },
+   "kind": "days"
+  },
+  "period_start": {
+   "label": {
+    "en": "Period starting",
+    "sw": "Kipindi kilichoanza"
+   },
+   "kind": "date"
+  },
+  "at_risk_monthly": {
+   "label": {
+    "en": "Income at risk each month",
+    "sw": "Mapato yaliyo hatarini kila mwezi"
+   },
+   "kind": "money"
+  },
+  "total_monthly": {
+   "label": {
+    "en": "All membership income each month",
+    "sw": "Mapato yote ya uanachama kila mwezi"
+   },
+   "kind": "money"
+  },
+  "members": {
+   "label": {
+    "en": "Memberships at risk",
+    "sw": "Uanachama ulio hatarini"
+   },
+   "kind": "count"
+  },
+  "payer": {
+   "label": {
+    "en": "Payer",
+    "sw": "Anayelipa"
+   },
+   "kind": "text"
+  },
+  "short_by": {
+   "label": {
+    "en": "Paid short by",
+    "sw": "Pungufu iliyolipwa"
+   },
+   "kind": "money"
+  },
+  "rate_percent": {
+   "label": {
+    "en": "Share rejected (%)",
+    "sw": "Sehemu iliyokataliwa (%)"
+   },
+   "kind": "percent"
+  },
+  "times": {
+   "label": {
+    "en": "Times",
+    "sw": "Mara"
+   },
+   "kind": "count"
+  },
+  "weeks": {
+   "label": {
+    "en": "Weeks",
+    "sw": "Wiki"
+   },
+   "kind": "number"
   }
  },
  "controls.after_hours_activity": {
@@ -3146,6 +3486,910 @@
   "units": {
    "min_amount": "money",
    "grace_days": "days"
+  }
+ },
+ "jobs.stuck_in_stage": {
+  "topic": "customers",
+  "title": {
+   "en": "A job has stopped moving",
+   "sw": "Kazi imesimama"
+  },
+  "why": {
+   "en": "The customer is waiting and may lose patience, and the item takes up space.",
+   "sw": "Mteja anasubiri na anaweza kuchoka, na kitu kinakaa nafasi."
+  },
+  "todo": {
+   "en": "Open the job, move it on, or tell the customer what is holding it up.",
+   "sw": "Fungua kazi, iendeleze, au mwambie mteja kinachochelewesha."
+  },
+  "sentence": {
+   "en": "Tell me when a job stays {open_days} days in one working stage or {waiting_days} days waiting, and urgent at {serious_days} days.",
+   "sw": "Niambie kazi ikikaa siku {open_days} katika hatua moja ya kazi au siku {waiting_days} ikisubiri, na iwe ya haraka siku {serious_days}."
+  },
+  "units": {
+   "open_days": "days",
+   "waiting_days": "days",
+   "serious_days": "days"
+  }
+ },
+ "jobs.estimate_not_approved": {
+  "topic": "customers",
+  "title": {
+   "en": "An estimate has no answer",
+   "sw": "Makadirio hayajajibiwa"
+  },
+  "why": {
+   "en": "Work cannot start until the customer says yes, and the sale may be lost.",
+   "sw": "Kazi haiwezi kuanza hadi mteja akubali, na mauzo yanaweza kupotea."
+  },
+  "todo": {
+   "en": "Call the customer for an answer, or close the job if they have gone quiet.",
+   "sw": "Mpigie mteja apate jibu, au funga kazi kama amenyamaza."
+  },
+  "sentence": {
+   "en": "Tell me when an estimate has waited {waiting_days} days for an answer.",
+   "sw": "Niambie makadirio yakisubiri jibu kwa siku {waiting_days}."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "jobs.parts_not_invoiced": {
+  "topic": "customers",
+  "title": {
+   "en": "Work was done but never invoiced",
+   "sw": "Kazi ilifanywa lakini haikutolewa ankara"
+  },
+  "why": {
+   "en": "Parts and time were used and the customer was never charged, so the money is lost.",
+   "sw": "Vipuri na muda vilitumika na mteja hakutozwa, hivyo pesa zimepotea."
+  },
+  "todo": {
+   "en": "Open the job and make the invoice, or write down why it is free.",
+   "sw": "Fungua kazi na utoe ankara, au andika kwa nini ni bure."
+  },
+  "sentence": {
+   "en": "Tell me when a finished job has no invoice {grace_days} days after it was collected or closed, looking back {look_back_days} days.",
+   "sw": "Niambie kazi iliyokamilika ikikosa ankara siku {grace_days} baada ya kuchukuliwa au kufungwa, nikiangalia siku {look_back_days} nyuma."
+  },
+  "units": {
+   "grace_days": "days",
+   "look_back_days": "days"
+  }
+ },
+ "jobs.repeat_returns": {
+  "topic": "customers",
+  "title": {
+   "en": "Customers keep coming back to fix the same work",
+   "sw": "Wateja wanarudi kurekebisha kazi ile ile"
+  },
+  "why": {
+   "en": "Repeat repairs cost you time and parts and upset customers.",
+   "sw": "Marekebisho ya kurudia yanakugharimu muda na vipuri na kuwakera wateja."
+  },
+  "todo": {
+   "en": "Look at these return visits together: is it the parts, the method or the checks?",
+   "sw": "Angalia marudio haya pamoja: ni vipuri, njia ya kazi au ukaguzi?"
+  },
+  "sentence": {
+   "en": "Tell me when one person's work has {min_returns} or more return visits inside the warranty in the last {look_back_days} days.",
+   "sw": "Niambie kazi ya mtu mmoja ikiwa na marudio {min_returns} au zaidi ndani ya dhamana katika siku {look_back_days} zilizopita."
+  },
+  "units": {
+   "min_returns": "count",
+   "look_back_days": "days"
+  }
+ },
+ "jobs.ready_not_collected": {
+  "topic": "customers",
+  "title": {
+   "en": "Finished items are waiting for their owners",
+   "sw": "Vitu vilivyokamilika vinasubiri wenyewe"
+  },
+  "why": {
+   "en": "They take up space, and a customer who forgot is a customer who may not come back.",
+   "sw": "Vinakaa nafasi, na mteja aliyesahau anaweza asirudi."
+  },
+  "todo": {
+   "en": "Call the customer to collect it.",
+   "sw": "Mpigie mteja aje kuchukua."
+  },
+  "sentence": {
+   "en": "Tell me when a finished item has waited {waiting_days} days to be collected, and urgent at {serious_days} days.",
+   "sw": "Niambie kitu kilichokamilika kikisubiri kuchukuliwa siku {waiting_days}, na kiwe cha haraka siku {serious_days}."
+  },
+  "units": {
+   "waiting_days": "days",
+   "serious_days": "days"
+  }
+ },
+ "jobs.part_overdue": {
+  "topic": "customers",
+  "title": {
+   "en": "A part ordered for a job is late",
+   "sw": "Kipuri kilichoagizwa kwa kazi kimechelewa"
+  },
+  "why": {
+   "en": "The vehicle is taking up a bay and the customer is waiting.",
+   "sw": "Gari linashika nafasi ya kazi na mteja anasubiri."
+  },
+  "todo": {
+   "en": "Call the supplier, then tell the customer the new date.",
+   "sw": "Mpigie msambazaji, kisha mwambie mteja tarehe mpya."
+  },
+  "sentence": {
+   "en": "Tell me when a part ordered for a job is {late_days} days past its expected date.",
+   "sw": "Niambie kipuri kilichoagizwa kwa kazi kikichelewa siku {late_days} baada ya tarehe iliyotarajiwa."
+  },
+  "units": {
+   "late_days": "days"
+  }
+ },
+ "jobs.courtesy_car_overdue": {
+  "topic": "customers",
+  "title": {
+   "en": "A courtesy car has not come back",
+   "sw": "Gari la kukopesha halijarudi"
+  },
+  "why": {
+   "en": "The car is out of use and nobody can lend it to the next customer.",
+   "sw": "Gari halitumiki na halimkopeshwi mteja anayefuata."
+  },
+  "todo": {
+   "en": "Call the customer and agree when the car comes back.",
+   "sw": "Mpigie mteja mkubaliane gari litarudi lini."
+  },
+  "sentence": {
+   "en": "Tell me when a courtesy car is {late_days} days past the date it was due back.",
+   "sw": "Niambie gari la kukopesha likichelewa kurudi siku {late_days} baada ya tarehe yake."
+  },
+  "units": {
+   "late_days": "days"
+  }
+ },
+ "timebilling.unbilled_ageing": {
+  "topic": "customers",
+  "title": {
+   "en": "Finished work has not been invoiced",
+   "sw": "Kazi iliyokamilika haijatolewa ankara"
+  },
+  "why": {
+   "en": "Work that is not invoiced is money you have earned but not asked for.",
+   "sw": "Kazi isiyotolewa ankara ni pesa uliyopata lakini hujaiomba."
+  },
+  "todo": {
+   "en": "Open Unbilled work, check it and send the invoice.",
+   "sw": "Fungua Kazi isiyotolewa ankara, ikague kisha tuma ankara."
+  },
+  "sentence": {
+   "en": "Tell me when approved work has waited {unbilled_days} days without an invoice.",
+   "sw": "Niambie kazi iliyoidhinishwa ikisubiri siku {unbilled_days} bila ankara."
+  },
+  "units": {
+   "unbilled_days": "days"
+  }
+ },
+ "timebilling.project_over_budget": {
+  "topic": "customers",
+  "title": {
+   "en": "A project has gone over its budget",
+   "sw": "Mradi umepita bajeti yake"
+  },
+  "why": {
+   "en": "Work beyond the budget may not be paid for unless the client agrees.",
+   "sw": "Kazi inayozidi bajeti huenda isilipwe isipokuwa mteja akubali."
+  },
+  "todo": {
+   "en": "Talk to the client about more budget, or agree what is left to do.",
+   "sw": "Zungumza na mteja kuhusu bajeti zaidi, au kubaliana kilichobaki."
+  },
+  "sentence": {
+   "en": "Tell me when a project has used more than {over_percent}% of its budget.",
+   "sw": "Niambie mradi ukitumia zaidi ya {over_percent}% ya bajeti yake."
+  },
+  "units": {
+   "over_percent": "percent"
+  }
+ },
+ "timebilling.timesheets_not_submitted": {
+  "topic": "staff",
+  "title": {
+   "en": "A timesheet has not been sent in",
+   "sw": "Ratiba ya muda haijatumwa"
+  },
+  "why": {
+   "en": "Time that is not sent in cannot be approved or invoiced.",
+   "sw": "Muda usiotumwa hauwezi kuidhinishwa wala kutolewa ankara."
+  },
+  "todo": {
+   "en": "Ask the person to send the week in.",
+   "sw": "Mwombe mtu huyo atume wiki hiyo."
+  },
+  "sentence": {
+   "en": "Tell me when a week ended {grace_days} days ago and was not sent in.",
+   "sw": "Niambie wiki ikiisha siku {grace_days} zilizopita bila kutumwa."
+  },
+  "units": {
+   "grace_days": "days"
+  }
+ },
+ "timebilling.approval_waiting": {
+  "topic": "staff",
+  "title": {
+   "en": "A timesheet is waiting for approval",
+   "sw": "Ratiba ya muda inasubiri idhini"
+  },
+  "why": {
+   "en": "Until it is approved the time cannot be invoiced.",
+   "sw": "Hadi iidhinishwe muda hauwezi kutolewa ankara."
+  },
+  "todo": {
+   "en": "Approve it or send it back with a reason.",
+   "sw": "Iidhinishe au irudishe ukitoa sababu."
+  },
+  "sentence": {
+   "en": "Tell me when a timesheet has waited {approval_days} days for approval.",
+   "sw": "Niambie ratiba ikisubiri idhini siku {approval_days}."
+  },
+  "units": {
+   "approval_days": "days"
+  }
+ },
+ "timebilling.retainer_nearly_used": {
+  "topic": "customers",
+  "title": {
+   "en": "A client's prepaid hours are nearly used up",
+   "sw": "Saa zilizolipiwa za mteja zinakaribia kuisha"
+  },
+  "why": {
+   "en": "When the hours run out the work either stops or goes unpaid.",
+   "sw": "Saa zikiisha kazi husimama au haitalipwa."
+  },
+  "todo": {
+   "en": "Offer the client a top-up, or remind them to use the hours before they expire.",
+   "sw": "Mpe mteja nafasi ya kuongeza saa, au mkumbushe kuzitumia kabla hazijaisha."
+  },
+  "sentence": {
+   "en": "Tell me when {used_percent}% of the prepaid hours are used, or hours will expire within {expiry_days} days.",
+   "sw": "Niambie saa zilizolipiwa zikitumika {used_percent}%, au saa zikikaribia kuisha ndani ya siku {expiry_days}."
+  },
+  "units": {
+   "used_percent": "percent",
+   "expiry_days": "days"
+  }
+ },
+ "timebilling.billable_ratio_drop": {
+  "topic": "staff",
+  "title": {
+   "en": "Less of the logged time can be billed",
+   "sw": "Muda mdogo zaidi uliorekodiwa unaweza kutozwa"
+  },
+  "why": {
+   "en": "Hours that cannot be billed still cost you wages.",
+   "sw": "Saa zisizoweza kutozwa bado zinakugharimu mishahara."
+  },
+  "todo": {
+   "en": "Look at where the non-billable hours went and whether it is planned.",
+   "sw": "Angalia saa zisizotozwa zilienda wapi na kama zilipangwa."
+  },
+  "sentence": {
+   "en": "Tell me when the billable share of the last {recent_days} days falls {share_drop_points} points below the {compare_days} days before.",
+   "sw": "Niambie sehemu inayotozwa ya siku {recent_days} zilizopita ikishuka pointi {share_drop_points} chini ya siku {compare_days} za awali."
+  },
+  "units": {
+   "recent_days": "days",
+   "share_drop_points": "points",
+   "compare_days": "days"
+  }
+ },
+ "timebilling.work_overdue": {
+  "topic": "customers",
+  "title": {
+   "en": "Work for a client is late",
+   "sw": "Kazi ya mteja imechelewa"
+  },
+  "why": {
+   "en": "Late filings and closings cost clients money and trust, and the fee cannot be billed until the work is done.",
+   "sw": "Kazi inayochelewa humgharimu mteja pesa na uaminifu, na ada haiwezi kutozwa hadi kazi ikamilike."
+  },
+  "todo": {
+   "en": "Finish it, or move the due date if the client agreed to wait.",
+   "sw": "Ikamilishe, au sogeza tarehe ikiwa mteja alikubali kusubiri."
+  },
+  "sentence": {
+   "en": "Tell me when dated client work is still open {grace_days} days after its due date.",
+   "sw": "Niambie kazi ya mteja yenye tarehe ikiendelea kuwa wazi siku {grace_days} baada ya tarehe yake."
+  },
+  "units": {
+   "grace_days": "days"
+  }
+ },
+ "timebilling.review_waiting": {
+  "topic": "customers",
+  "title": {
+   "en": "An invoice is waiting for a partner",
+   "sw": "Ankara inasubiri mshirika"
+  },
+  "why": {
+   "en": "The invoice cannot go out until a partner has looked at it, so the client is paid for later.",
+   "sw": "Ankara haiwezi kutumwa hadi mshirika aikague, kwa hiyo malipo ya mteja yanachelewa."
+  },
+  "todo": {
+   "en": "Open the invoice, then approve it or send it back with a note.",
+   "sw": "Fungua ankara, kisha iidhinishe au irudishe na maelezo."
+  },
+  "sentence": {
+   "en": "Tell me when an invoice has waited {waiting_days} days for a partner to look at it.",
+   "sw": "Niambie ankara ikisubiri mshirika aikague siku {waiting_days}."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "timebilling.realisation_low": {
+  "topic": "customers",
+  "title": {
+   "en": "Work is being billed for less than it is worth",
+   "sw": "Kazi inatozwa kwa chini ya thamani yake"
+  },
+  "why": {
+   "en": "Hours that are written down or off are paid for by the business, not the client.",
+   "sw": "Saa zinazopunguzwa au kufutwa hulipwa na biashara, si mteja."
+  },
+  "todo": {
+   "en": "See which clients and projects lost the most, and fix the estimate, the scope or the rate.",
+   "sw": "Angalia wateja na miradi iliyopoteza zaidi, kisha rekebisha makadirio, wigo wa kazi au kiwango."
+  },
+  "sentence": {
+   "en": "Tell me when less than {min_percent}% of the work invoiced in the last {look_back_days} days was billed, once at least {min_value} of work was invoiced.",
+   "sw": "Niambie chini ya {min_percent}% ya kazi iliyotolewa ankara katika siku {look_back_days} zilizopita ikitozwa, ikiwa kazi ya angalau {min_value} ilitolewa ankara."
+  },
+  "units": {
+   "min_percent": "percent",
+   "look_back_days": "days",
+   "min_value": "money"
+  }
+ },
+ "bookings.no_show_rate": {
+  "topic": "customers",
+  "title": {
+   "en": "Clients are not turning up",
+   "sw": "Wateja hawafiki kwenye miadi"
+  },
+  "why": {
+   "en": "Every no-show is an hour you could have sold.",
+   "sw": "Kila mteja asiyekuja ni saa ambayo ungeweza kuiuza."
+  },
+  "todo": {
+   "en": "Send reminders earlier, or call clients the day before.",
+   "sw": "Tuma ukumbusho mapema zaidi, au wapigie wateja simu siku moja kabla."
+  },
+  "sentence": {
+   "en": "Point it out when {no_show_percent}% or more of appointments are missed.",
+   "sw": "Onyesha wakati {no_show_percent}% au zaidi ya miadi haijafikiwa."
+  },
+  "units": {
+   "no_show_percent": "percent"
+  }
+ },
+ "bookings.late_cancellations": {
+  "topic": "customers",
+  "title": {
+   "en": "Many late cancellations",
+   "sw": "Miadi mingi imeghairiwa kwa kuchelewa"
+  },
+  "why": {
+   "en": "A time cancelled at the last minute is hard to sell again.",
+   "sw": "Muda unaoghairiwa dakika za mwisho ni vigumu kuuza tena."
+  },
+  "todo": {
+   "en": "Remind clients of the cancellation rule, or ask for a deposit.",
+   "sw": "Wakumbushe wateja kanuni ya kughairi, au waombe malipo ya awali."
+  },
+  "sentence": {
+   "en": "Point it out when {late_cancel_count} or more are cancelled late.",
+   "sw": "Onyesha wakati {late_cancel_count} au zaidi zimeghairiwa kwa kuchelewa."
+  },
+  "units": {
+   "late_cancel_count": "count"
+  }
+ },
+ "bookings.low_utilisation": {
+  "topic": "customers",
+  "title": {
+   "en": "Working time is going unused",
+   "sw": "Muda wa kazi unapotea bila miadi"
+  },
+  "why": {
+   "en": "People and rooms are paid for even when nobody is booked.",
+   "sw": "Watu na vyumba vinagharimu hata kama hakuna aliyewekewa miadi."
+  },
+  "todo": {
+   "en": "Promote the service, offer a quiet-time discount, or change the working hours.",
+   "sw": "Tangaza huduma, toa punguzo la saa tulivu, au badilisha saa za kazi."
+  },
+  "sentence": {
+   "en": "Point it out when less than {utilisation_percent}% of working time is booked.",
+   "sw": "Onyesha wakati chini ya {utilisation_percent}% ya muda wa kazi imewekewa miadi."
+  },
+  "units": {
+   "utilisation_percent": "percent"
+  }
+ },
+ "bookings.double_booking_refused": {
+  "topic": "customers",
+  "title": {
+   "en": "The same time is being asked for twice",
+   "sw": "Muda uleule unaombwa mara mbili"
+  },
+  "why": {
+   "en": "Clients keep asking for times that are full.",
+   "sw": "Wateja wanaendelea kuomba saa ambazo zimejaa."
+  },
+  "todo": {
+   "en": "Check that everyone books in Ziira, and add another person or room if clients keep asking for the same times.",
+   "sw": "Hakikisha kila mtu anaweka miadi kwenye Ziira, na ongeza mtu au chumba kingine ikiwa wateja wanaendelea kuomba saa zilezile."
+  },
+  "sentence": {
+   "en": "Point it out when {refused_count} or more bookings are refused.",
+   "sw": "Onyesha wakati miadi {refused_count} au zaidi imekataliwa."
+  },
+  "units": {
+   "refused_count": "count"
+  }
+ },
+ "bookings.idle_gaps": {
+  "topic": "customers",
+  "title": {
+   "en": "A long gap in the diary",
+   "sw": "Pengo refu kwenye ratiba"
+  },
+  "why": {
+   "en": "An empty stretch between two clients is time that earns nothing.",
+   "sw": "Muda tupu kati ya wateja wawili haulete mapato."
+  },
+  "todo": {
+   "en": "Offer the time to people on the waitlist or message regular clients.",
+   "sw": "Wape muda huo watu walio kwenye orodha ya kusubiri au tuma ujumbe kwa wateja wa kawaida."
+  },
+  "sentence": {
+   "en": "Point it out when a gap is {gap_minutes} minutes or longer.",
+   "sw": "Onyesha wakati pengo ni dakika {gap_minutes} au zaidi."
+  },
+  "units": {
+   "gap_minutes": "count"
+  }
+ },
+ "bookings.completed_not_invoiced": {
+  "topic": "customers",
+  "title": {
+   "en": "Finished appointments have no invoice",
+   "sw": "Miadi iliyokamilika haina ankara"
+  },
+  "why": {
+   "en": "Work that is never invoiced is money you do not collect.",
+   "sw": "Kazi isiyotolewa ankara ni pesa usiyokusanya."
+  },
+  "todo": {
+   "en": "Open the front desk or Appointments and create the invoices.",
+   "sw": "Fungua mapokezi au Miadi na utengeneze ankara."
+  },
+  "sentence": {
+   "en": "Point it out when an appointment has been finished for {invoice_after_days} days or more without an invoice.",
+   "sw": "Onyesha wakati miadi imekamilika kwa siku {invoice_after_days} au zaidi bila ankara."
+  },
+  "units": {
+   "invoice_after_days": "days"
+  }
+ },
+ "memberships.ending": {
+  "topic": "customers",
+  "title": {
+   "en": "A membership is about to end",
+   "sw": "Uanachama unakaribia kuisha"
+  },
+  "why": {
+   "en": "A member who leaves takes their monthly fee with them.",
+   "sw": "Mwanachama anayeondoka huondoka na ada yake ya kila mwezi."
+  },
+  "todo": {
+   "en": "Talk to the member before they go and offer to renew or change their plan.",
+   "sw": "Zungumza na mwanachama kabla hajaondoka na mpe nafasi ya kurejesha au kubadilisha mpango."
+  },
+  "sentence": {
+   "en": "Tell me when a membership ends within {days} days.",
+   "sw": "Niambie uanachama ukiisha ndani ya siku {days}."
+  },
+  "units": {
+   "days": "days"
+  }
+ },
+ "memberships.packages_expiring": {
+  "topic": "customers",
+  "title": {
+   "en": "A package is about to expire with credits left",
+   "sw": "Kifurushi kinakaribia kuisha kikiwa na mikopo"
+  },
+  "why": {
+   "en": "The customer loses what they paid for, and you lose a chance to serve them.",
+   "sw": "Mteja hupoteza alicholipia, nawe unapoteza nafasi ya kumhudumia."
+  },
+  "todo": {
+   "en": "Remind the customer to book before the package expires.",
+   "sw": "Mkumbushe mteja aweke nafasi kabla kifurushi hakijaisha."
+  },
+  "sentence": {
+   "en": "Tell me when a package expires within {days} days with at least {min_credits} credits left.",
+   "sw": "Niambie kifurushi kikiisha ndani ya siku {days} kikiwa na angalau mikopo {min_credits}."
+  },
+  "units": {
+   "days": "days",
+   "min_credits": "credits"
+  }
+ },
+ "memberships.recurring_invoice_failed": {
+  "topic": "customers",
+  "title": {
+   "en": "A repeating invoice could not be made",
+   "sw": "Ankara inayojirudia haikuweza kutengenezwa"
+  },
+  "why": {
+   "en": "Until it is fixed, that customer is not being billed and the money is not coming in.",
+   "sw": "Hadi itakaporekebishwa, mteja huyo hatozwi na pesa hazingii."
+  },
+  "todo": {
+   "en": "Open it, fix the cause (often the customer's credit limit), and issue it again.",
+   "sw": "Ifungue, rekebisha chanzo (mara nyingi ni kikomo cha mkopo cha mteja), kisha itoe tena."
+  },
+  "sentence": {
+   "en": "Make it urgent when it has been failing for {high_after_days} days.",
+   "sw": "Iwe ya haraka ikishindwa kwa siku {high_after_days}."
+  },
+  "units": {
+   "high_after_days": "days"
+  }
+ },
+ "memberships.revenue_at_risk": {
+  "topic": "customers",
+  "title": {
+   "en": "Membership income is at risk",
+   "sw": "Mapato ya uanachama yako hatarini"
+  },
+  "why": {
+   "en": "A large part of your regular monthly income is leaving, on hold or not being billed.",
+   "sw": "Sehemu kubwa ya mapato yako ya kila mwezi inaondoka, imesimamishwa au haitozwi."
+  },
+  "todo": {
+   "en": "Look at who is leaving or on hold, and at any renewal invoices that failed.",
+   "sw": "Angalia nani anaondoka au amesimamishwa, na ankara zozote za marejesho zilizoshindwa."
+  },
+  "sentence": {
+   "en": "Tell me when {min_percent}% of monthly membership income is at risk, and urgent at {high_percent}%.",
+   "sw": "Niambie mapato ya uanachama ya kila mwezi yakiwa hatarini kwa {min_percent}%, na iwe ya haraka kwa {high_percent}%."
+  },
+  "units": {
+   "min_percent": "percent",
+   "high_percent": "percent"
+  }
+ },
+ "claims.estimate_waiting": {
+  "topic": "customers",
+  "title": {
+   "en": "A payer has not answered an estimate",
+   "sw": "Anayelipa hajajibu makadirio"
+  },
+  "why": {
+   "en": "The repair cannot start and the money is held up until the payer says yes.",
+   "sw": "Matengenezo hayawezi kuanza na pesa zinakwama hadi anayelipa akubali."
+  },
+  "todo": {
+   "en": "Call the payer for an answer, or make sure the estimate reached them.",
+   "sw": "Mpigie anayelipa apate jibu, au hakikisha makadirio yamemfikia."
+  },
+  "sentence": {
+   "en": "Tell me when a payer has had an estimate for {waiting_days} days without answering.",
+   "sw": "Niambie anayelipa akiwa na makadirio kwa siku {waiting_days} bila kujibu."
+  },
+  "units": {
+   "waiting_days": "days",
+   "serious_days": "days"
+  }
+ },
+ "claims.approved_not_started": {
+  "topic": "customers",
+  "title": {
+   "en": "Approved work that has not started",
+   "sw": "Kazi iliyoidhinishwa ambayo haijaanza"
+  },
+  "why": {
+   "en": "The payer said yes, but the car or the patient is still waiting, so the customer and the payer get impatient.",
+   "sw": "Anayelipa amekubali, lakini gari au mgonjwa bado anasubiri, na mteja na anayelipa wanachoka kusubiri."
+  },
+  "todo": {
+   "en": "Book the work in, or tell the payer why it is waiting.",
+   "sw": "Panga kazi ifanyike, au mwambie anayelipa kwa nini inasubiri."
+  },
+  "sentence": {
+   "en": "Tell me when approved work has not started {waiting_days} days after the payer said yes.",
+   "sw": "Niambie kazi iliyoidhinishwa ikiwa haijaanza siku {waiting_days} baada ya anayelipa kukubali."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "claims.counter_unanswered": {
+  "topic": "customers",
+  "title": {
+   "en": "A counter-offer nobody answered",
+   "sw": "Ofa ya chini ambayo hakuna aliyejibu"
+  },
+  "why": {
+   "en": "The payer offered less and is waiting for you. If you stay quiet the lower amount may stand.",
+   "sw": "Anayelipa ametoa kiasi kidogo na anakusubiri. Ukinyamaza kiasi hicho kidogo kinaweza kubaki."
+  },
+  "todo": {
+   "en": "Accept the offer, or send a new version of the estimate arguing the lines.",
+   "sw": "Kubali ofa, au tuma toleo jipya la makadirio ukitetea mistari."
+  },
+  "sentence": {
+   "en": "Tell me when a counter-offer has waited {waiting_days} days for our answer.",
+   "sw": "Niambie ofa ya chini ikisubiri jibu letu kwa siku {waiting_days}."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "claims.supplementary_not_sent": {
+  "topic": "customers",
+  "title": {
+   "en": "Extra work not sent to the payer",
+   "sw": "Kazi ya ziada haijatumwa kwa anayelipa"
+  },
+  "why": {
+   "en": "Work the payer has not approved may never be paid for.",
+   "sw": "Kazi ambayo anayelipa hajaidhinisha huenda isilipwe kamwe."
+  },
+  "todo": {
+   "en": "Send the extra estimate to the payer before the work goes on.",
+   "sw": "Tuma makadirio ya ziada kwa anayelipa kabla kazi haijaendelea."
+  },
+  "sentence": {
+   "en": "Tell me when extra work has been written up for {waiting_days} days and not sent.",
+   "sw": "Niambie kazi ya ziada ikiandikwa kwa siku {waiting_days} bila kutumwa."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "claims.completed_not_invoiced": {
+  "topic": "customers",
+  "title": {
+   "en": "A finished claim has no invoice",
+   "sw": "Dai lililokamilika halina ankara"
+  },
+  "why": {
+   "en": "The work is done and signed off but nobody asked for the money.",
+   "sw": "Kazi imekamilika na kutiwa sahihi lakini hakuna aliyedai pesa."
+  },
+  "todo": {
+   "en": "Open the claim and make the invoices.",
+   "sw": "Fungua dai na utoe ankara."
+  },
+  "sentence": {
+   "en": "Tell me when a signed-off claim has no invoice {grace_days} days later, looking back {look_back_days} days.",
+   "sw": "Niambie dai lililotiwa sahihi likikosa ankara siku {grace_days} baadaye, nikiangalia siku {look_back_days} nyuma."
+  },
+  "units": {
+   "grace_days": "days",
+   "look_back_days": "days"
+  }
+ },
+ "claims.payer_invoice_overdue": {
+  "topic": "customers",
+  "title": {
+   "en": "A payer is paying late",
+   "sw": "Anayelipa anachelewa kulipa"
+  },
+  "why": {
+   "en": "Late money from a payer is cash you cannot use, and the longer it waits the harder it is to collect.",
+   "sw": "Pesa zinazochelewa kutoka kwa anayelipa hazitumiki, na kadiri zinavyosubiri ndivyo ugumu wa kuzipata."
+  },
+  "todo": {
+   "en": "Chase the payer for the money, or ask what they dispute.",
+   "sw": "Mdai anayelipa pesa, au muulize anapingana na nini."
+  },
+  "sentence": {
+   "en": "Tell me when a payer's invoice is {late_days} days past due, and urgent at {serious_days} days, looking back {look_back_days} days.",
+   "sw": "Niambie ankara ya anayelipa ikichelewa siku {late_days}, na ya dharura ikifika siku {serious_days}, nikiangalia siku {look_back_days} nyuma."
+  },
+  "units": {
+   "late_days": "days",
+   "serious_days": "days",
+   "look_back_days": "days"
+  }
+ },
+ "claims.payer_rejects_more": {
+  "topic": "customers",
+  "title": {
+   "en": "A payer is rejecting more than the others",
+   "sw": "Anayelipa anakataa zaidi kuliko wengine"
+  },
+  "why": {
+   "en": "Rejected lines are work you do for nothing unless the customer pays, and a pattern means something can be fixed.",
+   "sw": "Mistari iliyokataliwa ni kazi unayofanya bure isipokuwa mteja alipe, na mwelekeo huo unaweza kurekebishwa."
+  },
+  "todo": {
+   "en": "Look at what they reject and why, then change how you write estimates or take it up with the payer.",
+   "sw": "Angalia wanachokataa na sababu, kisha badilisha jinsi unavyoandika makadirio au zungumza na anayelipa."
+  },
+  "sentence": {
+   "en": "Tell me when a payer rejects {min_rate_percent}% or more of the money asked, and {times_usual} times more than the others, over {look_back_days} days, with at least {min_lines} lines.",
+   "sw": "Niambie anayelipa akikataa asilimia {min_rate_percent} au zaidi ya pesa zilizoombwa, na mara {times_usual} zaidi ya wengine, kwa siku {look_back_days}, angalau mistari {min_lines}."
+  },
+  "units": {
+   "min_rate_percent": "percent",
+   "times_usual": "times",
+   "look_back_days": "days",
+   "min_lines": "lines"
+  }
+ },
+ "claims.rejection_reasons_repeat": {
+  "topic": "customers",
+  "title": {
+   "en": "The same rejection reason again and again",
+   "sw": "Sababu ileile ya kukataa tena na tena"
+  },
+  "why": {
+   "en": "A reason that keeps coming back usually has one cause you can fix once.",
+   "sw": "Sababu inayorudi mara kwa mara kwa kawaida ina chanzo kimoja unachoweza kurekebisha mara moja."
+  },
+  "todo": {
+   "en": "Fix the cause (the wording, a document or the price) instead of arguing each time.",
+   "sw": "Rekebisha chanzo (maneno, hati au bei) badala ya kubishana kila mara."
+  },
+  "sentence": {
+   "en": "Tell me when a payer gives the same reason {min_repeats} times in {look_back_days} days.",
+   "sw": "Niambie anayelipa akitoa sababu ileile mara {min_repeats} ndani ya siku {look_back_days}."
+  },
+  "units": {
+   "min_repeats": "times",
+   "look_back_days": "days"
+  }
+ },
+ "claims.short_pay_open": {
+  "topic": "customers",
+  "title": {
+   "en": "A payer paid less than invoiced",
+   "sw": "Anayelipa amelipa pungufu ya ankara"
+  },
+  "why": {
+   "en": "The payer treats the invoice as settled, so the missing money is lost unless someone deals with it.",
+   "sw": "Anayelipa anahesabu ankara imelipwa, kwa hiyo pesa zinazopungua zitapotea isipokuwa mtu alishughulikie."
+  },
+  "todo": {
+   "en": "Dispute it with the payer, charge the customer, or write down that you accept it.",
+   "sw": "Lipinge kwa anayelipa, mtoze mteja, au andika kwamba umekubali."
+  },
+  "sentence": {
+   "en": "Tell me when a short payment has stayed open for {waiting_days} days.",
+   "sw": "Niambie malipo pungufu yakibaki wazi kwa siku {waiting_days}."
+  },
+  "units": {
+   "waiting_days": "days"
+  }
+ },
+ "memberships.members_inactive": {
+  "topic": "customers",
+  "title": {
+   "en": "Paying members have stopped coming",
+   "sw": "Wanachama wanaolipa wameacha kuja"
+  },
+  "why": {
+   "en": "Members who stop visiting are the ones who cancel next, and they still pay for now.",
+   "sw": "Wanachama wanaoacha kuja ndio hufuata kughairi, na bado wanalipa kwa sasa."
+  },
+  "todo": {
+   "en": "Call or message them this week and help them restart.",
+   "sw": "Wapigie simu au wapelekee ujumbe wiki hii na uwasaidie kuanza tena."
+  },
+  "sentence": {
+   "en": "Tell me when {min_members} or more paying members have not visited for {idle_weeks} weeks.",
+   "sw": "Niambie wanachama {min_members} au zaidi wanaolipa wasipokuja kwa wiki {idle_weeks}."
+  },
+  "units": {
+   "idle_weeks": "weeks"
+  }
+ },
+ "memberships.payment_late": {
+  "topic": "customers",
+  "title": {
+   "en": "Members have not paid their fees",
+   "sw": "Wanachama hawajalipa ada zao"
+  },
+  "why": {
+   "en": "Unpaid fees are money you earned and do not have, and the longer they wait the harder they are to collect.",
+   "sw": "Ada ambazo hazijalipwa ni pesa uliyopata lakini huna, na kadri zinavyosubiri ndivyo ugumu wa kuzikusanya."
+  },
+  "todo": {
+   "en": "Open the list of who owes, ask for payment, and write off what will never be paid.",
+   "sw": "Fungua orodha ya wanaodaiwa, omba malipo, na ufute madeni yasiyolipika."
+  },
+  "sentence": {
+   "en": "Tell me when a membership fee is {min_days_late} days late, and urgent at {high_days_late} days.",
+   "sw": "Niambie ada ya uanachama ikichelewa siku {min_days_late}, na iwe ya haraka kwa siku {high_days_late}."
+  },
+  "units": {
+   "min_days_late": "days",
+   "high_days_late": "days"
+  }
+ },
+ "memberships.entry_overrides": {
+  "topic": "staff",
+  "title": {
+   "en": "Many refused entries were let in anyway",
+   "sw": "Wengi waliokataliwa waliruhusiwa kuingia"
+  },
+  "why": {
+   "en": "Letting in people who have not paid is free service, and a pattern may mean friends enter for nothing.",
+   "sw": "Kuwaruhusu wasiolipa kuingia ni huduma ya bure, na mazoea yanaweza kumaanisha marafiki wanaingia bure."
+  },
+  "todo": {
+   "en": "Look at the entries that were let in with a reason and ask the person about them.",
+   "sw": "Angalia walioruhusiwa kwa sababu na umuulize mhusika."
+  },
+  "sentence": {
+   "en": "Tell me when one person lets in more than {max_overrides} refused people in {lookback_days} days.",
+   "sw": "Niambie mtu mmoja akiruhusu zaidi ya watu {max_overrides} waliokataliwa ndani ya siku {lookback_days}."
+  },
+  "units": {
+   "max_overrides": "count",
+   "lookback_days": "days"
+  }
+ },
+ "bookings.tips_held": {
+  "topic": "cash",
+  "title": {
+   "en": "Tips not paid out",
+   "sw": "Vidokezo ambavyo havijalipwa"
+  },
+  "why": {
+   "en": "Tips belong to your staff. Holding them for long causes trouble.",
+   "sw": "Vidokezo ni vya wafanyakazi wako. Kuvishikilia muda mrefu huleta matatizo."
+  },
+  "todo": {
+   "en": "Open Staff pay, check what is owed and hand the tips over.",
+   "sw": "Fungua Malipo ya wafanyakazi, angalia kinachodaiwa na uwakabidhi vidokezo."
+  },
+  "sentence": {
+   "en": "Point it out when tips held for staff are older than {older_than_days} days and come to {min_amount} or more.",
+   "sw": "Onyesha vidokezo vinavyoshikiliwa kwa wafanyakazi vikizidi siku {older_than_days} na kufikia {min_amount} au zaidi."
+  },
+  "units": {
+   "older_than_days": "count",
+   "min_amount": "money"
+  }
+ },
+ "bookings.deposits_unpaid": {
+  "topic": "customers",
+  "title": {
+   "en": "Deposits not paid",
+   "sw": "Amana ambazo hazijalipwa"
+  },
+  "why": {
+   "en": "An appointment with no deposit is the one most likely to be missed.",
+   "sw": "Miadi isiyo na amana ndiyo inayokosekana zaidi."
+  },
+  "todo": {
+   "en": "Remind the client to pay, or give the time to someone else.",
+   "sw": "Mkumbushe mteja kulipa, au mpe mtu mwingine muda huo."
+  },
+  "sentence": {
+   "en": "Point it out when {min_count} or more appointments in the next {look_ahead_days} days have an unpaid deposit.",
+   "sw": "Onyesha miadi {min_count} au zaidi katika siku {look_ahead_days} zijazo ikiwa na amana isiyolipwa."
+  },
+  "units": {
+   "min_count": "count",
+   "look_ahead_days": "count"
   }
  }
 }

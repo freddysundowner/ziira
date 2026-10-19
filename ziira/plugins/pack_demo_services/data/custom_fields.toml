@@ -1,0 +1,6 @@
+[[field]]
+entity_type = "products.product"
+key = "skill_level"
+label = "Skill level needed"
+kind = "choice"
+choices = ["Junior", "Senior", "Specialist"]

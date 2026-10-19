@@ -62,11 +62,11 @@ export interface MenuItem {
 }
 
 /** The edition's ordering groups (an edition lists them in the order its areas appear). */
-export const MENU_GROUPS = ["sell", "stock", "buy", "money", "people", "admin"] as const;
+export const MENU_GROUPS = ["sell", "services", "stock", "buy", "money", "people", "admin"] as const;
 export type MenuGroup = (typeof MENU_GROUPS)[number];
 
 /** Sidebar areas (one sidebar entry each; the area's pages are listed under it). Their titles are in the shell's translations ("nav.areas.sell"). */
-export const AREA_IDS = ["waiting", "command", "sell", "customers", "stock", "buy", "money", "people", "connect", "addons", "settings"] as const;
+export const AREA_IDS = ["waiting", "command", "sell", "services", "customers", "stock", "buy", "money", "people", "connect", "addons", "settings"] as const;
 export type AreaId = (typeof AREA_IDS)[number];
 
 export interface SlotContribution {

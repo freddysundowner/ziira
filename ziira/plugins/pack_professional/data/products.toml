@@ -1,0 +1,41 @@
+# Service items a practice invoices under. No prices: a rate is the business's own (see the example rates in
+# timebilling.toml). `minutes` is a usual duration, used where a unit shows one.
+[[service]]
+sku = "PRO-CONSULT"
+name = "Consulting and advisory"
+minutes = 60
+
+[[service]]
+sku = "PRO-ACCOUNTING"
+name = "Accounting and bookkeeping"
+minutes = 60
+
+[[service]]
+sku = "PRO-TAX"
+name = "Tax advice and returns"
+minutes = 60
+
+[[service]]
+sku = "PRO-AUDIT"
+name = "Audit and assurance"
+minutes = 60
+
+[[service]]
+sku = "PRO-LEGAL"
+name = "Legal advice and drafting"
+minutes = 60
+
+[[service]]
+sku = "PRO-CREATIVE"
+name = "Design, creative and marketing work"
+minutes = 60
+
+[[service]]
+sku = "PRO-RETAINER"
+name = "Monthly retainer"
+minutes = 60
+
+[[service]]
+sku = "PRO-DISB"
+name = "Disbursements and expenses"
+minutes = 15

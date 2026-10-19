@@ -1,0 +1,532 @@
+# What a workshop starts with. Everything here is an example the business edits: standard times differ by make and
+# workshop, and no price is given (a rate is the business's own).
+
+[settings]
+default_warranty_days = 30
+estimate_valid_days = 14
+unapproved_work = "warn"        # work beyond what the customer approved: off, warn or block
+release_unpaid = "warn"         # handing a vehicle back before it is paid for
+required_photos = "warn"
+odometer_unit = "km"
+labour_sku = "GAR-LABOUR"
+parts_sku = "GAR-PARTS"
+fees_sku = "GAR-FEES"
+
+# --------------------------------------------------------------------------- stages (added to the usual ones)
+[[status]]
+code = "waiting_for_insurer"
+name = "Waiting for insurer"
+kind = "waiting"
+
+[[status]]
+code = "waiting_for_customer"
+name = "Waiting for customer"
+kind = "waiting"
+
+[[status]]
+code = "quality_check"
+name = "Quality check"
+kind = "open"
+
+[[move]]
+from = "diagnosing"
+to = "waiting_for_insurer"
+[[move]]
+from = "quoted"
+to = "waiting_for_insurer"
+[[move]]
+from = "waiting_for_insurer"
+to = "approved"
+[[move]]
+from = "waiting_for_insurer"
+to = "in_progress"
+[[move]]
+from = "waiting_for_insurer"
+to = "diagnosing"
+[[move]]
+from = "waiting_for_insurer"
+to = "cancelled"
+[[move]]
+from = "diagnosing"
+to = "waiting_for_customer"
+[[move]]
+from = "in_progress"
+to = "waiting_for_customer"
+[[move]]
+from = "waiting_for_customer"
+to = "in_progress"
+[[move]]
+from = "waiting_for_customer"
+to = "diagnosing"
+[[move]]
+from = "waiting_for_customer"
+to = "cancelled"
+[[move]]
+from = "in_progress"
+to = "quality_check"
+[[move]]
+from = "waiting_for_parts"
+to = "quality_check"
+[[move]]
+from = "quality_check"
+to = "ready"
+[[move]]
+from = "quality_check"
+to = "in_progress"
+
+# --------------------------------------------------------------------------- intake checklists
+[[checklist]]
+name = "Vehicle intake"
+asset_kind = "vehicle"
+items = ["Fuel level noted", "Odometer read", "Warning lights noted", "Spare wheel, jack and tools present",
+         "Belongings removed or listed", "Walk-around photos taken", "Key tagged", "Customer signed the drop-off"]
+
+[[checklist]]
+name = "Body repair intake"
+asset_kind = "vehicle"
+items = ["Existing damage photographed from all sides", "Odometer and fuel gauge photographed", "Belongings removed or listed",
+         "Wheel nuts and spare checked", "Key tagged", "Customer signed the drop-off"]
+
+[[checklist]]
+name = "Insurer job"
+asset_kind = "vehicle"
+items = ["Policy and claim numbers recorded", "Assessor name and phone recorded", "Excess explained to the customer",
+         "Photos for the assessor taken", "Authority to repair received before work starts",
+         "Old parts kept for the assessor", "Re-inspection date noted"]
+
+[[checklist]]
+name = "Phone or device intake"
+asset_kind = "device"
+items = ["IMEI or serial number recorded", "Damage and liquid indicators noted", "SIM and memory card removed",
+         "Customer told to back up their data", "Accessories listed"]
+
+[[checklist]]
+name = "Garment intake"
+asset_kind = "garment"
+items = ["Garment tagged", "Measurements taken or checked", "Fabric, lining and trims noted", "Fitting date set",
+         "Pickup date agreed", "Deposit taken"]
+
+# --------------------------------------------------------------------------- work types (rates are the business's own)
+[[work_type]]
+code = "mechanical"
+name = "Mechanical"
+[[work_type]]
+code = "body"
+name = "Body"
+[[work_type]]
+code = "paint"
+name = "Paint"
+[[work_type]]
+code = "electrical"
+name = "Electrical"
+[[work_type]]
+code = "tailoring"
+name = "Tailoring"
+
+# --------------------------------------------------------------------------- the flat-rate library (standard times: examples)
+[[task]]
+name = "Oil and filter change"
+code = "oil-change"
+hours = 0.5
+work_type = "mechanical"
+[[task]]
+name = "Diagnostic scan"
+code = "diagnostic-scan"
+hours = 0.5
+work_type = "electrical"
+[[task]]
+name = "Front brake pads"
+code = "brake-pads-front"
+hours = 1.5
+work_type = "mechanical"
+[[task]]
+name = "Rear brake pads"
+code = "brake-pads-rear"
+hours = 1.2
+work_type = "mechanical"
+[[task]]
+name = "Front brake discs and pads"
+code = "brake-discs-front"
+hours = 2.2
+work_type = "mechanical"
+[[task]]
+name = "Spark plugs (set)"
+code = "spark-plugs"
+hours = 1.0
+work_type = "mechanical"
+[[task]]
+name = "Battery replacement"
+code = "battery"
+hours = 0.3
+work_type = "electrical"
+[[task]]
+name = "Alternator replacement"
+code = "alternator"
+hours = 1.8
+work_type = "electrical"
+[[task]]
+name = "Starter motor replacement"
+code = "starter"
+hours = 1.8
+work_type = "electrical"
+[[task]]
+name = "Timing belt and tensioner"
+code = "timing-belt"
+hours = 4.0
+work_type = "mechanical"
+[[task]]
+name = "Clutch replacement"
+code = "clutch"
+hours = 5.5
+work_type = "mechanical"
+[[task]]
+name = "Front shock absorbers (pair)"
+code = "shocks-front"
+hours = 2.5
+work_type = "mechanical"
+[[task]]
+name = "Wheel alignment"
+code = "alignment"
+hours = 0.8
+work_type = "mechanical"
+[[task]]
+name = "Tyre fit and balance (each)"
+code = "tyre-fit"
+hours = 0.4
+work_type = "mechanical"
+[[task]]
+name = "Air-conditioning regas"
+code = "ac-regas"
+hours = 1.0
+work_type = "mechanical"
+[[task]]
+name = "Coolant flush"
+code = "coolant-flush"
+hours = 1.0
+work_type = "mechanical"
+[[task]]
+name = "Bumper removal and refit"
+code = "bumper-refit"
+hours = 1.5
+work_type = "body"
+[[task]]
+name = "Panel beating (one panel)"
+code = "panel-beating"
+hours = 3.0
+work_type = "body"
+[[task]]
+name = "Respray (one panel)"
+code = "respray-panel"
+hours = 3.5
+work_type = "paint"
+[[task]]
+name = "Windscreen replacement"
+code = "windscreen"
+hours = 2.0
+work_type = "body"
+[[task]]
+name = "Wiring fault finding"
+code = "wiring-fault"
+hours = 1.5
+work_type = "electrical"
+[[task]]
+name = "Phone screen replacement"
+code = "phone-screen"
+hours = 0.7
+work_type = "electrical"
+asset_kind = "device"
+[[task]]
+name = "Phone battery replacement"
+code = "phone-battery"
+hours = 0.5
+work_type = "electrical"
+asset_kind = "device"
+[[task]]
+name = "Hem trousers or skirt"
+code = "hem"
+hours = 0.5
+work_type = "tailoring"
+asset_kind = "garment"
+[[task]]
+name = "Replace a zip"
+code = "zip"
+hours = 0.75
+work_type = "tailoring"
+asset_kind = "garment"
+[[task]]
+name = "Take in or let out a jacket"
+code = "jacket-adjust"
+hours = 1.5
+work_type = "tailoring"
+asset_kind = "garment"
+[[task]]
+name = "Make a shirt"
+code = "make-shirt"
+hours = 4.0
+work_type = "tailoring"
+asset_kind = "garment"
+[[task]]
+name = "Make a two-piece suit"
+code = "make-suit"
+hours = 20.0
+work_type = "tailoring"
+asset_kind = "garment"
+
+# --------------------------------------------------------------------------- parts: categories and the markup on cost (examples)
+[[part_category]]
+code = "genuine-parts"
+name = "Genuine parts"
+markup = 25
+class = "genuine"
+[[part_category]]
+code = "aftermarket-parts"
+name = "Aftermarket parts"
+markup = 35
+class = "aftermarket"
+[[part_category]]
+code = "used-parts"
+name = "Used parts"
+markup = 30
+class = "used"
+[[part_category]]
+code = "tyres"
+name = "Tyres"
+markup = 20
+[[part_category]]
+code = "batteries"
+name = "Batteries"
+markup = 20
+[[part_category]]
+code = "oil-fluids"
+name = "Oil and fluids"
+markup = 30
+[[part_category]]
+code = "filters"
+name = "Filters"
+markup = 40
+[[part_category]]
+code = "brakes"
+name = "Brake parts"
+markup = 30
+[[part_category]]
+code = "body-panels"
+name = "Body panels"
+markup = 25
+[[part_category]]
+code = "paint-materials"
+name = "Paint and materials"
+markup = 30
+[[part_category]]
+code = "electrical-parts"
+name = "Electrical parts"
+markup = 30
+[[part_category]]
+code = "fabric-trims"
+name = "Fabric and trims"
+markup = 50
+
+# --------------------------------------------------------------------------- the kinds of photo
+[[photo_category]]
+code = "intake"
+name = "Intake"
+[[photo_category]]
+code = "damage"
+name = "Damage"
+[[photo_category]]
+code = "odometer"
+name = "Odometer"
+[[photo_category]]
+code = "fuel"
+name = "Fuel gauge"
+[[photo_category]]
+code = "belongings"
+name = "Belongings"
+[[photo_category]]
+code = "progress"
+name = "Progress"
+[[photo_category]]
+code = "before"
+name = "Before"
+[[photo_category]]
+code = "after"
+name = "After"
+[[photo_category]]
+code = "old_part"
+name = "Old part"
+[[photo_category]]
+code = "item"
+name = "The garment or item"
+[[photo_category]]
+code = "other"
+name = "Other"
+
+# --------------------------------------------------------------------------- job types
+[[job_type]]
+code = "service"
+name = "Service or repair"
+checklist = "Vehicle intake"
+[[job_type]]
+code = "body-repair"
+name = "Body repair"
+checklist = "Body repair intake"
+photos = [{category = "damage", min = 2, before = "quoted"}, {category = "after", min = 1, before = "collected"}]
+[[job_type]]
+code = "insurer-repair"
+name = "Insurer repair"
+checklist = "Insurer job"
+photos = [{category = "damage", min = 4, before = "quoted"}, {category = "odometer", min = 1, before = "quoted"},
+          {category = "after", min = 1, before = "collected"}]
+[[job_type]]
+code = "device-repair"
+name = "Phone or device repair"
+checklist = "Phone or device intake"
+[[job_type]]
+code = "alteration"
+name = "Alteration"
+checklist = "Garment intake"
+photos = [{category = "item", min = 1, before = "quoted"}]
+[[job_type]]
+code = "bespoke"
+name = "Made to measure"
+checklist = "Garment intake"
+photos = [{category = "item", min = 1, before = "approved"}]
+
+# --------------------------------------------------------------------------- bays
+[[bay]]
+name = "Bay 1"
+[[bay]]
+name = "Bay 2"
+[[bay]]
+name = "Paint booth"
+
+# --------------------------------------------------------------------------- first-run checklist
+[[step]]
+id = "items"
+title = "Choose the labour, parts and fees items"
+hint = "Jobs invoices all labour, parts and charges under these three service items; their tax codes are the job's tax."
+to = "/jobs/settings"
+check = "items_chosen"
+[[step]]
+id = "rates"
+title = "Set your hourly labour rate"
+hint = "Then give each kind of work (mechanical, body, paint, electrical) its own rate if it differs."
+to = "/jobs/settings"
+check = "rates_set"
+[[step]]
+id = "tasks"
+title = "Check the standard times"
+hint = "The times in the task library are examples. Edit them for your workshop, or switch off the ones you do not do."
+to = "/jobs/settings"
+check = "tasks_reviewed"
+[[step]]
+id = "reminders"
+title = "Switch on service reminders"
+hint = "Customers are reminded before their next service is due, by the message channel you have set up."
+to = "/jobs/settings"
+check = "reminders"
+[[step]]
+id = "job"
+title = "Take in your first vehicle"
+to = "/jobs/new"
+check = "first_job"
+[[step]]
+id = "estimate"
+title = "Send your first estimate"
+to = "/jobs"
+check = "first_estimate"
+[[step]]
+id = "insurers"
+title = "Add the insurers you work with"
+hint = "Their labour rates and parts rules apply by themselves on their jobs. Skip this if you do not do insurance work."
+to = "/claims/payers"
+
+# --------------------------------------------------------------------------- Intelligence: limits that suit a workshop
+[intel."jobs.stuck_in_stage"]
+open_days = 4
+waiting_days = 7
+serious_days = 21
+
+[intel."jobs.estimate_not_approved"]
+waiting_days = 3
+
+[intel."jobs.ready_not_collected"]
+waiting_days = 5
+
+# --------------------------------------------------------------------------- a believable week (loaded on request)
+[sample]
+note = "A week at a small garage: a service nobody has collected, a part on order, an estimate waiting for the customer, an insurer repair and a tailoring order."
+
+[[sample.job]]
+customer = "Sample: Amina Odhiambo"
+item = {label = "Toyota Vitz KDD 214T", kind = "vehicle", odometer = 88200, identifiers = {plate = "KDD 214T"}}
+title = "Full service"
+type = "service"
+fuel = "1/2"
+key_tag = "K-07"
+days_ago = 8
+days_in_stage = 5
+stage = "ready"
+estimate = "approved"
+promised_in_days = -4
+labour = [{task = "oil-change", booked = 0.4}, {task = "brake-pads-front", booked = 1.3}]
+parts = [{description = "Oil filter", qty = 1, price = 600, class = "genuine"}, {description = "Front brake pads", qty = 1, price = 3800, class = "aftermarket"}]
+next_service_in_days = 120
+next_service_odometer = 93200
+
+[[sample.job]]
+customer = "Sample: Peter Kamau"
+item = {label = "Subaru Forester KCZ 009B", kind = "vehicle", odometer = 142000, identifiers = {plate = "KCZ 009B"}}
+title = "Clutch slipping"
+type = "service"
+days_ago = 4
+days_in_stage = 3
+stage = "waiting_for_parts"
+estimate = "approved"
+labour = [{task = "clutch"}]
+parts = [{description = "Clutch kit", qty = 1, price = 14500, class = "genuine", order = true, supplier = "Sample Spares Ltd", expected_in_days = 2}]
+
+[[sample.job]]
+customer = "Sample: Njeri Wanjiru"
+item = {label = "Mazda Demio KBB 350M", kind = "vehicle", odometer = 61000, identifiers = {plate = "KBB 350M"}}
+title = "Rattle from the rear when braking"
+type = "service"
+days_ago = 2
+days_in_stage = 2
+stage = "quoted"
+estimate = "sent"
+labour = [{task = "diagnostic-scan"}, {task = "brake-pads-rear"}]
+parts = [{description = "Rear brake pads", qty = 1, price = 3200, class = "aftermarket"}]
+
+[[sample.job]]
+customer = "Sample: Otieno Auma"
+item = {label = "Nissan Note KDG 777Q", kind = "vehicle", odometer = 99000, identifiers = {plate = "KDG 777Q"}}
+title = "Collision damage, front bumper and headlamp"
+type = "insurer-repair"
+days_ago = 3
+days_in_stage = 3
+stage = "waiting_for_insurer"
+labour = [{task = "bumper-refit"}, {task = "respray-panel"}, {task = "panel-beating"}]
+parts = [{description = "Front bumper", qty = 1, price = 12000, class = "genuine"}, {description = "Headlamp", qty = 1, price = 4500, class = "aftermarket"}]
+claim = {payer = "Sample: Insurer", policy = "POL-0001", claim_number = "CL-2026-0001", excess = 5000, labour_rates = {default = 1800}, parts_discount_pct = 10, documents = ["Assessor report", "Photos"]}
+
+[[sample.job]]
+customer = "Sample: Wekesa Barasa"
+item = {label = "Samsung Galaxy A14", kind = "device", identifiers = {imei = "350000000000000"}}
+title = "Cracked screen"
+type = "device-repair"
+days_ago = 1
+days_in_stage = 1
+stage = "in_progress"
+labour = [{task = "phone-screen"}]
+parts = [{description = "Screen assembly", qty = 1, price = 4200, class = "aftermarket"}]
+
+[[sample.job]]
+customer = "Sample: Mary Atieno"
+item = {label = "Wedding dress (customer's)", kind = "garment"}
+title = "Take in the dress and shorten the hem"
+type = "alteration"
+days_ago = 3
+days_in_stage = 2
+stage = "in_progress"
+promised_in_days = 5
+labour = [{task = "jacket-adjust"}, {task = "hem"}]

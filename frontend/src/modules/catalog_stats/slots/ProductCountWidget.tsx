@@ -5,7 +5,7 @@ import { useCompanyCounts } from "../api";
 export default function ProductCountWidget() {
   const { t } = useTranslation("catalog_stats");
   const counts = useCompanyCounts().data ?? [];
-  if (counts.length === 0) return <p className="text-sm text-slate-500">{t("none")}</p>;
+  if (counts.length === 0) return <p className="text-sm text-muted">{t("none")}</p>;
   return (
     <ul className="space-y-1 text-sm">
       {counts.map((c) => (

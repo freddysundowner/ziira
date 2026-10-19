@@ -53,6 +53,10 @@
     "books": { "title": "Vitabu na hesabu", "pitch": "Weka hesabu, bili na wateja wako katika mpangilio." },
     "intelligence": { "title": "Tayari nina mfumo", "pitch": "Endelea na unachotumia leo. Ziira husoma (haubadilishi kamwe) na kukuambia kinachohitaji uangalizi." },
     "full": { "title": "Kila kitu", "pitch": "Mauzo, hisa, manunuzi, hesabu, watu na Intelligence mahali pamoja." },
+    "services": {
+      "title": "Huduma",
+      "pitch": "Pokea miadi, simamia kazi, fuatilia muda na wadai wateja: kwa saluni, gereji, kliniki, mashirika na wakufunzi."
+    },
     "checklistTitle": "Kuanza: {{edition}}",
     "progress": "{{done}} kati ya {{total}} zimekamilika",
     "allDone": "Yote yamekamilika. Unaweza kuficha hii.",
@@ -62,6 +66,22 @@
     "tick": "Weka imekamilika: {{step}}",
     "untick": "Weka haijakamilika: {{step}}",
     "steps": {
+      "services": {
+        "title": "Ongeza huduma zako",
+        "hint": "Unachotoa, muda unaochukua na bei."
+      },
+      "staff": {
+        "title": "Ongeza wafanyakazi na saa za kazi",
+        "hint": "Nani anafanya kazi na lini wapo."
+      },
+      "booking": {
+        "title": "Pokea miadi yako ya kwanza",
+        "hint": "Weka miadi kwenye kalenda."
+      },
+      "invoice": {
+        "title": "Tuma ankara yako ya kwanza",
+        "hint": "Mdai mteja kwa kazi iliyofanyika."
+      },
       "products": { "title": "Ongeza bidhaa zako za kwanza", "hint": "Ziandike au leta lahajedwali." },
       "opening_stock": { "title": "Weka hisa ya kuanzia", "hint": "Sema ulicho nacho leo." },
       "till": { "title": "Fungua kaunta", "hint": "Sajili kaunta na ufungue zamu." },
@@ -101,6 +121,7 @@
       "waiting": "Zinazokusubiri",
       "inbox": "Kikasha",
       "sell": "Mauzo",
+      "services": "Huduma",
       "customers": "Wateja",
       "stock": "Bidhaa",
       "buy": "Manunuzi",
@@ -143,6 +164,70 @@
     "hint": "Angalia muunganisho wako. Kipindi chako ni salama; jaribu tena baadaye kidogo."
   },
   "notFoundHint": "Ukurasa unaweza kuwa umehamishwa, au jukumu lako halijumuishi.",
+  "customFields": {
+    "title": "Maelezo ya ziada",
+    "edit": "Hariri",
+    "save": "Hifadhi",
+    "cancel": "Ghairi",
+    "saved": "Maelezo yamehifadhiwa",
+    "loadFailed": "Maelezo ya ziada hayakupakiwa.",
+    "choose": "Chagua",
+    "yes": "Ndiyo",
+    "no": "Hapana",
+    "notSet": "Haijawekwa",
+    "problem": {
+      "required": "Hii inahitajika.",
+      "number": "Weka nambari, kama 12 au 3.5.",
+      "date": "Weka tarehe."
+    }
+  },
+  "files": {
+    "title": "Picha na faili",
+    "takePhoto": "Piga picha",
+    "chooseFiles": "Ongeza faili",
+    "kindOfPhoto": "Aina ya picha",
+    "empty": "Bado hakuna picha wala faili",
+    "emptyHint": "Piga picha kwa simu yako au ongeza picha au PDF.",
+    "loadFailed": "Picha na faili hazikupakiwa.",
+    "uploading": "Inatumwa",
+    "waiting": "Hakuna mtandao. Itatumwa tena yenyewe.",
+    "retry": "Jaribu tena",
+    "discard": "Ondoa kwenye orodha",
+    "thisFile": "Faili hili",
+    "problem": {
+      "type": "{{name}} si picha (JPEG, PNG, WebP) wala PDF.",
+      "heic": "{{name}} liko katika muundo ambao mfumo hauwezi kusoma (HEIC). Piga picha tena kwa muundo unaokubalika zaidi, au chagua JPEG.",
+      "tooBig": "{{name}} ni kubwa kuliko {{size}}. Ipige kwa ubora wa chini.",
+      "empty": "{{name}} ni tupu.",
+      "full": "Rekodi hii tayari ina faili {{count}}, ambazo ni nyingi zaidi zinazoruhusiwa."
+    },
+    "close": "Funga",
+    "cancel": "Ghairi",
+    "previous": "Iliyotangulia",
+    "next": "Inayofuata",
+    "download": "Pakua",
+    "openPdf": "Fungua PDF",
+    "pdf": "Hati ya PDF",
+    "pdfPages": "PDF, kurasa {{count}}",
+    "addedBy": "Imeongezwa na {{who}} tarehe {{when}}",
+    "someone": "mtu",
+    "locationRemoved": "mahali pameondolewa",
+    "caption": "Maelezo mafupi",
+    "captionPlaceholder": "Inaonyesha nini",
+    "kind": "Aina",
+    "visibility": "Nani anaweza kuonyeshwa hii",
+    "shareable": "Inaweza kushirikiwa",
+    "staffOnly": "Wafanyakazi tu",
+    "shareableHint": "Inaonekana kwenye ukurasa wa mteja au wa bima unapomtumia.",
+    "staffOnlyHint": "Watu wa biashara yako tu wanaiona.",
+    "consent": "Mteja amekubali kupigwa picha",
+    "consentHint": "Nani alikubali na lini (kwa mfano: Jane, ana kwa ana, leo).",
+    "delete": "Futa",
+    "deleteTitle": "Futa faili hili?",
+    "deleteMessage": "Faili linaondolewa kabisa na viungo vyake vinaacha kufanya kazi. Kuondolewa na sababu yako vinabaki kwenye kumbukumbu.",
+    "reason": "Kwa nini linaondolewa?",
+    "deleted": "Faili limefutwa"
+  },
   "mfa": {
     "codeTitle": "Uthibitisho wa hatua mbili",
     "codeHint": "Fungua programu yako ya uthibitisho na uweke nambari ya tarakimu 6 inayoonyeshwa kwa Ziira.",
@@ -294,7 +379,8 @@
       "tax": "{{label}}",
       "branches": "Una matawi mangapi?",
       "staff": "Wanafanya kazi watu wangapi?",
-      "kind": "Biashara ni ya aina gani?"
+      "kind": "Biashara ni ya aina gani?",
+      "industry": "Wewe ni biashara ya huduma ya aina gani?"
     },
     "hint": {
       "name": "Kama unavyosaini barua.",

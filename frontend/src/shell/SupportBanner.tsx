@@ -10,7 +10,7 @@ export function SupportBanner() {
   const s = me.data?.support_session;
   if (!s) return null;
   return (
-    <div role="alert" className="no-print flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 bg-bad px-3 py-1.5 text-center text-xs font-semibold text-white">
+    <div role="alert" className="no-print flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5 bg-bad px-3 py-1.5 text-center text-xs font-semibold text-bad-ink">
       <ShieldAlert className="h-4 w-4 shrink-0" />
       <span>{t("supportBanner.viewing", { name: s.operator })}</span>
       <span className="font-normal">{t(s.level === "full" ? "supportBanner.full" : "supportBanner.read")} · {t("supportBanner.until", { until: formatDate(s.until, true) })}</span>

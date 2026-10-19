@@ -1,0 +1,34 @@
+# Service items the gym invoices as. No prices here: the price of a plan or pack is set on the plan.
+[[service]]
+sku = "GYM-MEMBERSHIP"
+name = "Gym membership"
+
+[[service]]
+sku = "GYM-JOINING"
+name = "Joining fee"
+
+[[service]]
+sku = "GYM-DAYPASS"
+name = "Day or week pass"
+
+[[service]]
+sku = "GYM-VISITS"
+name = "Visit pack"
+
+[[service]]
+sku = "GYM-CLASS"
+name = "Class or class pack"
+minutes = 60
+
+[[service]]
+sku = "GYM-PT"
+name = "Personal training session"
+minutes = 60
+
+[[service]]
+sku = "GYM-LOCKER"
+name = "Locker or towel rental"
+
+[[service]]
+sku = "GYM-VOUCHER"
+name = "Gift voucher"

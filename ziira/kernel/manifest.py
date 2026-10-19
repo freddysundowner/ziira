@@ -7,7 +7,7 @@ from pathlib import Path
 
 SDK_VERSION = "1.0"
 CATEGORIES = ("sales", "stock", "purchasing", "accounting", "people", "customers", "payments", "tax", "messaging",
-              "connector", "country", "intelligence", "data", "ai", "example")
+              "connector", "country", "intelligence", "data", "ai", "example", "industry", "services")
 
 
 @dataclass(frozen=True)

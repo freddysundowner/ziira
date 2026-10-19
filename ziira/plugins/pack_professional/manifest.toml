@@ -1,0 +1,16 @@
+[unit]
+name = "pack_professional"
+title = "Consultant, agency, accountant or lawyer"
+description = "Services, engagement templates, activity names, example rates, reminders and fields for a practice that bills time."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+# The units a business must have for the pack to work; the ones it can use when present go in `optional`.
+requires = ["products"]
+optional = ["timebilling"]
+
+[extends]
+implements = []

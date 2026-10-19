@@ -1,0 +1,49 @@
+[unit]
+name = "memberships"
+title = "Memberships and Recurring Invoices"
+description = "Membership plans, session packages with credits, and invoices that repeat on a schedule."
+category = "customers"
+kind = "module"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["crm"]
+optional = ["products", "pos", "bookings", "intel", "command"]
+
+[provides]
+api_prefix = "/api/v1/memberships"
+publishes = ["membership.activated", "membership.renewed", "membership.paused", "membership.resumed", "membership.cancelled", "membership.expired", "membership.plan_changed", "package.sold", "package.used", "package.expiring", "package.expired", "checkin.recorded", "voucher.sold"]
+subscribes = ["customer.paid", "invoice.cancelled", "sale.returned", "appointment.completed", "class.attendee_attended", "class.attendee_no_show", "class.attendee_reset", "class.attendee_cancelled"]
+
+# Sockets of other units this module plugs into (code in hooks.py)
+[extends]
+implements = ["intel.check", "command.pulse_source", "kernel.personal_data", "kernel.integrity_check", "kernel.custom_field_entity", "kernel.industry_seeder", "kernel.attachable_entity", "bookings.checkout_tender"]
+
+[permissions]
+"memberships.view" = "View memberships, packages, credits and recurring invoices"
+"memberships.plans" = "Create and change membership plans, packages and policies"
+"memberships.manage" = "Sign up members, sell packages, pause and cancel memberships"
+"memberships.credits" = "Adjust or refund a member's or package's credits by hand"
+"recurring.manage" = "Create and change recurring invoices and review drafts"
+"memberships.checkin" = "Check members in at the desk or kiosk and ask who may enter"
+"memberships.override" = "Let in someone the check-in refused, with a reason"
+"memberships.reports" = "See the owner reports: income, retention, attendance, arrears"
+
+# Default roles that receive these permissions when the module is enabled (Owner gets all).
+[roles]
+"Finance Manager" = ["memberships.view", "memberships.plans", "memberships.manage", "memberships.credits", "recurring.manage", "memberships.checkin", "memberships.override", "memberships.reports"]
+"Branch Manager" = ["memberships.view", "memberships.manage", "memberships.credits", "memberships.checkin", "memberships.override", "memberships.reports"]
+"Sales Rep" = ["memberships.view", "memberships.manage", "memberships.checkin"]
+"Cashier" = ["memberships.view", "memberships.checkin"]
+"Accountant" = ["memberships.view", "recurring.manage", "memberships.reports"]
+
+[reason_codes.membership_cancel]
+MOVED = "Moved away"
+TOO_EXPENSIVE = "Too expensive"
+NOT_USING = "Not using it enough"
+SERVICE = "Unhappy with the service"
+OTHER = "Other, explained in the note"
+
+# Events a business may subscribe to with an outgoing webhook (docs/webhooks.md): only these fields leave the system.
+[provides.public_events."checkin.recorded"]
+description = "A member tried to come in (allowed, allowed with a warning, or refused)"
+fields = ["company_id", "branch_id", "member_number", "decision", "code", "method", "device", "overridden", "offline", "counted"]

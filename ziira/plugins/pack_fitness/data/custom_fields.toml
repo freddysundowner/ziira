@@ -1,0 +1,27 @@
+# Fields a member can carry. Not for health data: only what the front desk and trainer need to look after the person.
+[[field]]
+entity_type = "memberships.profile"
+key = "goal"
+label = "Main goal"
+kind = "choice"
+choices = ["Lose weight", "Build strength", "General fitness", "Train for a sport", "Stay active", "Other"]
+
+[[field]]
+entity_type = "memberships.profile"
+key = "experience"
+label = "Experience"
+kind = "choice"
+choices = ["New to training", "Some experience", "Experienced"]
+
+[[field]]
+entity_type = "memberships.profile"
+key = "usual_time"
+label = "Usual time of day"
+kind = "choice"
+choices = ["Early morning", "Morning", "Midday", "Evening", "Weekends"]
+
+[[field]]
+entity_type = "memberships.member"
+key = "preferred_trainer"
+label = "Preferred trainer"
+kind = "text"

@@ -43,6 +43,8 @@ export interface Session {
 export interface RegisterResult {
   error: string | null;
   devToken?: string;
+  /** Present when the platform has no working email: go to /register/verify with it at once, no email is sent. */
+  instantToken?: string;
   /** HTTP status of a failure (422 invalid, 429 too many, 503 unavailable). */
   status?: number;
   /** The server's error code (`validation_failed`, `too_many_requests`, ...). */
@@ -212,7 +214,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const { data, error, response } = await api.POST("/api/v1/register", {
       body: { ...input, invite_code: input.invite_code || null, edition: input.edition ?? "full" },
     });
-    if (response.ok) return { error: null, devToken: data?.dev_token ?? undefined };
+    if (response.ok) return { error: null, devToken: data?.dev_token ?? undefined, instantToken: data?.instant_token ?? undefined };
     const body = error as { error?: string; message?: string; field?: string; detail?: { loc?: unknown[]; msg?: string }[] } | undefined;
     const fields: Record<string, string> = {};
     if (body?.field && body.message) fields[body.field] = body.message;

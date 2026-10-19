@@ -5,6 +5,8 @@
  "tabNumbering": "Document numbers",
  "tabReasons": "Reason codes",
  "noCompany": "No company to show.",
+ "filesUsage": "{{files}} photos and files are using {{size}} now.",
+ "filesUsagePlan": "Your plan allows {{size}} in all.",
  "settingsSaved": "Settings saved.",
  "unsaved": "Unsaved changes",
  "discard": "Discard",
@@ -15,7 +17,8 @@
   "printing": "Printing and phone numbers",
   "regional": "Time zone",
   "alerts": "Urgent alerts",
-  "privacy": "Privacy and record keeping"
+  "privacy": "Privacy and record keeping",
+  "files": "Photos and files"
  },
  "groupHint": {
   "stock": "How stock, counts and supplier bills are controlled.",
@@ -24,7 +27,8 @@
   "printing": "Lines on receipts and invoices, and how phone numbers are read.",
   "regional": "Where your business is: the date on every sale, stock movement, receipt and journal entry is the date here.",
   "alerts": "When Ziira messages you about something serious. More choices are under Intelligence settings, Where you hear from Ziira.",
-  "privacy": "How fast you answer people about their data, who must approve erasures, and how long records are kept."
+  "privacy": "How fast you answer people about their data, who must approve erasures, and how long records are kept.",
+  "files": "What photos and PDFs on jobs, customers and other records may be, how much space they may use, and how long they are kept."
  },
  "set": {
   "negative_stock_allowed": "Allow selling stock that is not there",
@@ -49,7 +53,13 @@
   "retention_notifications_days": "Keep sent messages for (days)",
   "retention_audit_years": "Audit trail kept for (years)",
   "retention_employee_records_years": "Keep former employees' pay records for (years)",
-  "retention_inactive_customers_years": "Review inactive customers after (years)"
+  "retention_inactive_customers_years": "Review inactive customers after (years)",
+  "files_strip_location": "Remove location from photos",
+  "files_max_file_mb": "Largest photo or file (MB)",
+  "files_max_per_record": "Most files on one record",
+  "files_storage_limit_mb": "Space for this company (MB)",
+  "retention_files_years": "Review photos and files after (years)",
+  "retention_file_access_days": "Keep the list of who opened a file for (days)"
  },
  "setHint": {
   "negative_stock_allowed": "The sale still posts and an exception is raised for review.",
@@ -74,7 +84,13 @@
   "retention_notifications_days": "After this, the address and text of finished messages are hidden. 0 keeps them.",
   "retention_audit_years": "For your records only: the audit trail is never deleted. Shown in the retention view.",
   "retention_employee_records_years": "Pay and employment records of a former employee are kept this long before they can be erased. 0 means no minimum.",
-  "retention_inactive_customers_years": "A customer who is inactive and untouched this long is sent to the exceptions inbox for review. 0 turns it off."
+  "retention_inactive_customers_years": "A customer who is inactive and untouched this long is sent to the exceptions inbox for review. 0 turns it off.",
+  "files_strip_location": "Photos are saved without where and when they were taken. Turn off only if you need the original file exactly as the camera made it.",
+  "files_max_file_mb": "One photo or PDF may be this big. Phone photos are about 3 to 8 MB.",
+  "files_max_per_record": "A job, a customer or a product can have this many photos and files.",
+  "files_storage_limit_mb": "The most space this company's photos and files may use. 0 means only your plan's limit applies.",
+  "retention_files_years": "Photos and files older than this are sent to the exceptions inbox for you to review. Nothing is deleted by itself. 0 turns it off.",
+  "retention_file_access_days": "Who looked at a photo or file, and when. Older lines are removed. 0 keeps them."
  },
  "choice": {
   "late_posting": {

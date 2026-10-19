@@ -1,0 +1,13 @@
+[unit]
+name = "pack_demo_services"
+title = "Demo services pack"
+description = "Three example service items and a custom field, to show how an industry pack works."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = ["products"]
+optional = []
+
+[extends]
+implements = []

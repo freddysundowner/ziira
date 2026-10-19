@@ -34,7 +34,8 @@ function Link({ href, children }: { href: string; children: string }) {
 }
 
 /** Step 5: everything they said, with a way back to each part, and the consent. Never shows the password. */
-export function StepReview({ form, edition, country, terms, privacy, onEdit, serverError }: {
+export function StepReview({ form, edition, country, terms, privacy, onEdit, serverError, industries = [] }: {
+  industries?: readonly { id: string; title: string }[];
   form: FormApi; edition: Edition | undefined; country: Country | undefined; terms: string; privacy: string; onEdit: (step: StepId) => void; serverError: string | null;
 }) {
   const { t } = useTranslation();
@@ -62,7 +63,7 @@ export function StepReview({ form, edition, country, terms, privacy, onEdit, ser
         <Section title={t("signup.review.size")} onEdit={() => onEdit("business")}>
           <Row label={t("signup.field.branches")} value={word("branches", v.branches)} />
           <Row label={t("signup.field.staff")} value={word("staff", v.staff)} />
-          <Row label={t("signup.field.kind")} value={word("kind", v.kind)} />
+          <Row label={t("signup.field.kind")} value={industries.find((i) => i.id === v.kind)?.title ?? word("kind", v.kind)} />
         </Section>
       </div>
       <div>

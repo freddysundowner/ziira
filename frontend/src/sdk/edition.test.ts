@@ -6,10 +6,10 @@ const step = (id: string, unit = ""): EditionStep => ({ id, title: id, hint: "",
 
 describe("orderedGroups", () => {
   it("puts the edition's sections first and the rest after in the usual order", () => {
-    expect(orderedGroups({ menu_groups: ["money", "buy"] })).toEqual(["money", "buy", "sell", "stock", "people", "admin"]);
+    expect(orderedGroups({ menu_groups: ["money", "buy"] })).toEqual(["money", "buy", "sell", "services", "stock", "people", "admin"]);
   });
   it("is the usual order with no edition, and ignores sections it does not know", () => {
-    expect(orderedGroups(undefined)).toEqual(["sell", "stock", "buy", "money", "people", "admin"]);
+    expect(orderedGroups(undefined)).toEqual(["sell", "services", "stock", "buy", "money", "people", "admin"]);
     expect(orderedGroups({ menu_groups: ["nonsense", "stock"] })[0]).toBe("stock");
   });
 });

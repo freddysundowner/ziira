@@ -67,8 +67,9 @@ class RegisterIn(BaseModel):
                                       description="Branches: 1, 2-5, 6-20 or more (onboarding hints only)")
     staff_size: str | None = Field(default=None, max_length=10, examples=["1-5"],
                                    description="Staff: 1-5, 6-20, 21-50 or more (onboarding hints only)")
-    business_type: str | None = Field(default=None, max_length=20, examples=["retail"],
-                                      description="retail, wholesale, services or other (onboarding hints only)")
+    business_type: str | None = Field(default=None, max_length=40, examples=["retail"],
+                                      description="retail, wholesale, services or other; with the Services edition the "
+                                                  "name of an industry pack (see GET /industries)")
     plan: str | None = Field(default=None, max_length=60, examples=["starter"],
                              description="A public plan code from a website link; ignored when unknown")
 
@@ -82,6 +83,8 @@ class TrialOut(BaseModel):
 class RegisterOut(BaseModel):
     message: str
     dev_token: str | None = Field(default=None, description="Outside production only: the token the email carries")
+    instant_token: str | None = Field(
+        default=None, description="Only when the platform has no working email: use it at once on /register/verify")
 
 
 class RegisterVerifyIn(BaseModel):
@@ -186,6 +189,12 @@ class CompanySettingsOut(Out):
     retention_audit_years: int
     retention_employee_records_years: int
     retention_inactive_customers_years: int
+    files_strip_location: bool
+    files_max_file_mb: int
+    files_max_per_record: int
+    files_storage_limit_mb: int
+    retention_files_years: int
+    retention_file_access_days: int
 
 
 class CompanySettingsIn(BaseModel):
@@ -216,6 +225,12 @@ class CompanySettingsIn(BaseModel):
     retention_audit_years: Annotated[int, Field(ge=1, le=100)] | None = None
     retention_employee_records_years: Annotated[int, Field(ge=0, le=100)] | None = None
     retention_inactive_customers_years: Annotated[int, Field(ge=0, le=100)] | None = None
+    files_strip_location: bool | None = None
+    files_max_file_mb: Annotated[int, Field(ge=1, le=25)] | None = None
+    files_max_per_record: Annotated[int, Field(ge=1, le=500)] | None = None
+    files_storage_limit_mb: Annotated[int, Field(ge=0, le=10_000_000)] | None = None
+    retention_files_years: Annotated[int, Field(ge=0, le=100)] | None = None
+    retention_file_access_days: Annotated[int, Field(ge=0, le=3650)] | None = None
 
 
 # --------------------------------------------------------------------------- users and roles

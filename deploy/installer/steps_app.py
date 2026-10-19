@@ -40,7 +40,8 @@ def step_user(ctx: Ctx) -> None:
     for path, mode, owner, group in (
             (cfg.install_dir, 0o755, "root", "root"), (cfg.release_dir, 0o755, "root", "root"),
             (cfg.env_dir, 0o750, "root", u), (cfg.state_dir, 0o750, u, u), (f"{cfg.state_dir}/nginx", 0o755, u, u),
-            (f"{cfg.state_dir}/site-build", 0o750, u, u), (cfg.backup_dir, 0o750, u, u),
+            (f"{cfg.state_dir}/site-build", 0o750, u, u), (f"{cfg.state_dir}/files", 0o700, u, u),
+            (cfg.backup_dir, 0o750, u, u),
             (cfg.web_root, 0o755, "root", "root"), (f"{cfg.web_root}/app", 0o755, "root", "root"),
             (f"{cfg.web_root}/site", 0o755, u, u), ("/var/www/letsencrypt", 0o755, "root", "root"),
             ("/var/log/ziira", 0o750, "root", "adm"), ("/var/log/ziira/nginx", 0o750, "root", "adm")):

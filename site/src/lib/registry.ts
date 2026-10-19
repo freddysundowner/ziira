@@ -23,7 +23,7 @@ export interface Entry {
 
 const homeDef = (lang: Lang): PageDef => {
   const h = home[lang];
-  return { id: "home", slug: "", kind: "home", title: h.title, description: h.description, h1: h.h1, lead: h.lead, eyebrow: h.eyebrow, blocks: [], short: "Ziira", cta: "general" };
+  return { id: "home", slug: "", kind: "home", title: h.title, description: h.description, h1: h.h1, lead: h.lead, blocks: [], short: "Ziira", cta: "general" };
 };
 
 const defs: Record<Lang, PageDef[]> = {

@@ -1,3 +1,12 @@
 ---
+/** The Ziira wordmark: white letters (or `currentColor`) with the gradient dots mark. Inline so it is crisp at any size; `uid` keeps the gradient id unique when the logo appears twice on a page. */
+interface Props { uid?: string; class?: string }
+const { uid = "a", class: cls } = Astro.props;
+const id = `zg-${uid}`;
 ---
-<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="8" fill="rgb(15 118 110)"/><path d="M9 10h14v3.2L14.2 20H23v3H9v-3.2L17.8 13H9z" fill="#fff"/></svg>
+<svg class:list={["logo-mark", cls]} viewBox="40 30 930 370" aria-hidden="true" focusable="false">
+  <defs><linearGradient id={id} gradientUnits="userSpaceOnUse" x1="320" y1="60" x2="580" y2="150"><stop offset="0" stop-color="#2B7CFF" /><stop offset=".55" stop-color="#24B9C7" /><stop offset="1" stop-color="#10CD8D" /></linearGradient></defs>
+  <g fill="none" stroke="currentColor" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"><path d="M96 143H274L96 352H277" /><path d="M397 198V352" /><path d="M484 198V352" /><path d="M593 352V268C593 222 622 198 676 198H710" /><circle cx="820" cy="272" r="80" /><path d="M902 198V352" /></g>
+  <path d="M380 104H530" stroke={`url(#${id})`} stroke-width="36" stroke-linecap="round" fill="none" />
+  <circle cx="378" cy="102" r="58" fill={`url(#${id})`} /><circle cx="534" cy="102" r="47" fill={`url(#${id})`} />
+</svg>

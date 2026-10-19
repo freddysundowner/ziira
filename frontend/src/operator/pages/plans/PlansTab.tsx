@@ -51,7 +51,7 @@ export default function PlansTab() {
             <option value="active">{t("plans.statuses.active")}</option>
             <option value="retired">{t("plans.statuses.retired")}</option>
           </Select>
-          {canEdit && <Link to="/operator/plans/new" className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand-strong px-2.5 text-xs font-medium text-brand-ink shadow-card hover:bg-brand-strong/90"><Plus className="h-4 w-4" /> {t("plans.new")}</Link>}
+          {canEdit && <Link to="/operator/plans/new" className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand px-2.5 text-xs font-medium text-brand-ink shadow-card hover:opacity-90"><Plus className="h-4 w-4" /> {t("plans.new")}</Link>}
         </>
       )}
     />

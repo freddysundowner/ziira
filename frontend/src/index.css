@@ -2,58 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens: space-separated RGB so Tailwind can add opacity. Dark theme = html.dark. */
+/* Inter, self-hosted (the security policy allows fonts from this site only). Latin subset; OFL licence in src/fonts. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/inter-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/inter-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("./fonts/inter-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/inter-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("./fonts/inter-latin-800-normal.woff2") format("woff2"); }
+
+/* Design tokens: space-separated RGB so Tailwind can add opacity. Dark theme = html.dark.
+   The theme is the owner's brand system: navy #0B0F1A, blue #2B7CFF, cyan #24B9C7, green #10CD8D, ink #182334, page #F5F7FA.
+   Text colours are chosen for contrast (WCAG AA 4.5:1 on their own backgrounds), not copied from the mockups (docs/frontend.md "Theme"). */
 :root {
-  --bg: 246 247 249;
+  --bg: 245 247 250;
   --surface: 255 255 255;
-  --sunken: 241 243 246;
-  --line: 226 230 236;
-  --ink: 17 24 39;
-  --muted: 100 110 128;
-  --brand: 13 148 136;
-  --brand-strong: 15 118 110;
-  --brand-soft: 224 247 244;
-  --brand-ink: 255 255 255;
-  --ok: 18 108 60;
-  --ok-soft: 220 247 232;
-  --warn: 146 86 0;
-  --warn-soft: 255 241 206;
-  --bad: 185 35 35;
-  --bad-soft: 254 228 228;
-  --info: 29 78 216;
-  --info-soft: 224 234 255;
-  --shadow: 15 23 42;
+  --sunken: 238 242 246;
+  --line: 227 232 239;
+  --ink: 24 35 52;
+  --muted: 95 107 127;
+  --brand: 43 124 255;
+  --brand-strong: 7 111 104;
+  --brand-soft: 232 248 245;
+  --brand-ink: 11 15 26;
+  --navy: 11 15 26;
+  --cyan: 36 185 199;
+  --mint: 16 205 141;
+  --ok: 8 120 95;
+  --ok-soft: 231 248 241;
+  --warn: 143 95 12;
+  --warn-soft: 255 244 223;
+  --bad: 184 60 50;
+  --bad-soft: 255 240 238;
+  --bad-ink: 255 255 255;
+  --ok-ink: 255 255 255;
+  --info: 42 95 176;
+  --info-soft: 234 242 255;
+  --indigo: 72 86 204;
+  --indigo-soft: 238 240 255;
+  --shadow: 24 35 52;
+  --gradient: linear-gradient(110deg, #2b7cff 0%, #24b9c7 52%, #10cd8d 100%);
+  --focus: 43 124 255;
   color-scheme: light;
 }
 html.dark {
-  --bg: 11 14 20;
-  --surface: 20 24 33;
-  --sunken: 28 33 44;
-  --line: 44 51 66;
-  --ink: 236 239 245;
-  --muted: 148 158 177;
-  --brand: 45 190 175;
-  --brand-strong: 94 214 200;
-  --brand-soft: 17 58 56;
-  --brand-ink: 6 26 25;
-  --ok: 74 200 130;
-  --ok-soft: 16 52 36;
-  --warn: 240 175 60;
-  --warn-soft: 61 46 12;
-  --bad: 248 113 113;
-  --bad-soft: 66 24 26;
-  --info: 120 160 255;
-  --info-soft: 24 36 72;
+  --bg: 11 15 26;
+  --surface: 18 24 38;
+  --sunken: 26 33 50;
+  --line: 38 48 70;
+  --ink: 232 237 245;
+  --muted: 147 160 181;
+  --brand: 79 147 255;
+  --brand-strong: 63 208 201;
+  --brand-soft: 15 58 60;
+  --brand-ink: 11 15 26;
+  --navy: 11 15 26;
+  --cyan: 36 185 199;
+  --mint: 16 205 141;
+  --ok: 61 220 159;
+  --ok-soft: 14 43 35;
+  --warn: 242 178 74;
+  --warn-soft: 52 39 12;
+  --bad: 255 138 128;
+  --bad-soft: 58 26 29;
+  --bad-ink: 11 15 26;
+  --ok-ink: 11 15 26;
+  --info: 127 176 255;
+  --info-soft: 20 39 74;
+  --indigo: 150 158 255;
+  --indigo-soft: 32 36 78;
   --shadow: 0 0 0;
+  --focus: 79 147 255;
   color-scheme: dark;
 }
 
+@layer components {
+  /* The signature gradient: primary buttons, brand mark, key accents. Text on it is navy (white fails 4.5:1 on cyan and blue). */
+  .bg-brand-gradient { background-image: var(--gradient); color: rgb(var(--navy)); }
+  .text-brand-gradient { background-image: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .btn-gradient { background-image: var(--gradient); color: rgb(var(--navy)); box-shadow: 0 3px 8px rgb(43 124 255 / 0.22); transition: filter .15s, box-shadow .15s, transform .15s; }
+  .btn-gradient:hover:not(:disabled) { filter: saturate(1.1) brightness(1.04); box-shadow: 0 6px 14px rgb(43 124 255 / 0.3); }
+  .btn-gradient:active:not(:disabled) { transform: translateY(1px); }
+  /* Small uppercase grey label: sidebar sections, table heads, eyebrows. */
+  /* Sign-in and sign-up forms: taller fields and a calmer focus, as in the login mockup. */
+  .auth-form input[class*="h-10"]:not([type="checkbox"]) { height: 3rem; }
+  .auth-form select[class*="h-10"] { height: 3rem; }
+  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.08em] text-muted; }
+}
+
+/* A row of tabs: scrolls sideways on a narrow screen by touch or wheel, never shows a scrollbar, and never scrolls up and down
+   (the active tab's underline overlaps the bar's border by a pixel, which would otherwise add a vertical scrollbar). */
+@layer components {
+  .tab-strip { @apply flex gap-1 overflow-x-auto overflow-y-hidden border-b border-line pb-px; scrollbar-width: none; -ms-overflow-style: none; }
+  .tab-strip::-webkit-scrollbar { display: none; }
+}
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
   body { @apply bg-bg font-sans text-sm text-ink antialiased; font-feature-settings: "cv11", "ss01"; }
-  :focus-visible { @apply outline-none ring-2 ring-brand/60 ring-offset-1 ring-offset-surface; }
+  /* Focus ring: 3px, the brand blue at about a quarter strength, as in the mockups (visible on light and dark). */
+  :focus-visible { outline: none; box-shadow: 0 0 0 3px rgb(var(--focus) / 0.45); }
   ::selection { @apply bg-brand/25; }
   h1, h2, h3 { @apply tracking-tight; }
+  h1 { letter-spacing: -0.03em; }
   .tnum { font-variant-numeric: tabular-nums; }
 }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

@@ -176,3 +176,23 @@ def set_selling_price(session: Session, company_id: UUID, product_id: UUID, pric
         raise ValidationFailed("The company has no default price list to put the price on")
     item = pricing.set_price(session, lists[0].id, product_id=product_id, price=price, valid_from=valid_from)
     return item.id
+
+
+def service_items(session: Session, company_id: UUID, search: str | None = None, limit: int = 200) -> list[ProductView]:
+    """The company's active service items (`product_type = service`: no stock moves), by name, for units that sell
+    time or work, such as Bookings."""
+    from sqlalchemy import select
+
+    from ziira.modules.products.repository.models import Product
+
+    query = select(Product).where(Product.company_id == company_id, Product.product_type == "service",
+                                  Product.is_active).order_by(Product.name, Product.id).limit(min(limit, 1000))
+    if search:
+        escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        query = query.where(Product.name.ilike(f"%{escaped}%", escape="\\"))
+    found = list(session.scalars(query))
+    rates = {t.id: t.vat_rate for t in products_repo.list_tax_codes(session)}
+    return [ProductView(
+        id=p.id, company_id=p.company_id, sku=p.sku, name=p.name, product_type=p.product_type,
+        base_uom_id=p.base_uom_id, tax_code_id=p.tax_code_id, vat_rate=rates.get(p.tax_code_id, Decimal(0)),
+        is_batch_tracked=p.is_batch_tracked, is_active=p.is_active, reorder_level=p.reorder_level) for p in found]

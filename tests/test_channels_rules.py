@@ -24,8 +24,8 @@ NAIROBI = ZoneInfo("Africa/Nairobi")
 # --------------------------------------------------------------------------- the shipped templates
 def test_every_shipped_template_has_english_and_swahili_wording_that_uses_only_its_variables() -> None:
     catalogue = templates.catalogue()
-    assert set(catalogue) == {"daily_brief", "urgent_alert", "overdue_reminder", "payment_due", "action_proposal",
-                              "verification_code"}
+    assert {"daily_brief", "urgent_alert", "overdue_reminder", "payment_due", "action_proposal",
+            "verification_code"} <= set(catalogue)               # units (bookings, jobs, memberships) ship their own too
     for shipped in catalogue.values():
         assert set(shipped.text) == {"en", "sw"}
         assert len(shipped.examples) == len(shipped.variables)

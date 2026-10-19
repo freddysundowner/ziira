@@ -29,7 +29,7 @@ export default function BannerTab() {
         <Card title={t("website.banner.preview")}>
           <div className="space-y-2">
             {locales.map((locale) => (
-              <div key={locale} className="rounded-lg bg-brand-strong px-4 py-2 text-center text-sm text-brand-ink">
+              <div key={locale} className="rounded-lg bg-brand px-4 py-2 text-center text-sm text-brand-ink">
                 <span className="mr-2 text-xs opacity-70">{locale.toUpperCase()}</span>{text[locale] || <span className="opacity-70">{t("website.banner.previewEmpty")}</span>}
               </div>
             ))}

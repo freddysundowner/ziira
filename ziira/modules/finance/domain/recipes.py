@@ -38,7 +38,7 @@ RULE_CONDITIONS: dict[str, tuple[str, ...]] = {"stock_movement": ("movement_type
                                                "payroll": (), "payroll_payment": (), "opening_receivable": (),
                                                "opening_payable": (), "opening_balance": ()}
 MOVEMENT_TYPES = ("receipt", "opening", "sale", "sale_return", "purchase_return", "adjustment", "count_variance",
-                  "write_off", "transfer_in", "transfer_out")
+                  "write_off", "transfer_in", "transfer_out", "job_issue", "job_return")
 
 
 @dataclass(frozen=True)
@@ -62,6 +62,8 @@ def stock_movement(movement_type: str, value: Decimal, location_kind: str) -> li
     opening        Dr inventory           Cr opening balance equity
     sale           Dr cost of goods sold  Cr inventory
     sale_return    Dr inventory           Cr cost of goods sold
+    job_issue      Dr cost of goods sold  Cr inventory      (parts used on a job)
+    job_return     Dr inventory           Cr cost of goods sold
     purchase_return Dr goods received not invoiced  Cr inventory
     adjustment, count_variance, write_off   (loss) Dr shrinkage  Cr inventory  /  (gain) Dr inventory  Cr shrinkage
     transfer_out   Dr transfer clearing   Cr inventory      (the stock left this place)
@@ -75,7 +77,8 @@ def stock_movement(movement_type: str, value: Decimal, location_kind: str) -> li
     gained = value > 0
     other = {
         "receipt": "grni", "opening": "opening_equity", "sale": "cogs", "sale_return": "cogs",
-        "purchase_return": "grni", "adjustment": "shrinkage", "count_variance": "shrinkage",
+        "job_issue": "cogs", "job_return": "cogs", "purchase_return": "grni", "adjustment": "shrinkage",
+        "count_variance": "shrinkage",
         "write_off": "shrinkage", "transfer_in": "transfer_clearing", "transfer_out": "transfer_clearing",
     }.get(movement_type)
     if other is None:

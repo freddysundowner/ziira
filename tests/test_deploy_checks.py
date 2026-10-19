@@ -1,6 +1,7 @@
 """scripts/check_env.py (production configuration check) and scripts/secret_scan.py."""
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ def load(name: str):  # type: ignore[no-untyped-def]
     spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module      # dataclasses look the module up by name
     spec.loader.exec_module(module)
     return module
 
@@ -29,7 +31,7 @@ GOOD = {
     "ZIIRA_PLATFORM_EMAIL_SECRET": '{"password": "x"}', "ZIIRA_PLATFORM_EMAIL_CONFIG": '{"from_address": "a@example.com"}',
     "ZIIRA_METRICS_TOKEN": "mT7qW2eR9yU4iO1pA6sD3fG8hJ5kL0zX", "ZIIRA_LOG_FORMAT": "json",
     "ZIIRA_CORS_ORIGINS": "https://app.example.com", "ZIIRA_TRUST_FORWARDED_FOR": "true",
-    "ZIIRA_OPERATOR_MFA": "totp",
+    "ZIIRA_OPERATOR_MFA": "totp", "ZIIRA_FILES_DIR": "/var/lib/ziira/files", "ZIIRA_BACKUP_DIR": "/var/backups/ziira",
 }
 
 
@@ -56,7 +58,6 @@ def test_a_complete_production_configuration_has_no_errors() -> None:
     ({"ZIIRA_TENANT_SERVER_URL": ""}, "ZIIRA_TENANT_SERVER_URL"),
     ({"ZIIRA_PUBLIC_BASE_URL": "http://api.example.com"}, "ZIIRA_PUBLIC_BASE_URL"),
     ({"ZIIRA_PUBLIC_WEB_URL": "https://localhost:5173"}, "ZIIRA_PUBLIC_WEB_URL"),
-    ({"ZIIRA_PLATFORM_EMAIL_PROVIDER": ""}, "ZIIRA_PLATFORM_EMAIL_PROVIDER"),
     ({"ZIIRA_PLATFORM_EMAIL_PROVIDER": "carrier-pigeon"}, "ZIIRA_PLATFORM_EMAIL_PROVIDER"),
     ({"ZIIRA_PLATFORM_EMAIL_SECRET": ""}, "ZIIRA_PLATFORM_EMAIL_SECRET"),
     ({"ZIIRA_PLATFORM_EMAIL_CONFIG": "{not json"}, "ZIIRA_PLATFORM_EMAIL_CONFIG"),
@@ -158,3 +159,27 @@ def test_development_does_not_need_the_acknowledgement(monkeypatch) -> None:  # 
     monkeypatch.setenv("ZIIRA_OPERATOR_MFA", "off")
     monkeypatch.delenv("ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED", raising=False)
     Settings().check_safe_for_production()
+
+
+# --------------------------------------------------------------------------- photos and files folder
+@pytest.mark.parametrize(("value", "bad"), [
+    ("", True), ("files", True), ("./files", True), ("/tmp/ziira-files", True), ("/var/tmp/x", True), ("/", True),
+    ("/var/backups/ziira", True), ("/var/backups/ziira/files", True), ("/var/lib/ziira/files", False),
+    ("/srv/ziira/files", False),
+])
+def test_the_files_folder_must_be_a_permanent_private_absolute_folder(value: str, bad: bool) -> None:
+    env = {**GOOD, "ZIIRA_FILES_DIR": value}
+    assert ("ZIIRA_FILES_DIR" in errors(env)) is bad
+
+
+def test_the_files_folder_warns_when_it_could_be_published_or_is_not_backed_up() -> None:
+    warned = {f.name for f in check_env.check({**GOOD, "ZIIRA_FILES_DIR": "/var/www/files"}) if f.level == "WARN"}
+    assert "ZIIRA_FILES_DIR" in warned
+    no_backup = {key: value for key, value in GOOD.items() if key != "ZIIRA_BACKUP_DIR"}
+    assert any(f.name == "ZIIRA_FILES_DIR" and "backup" in f.message for f in check_env.check(no_backup))
+
+
+def test_the_upload_size_for_files_must_be_a_sensible_number() -> None:
+    assert "ZIIRA_FILES_MAX_UPLOAD_BYTES" not in errors({**GOOD, "ZIIRA_FILES_MAX_UPLOAD_BYTES": "26500000"})
+    for bad in ("lots", "10", "900000000"):
+        assert "ZIIRA_FILES_MAX_UPLOAD_BYTES" in errors({**GOOD, "ZIIRA_FILES_MAX_UPLOAD_BYTES": bad})

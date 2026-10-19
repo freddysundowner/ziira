@@ -246,6 +246,20 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
     Setting("retention_inactive_customers_years", 0, _count(0, 100, "years"),
             "A customer who is not active and has not been touched for this many years is put in the exceptions inbox "
             "for review (0 turns the review off)"),
+    Setting("files_strip_location", True, _boolean,
+            "Photos keep no location, camera or time information inside the stored picture (turn off only if the "
+            "business needs the original file exactly as taken)"),
+    Setting("files_max_file_mb", 10, _count(1, 25, "megabytes"),
+            "The largest photo or PDF one person may attach"),
+    Setting("files_max_per_record", 60, _count(1, 500, "files"),
+            "The most photos and files that may be attached to one record (one job, one customer)"),
+    Setting("files_storage_limit_mb", 0, _count(0, 10_000_000, "megabytes"),
+            "The most space this company's photos and files may use (0: only the plan's limit applies)"),
+    Setting("retention_files_years", 0, _count(0, 100, "years"),
+            "Photos and files older than this many years are put in the exceptions inbox for review (0 turns the "
+            "review off); nothing is deleted by itself"),
+    Setting("retention_file_access_days", 365, _count(0, 3650, "days"),
+            "The list of who opened a photo or file is kept this many days, then removed (0 keeps it)"),
 )}
 
 

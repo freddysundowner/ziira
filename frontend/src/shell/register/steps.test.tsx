@@ -108,6 +108,34 @@ describe("step 4: your business", () => {
   });
 });
 
+describe("step 4 with the Services edition: what kind of service business", () => {
+  const ke = COUNTRIES.find((c) => c.code === "KE")!;
+  const industries = [{ id: "pack_salon", title: "Salon or spa", summary: "Hair, nails, massage." }, { id: "pack_garage", title: "Garage or repair", summary: "" }];
+  const show = (edition: string, list = industries) => render(<Harness initial={{ edition, country: "KE", currency: "KES", zone: "Africa/Nairobi", calling: "254" }}>{(form) => <>
+    <StepBusiness form={form} countries={COUNTRIES} currencies={["KES"]} country={ke} onCountry={() => undefined} industries={list} />
+    <output data-testid="kind">{form.values.kind}</output>
+  </>}</Harness>);
+
+  it("asks about the kinds the installed packs offer, plus Something else, and records the pack picked", () => {
+    show("services");
+    expect(screen.getByRole("group", { name: /what kind of service business/i })).toBeTruthy();
+    expect(screen.queryByRole("radio", { name: "Wholesale" })).toBeNull();
+    expect(screen.getByRole("radio", { name: "Something else" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "Salon or spa" }));
+    expect(screen.getByTestId("kind").textContent).toBe("pack_salon");
+    expect(screen.getByText("Hair, nails, massage.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "Something else" }));
+    expect(screen.getByTestId("kind").textContent).toBe("other");
+  });
+  it("keeps the usual question for other editions, and when no pack is installed", () => {
+    show("retail");
+    expect(screen.getByRole("radio", { name: "Wholesale" })).toBeTruthy();
+    cleanup();
+    show("services", []);
+    expect(screen.getByRole("radio", { name: "Wholesale" })).toBeTruthy();
+  });
+});
+
 describe("step 5: review", () => {
   const values = { name: "Jane Doe", email: "jane@acme.test", business: "Acme Traders", country: "KE", currency: "KES", zone: "Africa/Nairobi", password: "a-good-password-1" };
   it("summarises the answers (never the password), links back to each part and shows the terms links only when configured", () => {

@@ -26,3 +26,4 @@ site/.lighthouse/
 site/.cache/
 site/public/media/
 .dev-operator.local
+var/

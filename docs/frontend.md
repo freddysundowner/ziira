@@ -78,6 +78,37 @@ Rules every screen follows:
 7. Works at phone width (tables hide low-priority columns with `hideBelow`), keyboard friendly, labelled controls, 44px-ish targets.
 8. No country in code: currency, tax names, phone codes come from the company and the API.
 
+## Theme (colours, type, shapes)
+
+The theme is the owner's brand system, taken from three mockups (app shell, sign-in, website). It lives only in tokens and the shared kit, so
+a module picks it up without edits. Change the look in `src/index.css` (variables) and `tailwind.config.js` (names), never in a module.
+
+- **Brand colours**: navy `#0B0F1A` (`navy`), blue `#2B7CFF` (`brand`), cyan `#24B9C7` (`cyan`), green `#10CD8D` (`mint`). The signature gradient
+  (`linear-gradient(110deg, blue, cyan 52%, green)`, variable `--gradient`) is used for the primary button (`Button` primary = class `btn-gradient`),
+  the active-page accent bar, progress bars and the brand mark. Utilities: `bg-brand-gradient`, `text-brand-gradient`, `btn-gradient`.
+- **Text on the gradient is navy, not white**: white fails 4.5:1 on cyan (about 2.3) and on blue (3.9); navy is 4.9 on blue and 8+ on cyan/green.
+  `brand-ink` is that navy (use it on any filled `bg-brand`). `bad-ink` / `ok-ink` are the text colours for filled danger / success (white in light, navy in dark).
+- **Surfaces**: `bg` page `#F5F7FA`, `surface` white panels with a 1px `line` border and 12px radius (`rounded-xl`), `sunken` for quiet fills. Controls are 10px
+  (`rounded-[10px]`, 40px high), buttons 9px (`rounded-lg`). Shadows are soft (`shadow-card`, `shadow-pop`).
+- **Text**: `ink` `#182334`, `muted` is `#5F6B7F` (the mockup's `#718096` is only 4.0:1 on white, so it was darkened to pass 4.5:1). Links and active
+  navigation use `brand-strong` (a deep teal in light, a light cyan in dark), on `brand-soft` pale teal.
+- **Status colours** (`ok`, `warn`, `bad`, `info`, each with `-soft`): the text colours are darkened versions of the mockup's pills so they pass 4.5:1 on their
+  soft background; `indigo` is the fourth chip colour of the Home cards. `Badge` is a small rounded-rectangle pill.
+- **Dark mode** (`html.dark`) uses the same navy: page `#0B0F1A`, panels `#121826`, lines `#263046`, brighter brand and status colours.
+- **Type**: Inter 400 to 800, self-hosted from `src/fonts` (latin subset; the content-security policy allows fonts from this site only, so no Google Fonts).
+  Headings use tight negative letter-spacing (`h1` -0.03em). `eyebrow` (class) is the small uppercase grey label (sidebar sections, detail-list labels, the date above Home's greeting).
+- **Focus**: every focusable element gets a 3px ring in the brand blue at 45% (`:focus-visible` in `index.css`).
+- **Shell**: sidebar 250px (68px collapsed): brand mark and name with the collapse button on the right, a business block (initial, company name, currency) under it,
+  sections as small uppercase labels, pages with a pale-teal active row and a gradient accent bar, Add-ons and Settings pinned at the foot. Top bar 76px (64px on a phone):
+  rounded search field, account menu with name and business. The Super Admin console uses the same tokens and shapes.
+- **Sign-in and sign-up**: `shell/AuthShell.tsx` is the split layout of the login mockup: a navy panel with electric line art (inline SVG), the tagline and subtitle
+  (`auth.tagline`, `auth.subtitle`) and the wordmark, beside a light form panel (a compact navy strip above the form under 768px). Auth forms get 48px fields (`.auth-form`).
+  The sign-up wizard (`register/RegisterLayout`) keeps its own wizard layout, themed with the same tokens.
+- **Logos**: `BrandMark`, `Wordmark` (strokes, `tone="dark"` for navy backgrounds) and `BrandName` in `sdk/ui/brand.tsx`; SVG files `public/brand/ziira-mark.svg`
+  (favicon) and `ziira-logo.svg` for light backgrounds. `ziira-logo-on-dark.png` is kept for reference only.
+- **Rules for modules**: use tokens only. A filled button is `Button` (never hand-made `bg-brand-strong`); text on a filled `bg-brand` is `text-brand-ink`;
+  blue text on white (`text-brand`) fails contrast, so a link is `text-brand-strong`.
+
 ## Navigation: areas and sidebar sections
 
 The sidebar has Home, then **every area at once**: a section heading (icon and title) followed by its pages, a thin divider between sections, no accordion

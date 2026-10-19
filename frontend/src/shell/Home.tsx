@@ -6,9 +6,12 @@ import { cx, hasLanded, iconFor, areaEntryPath, buildNavigation, landingTarget, 
 import { Checklist } from "./Checklist";
 import { WidgetCard } from "./WidgetCard";
 
+/** Tinted icon chips, in turn: blue, green, indigo, amber (the dashboard mockup). */
+const CHIPS = ["bg-info-soft text-info", "bg-ok-soft text-ok", "bg-indigo-soft text-indigo", "bg-warn-soft text-warn"];
+
 /** The home page: a greeting, shortcuts to the screens you may open, and boxes that modules add through the "dashboard.widgets" slot. */
 export function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { me } = useSession();
   const modules = useActiveModules();
   const access = useAccess();
@@ -29,22 +32,24 @@ export function Home() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t("home.morning") : hour < 18 ? t("home.afternoon") : t("home.evening");
   const first = me?.full_name?.split(/\s+/)[0];
+  const date = new Date().toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">{greeting}{first ? `, ${first}` : ""}</h1>
-        <p className="mt-1 text-sm text-muted">{t("home.subtitle")}</p>
+        <p className="eyebrow mb-2">{date}</p>
+        <h1 className="text-[26px] font-bold leading-tight text-ink">{greeting}{first ? `, ${first}` : ""}</h1>
+        <p className="mt-1.5 text-[13px] text-muted">{t("home.subtitle")}</p>
       </div>
       {mine && <Checklist edition={mine.edition} done={mine.done} dismissed={mine.dismissed} openable={openable} />}
       {shortcuts.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {shortcuts.map((i) => {
+          {shortcuts.map((i, n) => {
             const I = iconFor(i.icon);
             return (
               <Link key={i.to} to={i.to} className="group flex items-center gap-3 rounded-xl border border-line bg-surface p-3.5 shadow-card transition-colors hover:border-brand/50">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong"><I className="h-[18px] w-[18px]" /></span>
-                <span className="text-sm font-medium">{i.label}</span>
+                <span className={cx("flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px]", CHIPS[n % CHIPS.length])}><I className="h-[18px] w-[18px]" /></span>
+                <span className="text-[13px] font-semibold">{i.label}</span>
               </Link>
             );
           })}

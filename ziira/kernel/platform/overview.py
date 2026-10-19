@@ -238,7 +238,7 @@ def build_risks(*, environment: str, mfa_off: bool, mail_working: bool, registra
     if mfa_off:
         risks.append({"key": "mfa_off", "severity": "bad", "to": "/operator/account", "needs": "platform.view"})
     if registration_mode != "closed" and not mail_working:
-        risks.append({"key": "registration_without_email", "severity": "bad", "to": "/operator/settings",
+        risks.append({"key": "registration_without_email", "severity": "warn", "to": "/operator/settings",
                       "needs": "platform.settings"})
     elif not mail_working:
         risks.append({"key": "mail_not_configured", "severity": "warn", "to": "/operator/email",

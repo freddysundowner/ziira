@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-import { cx, useTranslation } from "@/sdk";
+import { BrandMark, cx, useTranslation } from "@/sdk";
 
 import { STEPS, type StepId } from "./state";
 
@@ -25,10 +25,10 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
   const index = step ? STEPS.indexOf(step) : STEPS.length - 1;
   return (
     <div className="flex min-h-screen flex-col bg-bg">
-      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-3 sm:px-8">
+      <header className="flex items-center justify-between gap-4 border-b border-line bg-surface px-4 py-4 sm:px-8">
         <Link to="/" className="flex items-center gap-2.5" aria-label={t("appName")}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand font-bold text-brand-ink">Z</span>
-          <span className="text-lg font-semibold">{t("appName")}</span>
+          <BrandMark className="h-6 w-auto" />
+          <span className="text-[21px] font-bold leading-none tracking-[-0.04em]">{t("appName")}</span>
         </Link>
         <Link to="/" className="text-sm font-medium text-brand-strong hover:underline">{t("signup.haveAccount")}</Link>
       </header>
@@ -37,7 +37,7 @@ export function RegisterLayout({ step, done, reachable, onGo, side, children }: 
         <nav aria-label={t("signup.progress")} className="border-b border-line bg-surface px-4 py-3 lg:hidden">
           <p className="mb-2 text-sm font-medium">{t("signup.stepOf", { n: index + 1, total: STEPS.length, title: t(`signup.steps.${STEPS[index]}`) })}</p>
           <div className="flex gap-1.5" aria-hidden>
-            {STEPS.map((s, i) => <span key={s} className={cx("h-1.5 flex-1 rounded-full", i <= index ? "bg-brand" : "bg-line")} />)}
+            {STEPS.map((s, i) => <span key={s} className={cx("h-1.5 flex-1 rounded-full", i <= index ? "bg-brand-gradient" : "bg-line")} />)}
           </div>
         </nav>
       )}

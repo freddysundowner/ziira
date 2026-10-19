@@ -1,0 +1,129 @@
+# The vehicle
+[[field]]
+entity_type = "jobs.asset"
+key = "make"
+label = "Make"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "jobs.asset"
+key = "model"
+label = "Model"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "jobs.asset"
+key = "year"
+label = "Year"
+kind = "number"
+
+[[field]]
+entity_type = "jobs.asset"
+key = "vin"
+label = "VIN or chassis number"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "jobs.asset"
+key = "colour"
+label = "Colour"
+kind = "text"
+
+[[field]]
+entity_type = "jobs.asset"
+key = "fuel_type"
+label = "Fuel"
+kind = "choice"
+choices = ["Petrol", "Diesel", "Hybrid", "Electric", "Gas"]
+
+[[field]]
+entity_type = "jobs.asset"
+key = "transmission"
+label = "Gearbox"
+kind = "choice"
+choices = ["Manual", "Automatic"]
+
+# A phone or appliance
+[[field]]
+entity_type = "jobs.asset"
+key = "imei"
+label = "IMEI or serial number"
+kind = "text"
+searchable = true
+
+# The job
+[[field]]
+entity_type = "jobs.work_order"
+key = "fault_reported"
+label = "Fault as the customer describes it"
+kind = "text"
+
+[[field]]
+entity_type = "jobs.work_order"
+key = "road_test"
+label = "Road tested before hand-over"
+kind = "bool"
+
+# A tailor's measurements, kept on the customer (centimetres or inches: the business's own habit)
+[[field]]
+entity_type = "crm.customer"
+key = "m_neck"
+label = "Neck"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_chest"
+label = "Chest"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_waist"
+label = "Waist"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_hips"
+label = "Hips"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_shoulder"
+label = "Shoulder"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_sleeve"
+label = "Sleeve length"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_inseam"
+label = "Inseam"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_outseam"
+label = "Outseam"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_height"
+label = "Height"
+kind = "number"
+
+[[field]]
+entity_type = "crm.customer"
+key = "m_notes"
+label = "Fitting notes"
+kind = "text"

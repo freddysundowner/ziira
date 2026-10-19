@@ -4,6 +4,7 @@ Other units normally talk to Purchasing through events (`goods.received`, `bill.
 """
 
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
@@ -40,3 +41,31 @@ def find_supplier_by_code(session: Session, company_id: UUID, code: str) -> Supp
     if found is None:
         return None
     return SupplierView(found.id, found.company_id, found.code, found.name, found.payment_terms_days, found.status)
+
+
+@dataclass(frozen=True)
+class OrderView:
+    """What other units need to know about a purchase order (a part ordered for a job)."""
+
+    id: UUID
+    company_id: UUID
+    number: str
+    supplier_id: UUID
+    supplier_name: str
+    status: str
+    expected_date: date | None
+
+
+def find_order_by_number(session: Session, company_id: UUID, number: str) -> OrderView | None:
+    """A company's purchase order by its number (any case), or None. Read only; added for Jobs (parts ordered for a
+    job)."""
+    from sqlalchemy import text
+
+    row = session.execute(text(
+        "select o.id, o.company_id, o.number, o.supplier_id, s.name as supplier_name, o.status, o.expected_date "
+        "from purchasing.purchase_order o join purchasing.supplier s on s.id = o.supplier_id "
+        "where o.company_id = :c and upper(o.number) = upper(:n)"), {"c": str(company_id), "n": number.strip()}).first()
+    if row is None:
+        return None
+    return OrderView(row.id, row.company_id, row.number, row.supplier_id, row.supplier_name, row.status,
+                     row.expected_date)
