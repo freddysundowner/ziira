@@ -23,3 +23,8 @@ export function useEditions() {
 export function usePlatformUnits() {
   return useQuery({ queryKey: ["operator", "units"], queryFn: () => opUnwrap(opApi.GET("/api/v1/operator/units")), staleTime: 30_000 });
 }
+
+/** Which units are sold on their own (one payment) and at what price: the platform's add-on catalogue for units. */
+export function useUnitSales() {
+  return useQuery({ queryKey: ["operator", "unit-sales"], queryFn: () => opUnwrap(opApi.GET("/api/v1/operator/unit-sales")), staleTime: 30_000 });
+}

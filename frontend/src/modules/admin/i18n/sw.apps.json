@@ -54,6 +54,24 @@
   "industry": {
    "badge": "Sekta",
    "recommendedEdition": "Inapendekezwa kwa toleo lako"
+  },
+  "sale": {
+   "price": "Malipo moja ya {{price}}. Inabaki yako hata mpango wako ukibadilika.",
+   "taxIncl": "Kodi imejumuishwa.",
+   "buy": "Nunua kwa {{price}} (malipo moja)",
+   "askOwner": "Inapatikana kwa {{price}} (malipo moja). Mwombe mmiliki wa biashara aununue.",
+   "unavailable": "Haipatikani",
+   "notIncluded": "Haimo kwenye mpango wako.",
+   "askUs": "Tuulize",
+   "bought": "Imenunuliwa",
+   "boughtOn": "Ilinunuliwa {{date}}",
+   "given": "Imejumuishwa kwa ajili yako",
+   "givenOn": "Ulipewa {{date}}",
+   "receipt": "Stakabadhi",
+   "confirmTitle": "Nunua {{name}}",
+   "confirmAsk": "Unalipa {{price}} mara moja kwa {{name}}. Inabaki na biashara yako hata mpango ukibadilika. Inaweza kuwashwa mara tu malipo yanapothibitishwa.",
+   "continue": "Endelea kulipa",
+   "gotIt": "{{name}} ni yako. Iwashe wakati wowote."
   }
  }
 }

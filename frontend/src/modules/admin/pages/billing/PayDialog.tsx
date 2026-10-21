@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 
 import { api, Alert, Button, Field, Input, Modal, money, Spinner, toast, unwrap, useMutation, useQuery, useQueryClient, useTranslation } from "@/sdk";
 
-import { type Attempt, firstOwed, type Invoice, payBody, payerComplete, type PayOption, payPhase, PLAN_KEY, POLL_MS, returnParams, secondsLeft, STATUS_KEY } from "./lib";
+import { ADDONS_KEY, type Attempt, CATALOG_KEY, firstOwed, type Invoice, payBody, payerComplete, type PayOption, payPhase, PLAN_KEY, POLL_MS, returnParams, secondsLeft, STATUS_KEY } from "./lib";
 
 const INVOICES_KEY = ["billing-invoices"];
 
 /** Pay one invoice: choose how (when several fit), type what the method needs, confirm the amount, then follow the payment until the provider confirms it. */
-export function PayDialog({ invoice, onClose, resume }: { invoice: Invoice; onClose: () => void; resume?: string }) {
+export function PayDialog({ invoice, onClose, resume, onPaid }: { invoice: Invoice; onClose: () => void; resume?: string; onPaid?: () => void }) {
   const { t } = useTranslation("kernel");
   const qc = useQueryClient();
   const [attemptId, setAttemptId] = useState<string | null>(resume ?? null);
@@ -20,6 +20,9 @@ export function PayDialog({ invoice, onClose, resume }: { invoice: Invoice; onCl
     void qc.invalidateQueries({ queryKey: PLAN_KEY });
     void qc.invalidateQueries({ queryKey: STATUS_KEY });
     void qc.invalidateQueries({ queryKey: INVOICES_KEY });
+    void qc.invalidateQueries({ queryKey: ADDONS_KEY });
+    void qc.invalidateQueries({ queryKey: CATALOG_KEY });
+    onPaid?.();
   };
   const amount = money(invoice.balance, invoice.currency.trim());
   return (
@@ -154,7 +157,7 @@ export function ReturnedPayment({ search, onClose }: { search: string; onClose: 
     <Modal open onClose={onClose} title={t("billing.pay.returnTitle")}>
       {back.payment === "cancelled" && <Alert tone="info" className="mb-3">{t("billing.pay.cancelledReturn")}</Alert>}
       <PaymentProgress attemptId={back.attempt} onRetry={onClose} onClose={onClose}
-        onPaid={() => { void qc.invalidateQueries({ queryKey: PLAN_KEY }); void qc.invalidateQueries({ queryKey: STATUS_KEY }); void qc.invalidateQueries({ queryKey: INVOICES_KEY }); }} />
+        onPaid={() => { void qc.invalidateQueries({ queryKey: PLAN_KEY }); void qc.invalidateQueries({ queryKey: STATUS_KEY }); void qc.invalidateQueries({ queryKey: INVOICES_KEY }); void qc.invalidateQueries({ queryKey: ADDONS_KEY }); void qc.invalidateQueries({ queryKey: CATALOG_KEY }); }} />
     </Modal>
   );
 }

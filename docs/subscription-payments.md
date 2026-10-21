@@ -45,6 +45,26 @@ The rules that hold for every provider:
 * **No country in code.** Currencies, countries, payer fields, settings and wording come from the plugin's declaration;
   `ziira/kernel` and `ziira/modules` name no provider (`tests/test_architecture.py`).
 
+## Add-ons: one payment for one unit
+
+A unit outside the plan can be sold on its own (`platform/unit_addons.py`, migration `0020_unit_addons`). Nothing about the subscription changes.
+
+- **Price list**: `master.addon` (kind `unit`, `is_public` = offered) with a `one_time` row per currency in `master.addon_price`, written by the plan editor
+  (`PUT /operator/unit-sales/{unit}`). The business sees the price in its **billing currency**; a unit with no price in that currency is "not for sale" to it.
+- **Business endpoints** (`billing.manage` + `units.manage`, i.e. the owner; open when suspended like the rest of `/billing`):
+  `GET /api/v1/billing/addons` (each unit: `included | bought | for_sale | not_for_sale`, price, purchases), `POST /api/v1/billing/addons/{unit}/buy`
+  (optional `Idempotency-Key`). Buying makes an **issued platform invoice of kind `addon`** with one line "Add-on: <title> (one-time)", the usual
+  tax lines (`billing.tax_lines`, price tax-inclusive or not as set), and a *pending* `master.subscription_addon` row; it returns the invoice, which the
+  web app pays with the same calls as a plan (`/billing/pay/options`, `/billing/payments`, provider plugins, attempts and statuses unchanged).
+  Asking again (or with the same key) returns the same invoice; a changed price voids an unpaid invoice and makes a new one.
+- **Confirm before credit**: the row becomes *active* only inside `billing._mark_paid`, i.e. after the gateway's own check passed and the amount, currency and
+  reference matched (`payments._apply`) or an operator recorded the payment. A browser return, a webhook alone, a pending or failed attempt grant nothing.
+  Reversing the payment takes the add-on back. An unpaid add-on invoice is not "owed": it never counts for dunning, suspension or the owner's amount-due banner.
+- **Entitlements**: `units = plan units + active purchases (+ what they require)`; the switch `access.all_units_free` still makes it every unit and refuses the
+  buy endpoints (409, "nothing to buy"). `GET /units/catalog` carries `sale_state`, `sale_price`, `can_buy`, `bought_at`, `receipt_invoice_id` for the Add-ons page.
+- **Web**: Add-ons card = "Buy for KES 3,000 (one payment)" -> confirm -> the Plan & billing payment box -> on confirmed payment "Switch it on now";
+  a bought card shows *Bought*, the date and a receipt; Plan & billing lists "Add-ons you bought" with receipts.
+
 ## Providers are plugins
 
 A provider is a plugin that sets `platform_scope = true` in its manifest, lists `implements = ["kernel.payment_gateway"]` and

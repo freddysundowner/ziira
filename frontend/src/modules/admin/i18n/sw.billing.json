@@ -105,8 +105,6 @@
     "noteField": "Ujumbe kwa muuzaji (si lazima)",
     "requestSend": "Tuma ombi",
     "requestDone": "Ombi limetumwa. Muuzaji atakutumia ankara.",
-    "appsNotInPlan": "Haimo kwenye mpango wako.",
-    "appsUpgrade": "Pandisha mpango",
     "licenceTitle": "Leseni",
     "licenceHint": "Nakala hii ya Ziira inatumika kwenye seva yako mwenyewe na inalindwa na faili ya leseni kutoka kwa muuzaji.",
     "licenceCard": "Leseni yako",
@@ -176,6 +174,15 @@
       "suspendedNoDate": "Mpango wako umeisha. Lipa uendelee. Data yako iko salama.",
       "overdue": "Kuna malipo yaliyochelewa. Lipa sasa uendelee kutumia kikamilifu.",
       "open": "Fungua Mpango na malipo"
-    }
+    },
+    "addonsTitle": "Huduma za ziada ulizonunua",
+    "addonsHint": "Kila moja ilikuwa malipo moja. Zinabaki na biashara yako mpango ukibadilika.",
+    "addonsNone": "Hujanunua huduma yoyote ya ziada.",
+    "addonName": "Huduma ya ziada",
+    "addonWhen": "Tarehe",
+    "addonPaid": "Imelipwa",
+    "addonGiven": "Umepewa",
+    "addonWaiting": "Inasubiri malipo",
+    "addonPay": "Lipa sasa"
   }
 }

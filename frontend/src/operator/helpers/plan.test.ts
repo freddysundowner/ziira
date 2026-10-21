@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { emptyPlanForm, highlightLines, planProblems, planToForm, toPlanIn, toPlanPatch } from "./plan";
 
-const valid = () => ({ ...emptyPlanForm(), code: "pro", name: "Pro" });
+const valid = () => ({ ...emptyPlanForm(), code: "pro", name: "Pro", units: ["products"] });
 
 describe("plan form validation", () => {
   it("accepts a code, a name and the defaults", () => {
@@ -12,6 +12,10 @@ describe("plan form validation", () => {
     expect(planProblems({ ...valid(), code: "Pro Plan" }, true).code).toBe("code");
     expect(planProblems({ ...valid(), code: "x" }, true).code).toBe("code");
     expect(planProblems({ ...valid(), code: "" }, false)).toEqual({});
+  });
+  it("needs at least one unit ticked", () => {
+    expect(planProblems({ ...valid(), units: [] }, true).units).toBe("units");
+    expect(planProblems({ ...valid(), units: [], edition: "retail" }, true)).toEqual({});
   });
   it("needs a name", () => {
     expect(planProblems({ ...valid(), name: "  " }, true).name).toBe("nameRequired");

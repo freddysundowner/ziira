@@ -7,7 +7,7 @@ import { invoiceTone, isOwed, type Invoice } from "./lib";
 import { PayDialog } from "./PayDialog";
 
 /** The printable page needs the bearer token, so it is fetched by the API client and opened as a local page the owner can print or save as PDF. */
-async function openPrintable(id: string): Promise<void> {
+export async function openPrintable(id: string): Promise<void> {
   const win = window.open("", "_blank");
   try {
     const html = await unwrap(api.GET("/api/v1/billing/invoices/{invoice_id}/html", { params: { path: { invoice_id: id } }, parseAs: "text" }));

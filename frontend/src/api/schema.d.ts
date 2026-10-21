@@ -2103,6 +2103,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/operator/unit-sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Unit Sales
+         * @description Which units are sold on their own (one payment) and at what price per currency.
+         */
+        get: operations["unit_sales_api_v1_operator_unit_sales_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/unit-sales/{unit}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Put Unit Sale
+         * @description Offer a unit for sale (or stop) with its one-time price per currency. Changes the add-on catalogue.
+         */
+        put: operations["put_unit_sale_api_v1_operator_unit_sales__unit__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operator/coupons": {
         parameters: {
             query?: never;
@@ -2281,6 +2321,46 @@ export interface paths {
          * @description Copy the plan's current units and limits into this subscription (not the price).
          */
         post: operations["sync_plan_api_v1_operator_subscribers__code__sync_plan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/addons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Grant Addon
+         * @description Give a business an add-on free of charge (needs a reason; audited).
+         */
+        post: operations["grant_addon_api_v1_operator_subscribers__code__addons_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/subscribers/{code}/addons/{unit}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke Addon
+         * @description Take an add-on back (the unit is switched off for the business, its data is kept).
+         */
+        post: operations["revoke_addon_api_v1_operator_subscribers__code__addons__unit__revoke_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3110,6 +3190,48 @@ export interface paths {
          *     only makes us ask the provider. Not genuine: 401. Our own failure: 500, so the provider tries again.
          */
         post: operations["provider_webhook_api_v1_billing_webhooks__provider__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/addons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Addon Shop
+         * @description What this business can buy (with prices in its billing currency) and what it already bought.
+         */
+        get: operations["addon_shop_api_v1_billing_addons_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/billing/addons/{unit}/buy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Buy Addon
+         * @description Start buying an add-on: its invoice is made at once and returned, ready to pay. Repeating the request (or sending
+         *     the same Idempotency-Key) returns the same invoice; nobody is charged twice. Nothing is switched on until the
+         *     payment is confirmed.
+         */
+        post: operations["buy_addon_api_v1_billing_addons__unit__buy_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4485,7 +4607,8 @@ export interface paths {
         };
         /**
          * Unit Catalog
-         * @description Every module and plugin with its state for this business and what can be done with it now.
+         * @description Every module and plugin with its state for this business and what can be done with it now. A unit outside the
+         *     plan shows whether it is for sale (one payment) and its price in the business's billing currency.
          */
         get: operations["unit_catalog_api_v1_units_catalog_get"];
         put?: never;
@@ -18554,6 +18677,11 @@ export interface components {
             /** Note */
             note: string | null;
         };
+        /** AddonBuyOut */
+        AddonBuyOut: {
+            purchase: components["schemas"]["AddonPurchase"];
+            invoice: components["schemas"]["MyInvoice"] | null;
+        };
         /** AddonIn */
         AddonIn: {
             /** Code */
@@ -18587,6 +18715,28 @@ export interface components {
              * @default 100
              */
             sort_order: number;
+        };
+        /** AddonOffer */
+        AddonOffer: {
+            /** Unit */
+            unit: string;
+            /** Title */
+            title: string;
+            /**
+             * State
+             * @description included, bought, for_sale or not_for_sale
+             */
+            state: string;
+            /**
+             * Price
+             * @description One payment, in the business's billing currency (for_sale only)
+             */
+            price: string | null;
+            /** Currency */
+            currency: string | null;
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+            purchase: components["schemas"]["AddonPurchase"] | null;
         };
         /** AddonOut */
         AddonOut: {
@@ -18632,6 +18782,69 @@ export interface components {
             status?: ("active" | "retired") | null;
             /** Sort Order */
             sort_order?: number | null;
+        };
+        /** AddonPurchase */
+        AddonPurchase: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Unit Name */
+            unit_name: string;
+            /** Title */
+            title: string;
+            /**
+             * Status
+             * @description pending (waiting for payment), active, revoked or void
+             */
+            status: string;
+            /** Price */
+            price: string;
+            /** Currency */
+            currency: string | null;
+            /** Invoice Id */
+            invoice_id: string | null;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Payment Reference */
+            payment_reference: string | null;
+            /**
+             * Granted By
+             * @description payment, or operator (given free by the vendor)
+             */
+            granted_by: string;
+            /** Purchased At */
+            purchased_at: string | null;
+            /** Revoked At */
+            revoked_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AddonShop */
+        AddonShop: {
+            /**
+             * Free For All
+             * @description True: every add-on is included for now, nothing needs buying
+             */
+            free_for_all: boolean;
+            /**
+             * Currency
+             * @description The business's billing currency
+             */
+            currency: string | null;
+            /**
+             * Can Buy
+             * @description The signed-in person may buy now
+             */
+            can_buy: boolean;
+            /** Units */
+            units: components["schemas"]["AddonOffer"][];
+            /** Purchases */
+            purchases: components["schemas"]["AddonPurchase"][];
         };
         /** AdjustmentIn */
         AdjustmentIn: {
@@ -28249,6 +28462,13 @@ export interface components {
             closing: string;
             /** Lines */
             lines: components["schemas"]["LedgerLineOut"][];
+        };
+        /** GrantAddonIn */
+        GrantAddonIn: {
+            /** Unit */
+            unit: string;
+            /** Reason */
+            reason: string;
         };
         /** GrantIn */
         GrantIn: {
@@ -40490,6 +40710,49 @@ export interface components {
             waiting_for_vendor: boolean;
             invoice: components["schemas"]["MyInvoice"] | null;
         };
+        /** SubscriberAddonOut */
+        SubscriberAddonOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Unit Name */
+            unit_name: string;
+            /** Title */
+            title: string;
+            /** Status */
+            status: string;
+            /** Price */
+            price: string;
+            /** Currency */
+            currency: string | null;
+            /** Invoice Id */
+            invoice_id: string | null;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Payment Reference */
+            payment_reference: string | null;
+            /** Granted By */
+            granted_by: string;
+            /** Granted By Name */
+            granted_by_name: string | null;
+            /** Reason */
+            reason: string | null;
+            /** Purchased At */
+            purchased_at: string | null;
+            /** Revoked At */
+            revoked_at: string | null;
+            /** Revoked By */
+            revoked_by: string | null;
+            /** Revoke Reason */
+            revoke_reason: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** SubscriberDetail */
         SubscriberDetail: {
             /**
@@ -40559,6 +40822,11 @@ export interface components {
             payments: components["schemas"]["PlatformPaymentOut"][];
             /** Requests */
             requests: components["schemas"]["PlatformRequestOut"][];
+            /**
+             * Addons
+             * @description Add-ons bought or given
+             */
+            addons: components["schemas"]["SubscriberAddonOut"][];
             usage: components["schemas"]["UsageOut"];
             limits: components["schemas"]["LimitsOut"];
             /** Units */
@@ -43164,6 +43432,46 @@ export interface components {
              * @description Why it cannot be switched on (for example: the plan)
              */
             why_not_enable?: string | null;
+            /**
+             * Sale State
+             * @description included (in the plan, or everything is free), bought, for_sale (one payment) or not_for_sale
+             * @default included
+             */
+            sale_state: string;
+            /**
+             * Sale Price
+             * @description The one-time price when for_sale
+             */
+            sale_price?: string | null;
+            /** Sale Currency */
+            sale_currency?: string | null;
+            /**
+             * Sale Tax Inclusive
+             * @default false
+             */
+            sale_tax_inclusive: boolean;
+            /**
+             * Bought At
+             * @description When it was bought or given
+             */
+            bought_at?: string | null;
+            /**
+             * Receipt Invoice Id
+             * @description The invoice (receipt) of the purchase
+             */
+            receipt_invoice_id?: string | null;
+            /**
+             * Bought Free
+             * @description True: given by the vendor, nothing was paid
+             * @default false
+             */
+            bought_free: boolean;
+            /**
+             * Can Buy
+             * @description The signed-in person may buy it now (owner, account in order)
+             * @default false
+             */
+            can_buy: boolean;
             /** Can Disable */
             can_disable: boolean;
             /** Why Not Disable */
@@ -43247,6 +43555,52 @@ export interface components {
             }[];
             /** Uninstalled */
             uninstalled?: string | null;
+        };
+        /** UnitSaleIn */
+        UnitSaleIn: {
+            /** Offered */
+            offered: boolean;
+            /**
+             * Prices
+             * @description One-time price per currency; null withdraws that currency
+             */
+            prices?: {
+                [key: string]: number | string | null;
+            };
+            /**
+             * Tax Inclusive
+             * @default false
+             */
+            tax_inclusive: boolean;
+        };
+        /** UnitSaleOut */
+        UnitSaleOut: {
+            /** Unit */
+            unit: string;
+            /**
+             * Offered
+             * @description True: businesses outside the plan may buy it, once
+             */
+            offered: boolean;
+            /**
+             * Prices
+             * @description The one-time price in force, per currency
+             */
+            prices: {
+                [key: string]: string;
+            };
+            /** Tax Inclusive */
+            tax_inclusive: boolean;
+        };
+        /** UnitSalesOut */
+        UnitSalesOut: {
+            /**
+             * Currencies
+             * @description The currencies the platform already sells in
+             */
+            currencies: string[];
+            /** Units */
+            units: components["schemas"]["UnitSaleOut"][];
         };
         /** UnitSwitchIn */
         UnitSwitchIn: {
@@ -50379,6 +50733,74 @@ export interface operations {
             };
         };
     };
+    unit_sales_api_v1_operator_unit_sales_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitSalesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_unit_sale_api_v1_operator_unit_sales__unit__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                unit: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnitSaleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitSaleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_coupons_api_v1_operator_coupons_get: {
         parameters: {
             query?: never;
@@ -50753,6 +51175,81 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    grant_addon_api_v1_operator_subscribers__code__addons_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantAddonIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriberDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_addon_api_v1_operator_subscribers__code__addons__unit__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                code: string;
+                unit: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlatformReasonIn"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -52500,6 +52997,82 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReceivedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    addon_shop_api_v1_billing_addons_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonShop"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    buy_addon_api_v1_billing_addons__unit__buy_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+                /** @description Makes a retry safe: the same key does the work once */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                unit: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddonBuyOut"];
                 };
             };
             /** @description Validation Error */

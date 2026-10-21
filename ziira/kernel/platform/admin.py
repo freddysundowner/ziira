@@ -15,7 +15,7 @@ from ziira.kernel import operators
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import NotFound, ValidationFailed
 from ziira.kernel.operators import Operator
-from ziira.kernel.platform import billing, licences, plans, settings, subscribers, subscriptions
+from ziira.kernel.platform import billing, licences, plans, settings, subscribers, subscriptions, unit_addons
 
 
 def act[T](
@@ -177,6 +177,21 @@ def remove_addon_price(op: Operator, code: str, price_id: UUID, ip: str | None) 
     return addon_detail(code)
 
 
+def set_unit_sale(op: Operator, unit: str, data: dict[str, Any], ip: str | None) -> dict[str, Any]:
+    out = act(
+        op,
+        "addon.unit_sale",
+        unit,
+        ip,
+        lambda: unit_addons.set_unit_sale(
+            unit, offered=data["offered"], prices=data["prices"], tax_inclusive=data["tax_inclusive"], by=_name(op)
+        ),
+        summary=lambda r: {"offered": r["offered"], "prices": {k: str(v) for k, v in r["prices"].items()}},
+    )
+    plans.invalidate_public_cache()
+    return out
+
+
 def create_coupon(op: Operator, data: dict[str, Any], ip: str | None) -> dict[str, Any]:
     return act(
         op,
@@ -276,6 +291,22 @@ def change_plan(op: Operator, code: str, data: dict[str, Any], ip: str | None) -
             "prorated_due": r["prorated_due"],
             "disabled_units": r["disabled_units"],
         },
+    )
+
+
+def grant_addon(op: Operator, code: str, unit: str, reason: str, ip: str | None) -> dict[str, Any]:
+    return _sub_act(
+        op, "subscriber.addon_grant", code, ip,
+        lambda tid: unit_addons.grant(tid, unit, reason, by=_name(op)),
+        reason=reason, summary=lambda _: {"unit": unit},
+    )
+
+
+def revoke_addon(op: Operator, code: str, unit: str, reason: str, ip: str | None) -> dict[str, Any]:
+    return _sub_act(
+        op, "subscriber.addon_revoke", code, ip,
+        lambda tid: unit_addons.revoke(tid, unit, reason, by=_name(op)),
+        reason=reason, summary=lambda _: {"unit": unit},
     )
 
 

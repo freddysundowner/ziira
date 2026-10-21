@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { api, Alert, Button, ErrorState, formatDate, money, PageHeader, Skeleton, unwrap, useCan, useCompany, useQuery, useTranslation } from "@/sdk";
 
+import { AddonsCard } from "./billing/AddonsCard";
 import { ChangePlan } from "./billing/ChangePlan";
 import { InvoicesCard } from "./billing/InvoicesCard";
 import { LicencePanel } from "./billing/LicencePanel";
@@ -69,6 +70,7 @@ export default function BillingPage() {
         </section>
       )}
       <div className="mt-4 space-y-4">
+        <AddonsCard />
         <InvoicesCard />
         {catalog.error ? <ErrorState title={t("billing.plansFailed")} message={catalog.error.message} onRetry={() => void catalog.refetch()} />
           : !plans ? <Skeleton className="h-48 w-full" />

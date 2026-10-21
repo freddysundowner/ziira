@@ -1,50 +1,82 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Alert, Button, Card, Checkbox, ErrorState, Field, FormGrid, Input, NumberInput, PageHeader, Select, Skeleton, Switch, Textarea, toast, useTranslation, useUnsavedWarning } from "@/sdk";
+import { Alert, Button, Card, Checkbox, type Edition, ErrorState, Field, FormGrid, Input, NumberInput, PageHeader, Select, Skeleton, Switch, Textarea, toast, useTranslation, useUnsavedWarning } from "@/sdk";
 
 import { opApi, opUnwrap } from "../../client";
-import { useEditions, usePlanDetail } from "../../catalog";
+import { useEditions, usePlanDetail, usePlatformUnits, useUnitSales } from "../../catalog";
 import { INTERVALS, type Interval } from "../../helpers/format";
+import { changedSales, explicitUnits, saleCurrencies, saleProblems, salesToForm, sellableUnits, toggleUnit, toSaleIn, type UnitInfo, type UnitSaleForm, withRequired } from "../../helpers/planUnits";
 import { EXTRA_LIMITS, emptyPlanForm, type PlanFormValues, planProblems, planToForm, toPlanIn, toPlanPatch } from "../../helpers/plan";
 import { useOperatorCan } from "../../me";
 import { useChange } from "../../stepUp";
 import { useRefreshOperator } from "../billing/invoiceDialogs";
 import { PricesPanel } from "./PricesPanel";
-import { UnitPicker } from "./UnitPicker";
+import { UnitsCard } from "./UnitsCard";
 
 /** Create a plan (`/plans/new`) or change one (`/plans/edit/:code`), with its price table when it exists. */
 export default function PlanEditorPage() {
   const { t } = useTranslation("operator");
   const code = useParams().code ?? "";
   const detail = usePlanDetail(code);
-  if (!code) return <PlanForm initial={emptyPlanForm()} creating />;
-  if (detail.isPending) return <div className="space-y-3"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div>;
+  const units = usePlatformUnits();
+  const sales = useUnitSales();
+  if (code && detail.isPending) return <PageSkeleton />;
   if (detail.isError) return <ErrorState title={t("plans.editor.loadFailed")} message={detail.error.message} onRetry={() => void detail.refetch()} />;
-  return <PlanForm key={detail.data.updated_at} initial={planToForm(detail.data)} creating={false} detail={detail.data} />;
+  if (units.isError || sales.isError) {
+    const failure = units.error ?? sales.error;
+    return <ErrorState title={t("plans.editor.unitsFailed")} message={failure?.message} onRetry={() => { void units.refetch(); void sales.refetch(); }} />;
+  }
+  if (!units.data || !sales.data) return <PageSkeleton />;
+  const info: UnitInfo[] = sellableUnits(units.data);
+  const world = { units: info, sales: salesToForm(sales.data.units), currencies: sales.data.currencies };
+  if (!code) return <PlanForm initial={emptyPlanForm()} creating world={world} />;
+  const initial = { ...planToForm(detail.data!), units: explicitUnits(detail.data!.units_included, info), addon_units: [], edition: "" };
+  return <PlanForm key={`${detail.data!.updated_at}:${sales.dataUpdatedAt}`} initial={initial} creating={false} detail={detail.data} world={world} />;
 }
 
-function PlanForm({ initial, creating, detail }: { initial: PlanFormValues; creating: boolean; detail?: NonNullable<ReturnType<typeof usePlanDetail>["data"]> }) {
+function PageSkeleton() {
+  return <div className="space-y-3"><Skeleton className="h-8 w-64" /><Skeleton className="h-64 w-full" /></div>;
+}
+
+interface World { units: UnitInfo[]; sales: Record<string, UnitSaleForm>; currencies: string[] }
+
+function PlanForm({ initial, creating, detail, world }: { initial: PlanFormValues; creating: boolean; detail?: NonNullable<ReturnType<typeof usePlanDetail>["data"]>; world: World }) {
   const { t } = useTranslation("operator");
   const navigate = useNavigate();
   const refresh = useRefreshOperator();
   const canEdit = useOperatorCan("platform.plans");
   const editions = useEditions();
   const [values, setValues] = useState(initial);
+  const [sales, setSales] = useState(world.sales);
+  const [added, setAdded] = useState<string[]>([]);
   const [showErrors, setShowErrors] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const errors = planProblems(values, creating);
-  const dirty = JSON.stringify(values) !== JSON.stringify(initial);
+  const known = new Set(world.units.map((u) => u.name));
+  const effective = withRequired(values.units, world.units);
+  const errors = planProblems({ ...values, units: effective }, creating);
+  const saleErrors = saleProblems(sales, effective);
+  const planDirty = JSON.stringify(values) !== JSON.stringify(initial);
+  const salesDirty = changedSales(sales, world.sales);
+  const dirty = planDirty || salesDirty.length > 0;
   useUnsavedWarning(dirty);
 
   const set = <K extends keyof PlanFormValues>(key: K, value: PlanFormValues[K]) => { setValues((v) => ({ ...v, [key]: value })); setProblem(null); };
   const err = (key: string) => (showErrors && errors[key] ? t(`plans.editor.errors.${errors[key]}`) : null);
   const toggleInterval = (i: Interval) => set("intervals", values.intervals.includes(i) ? values.intervals.filter((x) => x !== i) : INTERVALS.filter((x) => x === i || values.intervals.includes(x)));
+  const applyEdition = (edition: Edition) => { set("units", [...new Set([...values.units, ...edition.units])]); toast(t("plans.editor.startDone", { name: edition.title }), "ok"); };
 
   const save = useChange(
-    async () => creating
-      ? opUnwrap(opApi.POST("/api/v1/operator/plans", { body: toPlanIn(values) }))
-      : opUnwrap(opApi.PATCH("/api/v1/operator/plans/{code}", { params: { path: { code: initial.code } }, body: toPlanPatch(values) })),
+    async () => {
+      // The prices of units sold on their own come first: they belong to the platform, not to this plan.
+      for (const unit of salesDirty) await opUnwrap(opApi.PUT("/api/v1/operator/unit-sales/{unit}", { params: { path: { unit } }, body: toSaleIn(sales[unit] ?? { offered: false, prices: {}, tax_inclusive: false }, world.sales[unit]) }));
+      const body = { ...values, units: effective, addon_units: [], edition: "" };
+      if (!creating) {
+        if (!planDirty) return detail!;
+        return opUnwrap(opApi.PATCH("/api/v1/operator/plans/{code}", { params: { path: { code: initial.code } }, body: toPlanPatch(body) }));
+      }
+      return opUnwrap(opApi.POST("/api/v1/operator/plans", { body: toPlanIn(body) }));
+    },
     {
       onSuccess: (plan) => {
         toast(t(creating ? "plans.editor.created" : "plans.editor.saved", { name: plan.name }), "ok");
@@ -57,9 +89,10 @@ function PlanForm({ initial, creating, detail }: { initial: PlanFormValues; crea
   const submit = () => {
     if (!canEdit || save.isPending) return;
     setProblem(null);
-    if (Object.keys(errors).length > 0) { setShowErrors(true); return; }
+    if (Object.keys(errors).length > 0 || Object.keys(saleErrors).length > 0) { setShowErrors(true); return; }
     save.mutate(undefined);
   };
+  const undo = () => { setValues(initial); setSales(world.sales); setShowErrors(false); setProblem(null); };
 
   const planCode = initial.code;
   return (
@@ -80,20 +113,11 @@ function PlanForm({ initial, creating, detail }: { initial: PlanFormValues; crea
             </FormGrid>
           </Card>
 
-          <Card title={t("plans.editor.included")} description={t("plans.editor.includedHint")}>
-            <div className="space-y-4">
-              <Field label={t("plans.editor.edition")} hint={t("plans.editor.editionHint")}>
-                <Select value={values.edition} onChange={(e) => set("edition", e.target.value)}>
-                  <option value="">{t("plans.editor.noEdition")}</option>
-                  {(editions.data ?? []).map((e) => <option key={e.id} value={e.id}>{e.title}</option>)}
-                  {values.edition && !(editions.data ?? []).some((e) => e.id === values.edition) && <option value={values.edition}>{values.edition}</option>}
-                </Select>
-              </Field>
-              <UnitPicker label={t("plans.editor.units")} hint={t("plans.editor.unitsHint")} selected={values.units} onChange={(v) => set("units", v)} />
-              <UnitPicker label={t("plans.editor.addonUnits")} hint={t("plans.editor.addonUnitsHint")} selected={values.addon_units} onChange={(v) => set("addon_units", v)} />
-              {detail && detail.units_included.length > 0 && <p className="text-xs text-muted">{t("plans.editor.inEffect", { list: detail.units_included.join(", ") })}</p>}
-            </div>
-          </Card>
+          <UnitsCard units={world.units} loading={false} error={null} onRetry={() => undefined} chosen={values.units} missing={values.units.filter((n) => !known.has(n))}
+            sales={sales} currencies={saleCurrencies(world.currencies, sales, added)} problems={showErrors ? saleErrors : {}} editions={editions.data ?? []} disabled={!canEdit}
+            onToggle={(name) => set("units", toggleUnit(values.units, name))} onSale={(name, next) => { setSales((m) => ({ ...m, [name]: next })); setProblem(null); }}
+            onCurrency={(code) => setAdded((a) => [...new Set([...a, code])])} onEdition={applyEdition} />
+          {err("units") && <Alert tone="bad">{err("units")}</Alert>}
 
           <Card title={t("plans.editor.limits")} description={t("plans.editor.limitsHint")}>
             <FormGrid cols={3}>
@@ -144,10 +168,10 @@ function PlanForm({ initial, creating, detail }: { initial: PlanFormValues; crea
         </fieldset>
 
         {problem && <Alert tone="bad">{problem}</Alert>}
-        {showErrors && Object.keys(errors).length > 0 && <Alert tone="bad">{t("plans.editor.fixErrors")}</Alert>}
+        {showErrors && (Object.keys(errors).length > 0 || Object.keys(saleErrors).length > 0) && <Alert tone="bad">{t("plans.editor.fixErrors")}</Alert>}
         {canEdit && (
           <div className="sticky bottom-0 -mx-1 flex justify-end gap-2 border-t border-line bg-bg/95 px-1 py-3 backdrop-blur">
-            {dirty && !creating && <Button variant="ghost" onClick={() => { setValues(initial); setShowErrors(false); setProblem(null); }}>{t("billing.settings.undo")}</Button>}
+            {dirty && !creating && <Button variant="ghost" onClick={undo}>{t("billing.settings.undo")}</Button>}
             <Button type="submit" loading={save.isPending} disabled={!creating && !dirty}>{t(creating ? "plans.editor.create" : "plans.editor.save")}</Button>
           </div>
         )}

@@ -16,6 +16,7 @@ from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
 from ziira.kernel import notifications  # noqa: F401 - registers the send job and the channel socket
+from ziira.kernel.api.addon_purchase_routes import router as addon_purchase_router
 from ziira.kernel.api.billing_routes import router as billing_router
 from ziira.kernel.api.country_routes import router as country_router
 from ziira.kernel.api.custom_field_routes import router as custom_field_router
@@ -98,6 +99,7 @@ def create_app() -> FastAPI:
     app.include_router(public_plan_router)
     app.include_router(billing_router)
     app.include_router(subscription_payment_router)
+    app.include_router(addon_purchase_router)
     app.include_router(operator_payment_router)
     app.include_router(operator_email_router)
     app.include_router(public_config_router)

@@ -25,6 +25,7 @@ from ziira.kernel.platform import (
     providers,
     settings,
     subscribers,
+    unit_addons,
 )
 from ziira.kernel.platform import entitlements as ent
 
@@ -137,6 +138,20 @@ def remove_addon_price(
     return admin.remove_addon_price(operator, code, price_id, _ip(request))
 
 
+@router.get("/unit-sales", response_model=sc.UnitSalesOut)
+def unit_sales(_: Op = Depends(require("platform.view"))) -> object:
+    """Which units are sold on their own (one payment) and at what price per currency."""
+    return unit_addons.sales_overview()
+
+
+@router.put("/unit-sales/{unit}", response_model=sc.UnitSaleOut)
+def put_unit_sale(
+    unit: str, body: sc.UnitSaleIn, request: Request, operator: Op = Depends(require("platform.plans"))
+) -> object:
+    """Offer a unit for sale (or stop) with its one-time price per currency. Changes the add-on catalogue."""
+    return admin.set_unit_sale(operator, unit, body.model_dump(), _ip(request))
+
+
 # --------------------------------------------------------------------------- coupons
 @router.get("/coupons", response_model=list[sc.CouponOut])
 def list_coupons(_: Op = Depends(require("platform.view"))) -> object:
@@ -220,6 +235,23 @@ def apply_coupon(
 def sync_plan(code: str, request: Request, operator: Op = Depends(require("platform.billing"))) -> object:
     """Copy the plan's current units and limits into this subscription (not the price)."""
     return admin.sync_plan(operator, code, _ip(request))
+
+
+@router.post("/subscribers/{code}/addons", response_model=sc.SubscriberDetail)
+def grant_addon(
+    code: str, body: sc.GrantAddonIn, request: Request, operator: Op = Depends(require("platform.subscribers"))
+) -> object:
+    """Give a business an add-on free of charge (needs a reason; audited)."""
+    return admin.grant_addon(operator, code, body.unit, body.reason, _ip(request))
+
+
+@router.post("/subscribers/{code}/addons/{unit}/revoke", response_model=sc.SubscriberDetail)
+def revoke_addon(
+    code: str, unit: str, body: sc.PlatformReasonIn, request: Request,
+    operator: Op = Depends(require("platform.subscribers")),
+) -> object:
+    """Take an add-on back (the unit is switched off for the business, its data is kept)."""
+    return admin.revoke_addon(operator, code, unit, body.reason, _ip(request))
 
 
 @router.post("/subscribers/{code}/suspend", response_model=sc.SubscriberDetail)

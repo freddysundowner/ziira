@@ -5,7 +5,8 @@ One question, asked in a few places by the kernel: *which units, which limits, a
 - `enforce_access(ctx, request)` runs on every authenticated request (see `ziira.sdk.request_context`): a suspended
   business can reach billing, sign-in and the data export, and its tills can still upload sales that already happened;
   a cancelled, expired or unlicensed one is read-only. Nothing is ever deleted by this.
-- `check_unit(...)` refuses switching on a unit the plan does not include ("not in your plan: upgrade").
+- `check_unit(...)` refuses switching on a unit the plan does not include and the business has not bought as an add-on
+  (`unit_addons.py`: one payment, kept through plan changes).
 - `check_limit(session, kind)` refuses adding a user, branch or company beyond the plan's limit, with a clear message.
 
 A business without a subscription row is *unmanaged* (businesses made from the command line before plans existed):
@@ -67,6 +68,7 @@ class Entitlements:
     message: str = ""
     period_end: datetime | None = None
     extra: dict[str, Any] | None = None
+    purchased: frozenset[str] = frozenset()  # add-ons bought (or given) on top of the plan, one payment each
 
     @property
     def managed(self) -> bool:
@@ -121,11 +123,13 @@ def _message(status: str, period_end: datetime | None) -> str:
     }.get(status, "")
 
 
-def _from_subscription(row: Any) -> Entitlements:
+def _from_subscription(row: Any, purchased: frozenset[str] = frozenset()) -> Entitlements:
     e = row.entitlements or {}
     units = e.get("units")
     if behaviour.all_units_free():      # the platform owner's switch: every business may use every add-on
         units = None
+    elif units is not None:
+        units = [*units, *purchased]    # plan units plus add-ons bought: a purchase outlives plan changes
     end = row.trial_end if row.status == "trialing" and row.trial_end else row.period_end
     return Entitlements(
         "subscription",
@@ -140,6 +144,7 @@ def _from_subscription(row: Any) -> Entitlements:
         _message(row.status, end),
         end,
         {k: v for k, v in e.items() if k.startswith("limit_")},
+        purchased,
     )
 
 
@@ -189,7 +194,13 @@ def for_tenant(tenant_id: UUID, *, now: datetime | None = None, use_cache: bool 
     else:
         with master_session() as m:
             row = m.execute(text("select * from master.subscription where tenant_id = :t"), {"t": key}).first()
-        result = _from_subscription(row) if row is not None else UNMANAGED
+            bought = frozenset(
+                m.execute(
+                    text("select unit_name from master.subscription_addon where tenant_id = :t and status = 'active'"),
+                    {"t": key},
+                ).scalars()
+            )
+        result = _from_subscription(row, bought) if row is not None else UNMANAGED
     if now is None:
         _cache[key] = (time.monotonic(), result)
     return result
@@ -234,13 +245,13 @@ def unit_allowed(tenant_id: UUID, unit: str) -> bool:
 
 
 def check_unit(tenant_id: UUID, unit: str, title: str | None = None) -> None:
-    """Raise NotInPlan unless the plan (or licence) includes the unit."""
+    """Raise NotInPlan unless the plan (or licence) includes the unit, or the business bought it as an add-on."""
     ent = for_tenant(tenant_id)
     if ent.units is None or unit in ent.units:
         return
     which = f" ({ent.plan_name})" if ent.plan_name else ""
     raise NotInPlan(
-        f"{title or unit} is not in your plan{which}. Upgrade your plan to use it.",
+        f"{title or unit} is not included in your plan{which}.",
         {"unit": unit, "plan": ent.plan_code},
     )
 

@@ -54,6 +54,24 @@
   "industry": {
    "badge": "Industry",
    "recommendedEdition": "Recommended for your edition"
+  },
+  "sale": {
+   "price": "One payment of {{price}}. It is yours to keep, even if your plan changes.",
+   "taxIncl": "Tax included.",
+   "buy": "Buy for {{price}} (one payment)",
+   "askOwner": "Available for {{price}} (one payment). Ask the owner of the business to buy it.",
+   "unavailable": "Not available",
+   "notIncluded": "Not included in your plan.",
+   "askUs": "Ask us",
+   "bought": "Bought",
+   "boughtOn": "Bought on {{date}}",
+   "given": "Included for you",
+   "givenOn": "Given to you on {{date}}",
+   "receipt": "Receipt",
+   "confirmTitle": "Buy {{name}}",
+   "confirmAsk": "You pay {{price}} once for {{name}}. It stays with your business even if your plan changes. It can be switched on as soon as the payment is confirmed.",
+   "continue": "Continue to payment",
+   "gotIt": "{{name}} is yours. Switch it on whenever you like."
   }
  }
 }

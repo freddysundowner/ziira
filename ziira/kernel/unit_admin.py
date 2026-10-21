@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from ziira.kernel import audit, industry
 from ziira.kernel.errors import DependencyError, NotFound
 from ziira.kernel.manifest import Manifest
-from ziira.kernel.platform import entitlements
+from ziira.kernel.platform import entitlements, unit_addons
 from ziira.kernel.registry import Registry
 
 PERMISSION = "units.manage"
@@ -38,12 +38,16 @@ def _titles(units: dict[str, Manifest], names: list[str]) -> str:
     return ", ".join(units[n].title for n in names)
 
 
-def catalog(session: Session, reg: Registry) -> list[dict[str, Any]]:
-    """Every module and plugin (the kernel excluded) with its state for this business and what can be done now."""
+def catalog(session: Session, reg: Registry, *, can_buy: bool = False) -> list[dict[str, Any]]:
+    """Every module and plugin (the kernel excluded) with its state for this business and what can be done now.
+    `can_buy`: the signed-in person may pay for add-ons (the owner)."""
     installed = reg.installed()
     enabled = _enabled(session)
     present = _present(session)
-    plan = entitlements.for_tenant(session.execute(text("select kernel.current_tenant()")).scalar_one())
+    tenant_id = session.execute(text("select kernel.current_tenant()")).scalar_one()
+    plan = entitlements.for_tenant(tenant_id)
+    shop = unit_addons.shop(tenant_id, can_buy=can_buy)
+    sale = {u["unit"]: u for u in shop["units"]}
     out: list[dict[str, Any]] = []
     for m in sorted(reg.units.values(), key=lambda u: (u.kind != "module", u.title)):
         if m.core or m.platform_scope:
@@ -70,6 +74,8 @@ def catalog(session: Session, reg: Registry) -> list[dict[str, Any]]:
             can_remove, why_not_remove = False, f"{_titles(reg.units, present_dependants)} still holds data " \
                                                "that needs it: remove that first."
         in_plan = plan.units is None or m.name in plan.units
+        offer = sale.get(m.name, {})
+        bought = offer.get("purchase") or {}
         out.append({
             "name": m.name, "title": m.title, "description": m.description, "category": m.category,
             "countries": list(m.countries),
@@ -81,7 +87,12 @@ def catalog(session: Session, reg: Registry) -> list[dict[str, Any]]:
             "can_enable": is_installed and not is_enabled and in_plan and all(n in installed for n in also),
             "in_plan": in_plan,
             "why_not_enable": None if in_plan else
-            f"Not in your plan{f' ({plan.plan_name})' if plan.plan_name else ''}: upgrade to switch it on.",
+            f"Not included in your plan{f' ({plan.plan_name})' if plan.plan_name else ''}.",
+            "sale_state": offer.get("state", unit_addons.INCLUDED), "sale_price": offer.get("price"),
+            "sale_currency": offer.get("currency"), "sale_tax_inclusive": bool(offer.get("tax_inclusive")),
+            "bought_at": bought.get("purchased_at"), "receipt_invoice_id": bought.get("invoice_id"),
+            "bought_free": bool(bought) and bought.get("granted_by") == "operator",
+            "can_buy": bool(shop["can_buy"]) and offer.get("state") == unit_addons.FOR_SALE,
             "can_disable": can_disable, "why_not_disable": why_not_disable,
             "can_remove": can_remove, "why_not_remove": why_not_remove})
     return out

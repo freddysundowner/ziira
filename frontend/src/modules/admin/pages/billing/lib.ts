@@ -92,6 +92,8 @@ export function owedEntries(owed: Record<string, string>): [string, string][] {
 }
 export const PLAN_KEY = ["billing-plan"];
 export const STATUS_KEY = ["billing-status"];
+export const ADDONS_KEY = ["billing-addons"];
+export const CATALOG_KEY = ["units-catalog"];
 
 export type PayOptions = Schemas["PayOptions"];
 export type PayOption = Schemas["PayOption"];
@@ -119,9 +121,9 @@ export function payPhase(attempt: Pick<Attempt, "status" | "flow">, left: number
   }
 }
 
-/** The first issued invoice with something owing (what the "Pay" button is about), oldest due date first. */
+/** The first issued invoice with something owing (what the "Pay" button is about), oldest due date first. An add-on waiting at the checkout is not a debt. */
 export function firstOwed(invoices: readonly Invoice[] | undefined): Invoice | null {
-  const owed = (invoices ?? []).filter(isOwed).sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
+  const owed = (invoices ?? []).filter((i) => isOwed(i) && i.kind !== "addon").sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));
   return owed[0] ?? null;
 }
 

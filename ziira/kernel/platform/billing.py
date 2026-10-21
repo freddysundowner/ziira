@@ -345,7 +345,11 @@ def _mark_paid(inv: dict[str, Any], moment: datetime, by: str | None) -> dict[st
             {"at": moment, "i": str(inv["id"])},
         )
     paid = get_invoice(inv["id"])
-    if paid["tenant_id"] is not None:
+    if paid["tenant_id"] is not None and paid["kind"] == "addon":
+        from ziira.kernel.platform import unit_addons  # a one-time add-on: grant it, leave the subscription alone
+
+        unit_addons.on_invoice_paid(paid, now=moment, by=by)
+    elif paid["tenant_id"] is not None:
         subscriptions.on_invoice_paid(paid, now=moment, by=by)
     return paid
 
@@ -432,7 +436,12 @@ def reverse_payment(payment_id: UUID, reason: str, *, by: str | None = None) -> 
             ),
             {"a": pay.amount, "i": str(pay.invoice_id)},
         )
-    return get_invoice(pay.invoice_id)
+    reopened = get_invoice(pay.invoice_id)
+    if reopened["kind"] == "addon":
+        from ziira.kernel.platform import unit_addons
+
+        unit_addons.on_payment_reversed(reopened, by=by)
+    return reopened
 
 
 def list_payments(invoice_id: UUID) -> list[dict[str, Any]]:
@@ -705,7 +714,7 @@ def _dunning(moment: datetime) -> tuple[int, int]:
                     "select i.id, i.tenant_id, i.number, i.total, i.amount_paid, i.currency, i.due_date, s.status "
                     "from master.billing_invoice i join master.subscription s on s.tenant_id = i.tenant_id "
                     "where i.status = 'issued' and i.due_date is not null and i.tenant_id is not null "
-                    "order by i.due_date"
+                    "and i.kind <> 'addon' order by i.due_date"
                 )
             )
         ]

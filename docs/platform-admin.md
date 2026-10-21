@@ -43,8 +43,21 @@ are filed under its workspace code.
 
 - **All add-ons free for everyone** (Platform > Settings, one checkbox, setting `access.all_units_free`, ON by default): while it is on, every business
   may use every unit whatever its plan lists (`entitlements` treats the plan's unit list as "every unit"). Plans still set prices and the
-  user, branch and company limits. Switch it off to sell add-ons through the plans again; businesses then see "not in your plan".
+  user, branch and company limits. Switch it off to sell add-ons again (below); businesses then see what they can buy.
 
+- **Plan editor, "What is included"**: ONE searchable list of every module and plugin (grouped Modules / Plugins and packs). A tick means
+  *in this plan*; units a ticked unit requires are ticked and locked ("needed by Jobs"). Under each **unticked** row the editor says how
+  it is sold on its own: "Sold separately for KES 3,000 once" or "Not for sale", with an inline *Offer for sale* switch and a one-time
+  price per currency. The edition is only a helper under *Advanced* ("Start from an edition" pre-ticks its units); the editor stores the
+  ticked units in `units`, leaves `addon_units` empty and clears `edition`. One Save bar writes the unit prices first, then the plan.
+  The prices belong to the platform (same on every plan): `PUT /api/v1/operator/unit-sales/{unit}` (permission `platform.plans`, step-up,
+  operator trail `addon.unit_sale`) writes the add-on catalogue (`master.addon` kind `unit`, `is_public` = offered for sale;
+  `master.addon_price` interval `one_time`, append-only). `GET /api/v1/operator/unit-sales` lists them with the currencies the platform sells in.
+- **Selling a unit on its own** (`platform/unit_addons.py`, `docs/subscription-payments.md` "Add-ons"): a business may use its plan's units
+  **plus** the add-ons it bought (`master.subscription_addon`); a purchase survives upgrades, downgrades and renewals. Operators may *give*
+  (comp, reason) or *take back* an add-on on the subscriber's Billing tab (`POST /subscribers/{code}/addons`, `.../addons/{unit}/revoke`,
+  permission `platform.subscribers`, step-up, trail `subscriber.addon_grant|addon_revoke`). Taking back switches the unit off (data kept);
+  no refund is made by it: reverse the payment on the invoice. While `access.all_units_free` is on, nothing can be bought.
 - **Plan**: code, name, edition and/or units, plugin add-on units, limits (`max_users`, `max_branches`,
   `max_companies`; empty = unlimited; extra informational caps in `limits`), trial days, billing intervals offered
   (`month`, `year`, `one_time`), public/hidden, active/retired. A retired plan keeps its subscribers but cannot be chosen.
@@ -91,7 +104,7 @@ new limit stay, but no more can be added.
 | suspended | only sign-in, `/billing/*`, the shell's start-up reads, privacy requests, CSV exports (`?format=csv`) and the till's `POST /pos/sync/upload`; everything else is **402** `subscription_suspended` |
 | cancelled, expired | reads work; writes are **402** `subscription_ended` (billing and till uploads still work) |
 
-Also: switching on a unit outside the plan is **402** `not_in_plan` ("not in your plan: upgrade"); adding a user, branch
+Also: switching on a unit outside the plan that the business has not bought is **402** `not_in_plan` ("not included in your plan"); adding a user, branch
 or company over the limit is **402** `plan_limit_reached`. Platform staff in a support session are not stopped.
 A business event that already happened (an offline sale) is accepted while suspended and flagged as usual.
 Nothing is ever deleted by enforcement. Deleting is a separate, deliberate act:

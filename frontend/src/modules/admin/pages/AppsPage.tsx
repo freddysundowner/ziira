@@ -2,12 +2,15 @@ import { useState } from "react";
 
 import { api, EDITION_KEY, EmptyState, ErrorState, Input, PageHeader, Skeleton, Slot, toast, unwrap, useCompany, useEdition, useMutation, useQuery, useQueryClient, useSession, useTranslation } from "@/sdk";
 
+import { BuyDialog } from "./apps/BuyDialog";
+import { PayDialog } from "./billing/PayDialog";
+import { CATALOG_KEY, type Invoice } from "./billing/lib";
 import { UnitCardView } from "./apps/UnitCardView";
 import { EditionPanel } from "./apps/EditionPanel";
 import { UnitDialogs, type Pending } from "./apps/UnitDialogs";
 import { recommendedForEdition, recommendedPlugins, type StatusFilter, titlesOf, type UnitCard, visibleCards } from "./apps/lib";
 
-const CATALOG = ["units-catalog"];
+const CATALOG = CATALOG_KEY;
 
 /** Add-ons: switch modules and plugins on or off for this business, or delete a switched-off one's data. */
 export default function AppsPage() {
@@ -18,6 +21,9 @@ export default function AppsPage() {
   const [pending, setPending] = useState<Pending>();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
+  const [buying, setBuying] = useState<UnitCard | null>(null);
+  const [paying, setPaying] = useState<{ unit: UnitCard; invoice: Invoice; paid: boolean } | null>(null);
+  const config = useQuery({ queryKey: ["public-config"], queryFn: () => unwrap(api.GET("/api/v1/public/config")), staleTime: 60_000, retry: 0 });
   const catalog = useQuery({ queryKey: CATALOG, queryFn: () => unwrap(api.GET("/api/v1/units/catalog")) });
   const cards: UnitCard[] = catalog.data ?? [];
   const { edition } = useEdition();
@@ -45,6 +51,17 @@ export default function AppsPage() {
     onSuccess: async (r) => { await changed(); toast(t("apps.removed", { name: r.unit.title }), "ok"); },
   });
   const mutations = { enable, disable, remove };
+
+  /** The payment box closed: when it was paid the add-on is theirs, so offer to switch it on now. */
+  const closePayment = async () => {
+    const done = paying;
+    setPaying(null);
+    if (!done?.paid) return;
+    const fresh = (await catalog.refetch()).data?.find((c) => c.name === done.unit.name);
+    await changed();
+    toast(t("apps.sale.gotIt", { name: done.unit.title }), "ok");
+    if (fresh && fresh.can_enable && !fresh.enabled) ask("enable", fresh);
+  };
 
   const ask = (kind: Pending["kind"], unit: UnitCard) => { mutations[kind].reset(); setPending({ kind, unit }); };
   const recommended = new Set(recommendedPlugins(cards, edition, company?.country).map((u) => u.name));
@@ -76,8 +93,10 @@ export default function AppsPage() {
       )}
       {cards.length > 0 && shown.length === 0 && <EmptyState title={t("apps.noMatch")} />}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {shown.map((u) => <UnitCardView key={u.name} unit={u} all={cards} recommended={recommended.has(u.name)} forEdition={recommendedForEdition(u, edition?.id)} onEnable={() => ask("enable", u)} onDisable={() => ask("disable", u)} onRemove={() => ask("remove", u)} />)}
+        {shown.map((u) => <UnitCardView key={u.name} unit={u} all={cards} recommended={recommended.has(u.name)} forEdition={recommendedForEdition(u, edition?.id)} onEnable={() => ask("enable", u)} onDisable={() => ask("disable", u)} onRemove={() => ask("remove", u)} onBuy={() => setBuying(u)} supportEmail={config.data?.support_email || undefined} />)}
       </div>
+      {buying && <BuyDialog unit={buying} onClose={() => setBuying(null)} onInvoice={(invoice) => { setPaying({ unit: buying, invoice, paid: false }); setBuying(null); }} />}
+      {paying && <PayDialog invoice={paying.invoice} onPaid={() => setPaying((p) => (p ? { ...p, paid: true } : p))} onClose={() => void closePayment()} />}
       <UnitDialogs pending={pending} all={cards} mutations={mutations} onClose={() => setPending(undefined)} />
     </>
   );

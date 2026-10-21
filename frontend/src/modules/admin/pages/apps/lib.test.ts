@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { countryName, isIndustryPack, recommendedForEdition, recommendedPlugins, removeConfirmed, titlesOf, unitState, visibleCards, wouldSwitchOn, type UnitCard } from "./lib";
+import { countryName, isIndustryPack, recommendedForEdition, recommendedPlugins, removeConfirmed, saleView, titlesOf, unitState, visibleCards, wouldSwitchOn, type UnitCard } from "./lib";
 
 const card = (over: Partial<UnitCard>): UnitCard => ({
   name: "x", title: "X", description: "", category: "", countries: [], kind: "module", version: "1.0.0", requires: [], optional: [], dependants: [], installed: true, enabled: false,
-  has_data: false, in_plan: true, will_also_enable: [], can_enable: true, can_disable: false, why_not_disable: null, can_remove: false, why_not_remove: null, ...over,
+  has_data: false, in_plan: true, will_also_enable: [], can_enable: true, can_disable: false, why_not_disable: null, can_remove: false, why_not_remove: null,
+  sale_state: "included", sale_price: null, sale_currency: null, sale_tax_inclusive: false, bought_at: null, receipt_invoice_id: null, bought_free: false, can_buy: false, ...over,
 });
 
 describe("unitState", () => {
@@ -103,5 +104,22 @@ describe("industry packs", () => {
   });
   it("are not suggested through the edition's plugin categories (they name their editions instead)", () => {
     expect(recommendedPlugins([pack()], { plugin_categories: ["industry"] }, "KE")).toEqual([]);
+  });
+});
+
+describe("saleView", () => {
+  const sale = (over: Partial<UnitCard>) => saleView(card({ installed: true, in_plan: false, ...over }));
+  it("offers the owner a purchase and tells others to ask the owner", () => {
+    expect(sale({ sale_state: "for_sale", can_buy: true })).toBe("buy");
+    expect(sale({ sale_state: "for_sale", can_buy: false })).toBe("ask_owner");
+  });
+  it("says what is theirs, and what cannot be had", () => {
+    expect(sale({ sale_state: "bought" })).toBe("bought");
+    expect(sale({ sale_state: "bought", bought_free: true })).toBe("given");
+    expect(sale({ sale_state: "not_for_sale" })).toBe("unavailable");
+  });
+  it("says nothing for a unit in the plan or one the platform does not offer yet", () => {
+    expect(sale({ sale_state: "included" })).toBe("none");
+    expect(sale({ sale_state: "for_sale", can_buy: true, installed: false })).toBe("none");
   });
 });

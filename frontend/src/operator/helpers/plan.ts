@@ -76,6 +76,7 @@ export function planProblems(v: PlanFormValues, creating: boolean): Record<strin
   if (order === null || Number.isNaN(order) || order > 100000) errors.sort_order = "sortOrder";
   if (v.intervals.length === 0) errors.intervals = "intervals";
   if (highlightLines(v.highlights).length > 12) errors.highlights = "highlights";
+  if (v.units.length === 0 && !v.edition) errors.units = "units";
   return errors;
 }
 

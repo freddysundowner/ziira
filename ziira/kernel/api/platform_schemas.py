@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -135,6 +135,51 @@ class AddonPatch(In):
     is_public: bool | None = None
     status: Literal["active", "retired"] | None = None
     sort_order: int | None = Field(default=None, ge=0, le=100000)
+
+
+class UnitSaleOut(BaseModel):
+    unit: str
+    offered: bool = Field(description="True: businesses outside the plan may buy it, once")
+    prices: dict[str, Decimal] = Field(description="The one-time price in force, per currency")
+    tax_inclusive: bool
+
+
+class UnitSalesOut(BaseModel):
+    currencies: list[str] = Field(description="The currencies the platform already sells in")
+    units: list[UnitSaleOut]
+
+
+class UnitSaleIn(In):
+    offered: bool
+    prices: dict[str, Annotated[Decimal | None, Field(ge=0, max_digits=14, decimal_places=2)]] = Field(
+        default_factory=dict, max_length=20, description="One-time price per currency; null withdraws that currency"
+    )
+    tax_inclusive: bool = False
+
+
+class SubscriberAddonOut(BaseModel):
+    id: UUID
+    unit_name: str
+    title: str
+    status: str
+    price: Decimal
+    currency: str | None
+    invoice_id: UUID | None
+    invoice_number: str | None
+    payment_reference: str | None
+    granted_by: str
+    granted_by_name: str | None
+    reason: str | None
+    purchased_at: datetime | None
+    revoked_at: datetime | None
+    revoked_by: str | None
+    revoke_reason: str | None
+    created_at: datetime
+
+
+class GrantAddonIn(In):
+    unit: str = Field(max_length=60)
+    reason: str = Reason
 
 
 class CouponOut(BaseModel):
@@ -354,6 +399,7 @@ class SubscriberDetail(SubscriberRow):
     invoices: list[PlatformInvoiceOut]
     payments: list[PlatformPaymentOut]
     requests: list[PlatformRequestOut]
+    addons: list[SubscriberAddonOut] = Field(description="Add-ons bought or given")
     usage: UsageOut
     limits: LimitsOut
     units: list[dict[str, Any]]

@@ -65,10 +65,11 @@ def test_a_unit_outside_the_plan_cannot_be_switched_on(client, registry) -> None
     catalog = {u["name"]: u for u in client.get(f"{API}/units/catalog", headers=owner).json()}
     assert catalog["products"]["in_plan"] is True
     assert catalog["inventory"]["in_plan"] is False and catalog["inventory"]["can_enable"] is False
-    assert "Not in your plan" in catalog["inventory"]["why_not_enable"]
+    assert "Not included in your plan" in catalog["inventory"]["why_not_enable"]
+    assert catalog["inventory"]["sale_state"] == "not_for_sale"
     r = client.post(f"{API}/units/inventory/enable", headers=owner)
     assert r.status_code == 402 and r.json()["error"] == "not_in_plan"
-    assert "not in your plan" in r.json()["message"] and "Upgrade" in r.json()["message"]
+    assert "not included in your plan" in r.json()["message"]
 
 
 def test_the_free_for_everyone_switch_lets_any_business_use_any_unit(client, registry) -> None:  # type: ignore[no-untyped-def]

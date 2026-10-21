@@ -19,7 +19,7 @@ from ziira.kernel import operator_console as console
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import Conflict, NotFound, ValidationFailed
 from ziira.kernel.operators import Operator
-from ziira.kernel.platform import billing, contacts, entitlements, settings, subscriptions
+from ziira.kernel.platform import billing, contacts, entitlements, settings, subscriptions, unit_addons
 from ziira.kernel.tenants import drop_tenant
 
 log = logging.getLogger("ziira.subscribers")
@@ -54,7 +54,7 @@ def _outstanding() -> dict[UUID, dict[str, Decimal]]:
         rows = m.execute(
             text(
                 "select tenant_id, currency, sum(total - amount_paid) as owed from master.billing_invoice "
-                "where status = 'issued' and tenant_id is not null group by tenant_id, currency"
+                "where status = 'issued' and tenant_id is not null and kind <> 'addon' group by tenant_id, currency"
             )
         )
         out: dict[UUID, dict[str, Decimal]] = {}
@@ -192,6 +192,7 @@ def detail(operator: Operator, code: str) -> dict[str, Any]:
         "invoices": billing.list_invoices(tenant_id=tenant_id),
         "payments": payments,
         "requests": billing.list_requests(tenant_id=tenant_id),
+        "addons": unit_addons.list_for_tenant(tenant_id),
         "usage": {
             "users": scan.users,
             "branches": scan.branches,

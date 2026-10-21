@@ -1,7 +1,10 @@
 """Apps & plugins: see what the business can switch on, and switch units on, off or remove their data.
 Needs 'units.manage' (the Owner by default). Installing units on the platform stays a command-line job."""
 
+from datetime import datetime
+from decimal import Decimal
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field
@@ -35,6 +38,17 @@ class UnitCard(BaseModel):
     can_enable: bool
     in_plan: bool = Field(default=True, description="False: the business's plan (or licence) does not include it")
     why_not_enable: str | None = Field(default=None, description="Why it cannot be switched on (for example: the plan)")
+    sale_state: str = Field(
+        default="included",
+        description="included (in the plan, or everything is free), bought, for_sale (one payment) or not_for_sale",
+    )
+    sale_price: Decimal | None = Field(default=None, description="The one-time price when for_sale")
+    sale_currency: str | None = None
+    sale_tax_inclusive: bool = False
+    bought_at: datetime | None = Field(default=None, description="When it was bought or given")
+    receipt_invoice_id: UUID | None = Field(default=None, description="The invoice (receipt) of the purchase")
+    bought_free: bool = Field(default=False, description="True: given by the vendor, nothing was paid")
+    can_buy: bool = Field(default=False, description="The signed-in person may buy it now (owner, account in order)")
     can_disable: bool
     why_not_disable: str | None
     can_remove: bool
@@ -55,14 +69,19 @@ def _registry() -> Registry:
     return Registry(discover())
 
 
-def _card(s: Session, reg: Registry, name: str) -> UnitCard:
-    return UnitCard(**next(c for c in unit_admin.catalog(s, reg) if c["name"] == name))
+def _card(s: Session, reg: Registry, name: str, ctx: RequestContext) -> UnitCard:
+    return UnitCard(**next(c for c in unit_admin.catalog(s, reg, can_buy=_can_buy(ctx)) if c["name"] == name))
+
+
+def _can_buy(ctx: RequestContext) -> bool:
+    return ctx.has_anywhere("billing.manage")
 
 
 @router.get("/catalog", response_model=list[UnitCard])
-def unit_catalog(s: Session = DB_SESSION) -> object:
-    """Every module and plugin with its state for this business and what can be done with it now."""
-    return unit_admin.catalog(s, _registry())
+def unit_catalog(ctx: RequestContext = Depends(request_context), s: Session = DB_SESSION) -> object:
+    """Every module and plugin with its state for this business and what can be done with it now. A unit outside the
+    plan shows whether it is for sale (one payment) and its price in the business's billing currency."""
+    return unit_admin.catalog(s, _registry(), can_buy=_can_buy(ctx))
 
 
 @router.post("/{name}/enable", response_model=UnitChange)
@@ -72,7 +91,7 @@ def enable(name: str, ctx: RequestContext = Depends(request_context), s: Session
     if name in reg.units:
         entitlements.check_unit(ctx.tenant_id, name, reg.units[name].title)      # 402 not_in_plan: upgrade
     newly = unit_admin.enable_unit(s, reg, ctx.tenant_id, name)
-    return {"enabled": newly, "unit": _card(s, reg, name)}
+    return {"enabled": newly, "unit": _card(s, reg, name, ctx)}
 
 
 @router.post("/{name}/disable", response_model=UnitChange)
@@ -80,7 +99,7 @@ def disable(name: str, ctx: RequestContext = Depends(request_context), s: Sessio
     """Switch a unit off. Its data is kept. Refused while another switched-on unit needs it."""
     reg = _registry()
     unit_admin.disable_unit(s, reg, ctx.tenant_id, name)
-    return {"enabled": [], "unit": _card(s, reg, name)}
+    return {"enabled": [], "unit": _card(s, reg, name, ctx)}
 
 
 @router.post("/{name}/remove", response_model=UnitChange)
@@ -89,4 +108,4 @@ def remove(name: str, body: RemoveIn, ctx: RequestContext = Depends(request_cont
     """Delete a switched-off unit's data for this business (cannot be undone). `confirm` must be the unit's name."""
     reg = _registry()
     unit_admin.remove_unit(s, reg, ctx.tenant_id, name, body.confirm)
-    return {"enabled": [], "unit": _card(s, reg, name)}
+    return {"enabled": [], "unit": _card(s, reg, name, ctx)}

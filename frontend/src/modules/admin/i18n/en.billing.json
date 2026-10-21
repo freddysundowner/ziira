@@ -105,8 +105,6 @@
     "noteField": "Note for the vendor (optional)",
     "requestSend": "Send request",
     "requestDone": "Request sent. The vendor will send you an invoice.",
-    "appsNotInPlan": "Not in your plan.",
-    "appsUpgrade": "Upgrade",
     "licenceTitle": "Licence",
     "licenceHint": "This copy of Ziira runs on your own server and is covered by a licence file from the vendor.",
     "licenceCard": "Your licence",
@@ -176,6 +174,15 @@
       "suspendedNoDate": "Your plan has ended. Pay to keep going. Your data is safe.",
       "overdue": "A payment is overdue. Pay now to keep full access.",
       "open": "Open Plan & billing"
-    }
+    },
+    "addonsTitle": "Add-ons you bought",
+    "addonsHint": "Each was a single payment. They stay with your business when your plan changes.",
+    "addonsNone": "You have not bought any add-ons.",
+    "addonName": "Add-on",
+    "addonWhen": "Date",
+    "addonPaid": "Paid",
+    "addonGiven": "Given to you",
+    "addonWaiting": "Waiting for payment",
+    "addonPay": "Pay now"
   }
 }

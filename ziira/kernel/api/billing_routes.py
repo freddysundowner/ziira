@@ -101,6 +101,8 @@ def my_plan(ctx: RequestContext = Depends(request_context), s: Session = DB_SESS
     over = sorted(u for u in enabled if e.units is not None and u not in e.units and u in discover())
     owed: dict[str, Decimal] = {}
     for inv in billing.list_invoices(tenant_id=ctx.tenant_id, status="issued", include_drafts=False):
+        if inv["kind"] == "addon":          # an add-on waiting at the checkout is not a debt
+            continue
         owed[inv["currency"].strip()] = owed.get(inv["currency"].strip(), Decimal(0)) + inv["balance"]
     coupon = None
     if sub is not None and sub["coupon_id"] is not None:

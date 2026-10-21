@@ -103,7 +103,7 @@ function SubscriberView({ d }: { d: Detail }) {
         onChange={(id) => setParams(id === "overview" ? {} : { tab: id }, { replace: true })}
       />
       {tab === "overview" && <OverviewTab d={d} onSaved={saved()} />}
-      {tab === "billing" && <BillingTab d={d} />}
+      {tab === "billing" && <BillingTab d={d} onSaved={saved()} />}
       {tab === "timeline" && <TimelineTab events={d.timeline} />}
       {tab === "units" && <UnitsTab code={d.code} />}
       {tab === "support" && <SupportTab code={d.code} />}

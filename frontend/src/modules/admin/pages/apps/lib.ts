@@ -75,3 +75,19 @@ export function titlesOf(cards: readonly UnitCard[], names: readonly string[]): 
 export function removeConfirmed(card: Pick<UnitCard, "name">, typed: string): boolean {
   return typed.trim() === card.name;
 }
+
+/**
+ * How a unit that is not switched on is offered, in plain words: `buy` (the owner may pay once), `ask_owner` (for sale, but
+ * this person may not pay), `bought` / `given` (it is theirs), `unavailable` (nothing to buy here) or `none` (in the plan).
+ */
+export type SaleView = "buy" | "ask_owner" | "bought" | "given" | "unavailable" | "none";
+
+export function saleView(u: Pick<UnitCard, "sale_state" | "can_buy" | "bought_free" | "installed">): SaleView {
+  if (!u.installed) return "none";
+  switch (u.sale_state) {
+    case "bought": return u.bought_free ? "given" : "bought";
+    case "for_sale": return u.can_buy ? "buy" : "ask_owner";
+    case "not_for_sale": return "unavailable";
+    default: return "none";
+  }
+}

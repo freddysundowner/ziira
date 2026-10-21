@@ -6,6 +6,7 @@ import { Badge, Button, type BadgeTone, type Column, DataTable, formatDate, mone
 import type { PlatformSchema } from "../../types";
 import { InvoiceBadge } from "../../components/bits";
 import { useOperatorCan } from "../../me";
+import { AddonsSection } from "./AddonsSection";
 import { InvoiceDrawer } from "../billing/InvoiceDrawer";
 import { InvoiceFormDialog, RecordPaymentDialog } from "../billing/invoiceDialogs";
 
@@ -15,7 +16,7 @@ type Payment = PlatformSchema<"PaymentOut">;
 type Request = PlatformSchema<"RequestOut">;
 const REQUEST_TONES: Record<string, BadgeTone> = { pending: "warn", approved: "ok", declined: "bad", cancelled: "neutral" };
 
-export function BillingTab({ d }: { d: Detail }) {
+export function BillingTab({ d, onSaved }: { d: Detail; onSaved: (detail: Detail) => void }) {
   const { t } = useTranslation("operator");
   const canBill = useOperatorCan("platform.billing");
   const [open, setOpen] = useState<string | null>(null);
@@ -65,6 +66,7 @@ export function BillingTab({ d }: { d: Detail }) {
         <h2 className="mb-2 text-base font-semibold">{t("subscriber.billing.payments")}</h2>
         <DataTable rows={d.payments} columns={payments} rowKey={(p) => p.id} dense pageSize={10} empty={{ title: t("subscriber.billing.noPayments") }} />
       </section>
+      <AddonsSection d={d} onSaved={onSaved} />
       <section>
         <div className="mb-2 flex items-baseline justify-between"><h2 className="text-base font-semibold">{t("subscriber.billing.requests")}</h2><Link className="text-xs font-medium text-brand-strong hover:underline" to="/operator/billing/requests">{t("subscriber.billing.allRequests")}</Link></div>
         <DataTable rows={d.requests} columns={requests} rowKey={(r) => r.id} dense pageSize={10} empty={{ title: t("subscriber.billing.noRequests") }} />
