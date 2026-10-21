@@ -34,7 +34,9 @@ def build(cfg: Config, *, secret_key: str, credentials_key: str, metrics_token: 
         # The built website: the public Ask Ziira assistant reads its knowledge file (assistant-knowledge.json) from here.
         "ZIIRA_SITE_DIST_DIR": f"{cfg.web_root}/site/current",
         "ZIIRA_HSTS_MAX_AGE": "0" if cfg.hsts == "off" else "31536000",
-        "ZIIRA_MFA_DEFAULT_POLICY": "privileged",
+        # New businesses start without a forced second factor (each can switch it on in Settings); production needs the acknowledgement.
+        "ZIIRA_MFA_DEFAULT_POLICY": "off",
+        "ZIIRA_MFA_DEFAULT_OFF_ACKNOWLEDGED": "true",
         "ZIIRA_REGISTRATION_MODE": cfg.registration_mode,
         "ZIIRA_OPERATOR_MFA": cfg.operator_mfa,
         "ZIIRA_BACKUP_DIR": cfg.backup_dir,

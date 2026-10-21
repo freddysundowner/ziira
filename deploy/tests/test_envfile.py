@@ -47,7 +47,7 @@ def test_generated_environment_passes_the_projects_own_checker() -> None:
 def test_generated_environment_values_are_the_documented_ones() -> None:
     env = generated()
     assert env["ZIIRA_ENV"] == "production" and env["ZIIRA_DEV_TENANT_HEADER"] == "false"
-    assert env["ZIIRA_TRUST_FORWARDED_FOR"] == "true" and env["ZIIRA_MFA_DEFAULT_POLICY"] == "privileged"
+    assert env["ZIIRA_TRUST_FORWARDED_FOR"] == "true" and env["ZIIRA_MFA_DEFAULT_POLICY"] == "off" and env["ZIIRA_MFA_DEFAULT_OFF_ACKNOWLEDGED"] == "true"
     assert env["ZIIRA_PUBLIC_BASE_URL"] == env["ZIIRA_PUBLIC_WEB_URL"] == "https://app.ziira.io"
     assert env["ZIIRA_OPERATOR_HOST"] == "admin.ziira.io" and env["ZIIRA_APP_HOST"] == "app.ziira.io"
     assert env["ZIIRA_OPERATOR_MFA"] == "off" and env["ZIIRA_OPERATOR_MFA_OFF_ACKNOWLEDGED"] == "true"
