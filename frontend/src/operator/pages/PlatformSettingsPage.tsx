@@ -27,6 +27,9 @@ export default function PlatformSettingsPage() {
     <div className="space-y-5">
       <PageHeader title={t("psettings.title")} description={t("psettings.intro")} />
       {!editable && <Alert tone="info">{t("psettings.readOnly")}</Alert>}
+      <Card title={t("psettings.plans.title")}>
+        <FreeAddonsRow stored={d.values["access.all_units_free"]} editable={editable} />
+      </Card>
       <Card title={t("psettings.registration.title")}>
         <div className="space-y-4">
           <ModeRow stored={String(d.values["registration.mode"]?.value || d.values["registration.mode"]?.effective || "closed")} editable={editable} />
@@ -105,6 +108,27 @@ function SettingRow({ settingKey, label, hint, stored, editable, choices, type }
       {fromEnv && <Badge tone="neutral">{t("psettings.fromEnv")}</Badge>}
       {problem && <Alert tone="bad">{problem}</Alert>}
       {editable && value !== initial && <div className="flex justify-end"><Button size="sm" loading={save.isPending} onClick={() => save.mutate(value.trim())}>{t("psettings.save")}</Button></div>}
+    </div>
+  );
+}
+
+/** One switch: when on (the default) every business may use every add-on, whatever its plan lists. */
+function FreeAddonsRow({ stored, editable }: { stored: { value: unknown } | undefined; editable: boolean }) {
+  const { t } = useTranslation("operator");
+  const [problem, setProblem] = useState<string | null>(null);
+  const save = useSave("access.all_units_free", t("psettings.plans.free"), setProblem);
+  const on = String(stored?.value ?? "") !== "off";
+  return (
+    <div className="space-y-2">
+      <label className="flex items-start gap-3 text-sm">
+        <input type="checkbox" className="mt-1 h-4 w-4" checked={on} disabled={!editable || save.isPending}
+          onChange={(e) => save.mutate(e.target.checked ? "on" : "off")} />
+        <span>
+          <span className="block font-medium">{t("psettings.plans.free")}</span>
+          <span className="block text-muted">{on ? t("psettings.plans.freeOn") : t("psettings.plans.freeOff")}</span>
+        </span>
+      </label>
+      {problem && <Alert tone="bad">{problem}</Alert>}
     </div>
   );
 }

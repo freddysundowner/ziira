@@ -17,15 +17,18 @@ from tests.test_pos_sync import fix_lines, op_open, op_sale, statuses, upload
 from ziira.kernel.config import get_settings
 from ziira.kernel.db import master_session, tenant_session
 from ziira.kernel.errors import ValidationFailed
-from ziira.kernel.platform import entitlements, subscriptions
+from ziira.kernel.platform import behaviour, entitlements, subscriptions
 
 
 @pytest.fixture(scope="module", autouse=True)
 def plans_(registry):  # type: ignore[no-untyped-def]
+    behaviour.set_value("access.all_units_free", "off", "test")        # these tests are about what a plan restricts
     make_plan("ent-small", units=["products"], prices={("KES", "month"): "500.00"}, max_users=2, max_branches=1,
               max_companies=1, trial_days=30)
     make_plan("ent-big", units=["products", "inventory"], prices={("KES", "month"): "900.00"}, max_users=5,
               max_branches=3, max_companies=2, trial_days=30)
+    yield
+    behaviour.set_value("access.all_units_free", "", "test")
 
 
 def business(registry, name: str, plan: str | None = "ent-small", **kw):  # type: ignore[no-untyped-def]
@@ -66,6 +69,24 @@ def test_a_unit_outside_the_plan_cannot_be_switched_on(client, registry) -> None
     r = client.post(f"{API}/units/inventory/enable", headers=owner)
     assert r.status_code == 402 and r.json()["error"] == "not_in_plan"
     assert "not in your plan" in r.json()["message"] and "Upgrade" in r.json()["message"]
+
+
+def test_the_free_for_everyone_switch_lets_any_business_use_any_unit(client, registry) -> None:  # type: ignore[no-untyped-def]
+    tid, owner = business(registry, "Ent Free")
+    assert client.post(f"{API}/units/inventory/enable", headers=owner).status_code == 402          # the plan does not list it
+    try:
+        behaviour.set_value("access.all_units_free", "on", "test")
+        catalog = {u["name"]: u for u in client.get(f"{API}/units/catalog", headers=owner).json()}
+        assert catalog["inventory"]["in_plan"] is True and catalog["inventory"]["can_enable"] is True
+        assert client.post(f"{API}/units/inventory/enable", headers=owner).status_code == 200
+        assert behaviour.all_units_free() is True
+    finally:
+        behaviour.set_value("access.all_units_free", "off", "test")
+    assert behaviour.all_units_free() is False
+    # unset means on: the platform starts free for everyone
+    behaviour.set_value("access.all_units_free", "", "test")
+    assert behaviour.all_units_free() is True
+    behaviour.set_value("access.all_units_free", "off", "test")
 
 
 def test_upgrading_the_plan_allows_the_unit(client, registry) -> None:  # type: ignore[no-untyped-def]

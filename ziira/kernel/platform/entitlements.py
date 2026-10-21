@@ -28,6 +28,7 @@ from ziira.kernel.config import get_settings
 from ziira.kernel.context import RequestContext
 from ziira.kernel.db import master_session
 from ziira.kernel.errors import NotInPlan, PlanLimitReached, SubscriptionEnded, SubscriptionInactive
+from ziira.kernel.platform import behaviour
 from ziira.kernel.registry import discover
 
 CACHE_SECONDS = 10
@@ -123,6 +124,8 @@ def _message(status: str, period_end: datetime | None) -> str:
 def _from_subscription(row: Any) -> Entitlements:
     e = row.entitlements or {}
     units = e.get("units")
+    if behaviour.all_units_free():      # the platform owner's switch: every business may use every add-on
+        units = None
     end = row.trial_end if row.status == "trialing" and row.trial_end else row.period_end
     return Entitlements(
         "subscription",

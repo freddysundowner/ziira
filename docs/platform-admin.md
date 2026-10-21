@@ -41,6 +41,10 @@ are filed under its workspace code.
 
 ## Plans, prices, add-ons, coupons
 
+- **All add-ons free for everyone** (Platform > Settings, one checkbox, setting `access.all_units_free`, ON by default): while it is on, every business
+  may use every unit whatever its plan lists (`entitlements` treats the plan's unit list as "every unit"). Plans still set prices and the
+  user, branch and company limits. Switch it off to sell add-ons through the plans again; businesses then see "not in your plan".
+
 - **Plan**: code, name, edition and/or units, plugin add-on units, limits (`max_users`, `max_branches`,
   `max_companies`; empty = unlimited; extra informational caps in `limits`), trial days, billing intervals offered
   (`month`, `year`, `one_time`), public/hidden, active/retired. A retired plan keeps its subscribers but cannot be chosen.

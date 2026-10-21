@@ -61,6 +61,13 @@ def _country(value: Any) -> str:
     return clean
 
 
+def _on_off(value: Any) -> str:
+    clean = str(value or "").strip().lower()
+    if clean not in ("", "on", "off"):
+        raise ValidationFailed("Choose on or off")
+    return clean
+
+
 def _trial(value: Any) -> int | str:
     if value is None or str(value).strip() == "":
         return ""
@@ -86,6 +93,7 @@ KEYS: dict[str, Callable[[Any], Any]] = {
     "registration.default_edition": _edition,
     "registration.trial_days": _trial,
     "registration.default_country": _country,
+    "access.all_units_free": _on_off,
     "public.web_url": _url("The public web address"),
     "public.api_url": _url("The public API address"),
     "public.terms_url": _url("The terms link"),
@@ -131,6 +139,10 @@ def set_value(key: str, value: Any, by: str | None) -> Any:
             "on conflict (key) do update set value = excluded.value, updated_at = now(), "
             "updated_by = excluded.updated_by"), {"k": key, "v": json.dumps(clean), "b": by})
     invalidate()
+    if key.startswith("access."):
+        from ziira.kernel.platform import entitlements
+
+        entitlements.invalidate()           # what each business may use depends on it
     return clean
 
 
@@ -156,6 +168,12 @@ DEFAULT_COUNTRY = "KE"          # the owner's starting value for the sign-up for
 def default_country() -> str:
     """The country the sign-up form starts on (a platform setting; the owner chose its starting value)."""
     return str(get("registration.default_country") or "").strip().upper() or DEFAULT_COUNTRY
+
+
+def all_units_free() -> bool:
+    """True (the default) when every business may use every add-on whatever its plan lists. The Super Admin switches it
+    off (Platform > Settings) when add-ons should be sold through the plans again."""
+    return str(get("access.all_units_free") or "").strip().lower() != "off"
 
 
 def default_edition() -> str:

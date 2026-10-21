@@ -1104,6 +1104,7 @@
   }
  },
  "psettings": {
+  "plans": { "title": "Mipango na viongezi", "free": "Viongezi vyote ni bure kwa kila mtu", "freeOn": "Imewashwa: kila biashara inaweza kuwasha kiongezi chochote, bila kujali mpango wake. Mipango bado huweka mipaka ya watumiaji, matawi na kampuni, na bei.", "freeOff": "Imezimwa: biashara hutumia tu viongezi vilivyomo kwenye mpango wake; vingine huonyesha haviko kwenye mpango wako." },
   "title": "Mipangilio ya jukwaa",
   "intro": "Jinsi jukwaa linavyofanya kazi kwa wageni: nani anaweza kujisajili, chaguo-msingi za biashara mpya, na anwani na viungo vya umma.",
   "loadFailed": "Imeshindwa kupakia mipangilio",

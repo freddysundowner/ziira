@@ -1104,6 +1104,7 @@
   }
  },
  "psettings": {
+  "plans": { "title": "Plans and add-ons", "free": "All add-ons are free for everyone", "freeOn": "On: every business can switch on any add-on, whatever its plan lists. Plans still set the user, branch and company limits and the price.", "freeOff": "Off: a business can only use the add-ons its plan includes; other add-ons show not in your plan." },
   "title": "Platform settings",
   "intro": "How the platform behaves for visitors: who may register, the defaults for new businesses, and the public addresses and links.",
   "loadFailed": "Could not load the settings",
