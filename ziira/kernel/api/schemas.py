@@ -187,6 +187,7 @@ class CompanySettingsOut(Out):
     overtime_hours_per_month: Decimal
     receipt_footer: str
     invoice_footer: str
+    sale_reference_prompt: Literal["off", "ask", "require"]
     timezone: str
     intel_alert_channel: str
     intel_alert_min_severity: Literal["low", "medium", "high", "critical"]
@@ -223,6 +224,7 @@ class CompanySettingsIn(BaseModel):
     overtime_hours_per_month: Annotated[Decimal, Field(ge=1, le=400, max_digits=6, decimal_places=2)] | None = None
     receipt_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
     invoice_footer: Annotated[str, Field(max_length=200, pattern=r"^[^\n\r]*$")] | None = None
+    sale_reference_prompt: Literal["off", "ask", "require"] | None = None
     timezone: Annotated[str, Field(max_length=64)] | None = None
     intel_alert_channel: str | None = None
     intel_alert_min_severity: Literal["low", "medium", "high", "critical"] | None = None

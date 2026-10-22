@@ -6,6 +6,7 @@ from ziira.modules.imports.public import IMPORTS_IMPORTER
 from ziira.modules.products.importers import ProductImporter
 from ziira.modules.products.public import PRODUCT_BEFORE_CREATE, SKU_SUGGESTER, TAX_CODE_SEED, SkuSuggester, TaxCodeSeed
 from ziira.modules.products.repository import products_repo
+from ziira.modules.products.services.seed_catalogue import seed_catalogue
 from ziira.modules.products.services.seed_industry import hide, is_untouched, seed_services
 from ziira.modules.products.services.seed_tax_codes import seed_tax_codes
 from ziira.modules.products.services.seed_uoms import seed_default_uoms
@@ -64,13 +65,19 @@ class ProductsDefaultsSeeder(CountrySeeder):
 
 @provides(INDUSTRY_SEEDER)
 class ProductsIndustrySeeder(IndustrySeeder):
-    """Adds the service items (with a usual duration) an industry pack supplies."""
+    """Adds the service items (with a usual duration) and the catalogue (categories, units, example products with
+    their custom-field values) an industry pack supplies."""
 
     name = "products.services"
     unit = "products"
 
     def seed(self, session: Session, pack: PackData, company_id: UUID) -> SeedReport:
-        return seed_services(session, pack, company_id)
+        report = seed_services(session, pack, company_id)
+        more = seed_catalogue(session, pack, company_id)
+        report.added += more.added
+        report.skipped += more.skipped
+        report.notes += more.notes
+        return report
 
     def untouched(self, session: Session, item_type: str, item_id: UUID) -> bool:
         return item_type == "product" and is_untouched(session, item_id)

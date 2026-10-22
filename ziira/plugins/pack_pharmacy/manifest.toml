@@ -1,0 +1,15 @@
+[unit]
+name = "pack_pharmacy"
+title = "Pharmacy or chemist"
+description = "Sets up a pharmacy or drug shop to trade on day one: medicine categories and units, batch and expiry tracking, a reference note at the till, expiry alerts and supplier templates."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+requires = ["products", "inventory", "purchasing", "pos", "crm"]
+optional = ["intel", "command"]
+
+[extends]
+implements = []

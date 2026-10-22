@@ -56,7 +56,7 @@ One stylesheet, `site/src/styles/global.css` (external, hashed; the audit caps C
 
 ## Help centre (`/help/`)
 
-A step-by-step user guide, separate from the SEO articles (`/guides/`, nav label "Articles"). Ten journeys and about fifty guides, English only.
+A step-by-step user guide, separate from the SEO articles (`/guides/`, nav label "Articles"). Sixteen journeys and about eighty-six guides, English only. The service-business journeys (First week by kind of business, Bookings, Jobs, Time and projects, Memberships, Files) were written from the app's English labels and docs, without screenshots.
 How it is built and how to add a guide: `site/README.md` ("Help centre"). Rules the guides follow:
 
 * Every step was performed in the running app (demo business, plus a scratch business for the create-and-sell screens) and uses the labels on screen.

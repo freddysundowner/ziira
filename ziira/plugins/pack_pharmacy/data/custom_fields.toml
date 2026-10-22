@@ -1,0 +1,54 @@
+# Product fields a pharmacy keeps, and one customer field. A business can hide or add its own (Settings > Custom fields).
+# 'prescription_required' and 'controlled' are what make the till ask for a reference note (Settings > Ask for a reference at the till).
+
+[[field]]
+entity_type = "products.product"
+key = "generic_name"
+label = "Generic name"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "products.product"
+key = "strength"
+label = "Strength"
+kind = "text"
+
+[[field]]
+entity_type = "products.product"
+key = "dosage_form"
+label = "Form"
+kind = "choice"
+choices = ["Tablet", "Capsule", "Syrup or liquid", "Cream or ointment", "Drops", "Inhaler", "Injection", "Sachet or powder", "Device or consumable", "Other"]
+
+[[field]]
+entity_type = "products.product"
+key = "manufacturer"
+label = "Manufacturer"
+kind = "text"
+searchable = true
+
+[[field]]
+entity_type = "products.product"
+key = "prescription_required"
+label = "Prescription required"
+kind = "bool"
+
+[[field]]
+entity_type = "products.product"
+key = "controlled"
+label = "Controlled item"
+kind = "bool"
+
+[[field]]
+entity_type = "products.product"
+key = "storage_condition"
+label = "Storage"
+kind = "choice"
+choices = ["Room temperature", "Cool and dry", "Refrigerated", "Protect from light", "Other"]
+
+[[field]]
+entity_type = "crm.customer"
+key = "refill_reminders"
+label = "Agreed to refill reminders"
+kind = "bool"

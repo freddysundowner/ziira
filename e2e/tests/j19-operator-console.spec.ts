@@ -176,7 +176,8 @@ test("J19 operator console", async ({ page }) => {
   await checkAccessibility(page, "operator account");
 
   // --- signing out ends it; the old password no longer works and the new one does: the console asks again, and the business app never knew
-  await page.getByRole("button", { name: "Sign out", exact: true }).click();
+  await page.getByRole("button", { name: "Account menu" }).click();
+  await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   await page.goto("/operator/health");
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();

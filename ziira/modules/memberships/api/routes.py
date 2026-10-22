@@ -257,7 +257,10 @@ def get_schedule(schedule_id: UUID, session: Session = DB_SESSION) -> object:
 
 @router.patch("/recurring-invoices/{schedule_id}", response_model=sc.RecurringInvoiceOut, dependencies=RECUR)
 def patch_schedule(schedule_id: UUID, body: sc.RecurringInvoiceUpdate, session: Session = DB_SESSION) -> object:
-    return one_named(session, schedules.update_schedule(session, schedule_id, **body.model_dump(exclude_unset=True)))
+    changes = body.model_dump(exclude_unset=True)
+    if body.lines is not None:                      # each line in full, with its defaults (a line may omit quantity)
+        changes["lines"] = [line.model_dump() for line in body.lines]
+    return one_named(session, schedules.update_schedule(session, schedule_id, **changes))
 
 
 @router.post("/recurring-invoices/{schedule_id}/pause", response_model=sc.RecurringInvoiceOut, dependencies=RECUR)

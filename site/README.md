@@ -71,8 +71,8 @@ Adding a guide: add a Markdown file; it is listed, in the feed, sitemap and llms
 
 ## Help centre (step-by-step user guide)
 
-`/help/` is a docs-style user guide: ten journeys (Get started, Sell, Stock, Buy, Customers and credit, Money, People, Ziira Intelligence, Add-ons and
-settings, Help and support) with about fifty guides. It is separate from the SEO articles under `/guides/` (nav label "Articles"): the articles
+`/help/` is a docs-style user guide: sixteen journeys (Get started, First week by kind of business, Sell, Stock, Buy, Customers and credit, Money, People, Bookings and appointments, Jobs and repairs, Time and projects, Memberships and gyms, Files and photos, Ziira Intelligence, Add-ons and
+settings, Help and support) with about eighty-six guides. The service-business journeys (first week to files) have no screenshots yet. It is separate from the SEO articles under `/guides/` (nav label "Articles"): the articles
 are essays for people searching a question, the Help guides are instructions for people using the product. **English only** (the website has no
 Swahili version).
 

@@ -15,7 +15,7 @@ export function Stepper({ current }: { current: number }) {
         return (
           <li key={step} aria-current={active ? "step" : undefined}
             className={cx("flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm", active ? "border-brand bg-brand/10 font-medium text-ink" : "border-line text-muted")}>
-            <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-xs", done ? "bg-ok text-ok-ink" : active ? "bg-brand text-white" : "bg-sunken")}>
+            <span className={cx("flex h-5 w-5 items-center justify-center rounded-full text-xs", done ? "bg-ok text-ok-ink" : active ? "bg-brand text-brand-ink" : "bg-sunken")}>
               {done ? <Check className="h-3 w-3" /> : index + 1}
             </span>
             {t(`steps.${step}`)}

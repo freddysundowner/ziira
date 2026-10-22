@@ -480,6 +480,12 @@
    "days": "How many days back to look"
   }
  },
+ "pos.reference_missing": {
+  "group": "cashier",
+  "plain": "A product marked as needing a reference note at the till (for example a prescription or controlled item) was sold without one.",
+  "example": "Three controlled items were sold on Tuesday with no reference typed.",
+  "limits": {"days": "How many days back to look", "high_after": "Sales by one cashier before it becomes urgent"}
+ },
  "pos.late_recorded_sales": {
   "group": "cashier",
   "plain": "A sale was entered, or arrived from an offline till, days after the day it is dated.",
@@ -1222,6 +1228,37 @@
   "example": "The monthly bookkeeping for a client is still open 6 days after its due date.",
   "limits": {
    "grace_days": "How many days after the due date before it is flagged"
+  }
+ },
+ "bookings.class_underfilled": {
+  "group": "services",
+  "plain": "A class or lesson in the next few days has only a few of its places taken, so the teacher and room are used for very little fee income.",
+  "example": "Maths Form 2 on Tuesday at 16:00 has 2 of 12 places taken (17%).",
+  "limits": {
+   "look_ahead_days": "How many days ahead to look",
+   "fill_percent": "Share of places taken (in %) below which a class is flagged",
+   "min_capacity": "Smallest class size (places) worth checking",
+   "max_sessions": "Most classes to show at once"
+  }
+ },
+ "bookings.class_absences": {
+  "group": "services",
+  "plain": "A learner or member has been marked absent from several classes in the last weeks. It is often the first sign a family is about to stop.",
+  "example": "Grace was absent from 4 sessions in the last 28 days.",
+  "limits": {
+   "lookback_days": "How many days back to look",
+   "absences": "Number of absences before a person is flagged",
+   "high_count": "Number of absences at which it becomes urgent",
+   "max_people": "Most people to show at once"
+  }
+ },
+ "memberships.term_ending_unpaid": {
+  "group": "customers",
+  "plain": "A term, course or contract is about to end while some invoices on it are still unpaid. After it ends, those fees are much harder to collect.",
+  "example": "6 families still owe KES 48,000 on terms that end within 14 days.",
+  "limits": {
+   "look_ahead_days": "How many days ahead to look",
+   "min_amount": "Smallest total owed that is flagged"
   }
  }
 }

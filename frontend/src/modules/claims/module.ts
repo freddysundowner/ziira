@@ -19,5 +19,8 @@ export default defineModule({
     { label: "claims:menu.payers", to: "/claims/payers", under: "/claims", permission: VIEW, order: 41, area: "services", icon: "customers", keywords: "claims:keywords.payers" },
     { label: "claims:menu.ageing", to: "/claims/ageing", under: "/claims", permission: VIEW, order: 42, area: "services", icon: "finance", keywords: "claims:keywords.ageing" },
   ],
+  slots: {
+    "dashboard.widgets": [{ label: "claims:widget.title", component: () => import("./slots/ClaimsWaitingWidget"), permission: VIEW, order: 32 }],
+  },
   translations: { en, sw },
 });

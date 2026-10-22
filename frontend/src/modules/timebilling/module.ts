@@ -34,7 +34,10 @@ export default defineModule({
     { label: "timebilling:settings.title", to: "/time/settings", under: "/time/rates", permission: "time.settings", order: 81, area: "services", icon: "settings", setup: true, keywords: "timebilling:keywords.settings" },
   ],
   slots: {
-    "dashboard.widgets": [{ label: "timebilling:widget.title", component: () => import("./slots/WorkWidget"), permission: VIEW, order: 35 }],
+    "dashboard.widgets": [
+      { label: "timebilling:widget.title", component: () => import("./slots/WorkWidget"), permission: VIEW, order: 35 },
+      { label: "timebilling:widget.deadlinesTitle", component: () => import("./slots/DeadlinesWidget"), permission: VIEW, order: 35.1 },
+    ],
   },
   translations: { en, sw },
 });

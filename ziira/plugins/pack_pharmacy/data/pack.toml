@@ -1,0 +1,5 @@
+[pack]
+# Units the pack feeds (each has a data/<unit>.toml; custom_fields and checklist are read by the kernel).
+units = ["products", "purchasing", "intel"]
+# The shop editions: a pharmacy is a shop with regulated stock, so it signs up as Retail or Distribution.
+editions = ["retail", "distribution"]

@@ -9,6 +9,8 @@ import swAi from "./i18n/sw.ai.json";
 import enWebsite from "./i18n/en.website.json";
 import swWebsite from "./i18n/sw.website.json";
 import enShell from "./i18n/en.shell.json";
+import enChat from "./i18n/en.chat.json";
+import swChat from "./i18n/sw.chat.json";
 import swShell from "./i18n/sw.shell.json";
 
 /** The console's words live in their own namespace ("operator"), added when the console loads. */
@@ -23,4 +25,6 @@ export function addOperatorTranslations(): void {
   i18n.addResourceBundle("sw", "operator", swWebsite, true, true);
   i18n.addResourceBundle("en", "operator", enShell, true, true);
   i18n.addResourceBundle("sw", "operator", swShell, true, true);
+  i18n.addResourceBundle("en", "operator", enChat, true, true);
+  i18n.addResourceBundle("sw", "operator", swChat, true, true);
 }

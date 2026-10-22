@@ -119,7 +119,7 @@ export default function PoliciesTab({ companyId }: { companyId: string | undefin
         </summary>
         <div className="space-y-4 border-t border-line p-4">{shown.filter((g) => RARE.includes(g.id)).map(card)}</div>
       </details>
-      <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center justify-end gap-2 bg-bg/90 py-3 pl-1 pr-20 backdrop-blur">
+      <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center justify-end gap-2 bg-bg/90 py-3 pl-1 pr-20 sm:pr-36 backdrop-blur">
         {dirty && <span className="text-xs text-muted">{t("unsaved")}</span>}
         <Button type="button" variant="secondary" disabled={!dirty} onClick={() => settings.data && setForm(toForm(settings.data))}>{t("discard")}</Button>
         <Button type="submit" loading={save.isPending} disabled={!dirty}>{t("save")}</Button>

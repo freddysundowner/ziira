@@ -32,7 +32,8 @@
    "audit": "Kumbukumbu za vitendo",
    "mailLog": "Kumbukumbu za barua",
    "attempts": "Majaribio ya malipo",
-   "setup": "Orodha ya kuanzisha"
+   "setup": "Orodha ya kuanzisha",
+   "chatBot": "Boti ya WhatsApp"
   }
  },
  "shell": {

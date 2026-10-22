@@ -72,7 +72,9 @@ are filed under its workspace code.
 
 `GET /api/v1/public/plans` (no sign-in, cached 60 s): `{plans:[{code,name,description,edition,highlights[],limits{},
 trial_days,prices:[{currency,interval,amount,tax_inclusive}]}], addons:[...], updated_at}`; only public, active plans and
-the prices in force now. Scheduled prices appear when they start (within the cache time).
+the prices in force now. Scheduled prices appear when they start (within the cache time). `addons` lists the users/branches/companies
+add-ons only; single unit add-ons (one-time unit sales) are left out unless the Super Admin turns on *Show add-ons on the pricing
+page* (Platform > Settings, `public.show_unit_addons`, off by default). The filter is in the API; the site only displays what it gets.
 
 ## Subscriptions (SaaS)
 
@@ -214,6 +216,15 @@ moved; a shared Ziira-owned OAuth app would be a design change.
 
 Tests: `tests/test_platform_email.py` (mocked transports; secrets never in responses, trail or log; masking; env fallback and move;
 registration guard; public config). Not run: real mail providers (request shapes are from public documentation).
+
+## WhatsApp bot (Super Admin > Platform > WhatsApp bot)
+
+Connects one WhatsApp number, through Lead Intel, to a bot that answers questions about Ziira with the website assistant's checked answers (`docs/ai.md` section 15). Superadmin only (`platform.settings`);
+every change needs the recent confirmation (the password again) and is one line in the operator trail (`chat.key_save`, `chat.key_test`, `chat.connect`, `chat.connect_code`, `chat.connect_cancel`, `chat.adopt`, `chat.rotate_secret`,
+`chat.texts_save`, `chat.enabled`, `chat.test_message`, `chat.disconnect`, `chat.handoff_done`) that names what changed and never a key, a secret or a full number. Steps on the page: Lead Intel key (write-only), Connect your number
+(new, or claim one already on Lead Intel with a code, or recover an existing connection), Where Lead Intel sends messages (built from *Public API address* in Platform settings; must be https; the secret is made and handled by the server and can be rotated),
+What the bot says (welcome, hand-off, off-hours, language, opening hours, profile), Try it (dry run, and a real test message), Waiting for a person (hand-offs, counts of outcomes). The switch starts off. To show a "Chat with us" link on the
+website, put the number in Website > Company & contact > WhatsApp number (an existing setting; this page does not write it). Needs `ziira worker` for late replies and hand-off emails. Development: `ZIIRA_CHAT_FAKE=1` (practice provider and a practice box on the page).
 
 ## Screens and where everything is
 

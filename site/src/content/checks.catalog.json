@@ -12,8 +12,8 @@
    "key": "cashier",
    "title": "Cashiers, discounts and the till",
    "lead": "Do the habits at the till look normal?",
-   "count": 12,
-   "ziira": 6,
+   "count": 13,
+   "ziira": 7,
    "connected": 6
   },
   {
@@ -28,8 +28,8 @@
    "key": "customers",
    "title": "Customers and credit",
    "lead": "Who owes you, and are you lending to the wrong people?",
-   "count": 17,
-   "ziira": 14,
+   "count": 18,
+   "ziira": 15,
    "connected": 3
   },
   {
@@ -60,8 +60,8 @@
    "key": "services",
    "title": "Appointments, jobs and billable time",
    "lead": "Are clients turning up, jobs moving and finished work being invoiced?",
-   "count": 33,
-   "ziira": 33,
+   "count": 35,
+   "ziira": 35,
    "connected": 0
   },
   {
@@ -74,8 +74,8 @@
   }
  ],
  "totals": {
-  "checks": 130,
-  "ziira": 108,
+  "checks": 134,
+  "ziira": 112,
   "connected": 22,
   "actions": 7,
   "automatic_actions": 4,
@@ -84,14 +84,88 @@
   "by_area": {
    "books": 10,
    "cash_sales": 11,
-   "controls": 36,
-   "customers": 45,
+   "controls": 37,
+   "customers": 48,
    "people": 9,
    "stock": 10,
    "suppliers": 9
   }
  },
  "checks": [
+  {
+   "code": "bookings.class_absences",
+   "area": "customers",
+   "group": "services",
+   "title": "People often absent from classes",
+   "description": "A person marked absent from several group sessions in the last weeks.",
+   "plain": "A learner or member has been marked absent from several classes in the last weeks. It is often the first sign a family is about to stop.",
+   "example": "Grace was absent from 4 sessions in the last 28 days.",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "lookback_days",
+     "label": "How many days back to look",
+     "default": 28
+    },
+    {
+     "name": "absences",
+     "label": "Number of absences before a person is flagged",
+     "default": 3
+    },
+    {
+     "name": "high_count",
+     "label": "Number of absences at which it becomes urgent",
+     "default": 6
+    },
+    {
+     "name": "max_people",
+     "label": "Most people to show at once",
+     "default": 50
+    }
+   ]
+  },
+  {
+   "code": "bookings.class_underfilled",
+   "area": "customers",
+   "group": "services",
+   "title": "Classes with few places taken",
+   "description": "A group session in the next few days where the places taken are below a share of its capacity. Silent for sessions with fewer places than the minimum.",
+   "plain": "A class or lesson in the next few days has only a few of its places taken, so the teacher and room are used for very little fee income.",
+   "example": "Maths Form 2 on Tuesday at 16:00 has 2 of 12 places taken (17%).",
+   "source": "ziira",
+   "unit": "Appointments",
+   "needs": null,
+   "severity": "low",
+   "severity_label": "Low",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "look_ahead_days",
+     "label": "How many days ahead to look",
+     "default": 3
+    },
+    {
+     "name": "fill_percent",
+     "label": "Share of places taken (in %) below which a class is flagged",
+     "default": "40.0"
+    },
+    {
+     "name": "min_capacity",
+     "label": "Smallest class size (places) worth checking",
+     "default": 4
+    },
+    {
+     "name": "max_sessions",
+     "label": "Most classes to show at once",
+     "default": 20
+    }
+   ]
+  },
   {
    "code": "bookings.completed_not_invoiced",
    "area": "customers",
@@ -1785,6 +1859,33 @@
    ]
   },
   {
+   "code": "memberships.term_ending_unpaid",
+   "area": "customers",
+   "group": "customers",
+   "title": "Terms ending with unpaid fees",
+   "description": "Memberships and recurring invoices with an end date in the next few days that still have an unpaid invoice, per branch.",
+   "plain": "A term, course or contract is about to end while some invoices on it are still unpaid. After it ends, those fees are much harder to collect.",
+   "example": "6 families still owe KES 48,000 on terms that end within 14 days.",
+   "source": "ziira",
+   "unit": "Memberships and recurring invoices",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": true,
+   "limits": [
+    {
+     "name": "look_ahead_days",
+     "label": "How many days ahead to look",
+     "default": 14
+    },
+    {
+     "name": "min_amount",
+     "label": "Smallest total owed that is flagged",
+     "default": "0.00"
+    }
+   ]
+  },
+  {
    "code": "payments.close_variance",
    "area": "cash_sales",
    "group": "cash",
@@ -2570,6 +2671,33 @@
      "name": "days",
      "label": "How many days back to look",
      "default": 7
+    }
+   ]
+  },
+  {
+   "code": "pos.reference_missing",
+   "area": "controls",
+   "group": "cashier",
+   "title": "Items that need a reference were sold without one",
+   "description": "A product marked as needing a reference note at the till was sold without one. Silent while the business has the reference prompt switched off.",
+   "plain": "A product marked as needing a reference note at the till (for example a prescription or controlled item) was sold without one.",
+   "example": "Three controlled items were sold on Tuesday with no reference typed.",
+   "source": "ziira",
+   "unit": "Sales and tills",
+   "needs": null,
+   "severity": "medium",
+   "severity_label": "Medium",
+   "closes_itself": false,
+   "limits": [
+    {
+     "name": "days",
+     "label": "How many days back to look",
+     "default": 7
+    },
+    {
+     "name": "high_after",
+     "label": "Sales by one cashier before it becomes urgent",
+     "default": 3
     }
    ]
   },

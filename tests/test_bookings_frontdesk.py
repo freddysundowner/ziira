@@ -317,3 +317,11 @@ def test_a_missing_or_expired_patch_test_is_flagged_on_the_booking(client, shop)
 
 def test_workday_ids_are_uuids() -> None:
     assert UUID(str(uuid4()))
+
+
+@pytest.mark.parametrize("day", ["9999-12-31", "0001-01-01"])
+def test_the_rota_refuses_extreme_dates(client, shop, day) -> None:  # type: ignore[no-untyped-def]
+    params = {"branch_id": shop["branch"], "week_start": day}
+    assert client.get(f"{B}/rota", headers=shop["cashier"], params=params).status_code == 422
+    ok = client.get(f"{B}/rota", headers=shop["cashier"], params={**params, "week_start": date.today().isoformat()})
+    assert ok.status_code == 200

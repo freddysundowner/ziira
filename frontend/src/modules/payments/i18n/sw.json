@@ -1,4 +1,11 @@
 {
+  "bankToMatch": {
+    "title": "Benki ya kulinganisha",
+    "nothing": "Kila kitu kilichoripotiwa na benki kimelinganishwa.",
+    "hint": "Imeripotiwa, hakuna malipo yaliyolinganishwa bado",
+    "suggested": "{{count}} yaliyopendekezwa yanasubiri uthibitisho",
+    "open": "Fungua ulinganishaji"
+  },
   "menu": "Malipo",
   "requests": "Maombi ya malipo",
   "reconciliation": "Kulinganisha malipo",

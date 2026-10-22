@@ -153,9 +153,24 @@ def onboarding(session: Session) -> tuple[list[str], bool]:
     return list(row.onboarding_done), bool(row.onboarding_dismissed)
 
 
+def pack_checklist(session: Session) -> tuple[Step, ...]:
+    """The first steps the business's industry packs add after the edition's own (each pack's checklist.toml)."""
+    from ziira.kernel import industry
+
+    on = session.execute(text("select 1 from kernel.tenant_unit where status = 'enabled' "
+                              "and unit_name like 'pack\\_%' and tenant_id = kernel.current_tenant() limit 1")).first()
+    if on is None:
+        return ()                                   # no industry pack: skip reading every unit's manifest
+    try:
+        return tuple(Step(id=i, title=t, hint=h, to=to, unit=u)
+                     for i, t, h, to, u in industry.pack_steps(session, Registry()))
+    except Exception:  # noqa: BLE001 - a pack's list must never stop Home from loading
+        return ()
+
+
 def mark_step(session: Session, step: str, done: bool) -> None:
     name = current(session)
-    if step not in {s.id for s in get(name).checklist}:
+    if step not in {s.id for s in (*get(name).checklist, *pack_checklist(session))}:
         raise NotFound(f"There is no step '{step}' in this edition")
     session.execute(text(
         "update kernel.tenant set onboarding_done = case when cast(:d as boolean) then "

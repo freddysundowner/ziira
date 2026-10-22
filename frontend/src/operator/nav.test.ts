@@ -29,7 +29,7 @@ describe("the sidebar for each role", () => {
     expect(groups.map((g) => g.key.replace("nav.groups.", ""))).toEqual(["overview", "customers", "revenue", "website", "platform", "system"]);
     expect(groups.flatMap((g) => g.items.map((i) => i.id))).toEqual([
       "dashboard", "subscribers", "licences", "requests", "plans", "coupons", "invoices", "methods", "billingSettings", "siteCompany", "sitePages", "siteMedia", "sitePublish",
-      "units", "ai", "email", "settings", "operators", "health", "backups", "audit", "mailLog", "attempts"]);
+      "units", "ai", "email", "chatBot", "settings", "operators", "health", "backups", "audit", "mailLog", "attempts"]);
   });
   it("hides the website when the deployment has none, and drops sections that become empty", () => {
     expect(ids(ROLES.superadmin!, ["website"])).not.toContain("siteCompany");

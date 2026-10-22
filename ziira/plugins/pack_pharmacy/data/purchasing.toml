@@ -1,0 +1,16 @@
+# Supplier templates: examples to rename and fill in. No tax number, phone, email or bank details are given: those are the
+# business's own. Payment terms are only a starting point.
+[[supplier]]
+code = "PH-SUP-1"
+name = "Example: main medicines wholesaler"
+payment_terms_days = 30
+
+[[supplier]]
+code = "PH-SUP-2"
+name = "Example: second wholesaler"
+payment_terms_days = 14
+
+[[supplier]]
+code = "PH-SUP-3"
+name = "Example: medical supplies and consumables"
+payment_terms_days = 30

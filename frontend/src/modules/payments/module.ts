@@ -22,6 +22,7 @@ export default defineModule({
   slots: {
     "dashboard.widgets": [
       { label: "payments:todayWidget", component: () => import("./slots/PaymentsTodayWidget"), permission: "payments.view", order: 30 },
+      { label: "payments:bankToMatch.title", component: () => import("./slots/BankToMatchWidget"), permission: "payments.view", order: 30.1 },
     ],
   },
   translations: { en, sw },

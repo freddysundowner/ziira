@@ -23,12 +23,16 @@ export default function PlatformSettingsPage() {
   const row = (key: string, label: string, hint?: string, input?: "text" | "number") => (
     <SettingRow key={`${key}:${JSON.stringify(d.values[key]?.value)}`} settingKey={key} label={label} hint={hint} stored={d.values[key]} editable={editable} type={input} />
   );
+  const addressProblem = addressWarning(d.values["public.web_url"]?.effective, d.values["public.site_url"]?.effective);
   return (
     <div className="space-y-5">
       <PageHeader title={t("psettings.title")} description={t("psettings.intro")} />
       {!editable && <Alert tone="info">{t("psettings.readOnly")}</Alert>}
       <Card title={t("psettings.plans.title")}>
-        <FreeAddonsRow stored={d.values["access.all_units_free"]} editable={editable} />
+        <div className="space-y-4">
+          <FreeAddonsRow stored={d.values["access.all_units_free"]} editable={editable} />
+          <ShowAddonsRow stored={d.values["public.show_unit_addons"]} editable={editable} />
+        </div>
       </Card>
       <Card title={t("psettings.registration.title")}>
         <div className="space-y-4">
@@ -43,18 +47,33 @@ export default function PlatformSettingsPage() {
         </div>
       </Card>
       <Card title={t("psettings.public.title")} description={t("psettings.public.hint")}>
-        <div className="space-y-4">
-          {row("public.web_url", t("psettings.public.webUrl"), t("psettings.public.webUrlHint"))}
-          {row("public.api_url", t("psettings.public.apiUrl"), t("psettings.public.apiUrlHint"))}
-          {row("public.terms_url", t("psettings.public.terms"))}
-          {row("public.privacy_url", t("psettings.public.privacy"))}
-          {row("public.help_url", t("psettings.public.help"))}
-          {row("public.site_url", t("psettings.public.site"))}
-          {row("public.support_email", t("psettings.public.support"))}
+        <div className="space-y-6">
+          <section className="space-y-4" aria-label={t("psettings.public.addresses")}>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">{t("psettings.public.addresses")}</h3>
+            {row("public.web_url", t("psettings.public.webUrl"), t("psettings.public.webUrlHint"))}
+            {row("public.api_url", t("psettings.public.apiUrl"), t("psettings.public.apiUrlHint"))}
+            {row("public.site_url", t("psettings.public.site"), t("psettings.public.siteHint"))}
+            {addressProblem === "same" && <Alert tone="warn">{t("psettings.public.sameWarn")}</Alert>}
+            {addressProblem === "empty" && <Alert tone="warn">{t("psettings.public.siteEmptyWarn")}</Alert>}
+          </section>
+          <section className="space-y-4" aria-label={t("psettings.public.links")}>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">{t("psettings.public.links")}</h3>
+            {row("public.terms_url", t("psettings.public.terms"))}
+            {row("public.privacy_url", t("psettings.public.privacy"))}
+            {row("public.help_url", t("psettings.public.help"))}
+            {row("public.support_email", t("psettings.public.support"))}
+          </section>
         </div>
       </Card>
     </div>
   );
+}
+
+/** "same": the business app and the website are one address (almost always a mistake); "empty": no website address. */
+export function addressWarning(web: string | undefined, site: string | undefined): "same" | "empty" | null {
+  const norm = (v: string | undefined) => (v ?? "").trim().toLowerCase().replace(/\/+$/, "");
+  if (norm(site) === "") return "empty";
+  return norm(web) !== "" && norm(web) === norm(site) ? "same" : null;
 }
 
 function useSave(key: string, label: string, onProblem: (m: string | null) => void) {
@@ -126,6 +145,27 @@ function FreeAddonsRow({ stored, editable }: { stored: { value: unknown } | unde
         <span>
           <span className="block font-medium">{t("psettings.plans.free")}</span>
           <span className="block text-muted">{on ? t("psettings.plans.freeOn") : t("psettings.plans.freeOff")}</span>
+        </span>
+      </label>
+      {problem && <Alert tone="bad">{problem}</Alert>}
+    </div>
+  );
+}
+
+/** Off by default: the website's price list shows plans and users/branches add-ons, not single units. */
+function ShowAddonsRow({ stored, editable }: { stored: { value: unknown } | undefined; editable: boolean }) {
+  const { t } = useTranslation("operator");
+  const [problem, setProblem] = useState<string | null>(null);
+  const save = useSave("public.show_unit_addons", t("psettings.plans.showAddons"), setProblem);
+  const on = String(stored?.value ?? "") === "on";
+  return (
+    <div className="space-y-2">
+      <label className="flex items-start gap-3 text-sm">
+        <input type="checkbox" className="mt-1 h-4 w-4" checked={on} disabled={!editable || save.isPending}
+          onChange={(e) => save.mutate(e.target.checked ? "on" : "off")} />
+        <span>
+          <span className="block font-medium">{t("psettings.plans.showAddons")}</span>
+          <span className="block text-muted">{t("psettings.plans.showAddonsHint")}</span>
         </span>
       </label>
       {problem && <Alert tone="bad">{problem}</Alert>}

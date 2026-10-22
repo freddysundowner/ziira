@@ -31,6 +31,7 @@ export default defineModule({
   slots: {
     "dashboard.widgets": [
       { label: "inventory:lowStockTitle", component: () => import("./slots/LowStockWidget"), permission: "stock.view", order: 20 },
+      { label: "inventory:expiringTitle", component: () => import("./slots/ExpiringWidget"), permission: "stock.view", order: 21 },
     ],
     [PRODUCT_TABS]: [
       { label: "inventory:stock", component: () => import("./slots/StockTab"), permission: "stock.view", order: 10 },

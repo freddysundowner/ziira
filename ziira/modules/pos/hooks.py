@@ -79,8 +79,9 @@ class CustomerLedgerCheck(IntegrityCheck):
 # Intelligence checks, the baselines they compare with, and the Command Center figures (all read-only)
 for _check in (intel_checks.TillCashVariance, intel_checks.CashierVoidRate, intel_checks.CashierRefundRate,
                intel_checks.CashierDiscountRate, intel_checks.LargeExceptions, intel_checks.OutOfHoursSales,
-               intel_checks.LateRecordedSales, intel_checks.BranchSalesLow, intel_checks.OverdueCustomers,
-               intel_checks.SlowerPayers, intel_checks.CreditToOverdueCustomer, intel_checks.OverCreditLimit):
+               intel_checks.LateRecordedSales, intel_checks.ReferenceMissing, intel_checks.BranchSalesLow,
+               intel_checks.OverdueCustomers, intel_checks.SlowerPayers, intel_checks.CreditToOverdueCustomer,
+               intel_checks.OverCreditLimit):
     provides(INTEL_CHECK)(_check)
 for _metric in (intel_checks.CashierVoidRateMetric, intel_checks.CashierRefundRateMetric,
                 intel_checks.CashierDiscountRateMetric, intel_checks.BranchDailySalesMetric):

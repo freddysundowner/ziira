@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Alert, api, Button, Field, FormGrid, Modal, NumberInput, Select, unwrap, useQuery, useTranslation, money } from "@/sdk";
+import { Alert, api, Button, Field, FormGrid, Input, Modal, NumberInput, Select, unwrap, useQuery, useTranslation, money } from "@/sdk";
 
 import { type CartLine, isPriceOverride, lineGross, lineProblem, num, needsReason, text } from "../cart";
 
@@ -15,6 +15,8 @@ export function LineEditor({ line, currency, canOverride, online, savedReasons, 
   const [discountMode, setDiscountMode] = useState<"amount" | "percent">("amount");
   const [discount, setDiscount] = useState(line.discount === "0" ? "" : line.discount);
   const [reasonId, setReasonId] = useState(line.reasonId);
+  const [reference, setReference] = useState(line.reference ?? "");
+  const refMode = line.refMode ?? "off";
 
   const reasons = useQuery({
     enabled: canOverride && online,
@@ -25,7 +27,7 @@ export function LineEditor({ line, currency, canOverride, online, savedReasons, 
 
   // Without a connection the list kept on this device is used.
   const reasonList = reasons.data?.filter((r) => r.is_active).map((r) => ({ id: r.id, label: r.label })) ?? savedReasons ?? [];
-  const draft: CartLine = { ...line, quantity, price, reasonId };
+  const draft: CartLine = { ...line, quantity, price, reasonId, reference };
   const gross = lineGross(draft);
   const discountAmount = discountMode === "percent" ? text((gross * num(discount)) / 100) : discount || "0";
   const candidate: CartLine = { ...draft, discount: discountAmount, reasonId: needsReason({ ...draft, discount: discountAmount }) ? reasonId : "" };
@@ -36,14 +38,19 @@ export function LineEditor({ line, currency, canOverride, online, savedReasons, 
   return (
     <Modal open onClose={onClose} title={line.name} size="sm"
       footer={<><Button variant="secondary" onClick={onClose}>{t("terminal.cancel")}</Button>
-        <Button disabled={problem !== null} onClick={() => { onSave({ quantity, price, discount: discountAmount, reasonId: candidate.reasonId }); onClose(); }}>{t("terminal.line.save")}</Button></>}>
-      <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (!problem) { onSave({ quantity, price, discount: discountAmount, reasonId: candidate.reasonId }); onClose(); } }}>
+        <Button disabled={problem !== null} onClick={() => { onSave({ quantity, price, discount: discountAmount, reasonId: candidate.reasonId, reference: reference.trim() }); onClose(); }}>{t("terminal.line.save")}</Button></>}>
+      <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); if (!problem) { onSave({ quantity, price, discount: discountAmount, reasonId: candidate.reasonId, reference: reference.trim() }); onClose(); } }}>
         <FormGrid cols={2}>
           <Field label={t("terminal.line.quantity")}><NumberInput value={quantity} onChange={setQuantity} autoFocus data-autofocus /></Field>
           <Field label={t("terminal.line.price")} hint={line.listPrice ? t("terminal.line.listPrice", { price: money(line.listPrice, currency) }) : t("terminal.line.noListPrice")}>
             <NumberInput value={price} onChange={setPrice} disabled={!canOverride} />
           </Field>
         </FormGrid>
+        {refMode !== "off" && (
+          <Field label={t("terminal.line.reference")} hint={t(refMode === "require" ? "terminal.line.referenceRequired" : "terminal.line.referenceHint")} required={refMode === "require"}>
+            <Input value={reference} onChange={(e) => setReference(e.target.value)} maxLength={120} autoComplete="off" data-autofocus />
+          </Field>
+        )}
         {canOverride && (
           <>
             <FormGrid cols={2}>

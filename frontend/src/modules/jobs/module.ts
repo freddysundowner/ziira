@@ -39,7 +39,12 @@ export default defineModule({
     { label: "jobs:menu.settings", to: "/jobs/settings", permission: SETTINGS, order: 90, area: "services", icon: "settings", setup: true, keywords: "jobs:keywords.settings" },
   ],
   slots: {
-    "dashboard.widgets": [{ label: "jobs:widget.title", component: () => import("./slots/ReadyWidget"), permission: VIEW, order: 31 }],
+    "dashboard.widgets": [
+      { label: "jobs:widget.title", component: () => import("./slots/ReadyWidget"), permission: VIEW, order: 31 },
+      { label: "jobs:widget.approvalTitle", component: () => import("./slots/WaitingApprovalWidget"), permission: VIEW, order: 31.1 },
+      { label: "jobs:widget.partsTitle", component: () => import("./slots/WaitingPartsWidget"), permission: VIEW, order: 31.2 },
+      { label: "jobs:widget.insurerTitle", component: () => import("./slots/WaitingInsurerWidget"), permission: VIEW, order: 31.3 },
+    ],
   },
   translations: { en: join(en, enGarage), sw: join(sw, swGarage) },
 });

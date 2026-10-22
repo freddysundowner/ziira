@@ -428,3 +428,19 @@ def test_an_unmanaged_business_and_unknown_units_cannot_buy(client, registry) ->
     assert buy(client, business(client, registry, "Ao Unknown"), "nope").status_code == 404
     assert buy(client, business(client, registry, "Ao Kernel"), "kernel").status_code == 404
     assert t["tenant_id"]
+
+
+def test_the_public_price_list_hides_unit_addons_unless_the_switch_is_on(client) -> None:  # type: ignore[no-untyped-def]
+    plans.invalidate_public_cache()
+    with pytest.raises(ValidationFailed):
+        behaviour.set_value("public.show_unit_addons", "maybe", "t")
+    behaviour.set_value("public.show_unit_addons", "", "t")                                # default: off
+    assert behaviour.show_unit_addons() is False
+    assert all(a["kind"] != "unit" for a in client.get(f"{API}/public/plans").json()["addons"])
+    behaviour.set_value("public.show_unit_addons", "on", "t")                              # also clears the cache
+    try:
+        listed = client.get(f"{API}/public/plans").json()["addons"]
+        assert any(a["kind"] == "unit" and a["unit"] == "inventory" for a in listed)
+    finally:
+        behaviour.set_value("public.show_unit_addons", "", "t")
+    assert all(a["kind"] != "unit" for a in client.get(f"{API}/public/plans").json()["addons"])

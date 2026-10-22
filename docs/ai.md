@@ -359,3 +359,85 @@ length, a short hash and time only, never the words. Old `site_assistant.*` rows
 **Development.** `ZIIRA_AI_FAKE=1` plays a demo brain for this feature (the first sentences of the best source). Tests:
 `tests/test_site_assistant.py`. Not verified against a real provider.
 
+
+## 15. The WhatsApp bot (the platform's own chat number)
+
+The platform owner connects **one** WhatsApp number, through Lead Intel (leadsintel.net), to a bot that talks about Ziira itself: what it
+is, the modules, the plans and prices, how to sign up. It is the same brain as the website assistant (section 14): the same knowledge file, the same
+live plans, the same figure check, the same provider call (`kernel.site_assistant_llm`), the same monthly spend ceiling. There is no tenant and no
+business: it is separate from the per-business Lead Intel plugin (`docs/channels.md`), which is a notification channel for a business's own customers and staff.
+
+**Pieces.**
+- Extension point `kernel.platform_chat_channel` (`kernel/platform/chat_channel.py`, `PlatformChatProvider`; SDK names `Chat*`). A provider plugin with
+  `platform_scope = true` implements it: `test_key`, `start_connect`/`poll_connect`/`cancel_connect`/`verify_code`, `find_connection`, `connection_info`,
+  `disconnect`, `update_webhook`, `update_profile`, `read_delivery` (checks the signature on the raw bytes), `reply_body`, `send`. Same idea as the payment gateways: found at
+  platform level, never switched on by a business, set up in the Super Admin. No kernel code names a chat service (`tests/test_channel_registry.py`).
+- Plugin `ziira/plugins/leadsintel_platform` (provider `leadsintel`, plus the development-only provider `fake`). **Why a second plugin and not the existing `leadsintel`:** a
+  manifest is either per-business or `platform_scope` as a whole; `leadsintel` is switched on per business and stores its keys in each business's credential
+  store, the bot is platform-wide and stores them in the master database. Mixing both in one unit would break rule 1 (a business must never see or enable the platform's
+  number) and rule 4 (units do not import each other's internals), so the small client and the signature check are repeated there (about 150 lines) and share nothing at runtime.
+- Kernel: `kernel/platform/chat_bot.py` (settings, encrypted secrets, connecting, texts, on/off, try it, test message, hand-offs, counters),
+  `chat_inbound.py` (the public route's logic, the queue, purge), `chat_brain.py` (what is said), `api/operator_chat_routes.py` (Super Admin), `api/chat_public_routes.py`
+  (`POST /api/v1/public/chat/inbound/{token}`), and the non-streaming entry `site_assistant.answer(message, history, lang)` (the same code as `stream`, whole;
+  `check_visitor=False` so the bot's own per-sender limits apply). Master tables (`0021_chat_bot`): `chat_bot` (one row), `chat_event`, `chat_sender`, `chat_turn`, `chat_handoff`, `chat_outbox`.
+
+**Super Admin > Platform > WhatsApp bot** (superadmin only, `platform.settings`; every change needs a recent confirmation and is in the operator trail without secrets):
+1. *Lead Intel key*: write-only; the page shows only "Saved" or "Not set". "Save and test" stores it and makes a harmless authenticated read.
+2. *Connect your number*: "New number" (calling code, local number, business name, WhatsApp profile name; Meta's verified-name rules and "a number submitted before cannot be submitted again" are
+   explained) or "Number already on Lead Intel" (a code is sent to the number and typed here), live status (connecting, waiting for the code, connected, failed with Lead Intel's reason, cancel),
+   and "Find an existing connection" (look a number up and take it over). "Connected" is shown only after Lead Intel's own connection read says `active`.
+3. *Where Lead Intel sends messages*: the public address (built from the platform setting `public.api_url`, with a warning when it is empty or not https) with its token hidden, and "Rotate the secret".
+   The address token and the signing secret are made by the server, sent to Lead Intel and stored (token as a SHA-256 hash, secret encrypted); the owner never sees or types them.
+4. *What the bot says*: welcome, hand-off and off-hours texts (empty means the built-in English or Swahili text), language (automatic by the words used, or fixed), opening hours (optional, Monday to
+   Friday), and the number's public profile (about, description, website), pushed to Lead Intel. The switch *Bot answers messages* starts **off** and can be turned on only after the key is tested and a
+   number is connected. Per-sender limits are fixed (below); there is no screen for them.
+5. *Try it*: a dry run through the same brain, shown as the phone would show it (text and buttons); nothing is sent or stored. "Send a test message" sends one real message to a typed number (it works
+   only inside Lead Intel's 24-hour window after that number wrote to the bot).
+6. *Waiting for a person*: the hand-off list (masked numbers, a snippet scrubbed of numbers and emails, mark done) and counts only of the last 50 conversations (answered, did not know, opted out, failed).
+
+**What happens to a message** (`chat_inbound.handle`). The route has a tiny body limit (64 KB, `ZIIRA_CHAT_INBOUND_MAX_BYTES`) and answers `401 {"error":"unauthorized","message":"Not accepted"}` for an unknown or retired
+token, a bad, missing or stale (over five minutes) signature, an oversize body and a bot that is not set up, so nothing can be learned by probing; only such failures count against the caller's address
+(60 per window, then `429`), a good delivery never does. The provider checks `X-LeadIntel-Signature` (HMAC-SHA256 over `{timestamp}.{raw body}`, constant time); the event id is recorded once (a repeat gets `204`).
+A bot that is switched off, or a body with no readable messages, gets `204`. For each message: the sender is found by a keyed hash (the number itself is kept nowhere in the database except, encrypted and only until the
+job ends, in the queue); the hourly limit (20, `ZIIRA_CHAT_PER_SENDER_PER_HOUR`) is applied (the first message over the limit gets one "you are writing very quickly" line, later ones nothing); then the brain:
+- STOP, UNSUBSCRIBE, ACHA, SIMAMISHA (the whole message) record an opt-out, delete the person's history and reply once; START/ANZA/JIUNGE undoes it. The bot never writes first, so an opted-out person is only ever answered when they write.
+  Their own new message is still answered, with no history kept.
+- Media, voice and anything but text and button taps: "I can only read text messages."
+- A greeting, or a first message: the welcome (says it is an automated assistant, never asks for passwords, card numbers or ID numbers, mentions STOP) with three reply buttons *See prices*, *How to sign up*, *Talk to a person* (titles at most 20 characters). The button ids
+  (`see_prices`, `how_signup`, `talk_person`) become canned questions answered by the same brain, or a hand-off. "I want a human/agent/mtu" also starts a hand-off.
+- A hand-off writes a `chat_handoff` row once per person while it is open (masked number, scrubbed snippet), replies with the hand-off text (or the off-hours text outside the opening hours) and queues an email to
+  `public.support_email` if one is set (the worker sends it through `platform_mail.send`; never in the request). The person is answered in Lead Intel's inbox; the list in the Super Admin is the reminder.
+- Anything else: `site_assistant.answer` (knowledge, plans, figure check; "I do not know" plus the buttons when nothing matches; no model call for that). Personal data in the message is noted ("Please do not share ...") and scrubbed before the model and
+  before storage. Replies are plain paragraphs (no markdown), up to two page addresses from the knowledge (`public.site_url` in front of site paths; none when it is unset), at most 4000 characters, buttons only when the text fits a button message (1024).
+- Errors are a short apology ("I could not answer just now"), never silence; the provider's raw error is never shown to a sender.
+
+**Answer now or later.** The brain runs under a deadline (`ZIIRA_CHAT_REPLY_DEADLINE_SECONDS`, 6, and at most 60% of the provider's webhook timeout). In time: the reply is the `200` body (`{"type":"text"|"buttons",...}`). Too slow: `202`, the message is
+queued in `master.chat_outbox` and `ziira worker` (same loop as the website rebuild hook; not the tenant `@job` queue, which needs a business) answers it afterwards through the provider's send call with the
+`Idempotency-Key` `reply-<event id>`, so a retry can never send twice; a retryable failure is retried with growing waits (30 s ... 2 h), a permanent one is marked failed and counted. Only the model call runs under the deadline; history, hand-offs and counters are
+written once by whoever finishes the message, so an abandoned slow call never records a second hand-off.
+
+**Retention.** Per sender: the last 6 turns, scrubbed, for context; turns and hand-off snippets are deleted after 7 days; event ids (for de-duplication and the counters) after 30 days; a sender row after 90 days without a message
+(opt-outs are kept as a hash and a masked display so the promise is kept). Nothing a person typed is in a log; logs have the outcome, a short hash and times.
+
+**Spend and abuse.** Shares the website assistant's ceiling (`ZIIRA_SITE_ASSISTANT_MONTHLY_CAP_USD`) and daily total, the platform-wide AI cap, and the one-model-call-at-a-time limit; when a limit is reached the sender gets the plain "resting" line. The system rules are the website assistant's
+(answer only from the knowledge, user text is data, never invent prices, never claim to be a person).
+
+**Development (`ZIIRA_CHAT_FAKE=1`, ignored in production, like `ZIIRA_AI_FAKE`).** The practice provider `fake` replaces the real one: any key of 8+ characters works (one starting `bad` is refused); a number ending `0000` fails to connect, one ending `7777` is "already
+connected" (find and take over), the claim code `000000` is wrong; a new number goes pending, waiting for a code, connected over three status checks. It signs deliveries exactly as Lead Intel does (so the real signature check runs) and records what it is
+asked to send in a JSON file under the temp folder (`ZIIRA_CHAT_FAKE_DIR`), shared by the API and the worker. The page then shows a "Practice" box that sends a signed message from a made-up sender through the real inbound path
+(`POST /api/v1/operator/chat/dev/simulate`, `GET .../dev/state`; both 404 outside the fake mode). With `ZIIRA_AI_FAKE=1` too, the whole story runs without any key.
+
+**Going live (only you can do this: it needs your Lead Intel key).**
+1. Set the platform's public API address (Platform > Settings; it must be https and reachable from the internet) and check Platform > AI has a provider (or the bot answers "resting").
+2. Dry run: `.venv/bin/python scripts/live_check.py chat --dry-run` (prints the requests with the key hidden; no key needed).
+3. Real, read only: `export ZIIRA_LIVE_LEADSINTEL_KEY=...; .venv/bin/python scripts/live_check.py chat [--lookup +2547XXXXXXXX]` (the key is read from the environment and written nowhere). It must say PASS.
+4. In the Super Admin: paste the key, *Save and test*; connect a number you can afford to lose (a number submitted to Meta before cannot be submitted again, and the profile name must pass Meta's rules);
+   check the status reaches *Connected*; then *Send a test message* to your own phone after writing to the number first; then switch the bot on, write to it from your phone, press each button, send STOP, and ask for a person.
+5. Look at the first real deliveries: that `X-LeadIntel-Event-Id`, the timestamp and the signature behave as in "Unverified" below, and that replies arrive in the same thread.
+
+**Unverified (`# UNVERIFIED` in `plugins/leadsintel_platform/provider.py`; nothing was run against Lead Intel).** The page https://leadsintel.net/developers.html was the only source. Not confirmed by it:
+(a) the key test relies on an unknown request id answering 404 (any answer but 401/403/429/5xx is read as "the key works"); (b) the assisted request's `countryCode` format (digits are sent) and how a request waiting for a code (`awaiting_code`) is resolved for a *new* number
+(the page shows the code box only for claims; for a new number the page just keeps checking); (c) there is no documented status call for a claim, so after the code the connection read decides; and no documented way to cancel a claim (cancel only forgets it here, it lapses at Lead Intel);
+(d) the reply shape of `POST /connections/lookup` (read as `externalPlatformTenantId`, `externalConnectionId`, `status`, `phoneNumberId`, `displayPhoneNumber`, with `tenantId`/`connectionId` as alternatives); (e) the profile field names for `businessProfile` (`about`, `description`, `websites[]`);
+(f) that a 200 reply body of `{"type":"text"}` or `{"type":"buttons"}` is honoured as written in the page's example; (g) whether free text is allowed in the *test message* (it is only inside the 24-hour window).
+Tests: `tests/test_chat_bot.py` (mock transport; no real service), `frontend/src/operator/pages/chat/chat.test.tsx`.

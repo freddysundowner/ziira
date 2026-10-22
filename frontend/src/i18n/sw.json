@@ -81,6 +81,34 @@
     "tick": "Weka imekamilika: {{step}}",
     "untick": "Weka haijakamilika: {{step}}",
     "steps": {
+      "pack_pharmacy_products": {
+        "title": "Pitia dawa za mfano na uweke bei zako",
+        "hint": "Bidhaa za mfano zinaonyesha jinsi ya kujaza nguvu, umbo na uhifadhi. Zihariri, ficha usizouza, na uweke bei kwa kila moja."
+      },
+      "pack_pharmacy_suppliers": {
+        "title": "Badilisha majina ya wasambazaji wa mfano",
+        "hint": "Weka wasambazaji wako wa jumla, mawasiliano yao na masharti ya malipo."
+      },
+      "pack_pharmacy_opening": {
+        "title": "Weka hisa ya kuanzia pamoja na namba za kundi na tarehe za kuisha",
+        "hint": "Dawa hufuatiliwa kwa kundi, hivyo kaunta huuza zinazoisha mapema kwanza na unaonywa kabla hisa kuisha muda."
+      },
+      "pack_pharmacy_reorder": {
+        "title": "Weka viwango vya kuagiza upya kwa bidhaa zinazouzika haraka",
+        "hint": "Unaambiwa bidhaa inapoisha. Mifano ina viwango vya kurekebisha."
+      },
+      "pack_pharmacy_reference": {
+        "title": "Chagua kama kaunta iombe kumbukumbu",
+        "hint": "Kwa bidhaa zilizowekwa alama ya agizo la daktari au zinazodhibitiwa, kaunta inaweza kuomba maelezo mafupi. Ziira si mfumo wa rekodi za matibabu: andika nambari ya karatasi, si maelezo ya matibabu."
+      },
+      "pack_pharmacy_till": {
+        "title": "Fungua kaunta na ufanye mauzo ya majaribio",
+        "hint": "Hakikisha bidhaa yenye kundi inauzwa na kundi sahihi linatoka kwanza."
+      },
+      "pack_pharmacy_alerts": {
+        "title": "Chagua jinsi ya kupata taarifa za hisa inayoisha muda",
+        "hint": "Chagua simu au barua pepe ya mmiliki kwa tahadhari za haraka."
+      },
       "services": {
         "title": "Ongeza huduma zako",
         "hint": "Unachotoa, muda unaochukua na bei."
@@ -161,6 +189,7 @@
   },
   "signOut": "Toka",
   "home": {
+    "retry": "Jaribu tena",
     "menu": "Mwanzo",
     "title": "Leo",
     "noWidgets": "Hakuna cha kuonyesha bado.",

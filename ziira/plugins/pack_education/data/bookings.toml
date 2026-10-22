@@ -1,0 +1,195 @@
+# Classes and teachers for a school, tutoring centre or training centre. Every price is an EXAMPLE until the business sets its
+# own. A class is a group session with a roster and a capacity: put the same class in the timetable every week from the Classes
+# screen, and book each learner on it.
+
+[settings]
+cancel_window_hours = 24          # how late a family can cancel a session without it counting as late
+reminder_hours_before = 24
+default_buffer_minutes = 10
+waitlist_confirm_minutes = 60
+late_cancel_fee_percent = 0
+no_show_fee_percent = 0
+recalls_enabled = false
+online_enabled = false            # switch the booking page on when families should book make-ups or trial lessons themselves
+
+[[resource]]
+name = "Teacher 1"
+kind = "staff"
+level = "Senior"
+colour = "#2980b9"
+order = 1
+hours = [{ days = [0, 1, 2, 3, 4], start = "08:00", end = "18:00" }, { days = [5], start = "08:00", end = "13:00" }]
+
+[[resource]]
+name = "Teacher 2"
+kind = "staff"
+colour = "#16a085"
+order = 2
+hours = [{ days = [0, 1, 2, 3, 4], start = "08:00", end = "18:00" }]
+
+[[resource]]
+name = "Classroom 1"
+kind = "room"
+colour = "#7f8c8d"
+order = 3
+hours = [{ days = [0, 1, 2, 3, 4], start = "08:00", end = "18:00" }, { days = [5], start = "08:00", end = "13:00" }]
+
+[[resource]]
+name = "Classroom 2"
+kind = "room"
+colour = "#95a5a6"
+order = 4
+hours = [{ days = [0, 1, 2, 3, 4], start = "08:00", end = "18:00" }]
+
+[[service]]
+sku = "EDU-MATHS"
+name = "Mathematics class"
+kind = "class"
+resource_mode = "all"
+minutes = 60
+capacity = 12
+price = 15
+resources = ["Classroom 1", "Teacher 1"]
+
+[[service]]
+sku = "EDU-ENGLISH"
+name = "English class"
+kind = "class"
+resource_mode = "all"
+minutes = 60
+capacity = 12
+price = 15
+resources = ["Classroom 1", "Teacher 2"]
+
+[[service]]
+sku = "EDU-SCIENCE"
+name = "Science class"
+kind = "class"
+resource_mode = "all"
+minutes = 60
+capacity = 12
+price = 15
+resources = ["Classroom 2", "Teacher 1"]
+
+[[service]]
+sku = "EDU-LANGUAGE"
+name = "Language class"
+kind = "class"
+resource_mode = "all"
+minutes = 60
+capacity = 10
+price = 15
+resources = ["Classroom 2", "Teacher 2"]
+
+[[service]]
+sku = "EDU-COMPUTER"
+name = "Computer skills class"
+kind = "class"
+resource_mode = "all"
+minutes = 90
+capacity = 8
+price = 20
+resources = ["Classroom 2", "Teacher 2"]
+
+[[service]]
+sku = "EDU-ARTS"
+name = "Art and music class"
+kind = "class"
+resource_mode = "all"
+minutes = 60
+capacity = 15
+price = 12
+resources = ["Classroom 1", "Teacher 2"]
+
+[[service]]
+sku = "EDU-REVISION"
+name = "Exam revision class"
+kind = "class"
+resource_mode = "all"
+minutes = 120
+capacity = 20
+price = 25
+resources = ["Classroom 1", "Teacher 1"]
+
+[[service]]
+sku = "EDU-HOLIDAY"
+name = "Holiday programme"
+kind = "class"
+resource_mode = "all"
+minutes = 180
+capacity = 25
+price = 30
+resources = ["Classroom 1", "Classroom 2", "Teacher 1", "Teacher 2"]
+
+[[service]]
+sku = "EDU-MAKEUP"
+name = "Make-up session"
+kind = "class"
+resource_mode = "all"
+minutes = 60
+capacity = 6
+price = 0
+resources = ["Classroom 2", "Teacher 1"]
+description = "For a learner who missed a lesson. Book the learner on it as you would on any class."
+
+[[service]]
+sku = "EDU-LESSON"
+name = "One-to-one lesson"
+minutes = 60
+price = 25
+buffer_after = 10
+resources = ["Teacher 1", "Teacher 2"]
+
+[[step]]
+id = "prices"
+title = "Set your own fees"
+hint = "Fees marked as examples are not yours yet: change each class price here and each fee plan in Memberships, Plans and packs."
+to = "/services/services"
+check = "prices_set"
+
+[[step]]
+id = "staff"
+title = "Name your teachers and classrooms"
+hint = "Replace the example teachers and classrooms with your own, and set their hours."
+to = "/services/resources"
+check = "staff_named"
+
+[[step]]
+id = "link"
+title = "Link each class to its service item"
+hint = "So fees and lessons can be invoiced."
+to = "/services/services"
+check = "services_linked"
+
+[[step]]
+id = "timetable"
+title = "Put your first class in the timetable"
+hint = "Choose a class, a day and a time, and repeat it every week of the term."
+to = "/services/calendar"
+check = "first_booking"
+
+[[step]]
+id = "attendance"
+title = "Take attendance for your first class"
+hint = "Open the class, mark who came and who was absent."
+to = "/services/calendar"
+check = "first_attendance"
+
+[[step]]
+id = "page"
+title = "Switch on your booking page (if families book themselves)"
+hint = "For trial lessons and make-up sessions."
+to = "/services/settings"
+check = "booking_page"
+
+[intel."bookings.class_underfilled"]
+look_ahead_days = 3
+fill_percent = "40.0"
+min_capacity = 4
+max_sessions = 20
+
+[intel."bookings.class_absences"]
+lookback_days = 28
+absences = 3
+high_count = 6
+max_people = 50

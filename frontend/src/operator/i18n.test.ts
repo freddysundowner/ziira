@@ -14,6 +14,8 @@ import swPlatform from "./i18n/sw.platform.json";
 import swWebsite from "./i18n/sw.website.json";
 import enShell from "./i18n/en.shell.json";
 import swShell from "./i18n/sw.shell.json";
+import enChat from "./i18n/en.chat.json";
+import swChat from "./i18n/sw.chat.json";
 
 type Tree = { [key: string]: Tree | string };
 
@@ -33,7 +35,7 @@ function merge(...trees: Tree[]): Tree {
   return out;
 }
 
-const merged = { en: merge(en, enPlatform, enAi, enWebsite, enShell), sw: merge(sw, swPlatform, swAi, swWebsite, swShell) };
+const merged = { en: merge(en, enPlatform, enAi, enWebsite, enShell, enChat), sw: merge(sw, swPlatform, swAi, swWebsite, swShell, swChat) };
 
 describe("operator console translations", () => {
   it("have the same keys in English and Swahili", () => {
@@ -44,6 +46,9 @@ describe("operator console translations", () => {
   });
   it("have the same keys in the shell's files", () => {
     expect(keys(swShell).sort()).toEqual(keys(enShell).sort());
+  });
+  it("have the same keys in the WhatsApp bot page's files", () => {
+    expect(keys(swChat).sort()).toEqual(keys(enChat).sort());
   });
   it("have the same keys in the platform screens' files", () => {
     expect(keys(swPlatform).sort()).toEqual(keys(enPlatform).sort());

@@ -550,6 +550,30 @@
   "min_count": {
    "en": "Fewest appointments worth flagging",
    "sw": "Idadi ndogo ya miadi inayostahili kuonyeshwa"
+  },
+  "fill_percent": {
+   "en": "Share of places taken (in %) below which a class is flagged",
+   "sw": "Asilimia ya nafasi zilizochukuliwa ambayo chini yake darasa huonyeshwa"
+  },
+  "min_capacity": {
+   "en": "Smallest class size worth checking (places)",
+   "sw": "Ukubwa mdogo kabisa wa darasa unaostahili kukaguliwa (nafasi)"
+  },
+  "max_sessions": {
+   "en": "Most classes to show at once",
+   "sw": "Madarasa mengi zaidi ya kuonyesha kwa wakati mmoja"
+  },
+  "absences": {
+   "en": "Number of absences before a person is flagged",
+   "sw": "Idadi ya mara za kutohudhuria kabla mtu kuonyeshwa"
+  },
+  "max_people": {
+   "en": "Most people to show at once",
+   "sw": "Watu wengi zaidi wa kuonyesha kwa wakati mmoja"
+  },
+  "high_after": {
+   "en": "Sales by one cashier before it becomes urgent",
+   "sw": "Mauzo ya keshia mmoja kabla ya kuwa ya haraka"
   }
  },
  "_figures": {
@@ -4390,6 +4414,100 @@
   "units": {
    "min_count": "count",
    "look_ahead_days": "count"
+  }
+ },
+ "bookings.class_underfilled": {
+  "topic": "customers",
+  "title": {
+   "en": "Classes with few places taken",
+   "sw": "Madarasa yenye nafasi chache zilizochukuliwa"
+  },
+  "why": {
+   "en": "A teacher and a room are booked for a class that few people will attend, and the fees do not cover the time.",
+   "sw": "Mwalimu na chumba vimewekwa kwa darasa ambalo wachache watahudhuria, na ada hazilipi muda huo."
+  },
+  "todo": {
+   "en": "Remind the families, merge the class with another, or call it off early.",
+   "sw": "Wakumbushe familia, unganisha darasa na jingine, au lighairi mapema."
+  },
+  "sentence": {
+   "en": "Point out a class in the next {look_ahead_days} days when fewer than {fill_percent}% of its places are taken (classes under {min_capacity} places are ignored).",
+   "sw": "Onyesha darasa la siku {look_ahead_days} zijazo ikiwa chini ya {fill_percent}% ya nafasi zimechukuliwa (madarasa yenye nafasi chini ya {min_capacity} hayahesabiwi)."
+  },
+  "units": {
+   "look_ahead_days": "count",
+   "fill_percent": "percent",
+   "min_capacity": "count"
+  }
+ },
+ "bookings.class_absences": {
+  "topic": "customers",
+  "title": {
+   "en": "People often absent from classes",
+   "sw": "Watu wanaokosa madarasa mara nyingi"
+  },
+  "why": {
+   "en": "A learner who keeps missing lessons falls behind, and the family may be about to stop paying.",
+   "sw": "Mwanafunzi anayekosa masomo mara nyingi hubaki nyuma, na familia inaweza kuwa karibu kuacha kulipa."
+  },
+  "todo": {
+   "en": "Call the family to find out what is wrong and offer a make-up session.",
+   "sw": "Piga simu kwa familia kujua tatizo na toa kipindi cha kufidia."
+  },
+  "sentence": {
+   "en": "Point out anyone absent {absences} times or more in the last {lookback_days} days, and urgent at {high_count}.",
+   "sw": "Onyesha yeyote aliyekosa mara {absences} au zaidi katika siku {lookback_days} zilizopita, na iwe ya haraka kwa {high_count}."
+  },
+  "units": {
+   "absences": "count",
+   "lookback_days": "days",
+   "high_count": "count"
+  }
+ },
+ "memberships.term_ending_unpaid": {
+  "topic": "customers",
+  "title": {
+   "en": "Terms ending with fees unpaid",
+   "sw": "Muhula unaoisha ada zikiwa hazijalipwa"
+  },
+  "why": {
+   "en": "When a term is over, families are harder to reach and unpaid fees are usually never collected.",
+   "sw": "Muhula ukiisha, familia ni ngumu kufikiwa na ada ambazo hazijalipwa mara nyingi hazikusanywi."
+  },
+  "todo": {
+   "en": "Collect the fees now, or agree a payment date with each family.",
+   "sw": "Kusanya ada sasa, au kubaliana tarehe ya kulipa na kila familia."
+  },
+  "sentence": {
+   "en": "Point out unpaid fees on terms ending in the next {look_ahead_days} days when they add up to {min_amount} or more.",
+   "sw": "Onyesha ada ambazo hazijalipwa za muhula unaoisha katika siku {look_ahead_days} zijazo zikifikia {min_amount} au zaidi."
+  },
+  "units": {
+   "look_ahead_days": "count",
+   "min_amount": "money"
+  }
+ },
+ "pos.reference_missing": {
+  "topic": "cash",
+  "title": {
+   "en": "Items that need a reference were sold without one",
+   "sw": "Bidhaa zinazohitaji kumbukumbu ziliuzwa bila kumbukumbu"
+  },
+  "why": {
+   "en": "Some items must be sold with a note you can show later. Without it you cannot show who bought them or why.",
+   "sw": "Baadhi ya bidhaa lazima ziuzwe pamoja na maelezo unayoweza kuonyesha baadaye. Bila hayo huwezi kuonyesha nani alizinunua wala kwa nini."
+  },
+  "todo": {
+   "en": "Ask the cashier for the reference and remind the team to type it at the till.",
+   "sw": "Muulize keshia kumbukumbu hiyo na uikumbushe timu kuiandika kwenye kaunta."
+  },
+  "sentence": {
+   "en": "Look back {days} days for these sales, and mark it urgent when one cashier has {high_after} or more.",
+   "sw": "Angalia nyuma siku {days} kutafuta mauzo haya, na yawe ya haraka keshia mmoja akiwa na {high_after} au zaidi."
+  },
+  "units": {
+   "days": "days",
+   "high_after": "count"
   }
  }
 }

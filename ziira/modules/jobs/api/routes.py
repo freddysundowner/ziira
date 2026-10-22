@@ -4,6 +4,7 @@
 """
 
 from datetime import date, timedelta
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
@@ -499,7 +500,8 @@ def patch_bay(bay_id: UUID, body: sc.JobBayUpdate, session: Session = DB_SESSION
 
 
 @router.get("/bay-board", response_model=sc.JobBayBoardOut, dependencies=VIEW)
-def get_bay_board(company_id: UUID, branch_id: UUID, day: date | None = None,
+def get_bay_board(company_id: UUID, branch_id: UUID,
+                  day: Annotated[date, Query(ge=date(1900, 1, 1), le=date(2200, 12, 31))] | None = None,
                   days: int = Query(default=7, ge=1, le=31), session: Session = DB_SESSION) -> object:
     """The bays of a branch and the jobs booked into them for the coming days."""
     from ziira.sdk import company_today

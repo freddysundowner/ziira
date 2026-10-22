@@ -81,6 +81,34 @@
     "tick": "Mark done: {{step}}",
     "untick": "Mark not done: {{step}}",
     "steps": {
+      "pack_pharmacy_products": {
+        "title": "Review the example medicines and set your prices",
+        "hint": "The example products show how to fill in strength, form and storage. Edit them, hide the ones you do not stock, and give each a price."
+      },
+      "pack_pharmacy_suppliers": {
+        "title": "Rename the example suppliers",
+        "hint": "Put in your wholesalers, their contact details and payment terms."
+      },
+      "pack_pharmacy_opening": {
+        "title": "Enter your opening stock with batch numbers and expiry dates",
+        "hint": "Medicines are tracked by batch, so the till sells the earliest expiry first and you are warned before stock expires."
+      },
+      "pack_pharmacy_reorder": {
+        "title": "Set reorder levels for your fast sellers",
+        "hint": "You are told when a product is running low. The examples carry levels to adjust."
+      },
+      "pack_pharmacy_reference": {
+        "title": "Choose whether the till asks for a reference",
+        "hint": "For items marked as needing a prescription or as controlled, the till can ask for a short note. Ziira is not a medical record system: type a slip number, not medical details."
+      },
+      "pack_pharmacy_till": {
+        "title": "Open a till and make a test sale",
+        "hint": "Check that a batch-tracked item sells and that the right batch goes first."
+      },
+      "pack_pharmacy_alerts": {
+        "title": "Choose how you hear about expiring stock",
+        "hint": "Pick the owner's phone or email for urgent alerts."
+      },
       "services": {
         "title": "Add your services",
         "hint": "What you offer, how long it takes and the price."
@@ -161,6 +189,7 @@
   },
   "signOut": "Sign out",
   "home": {
+    "retry": "Try again",
     "menu": "Home",
     "title": "Today",
     "noWidgets": "Nothing to show yet.",

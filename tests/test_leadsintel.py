@@ -453,21 +453,24 @@ def test_a_refused_key_or_connection_is_permanent_and_the_next_channel_is_used(c
 
 
 def test_templates_are_submitted_and_approved_through_lead_intel_and_then_used(client, shop, li) -> None:  # type: ignore[no-untyped-def]
+    from ziira.kernel.templates import catalogue
+
+    total = sum(len(t.text) for t in catalogue().values())          # every shipped template in every language
     co = {"company_id": str(shop["company_id"])}
     with system(shop) as s:
         s.execute(text("delete from kernel.contact_window"))
         s.execute(text("update kernel.message_template set status = 'draft', provider_template_id = null"))
     sub = client.post("/api/v1/notifications/templates/submit", headers=shop["owner"], json=co)
     assert sub.status_code == 200, sub.text
-    assert sub.json()["counts"]["submitted"] == 12
+    assert sub.json()["counts"]["submitted"] == total
     creates = [r for r in li.seen("POST", "/templates")]
-    assert len(creates) == 12
+    assert len(creates) == total
     first = json.loads(next(r for r in creates if b"ziira_action_proposal" in r.content and b'"sw"' in r.content).content)
     assert first["category"] == "UTILITY" and first["language"] == "sw"
     assert first["components"][0]["text"] == "{{1}}: Ziira inapendekeza: {{2}} Linahitaji uamuzi wako."
     assert [b["text"] for b in first["components"][1]["buttons"]] == ["Idhinisha", "Kataa", "Kwa nini?"]
     synced = client.post("/api/v1/notifications/templates/sync", headers=shop["owner"], json=co)
-    assert synced.json()["counts"]["approved"] == 12
+    assert synced.json()["counts"]["approved"] == total
     before = len(li.seen("POST", "/send"))
     from ziira.sdk import send_templated
 

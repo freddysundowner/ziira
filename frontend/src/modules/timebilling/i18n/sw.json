@@ -684,6 +684,12 @@
     "workDays": "Siku za kazi"
   },
   "widget": {
+    "deadlinesTitle": "Tarehe za mwisho",
+    "noDeadlines": "Hakuna kazi inayotakiwa wiki hii.",
+    "deadlinesHint": "Zinatakiwa ndani ya siku 7",
+    "deadlinesLate": "{{count}} tayari zimechelewa",
+    "late": "imechelewa",
+    "openWork": "Fungua orodha ya kazi",
     "title": "Muda na ankara",
     "unbilled": "Kazi isiyotozwa bado",
     "waiting": "{{count}} zinasubiri",

@@ -138,6 +138,9 @@ class SaleLineIn(BaseModel):
     discount: NonNegative = Decimal(0)
     reason_code_id: UUID | None = Field(default=None, description="From the 'price_override' list")
     batch_id: UUID | None = None
+    reference: str | None = Field(default=None, max_length=120,
+                                  description="A short note typed at the till for a product that asks for one "
+                                              "(see CatalogItemOut.reference_prompt); not a medical record")
 
 
 class SalePaymentIn(BaseModel):
@@ -167,6 +170,7 @@ class SaleLineOut(BaseModel):
     tax_amount: Decimal
     line_total: Decimal
     cost_amount: Decimal | None
+    reference: str | None = None
 
 
 class SalePaymentOut(BaseModel):
@@ -262,6 +266,8 @@ class CatalogItemOut(BaseModel):
     price: Decimal | None
     stock: Decimal | None
     barcodes: list[str] = []
+    reference_prompt: Literal["off", "ask", "require"] = Field(
+        default="off", description="Whether the till asks for a reference note when this product is sold")
 
 
 class ReceiptSettingsOut(BaseModel):

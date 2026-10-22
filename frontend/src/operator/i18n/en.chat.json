@@ -1,0 +1,207 @@
+{
+ "chat": {
+  "title": "WhatsApp bot",
+  "intro": "Connect one WhatsApp number, through Lead Intel, to a bot that answers questions about Ziira: what it is, the plans and prices and how to sign up. It gives the same checked answers as the chat on the website.",
+  "readOnly": "You can look at this page but only a super admin can change it.",
+  "loadFailed": "The WhatsApp bot page could not be read",
+  "practice": "Practice mode: no real service is called. A practice provider plays the whole story so you can try every step. Nothing is sent to anyone.",
+  "steps": {
+   "title": "Steps",
+   "key": "1. Key",
+   "number": "2. Number",
+   "say": "3. Words",
+   "try": "4. Try it",
+   "on": "5. Switch on"
+  },
+  "bot": {
+   "switch": "Bot answers messages",
+   "on": "On",
+   "off": "Off",
+   "nowOn": "The bot now answers messages.",
+   "nowOff": "The bot is off. It will not answer.",
+   "notReady": {
+    "key": "Paste and test the Lead Intel key first.",
+    "test": "Test the key first.",
+    "connect": "Connect a number first."
+   }
+  },
+  "key": {
+   "title": "Lead Intel key",
+   "intro": "Paste the platform key from your Lead Intel account. It is stored encrypted and is never shown again.",
+   "notSet": "Not set",
+   "saved": "Saved",
+   "savedOk": "Saved and working",
+   "savedBad": "Saved but refused",
+   "label": "Lead Intel platform key",
+   "hint": "Not shown after you save it. Paste a new one any time to replace it.",
+   "keep": "Saved. Paste a new key to replace it",
+   "paste": "Paste the key here",
+   "saveAndTest": "Save and test",
+   "accepted": "Lead Intel accepted the key."
+  },
+  "connect": {
+   "title": "Connect your number",
+   "intro": "This is the WhatsApp number people will write to.",
+   "states": {
+    "none": "Not connected",
+    "pending": "Connecting",
+    "awaiting_code": "Waiting for the code",
+    "connected": "Connected",
+    "failed": "Failed",
+    "cancelled": "Cancelled"
+   },
+   "number": "Connected number:",
+   "disconnect": "Disconnect",
+   "disconnected": "The number was disconnected.",
+   "progress": {
+    "pending": "Lead Intel is setting the number up. This page checks every few seconds.",
+    "awaiting_code": "Waiting for the verification code."
+   },
+   "codeLabel": "Code sent to the number",
+   "codeHint": "The 6-digit code that arrived on that number.",
+   "sendCode": "Send the code",
+   "cancel": "Cancel",
+   "failedFallback": "Lead Intel could not connect the number.",
+   "cancelled": "The request was cancelled. You can start again.",
+   "modes": {
+    "new": "New number",
+    "existing": "Number already on Lead Intel"
+   },
+   "modeHints": {
+    "new": "For a number that is not on Lead Intel yet. A number that was submitted before cannot be submitted again, and the name people see must follow Meta's rules for verified names.",
+    "existing": "For a number that is already on Lead Intel. They send a code to that number and you type it here."
+   },
+   "country": "Country calling code",
+   "countryHint": "Digits only, without the plus",
+   "phone": "Phone number",
+   "phoneHint": "Without the country code",
+   "business": "Business name",
+   "businessHint": "The legal or trading name",
+   "display": "WhatsApp profile name",
+   "displayHint": "The name people see. Meta limits what is allowed.",
+   "metaNote": "Meta checks the profile name. If it is refused you will see Lead Intel's reason here.",
+   "needKey": "Save and test the key in step 1 first.",
+   "start": {
+    "new": "Connect the number",
+    "existing": "Send me a code"
+   },
+   "disconnectTitle": "Disconnect the number",
+   "disconnectText": "This removes {{number}} from Lead Intel and stops the bot. People who write to it will get no answer.",
+   "typeNumber": "Type the number to confirm"
+  },
+  "find": {
+   "open": "Find an existing connection",
+   "title": "Find an existing connection",
+   "intro": "Use this if the number is already connected on Lead Intel (for example after a set-up that was interrupted). It is pointed at this platform again.",
+   "look": "Look it up",
+   "adopt": "Use this connection",
+   "adopted": "The connection was taken over.",
+   "foundActive": "Found an active connection for {{number}}.",
+   "foundInactive": "A connection exists but it is not active.",
+   "notFound": "No connection was found for that number."
+  },
+  "webhook": {
+   "title": "Where Lead Intel sends messages",
+   "intro": "Lead Intel calls this address for every message. The address and the signing secret are made and sent to Lead Intel by the server.",
+   "secretSet": "Secret set",
+   "secretNotSet": "No secret yet",
+   "address": "Address",
+   "noAddress": "Not available yet",
+   "hidden": "The secret part of the address is hidden. You never need to copy it.",
+   "problems": {
+    "empty": "The platform's public API address is empty. Set it in Platform settings first.",
+    "notHttps": "The public API address must start with https:// for Lead Intel to call it."
+   },
+   "rotate": "Rotate the secret",
+   "rotated": "A new secret and address were sent to Lead Intel.",
+   "rotateTitle": "Rotate the secret?",
+   "rotateText": "A new address and a new secret are made and given to Lead Intel. The old ones stop working at once."
+  },
+  "say": {
+   "title": "What the bot says",
+   "intro": "Leave a text empty to use the built-in words (English or Swahili, to match the person).",
+   "welcome": "Welcome message",
+   "welcomeHint": "Shown with three buttons: See prices, How to sign up, Talk to a person.",
+   "handoff": "When someone asks for a person",
+   "handoffHint": "Sent after the request is recorded.",
+   "offHours": "Outside opening hours (optional)",
+   "offHoursHint": "Used instead of the text on the left when it is outside the hours below.",
+   "language": "Language",
+   "languageHint": "Automatic follows the language the person writes in.",
+   "languages": {
+    "auto": "Automatic",
+    "en": "English",
+    "sw": "Swahili"
+   },
+   "hoursStart": "Opens",
+   "hoursEnd": "Closes",
+   "hoursZone": "Time zone",
+   "hoursHint": "Monday to Friday. Leave the times empty if a person is always available.",
+   "profile": "Public profile of the number",
+   "about": "About line",
+   "aboutHint": "Up to 139 characters",
+   "description": "Description",
+   "website": "Website",
+   "save": "Save",
+   "saved": "Saved.",
+   "profileWarning": "Saved here, but Lead Intel did not take the profile: {{reason}}"
+  },
+  "try": {
+   "title": "Try it",
+   "intro": "See what the bot would say, exactly as it would arrive on a phone. Nothing is sent.",
+   "question": "A question",
+   "placeholder": "How much does it cost?",
+   "ask": "Show the reply",
+   "preview": "Reply preview",
+   "notSent": "Not sent to anyone.",
+   "outcomes": {
+    "answered": "Answered",
+    "answered_checked": "Answered (a figure was removed)",
+    "unknown": "Did not know",
+    "smalltalk": "Small talk",
+    "welcome": "Welcome",
+    "handoff": "Hand-off",
+    "failed": "Could not answer",
+    "off": "Assistant off",
+    "budget": "Spending limit",
+    "busy": "Busy",
+    "unsupported": "Not text",
+    "opted_out": "Opted out",
+    "limited": "Too many messages"
+   },
+   "testTitle": "Send a test message",
+   "testHint": "Sends one real message. WhatsApp only allows it if that number wrote to the bot in the last 24 hours.",
+   "to": "Send to",
+   "send": "Send test message",
+   "sent": "Sent to {{to}}.",
+   "sentToast": "Test message sent."
+  },
+  "waiting": {
+   "title": "Waiting for a person",
+   "intro": "People who pressed Talk to a person. Numbers are hidden in part. Answer them in Lead Intel's inbox.",
+   "count_one": "{{count}} waiting",
+   "count_other": "{{count}} waiting",
+   "empty": "Nobody is waiting",
+   "emptyHint": "Requests for a person appear here.",
+   "noSnippet": "(the message was removed)",
+   "markDone": "Mark done",
+   "doneToast": "Marked done.",
+   "lastConversations": "Outcome of the last {{count}} conversations (counts only)",
+   "outcomes": {
+    "answered": "Answered",
+    "unknown": "Did not know",
+    "opted_out": "Opted out",
+    "failed": "Failed"
+   }
+  },
+  "dev": {
+   "title": "Practice: send a message to the bot",
+   "intro": "Practice mode only. This sends a signed message from a made-up sender through the real inbound path.",
+   "sender": "Sender number",
+   "message": "Message",
+   "needConnection": "Connect the practice number first.",
+   "send": "Send message",
+   "answered": "The bot answered with status {{status}}."
+  }
+ }
+}

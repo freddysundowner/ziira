@@ -4,7 +4,7 @@ service calls."""
 
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Query, status
@@ -489,7 +489,9 @@ def put_client_fields(customer_id: UUID, company_id: UUID, body: w2.ClientFields
 
 
 @router.get("/rota", response_model=list[w2.RotaPersonOut], dependencies=VIEW)
-def get_rota(branch_id: UUID, week_start: date | None = None, session: Session = DB_SESSION) -> object:
+def get_rota(branch_id: UUID,
+             week_start: Annotated[date, Query(ge=date(1900, 1, 1), le=date(2200, 12, 31))] | None = None,
+             session: Session = DB_SESSION) -> object:
     """Who works when: the weekly hours of each person and their time off in a week."""
     rows = [r for r in repo.list_resources(session, access.view_scopes(), branch_id=branch_id, active_only=True)
             if r.kind in ("staff", "chair")]

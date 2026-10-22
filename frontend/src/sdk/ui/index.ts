@@ -2,6 +2,7 @@ export { Badge, type BadgeTone, Alert, EmptyState, ErrorState, ErrorText, Skelet
 export { Button, Checkbox, Field, IconButton, Input, NumberInput, Select, Switch, Textarea } from "./forms";
 export { Breadcrumbs, Card, DetailList, FormGrid, PageHeader, Stat, StatGrid, Tabs } from "./layout";
 export { Figure, StatRow } from "./figures";
+export { HomeBox, type HomeBoxProps, type HomeRow } from "./homeBox";
 export { ConfirmDialog, Drawer, Modal } from "./overlay";
 export { Toaster } from "./toast";
 export { type Column, DataTable, Pager } from "./table";

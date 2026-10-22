@@ -60,16 +60,17 @@ class HideIn(BaseModel):
     dismissed: bool
 
 
-def _out(e: editions.Edition) -> EditionOut:
+def _out(e: editions.Edition, extra: tuple[editions.Step, ...] = ()) -> EditionOut:
     return EditionOut(id=e.id, title=e.title, pitch=e.pitch, units=list(e.units),
                       plugin_categories=list(e.plugin_categories), menu_groups=list(e.menu_groups), landing=e.landing,
                       checklist=[StepOut(id=s.id, title=s.title, hint=s.hint, to=s.to, unit=s.unit)
-                                 for s in e.checklist], sample_data=list(e.sample_data))
+                                 for s in (*e.checklist, *extra)], sample_data=list(e.sample_data))
 
 
 def _mine(s: Session) -> MyEditionOut:
     done, dismissed = editions.onboarding(s)
-    return MyEditionOut(edition=_out(editions.get(editions.current(s))), done=done, dismissed=dismissed)
+    return MyEditionOut(edition=_out(editions.get(editions.current(s)), editions.pack_checklist(s)), done=done,
+                        dismissed=dismissed)
 
 
 @router.get("/editions", response_model=list[EditionOut])

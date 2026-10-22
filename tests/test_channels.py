@@ -90,7 +90,10 @@ def test_the_business_gets_every_shipped_template_as_a_draft_per_language(client
     r = client.get(f"{N}/templates", headers=shop["owner"], params={"company_id": str(shop["company_id"])})
     assert r.status_code == 200, r.text
     rows = r.json()
-    assert len(rows) == 12 and {x["status"] for x in rows} == {"draft"}                      # 6 templates x en, sw
+    from ziira.kernel.templates import catalogue
+
+    assert len(rows) == sum(len(t.text) for t in catalogue().values())                       # every template x en, sw
+    assert {x["status"] for x in rows} == {"draft"}
     assert {x["language"] for x in rows} == {"en", "sw"}
     proposal = next(x for x in rows if x["code"] == "action_proposal" and x["language"] == "sw")
     assert proposal["buttons"] == [["approve", "Idhinisha"], ["reject", "Kataa"], ["why", "Kwa nini?"]]
@@ -106,7 +109,10 @@ def test_submitting_and_syncing_moves_templates_through_the_approval_states(clie
     body = {"company_id": str(shop["company_id"])}
     sub = client.post(f"{N}/templates/submit", headers=shop["owner"], json=body)
     assert sub.status_code == 200, sub.text
-    assert sub.json()["counts"] == {"submitted": 12, "approved": 0, "failed": 0}
+    from ziira.kernel.templates import catalogue
+
+    total = sum(len(t.text) for t in catalogue().values())
+    assert sub.json()["counts"] == {"submitted": total, "approved": 0, "failed": 0}
     assert {t["status"] for t in sub.json()["templates"]} == {"submitted"}
     spec = next(s for s in wa.submitted if s.name == "ziira_action_proposal" and s.language == "en")
     assert spec.body == "{{1}}: Ziira suggests: {{2}} It needs your decision." and spec.buttons == (
@@ -114,7 +120,7 @@ def test_submitting_and_syncing_moves_templates_through_the_approval_states(clie
     assert spec.variables == ("business", "description") and spec.category == "utility"
     assert client.post(f"{N}/templates/submit", headers=shop["owner"], json=body).json()["counts"]["submitted"] == 0
     synced = client.post(f"{N}/templates/sync", headers=shop["owner"], json=body).json()
-    assert synced["counts"] == {"approved": 10, "rejected": 2, "waiting": 0, "failed": 0}
+    assert synced["counts"] == {"approved": total - 2, "rejected": 2, "waiting": 0, "failed": 0}
     states = {(t["code"], t["language"]): t for t in synced["templates"]}
     assert states[("daily_brief", "en")]["status"] == "approved"
     assert states[("urgent_alert", "sw")]["status"] == "rejected"
@@ -133,9 +139,10 @@ def test_the_recurring_task_picks_up_the_providers_decisions(client, shop) -> No
     assert client.post(f"{N}/templates/submit", headers=shop["owner"], json=body).status_code == 200
     assert jobs.run_periodic(shop["tenant_id"], only="kernel.sync_templates", force=True) == 1
     rows = client.get(f"{N}/templates", headers=shop["owner"], params=body).json()
+    from ziira.kernel.templates import catalogue
+
     assert {(t["code"], t["status"]) for t in rows if t["language"] == "en"} == {
-        ("daily_brief", "rejected"), ("urgent_alert", "approved"), ("overdue_reminder", "approved"),
-        ("payment_due", "approved"), ("action_proposal", "approved"), ("verification_code", "approved")}
+        (code, "rejected" if code == "daily_brief" else "approved") for code in catalogue()}
 
 
 def test_a_template_message_is_refused_until_approved_and_falls_back_to_sms(client, shop) -> None:  # type: ignore[no-untyped-def]

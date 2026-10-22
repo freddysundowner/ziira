@@ -30,6 +30,7 @@ def operator_routes(registry):  # type: ignore[no-untyped-def]
     found = []
     from ziira.kernel.api import (
         operator_admin_routes,
+        operator_chat_routes,
         operator_email_routes,
         operator_routes,
         operator_unit_routes,
@@ -37,7 +38,8 @@ def operator_routes(registry):  # type: ignore[no-untyped-def]
     )
 
     all_routes = [*operator_routes.router.routes, *operator_unit_routes.router.routes, *platform_routes.router.routes,
-                  *operator_email_routes.router.routes, *operator_admin_routes.router.routes]
+                  *operator_email_routes.router.routes, *operator_admin_routes.router.routes,
+                  *operator_chat_routes.router.routes]
     for route in all_routes:
         path = getattr(route, "path", "")
         if not path.startswith("/api/v1/operator") or path in OPEN_ROUTES:

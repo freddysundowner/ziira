@@ -1,0 +1,48 @@
+# The first steps shown on Home after the edition's own. `unit`: the step shows only while that unit is on.
+[[step]]
+id = "products"
+title = "Review the example medicines and set your prices"
+hint = "The example products show how to fill in strength, form and storage. Edit them, hide the ones you do not stock, and give each a price."
+to = "/products"
+unit = "products"
+
+[[step]]
+id = "suppliers"
+title = "Rename the example suppliers"
+hint = "Put in your wholesalers, their contact details and payment terms."
+to = "/suppliers"
+unit = "purchasing"
+
+[[step]]
+id = "opening"
+title = "Enter your opening stock with batch numbers and expiry dates"
+hint = "Medicines are tracked by batch, so the till sells the earliest expiry first and you are warned before stock expires."
+to = "/stock/opening"
+unit = "inventory"
+
+[[step]]
+id = "reorder"
+title = "Set reorder levels for your fast sellers"
+hint = "You are told when a product is running low. The examples carry levels to adjust."
+to = "/products"
+unit = "products"
+
+[[step]]
+id = "reference"
+title = "Choose whether the till asks for a reference"
+hint = "For items marked as needing a prescription or as controlled, the till can ask for a short note. Ziira is not a medical record system: type a slip number, not medical details."
+to = "/admin/settings"
+
+[[step]]
+id = "till"
+title = "Open a till and make a test sale"
+hint = "Check that a batch-tracked item sells and that the right batch goes first."
+to = "/pos/terminal"
+unit = "pos"
+
+[[step]]
+id = "alerts"
+title = "Choose how you hear about expiring stock"
+hint = "Pick the owner's phone or email for urgent alerts."
+to = "/intelligence/alerts"
+unit = "intel"

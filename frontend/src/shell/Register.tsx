@@ -93,15 +93,17 @@ export function Register() {
     else if (!choices.data.some((e) => e.id === values.edition)) setValues((v) => ({ ...v, edition: choices.data.find((e) => e.id === "full")?.id ?? choices.data[0]?.id ?? "full" }));
   }, [choices.data, edition, plan, planList.data, planList.isLoading, values.edition]);
 
-  // the kinds of service business (industry packs) are asked only with the Services edition
+  // the kinds of business (industry packs) recommended for the chosen edition: the Services edition asks only these, the shop editions add them to the usual choices
+  const asksPacks = ["services", "retail", "distribution"].includes(values.edition);
   const industriesQuery = useQuery({
-    queryKey: ["register-industries"], enabled: values.edition === "services", staleTime: 60_000, retry: 0,
-    queryFn: () => unwrap(api.GET("/api/v1/industries", { params: { query: { edition: "services" } } })),
+    queryKey: ["register-industries", values.edition], enabled: asksPacks, staleTime: 60_000, retry: 0,
+    queryFn: () => unwrap(api.GET("/api/v1/industries", { params: { query: { edition: values.edition } } })),
   });
-  const industries = industriesQuery.data ?? NO_INDUSTRIES;
-  useEffect(() => {      // a pack picked for the Services edition means nothing for another edition
-    if (values.edition !== "services" && values.kind && !(KINDS as readonly string[]).includes(values.kind)) setValues((v) => ({ ...v, kind: "" }));
-  }, [values.edition, values.kind]);
+  const industries = asksPacks ? (industriesQuery.data ?? NO_INDUSTRIES) : NO_INDUSTRIES;
+  useEffect(() => {      // a pack picked for one edition means nothing for another
+    const known = (KINDS as readonly string[]).includes(values.kind) || industries.some((i) => i.id === values.kind);
+    if (values.kind && !known && (!asksPacks || !industriesQuery.isLoading)) setValues((v) => ({ ...v, kind: "" }));
+  }, [values.kind, industries, asksPacks, industriesQuery.isLoading]);
 
   useEffect(() => saveDraft(values, step), [values, step]);
 

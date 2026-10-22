@@ -7,12 +7,12 @@ import type { AreaId } from "./module";
 
 export type ProfileId =
   | "retail" | "distribution" | "books" | "intelligence"
-  | "salon" | "garage" | "clinic" | "gym" | "professional" | "education" | "services" | "full";
+  | "salon" | "garage" | "clinic" | "gym" | "professional" | "education" | "pharmacy" | "services" | "full";
 
 /** Installed industry packs and the kind of business each one means (a pack is a unit, so it is in the enabled set). */
 const PACKS: ReadonlyArray<readonly [string, ProfileId]> = [
   ["pack_clinic", "clinic"], ["pack_garage", "garage"], ["pack_fitness", "gym"],
-  ["pack_salon", "salon"], ["pack_professional", "professional"], ["pack_education", "education"],
+  ["pack_salon", "salon"], ["pack_professional", "professional"], ["pack_education", "education"], ["pack_pharmacy", "pharmacy"],
 ];
 const EDITIONS: Readonly<Record<string, ProfileId>> = {
   retail: "retail", distribution: "distribution", books: "books", intelligence: "intelligence", services: "services",
@@ -38,6 +38,8 @@ const SERVICE: SidebarPlan = { order: ["services", "customers", "sell", "money",
 export const SIDEBAR: Record<ProfileId, SidebarPlan> = {
   retail: { order: ["sell", "stock", "customers", "money", "buy", "people"], open: ["sell", "stock"], till: true },
   distribution: { order: ["sell", "buy", "stock", "customers", "money", "people"], open: ["sell", "buy", "stock"], till: true },
+  // A pharmacy is a shop with regulated stock: the till and the shelves come first.
+  pharmacy: { order: ["sell", "stock", "buy", "customers", "money", "people"], open: ["sell", "stock"], till: true },
   books: { order: ["money", "buy", "customers", "people"], open: ["money", "buy"], till: false },
   intelligence: { order: ["connect", "money"], open: ["connect"], till: false },
   salon: SERVICE,

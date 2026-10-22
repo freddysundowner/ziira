@@ -1,0 +1,135 @@
+# Fee plans for a term, and bundles of lessons. EVERY FEE BELOW IS AN EXAMPLE: it is marked "example price" until you change it.
+# A learner is enrolled on one of the fee plans; the invoices go to the parent or guardian (put the learner and the parent in
+# one household, with the parent as payer). Edit, retire or add as you like; nothing here is overwritten once you have changed it.
+# Term dates are not stored here: a fee plan has a number of periods, and the learner's enrolment gets the start date and so the
+# end date of the term (docs/pack_education.md).
+
+[settings]
+grace_days = 0
+dunning_days = "7,14,30"      # late-fee messages go this many days after the due date
+auto_freeze_days = 0          # 0: never put an enrolment on hold for unpaid fees by itself
+inactive_weeks = 0            # no "we miss you" messages
+birthday_messages = false
+waiver_required = false       # there is no door to open: enrolment terms are accepted on paper or at sign-up
+renewal_reminder_days = 14    # reminder to the parent before the next term or instalment
+expiry_reminder_days = 14
+no_show_consumes = false
+late_cancel_consumes = false
+
+[waiver]
+title = "Enrolment terms and guardian consent"
+body = """EXAMPLE WORDING - replace it with your own terms before you use it.
+
+I am the parent or guardian of the learner named on this enrolment (or I am the learner and an adult). I agree to the fees, the payment dates and the refund and notice rules of the school. I have given the school an emergency contact and the names of the people who may collect the learner. I agree that the school keeps the learner's details, attendance and reports to run its classes, and that it may message me about fees, classes and reports. I understand I can ask to see, correct or erase this information.
+
+(This wording is a placeholder, not legal advice. Have your own terms checked for your country, especially anything about children's data and photographs.)"""
+
+[[plan]]
+code = "TERM"
+name = "Term fees (paid once)"
+fee = "300.00"
+billing_interval = "quarter"
+kind = "fixed_term"
+term_periods = 1
+service_sku = "EDU-TERM-FEE"
+freeze_max_days = 0
+classes_mode = "included"
+description = "The whole term in one invoice. Use it for terms of about three months; start the enrolment on the first day of the term."
+
+[[plan]]
+code = "TERM3"
+name = "Term fees (3 monthly instalments)"
+fee = "110.00"
+billing_interval = "month"
+kind = "fixed_term"
+term_periods = 3
+service_sku = "EDU-TERM-FEE"
+freeze_max_days = 0
+classes_mode = "included"
+description = "The term in three monthly instalments. A little more than paying once."
+
+[[plan]]
+code = "TERM2"
+name = "Term fees (2 instalments)"
+fee = "160.00"
+billing_interval = "month"
+kind = "fixed_term"
+term_periods = 2
+service_sku = "EDU-TERM-FEE"
+freeze_max_days = 0
+classes_mode = "included"
+description = "For a short term or a course of two months."
+
+[[plan]]
+code = "TERM-SIB"
+name = "Term fees, sibling (paid once)"
+fee = "255.00"
+billing_interval = "quarter"
+kind = "fixed_term"
+term_periods = 1
+service_sku = "EDU-TERM-FEE"
+freeze_max_days = 0
+classes_mode = "included"
+description = "For the second and later child of the same family: your sibling discount is already in the fee. Edit it to your own rule."
+
+[[plan]]
+code = "TERM3-SIB"
+name = "Term fees, sibling (3 monthly instalments)"
+fee = "94.00"
+billing_interval = "month"
+kind = "fixed_term"
+term_periods = 3
+service_sku = "EDU-TERM-FEE"
+freeze_max_days = 0
+classes_mode = "included"
+description = "Sibling fee in three monthly instalments."
+
+[[plan]]
+code = "MONTHLY"
+name = "Monthly tuition (no fixed term)"
+fee = "100.00"
+billing_interval = "month"
+service_sku = "EDU-TERM-FEE"
+freeze_max_days = 30
+classes_mode = "included"
+description = "For a tutor with learners who come all year. Renews every month until the learner leaves."
+
+[[package]]
+code = "LESSONS5"
+name = "5 one-to-one lessons"
+credits = 5
+price = "150.00"
+expiry_days = 90
+covered_services = ["lesson"]
+sku = "EDU-LESSON"
+description = "Paid in advance, used lesson by lesson."
+
+[[package]]
+code = "LESSONS10"
+name = "10 one-to-one lessons"
+credits = 10
+price = "280.00"
+expiry_days = 150
+covered_services = ["lesson"]
+sku = "EDU-LESSON"
+
+[[package]]
+code = "REVISION8"
+name = "Exam revision course (8 sessions)"
+credits = 8
+price = "200.00"
+expiry_days = 120
+covered_services = ["revision"]
+sku = "EDU-REVISION"
+
+# What the owner is told about (checks stay silent when all is well).
+[intel."memberships.payment_late"]
+min_days_late = 7
+high_days_late = 30
+
+[intel."memberships.term_ending_unpaid"]
+look_ahead_days = 14
+min_amount = "0.00"
+
+[intel."memberships.ending"]
+days = 14

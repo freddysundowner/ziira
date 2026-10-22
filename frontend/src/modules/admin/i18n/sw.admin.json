@@ -48,6 +48,7 @@
   "overtime_hours_per_month": "Saa za kawaida kwa mwezi",
   "phone_country_code": "Namba ya nchi ya simu",
   "receipt_footer": "Maandishi ya chini ya risiti",
+  "sale_reference_prompt": "Omba kumbukumbu kwenye kaunta",
   "invoice_footer": "Maandishi ya chini ya ankara",
   "timezone": "Eneo la saa",
   "intel_alert_channel": "Tuma tahadhari za dharura",
@@ -79,6 +80,7 @@
   "overtime_hours_per_month": "Mshahara wa msingi ukigawanywa kwa namba hii ndio kiwango cha saa kwa saa za ziada.",
   "phone_country_code": "Namba ya nchi ya simu zako, kama 44. Namba za ndani husomwa nayo.",
   "receipt_footer": "Huchapishwa chini ya risiti za kaunta na za malipo.",
+  "sale_reference_prompt": "Kwa bidhaa zilizowekwa alama ya kuhitaji kumbukumbu (agizo la daktari au bidhaa inayodhibitiwa), kaunta huomba maelezo mafupi kama nambari ya karatasi. Usiandike maelezo ya matibabu.",
   "invoice_footer": "Huchapishwa chini ya ankara, mfano taarifa za benki au masharti ya malipo.",
   "timezone": "Jina kama Africa/Nairobi au Europe/London. Tarehe za biashara (siku ambayo mauzo, risiti au kiingilio kinahusika) na muhtasari wa kila siku hufuata eneo hili.",
   "intel_alert_channel": "Watumie ujumbe watu sahihi jambo zito linapotokea, au weka kila kitu ndani ya programu.",
@@ -97,6 +99,11 @@
   "retention_file_access_days": "Nani alitazama picha au faili, na lini. Mistari ya zamani huondolewa. 0 huihifadhi."
  },
  "choice": {
+  "sale_reference_prompt": {
+   "off": "Usiulize",
+   "ask": "Uliza, na mhudumu aweze kuruka",
+   "require": "Uliza, na bidhaa isiongezwe bila kumbukumbu"
+  },
   "late_posting": {
    "redirect": "Weka kwenye kipindi cha sasa",
    "reject": "Kataa hati"

@@ -149,7 +149,30 @@
   "noMatchHint": "Badilisha au futa vichujio."
  },
  "subscriber": {
-  "addons": {"title": "Huduma za ziada", "hint": "Moduli na programu jalizi ambazo biashara hii ilinunua (malipo moja kila moja) au ilipewa, juu ya mpango wake. Zinabaki mpango ukibadilika.", "unit": "Huduma ya ziada", "how": "Malipo", "when": "Tangu", "none": "Hakuna huduma ya ziada iliyonunuliwa au kupewa bado.", "give": "Toa huduma ya ziada", "giveTitle": "Toa huduma ya ziada", "giveMessage": "Biashara inaipata bila malipo na kuendelea nayo mpango ukibadilika. Eleza sababu: inaandikwa kwenye rekodi ya ukaguzi.", "choose": "Chagua moduli au programu jalizi", "given": "Imetolewa bure", "given_done": "Huduma ya ziada imetolewa.", "revoke": "Rudisha", "revokeTitle": "Rudisha {{name}}", "revokeMessage": "Biashara inapoteza ufikiaji wake na inazimwa; data yake inabaki. Hakuna kinachorudishwa hapa: geuza malipo kwenye ankara kama kuna deni.", "revoked": "Huduma ya ziada imerudishwa.", "statuses": {"active": "Inatumika", "pending": "Inasubiri malipo", "revoked": "Imerudishwa", "void": "Imeghairiwa"}},
+  "addons": {
+   "title": "Huduma za ziada",
+   "hint": "Moduli na programu jalizi ambazo biashara hii ilinunua (malipo moja kila moja) au ilipewa, juu ya mpango wake. Zinabaki mpango ukibadilika.",
+   "unit": "Huduma ya ziada",
+   "how": "Malipo",
+   "when": "Tangu",
+   "none": "Hakuna huduma ya ziada iliyonunuliwa au kupewa bado.",
+   "give": "Toa huduma ya ziada",
+   "giveTitle": "Toa huduma ya ziada",
+   "giveMessage": "Biashara inaipata bila malipo na kuendelea nayo mpango ukibadilika. Eleza sababu: inaandikwa kwenye rekodi ya ukaguzi.",
+   "choose": "Chagua moduli au programu jalizi",
+   "given": "Imetolewa bure",
+   "given_done": "Huduma ya ziada imetolewa.",
+   "revoke": "Rudisha",
+   "revokeTitle": "Rudisha {{name}}",
+   "revokeMessage": "Biashara inapoteza ufikiaji wake na inazimwa; data yake inabaki. Hakuna kinachorudishwa hapa: geuza malipo kwenye ankara kama kuna deni.",
+   "revoked": "Huduma ya ziada imerudishwa.",
+   "statuses": {
+    "active": "Inatumika",
+    "pending": "Inasubiri malipo",
+    "revoked": "Imerudishwa",
+    "void": "Imeghairiwa"
+   }
+  },
   "back": "Wateja wote",
   "loadFailed": "Mteja huyu hakuweza kupakiwa",
   "moreActions": "Vitendo",
@@ -424,6 +447,14 @@
    "rowIncluded": "Kimejumuishwa",
    "neededBy": "Kimejumuishwa, kinahitajika na {{names}}",
    "soldFor": "Kinauzwa peke yake kwa {{price}} mara moja",
+   "bulk": {
+    "stop": "Acha kuuza viongezo vyote",
+    "offer": "Weka viongezo vyote visivyochaguliwa viuzwe kwa bei moja",
+    "stopConfirm": "Acha kuuza {{count}}",
+    "stopBody": "Viongezo {{count}} havitatolewa tena kwa mauzo. Bei zake zinabaki. Hakuna kinachohifadhiwa hadi uhifadhi mpango.",
+    "offerConfirm": "Weka {{count}} viuzwe",
+    "offerBody": "Viongezo {{count}} ambavyo haviko kwenye mpango huu na havijawekwa kuuzwa vitauzwa kwa bei utakayoandika kwa kila sarafu. Hakuna kinachohifadhiwa hadi uhifadhi mpango."
+   },
    "notForSale": "Hakiuzwi",
    "change": "Badilisha",
    "offer": "Weka kiuzwe",
@@ -1129,7 +1160,14 @@
   }
  },
  "psettings": {
-  "plans": { "title": "Mipango na viongezi", "free": "Viongezi vyote ni bure kwa kila mtu", "freeOn": "Imewashwa: kila biashara inaweza kuwasha kiongezi chochote, bila kujali mpango wake. Mipango bado huweka mipaka ya watumiaji, matawi na kampuni, na bei.", "freeOff": "Imezimwa: biashara hutumia tu viongezi vilivyomo kwenye mpango wake; vingine huonyesha haviko kwenye mpango wako." },
+  "plans": {
+   "title": "Mipango na viongezi",
+   "free": "Viongezi vyote ni bure kwa kila mtu",
+   "freeOn": "Imewashwa: kila biashara inaweza kuwasha kiongezi chochote, bila kujali mpango wake. Mipango bado huweka mipaka ya watumiaji, matawi na kampuni, na bei.",
+   "freeOff": "Imezimwa: biashara hutumia tu viongezi vilivyomo kwenye mpango wake; vingine huonyesha haviko kwenye mpango wako.",
+   "showAddons": "Onyesha viongezo kwenye ukurasa wa bei",
+   "showAddonsHint": "Zima: ukurasa wa bei unaonyesha mipango na viongezo vyake vya watumiaji na matawi tu. Washa: viongezo vinavyouzwa peke yake pia vitaorodheshwa."
+  },
   "title": "Mipangilio ya jukwaa",
   "intro": "Jinsi jukwaa linavyofanya kazi kwa wageni: nani anaweza kujisajili, chaguo-msingi za biashara mpya, na anwani na viungo vya umma.",
   "loadFailed": "Imeshindwa kupakia mipangilio",
@@ -1154,16 +1192,21 @@
   },
   "public": {
    "title": "Anwani na viungo vya umma",
-   "webUrl": "Anwani ya wavuti ya umma",
-   "webUrlHint": "Hutumika katika viungo vya barua pepe",
-   "apiUrl": "Anwani ya API ya umma",
-   "apiUrlHint": "Hutumika kwa simu za malipo na nyingine",
+   "webUrl": "Anwani ya programu ya biashara",
+   "webUrlHint": "Mahali wateja wako wanapoingia, mfano app.example.com. Hutumika kwenye viungo vya barua pepe.",
+   "apiUrl": "Anwani ya API",
+   "apiUrlHint": "Kwa kawaida ni sawa na anwani ya programu ya biashara.",
    "terms": "Kiungo cha masharti",
    "privacy": "Kiungo cha faragha",
    "help": "Kiungo cha msaada",
-   "site": "Anwani ya tovuti",
+   "site": "Anwani ya tovuti ya uuzaji",
    "support": "Barua pepe ya msaada",
-   "hint": "Huonekana kwenye usajili; thamani tupu hutumia ya mazingira."
+   "hint": "Huonekana kwenye usajili; thamani tupu hutumia ya mazingira.",
+   "siteHint": "Mahali tovuti yako ya umma ilipo, mfano example.com. Inaruhusu mazungumzo ya tovuti kufikia API yako.",
+   "addresses": "Anwani",
+   "links": "Viungo na mawasiliano",
+   "sameWarn": "Anwani ya programu ya biashara na ya tovuti ya uuzaji ni sawa. Karibu kila mara ni kosa: tovuti na programu ziko kwenye anwani tofauti.",
+   "siteEmptyWarn": "Mazungumzo ya tovuti na baadhi ya viungo vinaihitaji."
   }
  }
 }

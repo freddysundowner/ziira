@@ -497,6 +497,22 @@
     "saved": "Settings saved"
   },
   "widget": {
+    "approvalTitle": "Estimates awaiting approval",
+    "partsTitle": "Waiting for parts",
+    "insurerTitle": "Waiting for insurer",
+    "nothing": {
+      "approval": "No estimate is waiting for the customer.",
+      "parts": "No job is waiting for parts.",
+      "insurer": "No job is waiting for an insurer."
+    },
+    "hint": {
+      "approval": "Sent, not answered yet",
+      "parts": "Parts not here yet",
+      "insurer": "Insurer has not answered"
+    },
+    "lateOnes": "{{count}} already past their date",
+    "days": "{{count}} d",
+    "today": "today",
     "title": "Jobs",
     "open": "In progress",
     "ready": "To collect",

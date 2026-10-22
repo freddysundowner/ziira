@@ -61,7 +61,8 @@ class ProfileCustomFields(CustomFieldEntity):
 
 @provides(ATTACHABLE_ENTITY)
 class ProfileFiles(AttachableEntity):
-    """A member's photo (shown at check-in) and the forms the business keeps for them."""
+    """A member's photo (shown at check-in), the forms the business keeps for them, and a school's reports, results and
+    certificates (each file is staff-only unless someone marks it shareable)."""
 
     entity_type = "memberships.profile"
     label = "Member"
@@ -75,7 +76,8 @@ class ProfileFiles(AttachableEntity):
         return None if row is None else (row.company_id, row.branch_id)
 
     def categories(self, session: Session) -> list[Category]:
-        return [Category("photo", "Member photo"), Category("form", "Signed form")]
+        return [Category("photo", "Member photo"), Category("form", "Signed form"),
+                Category("report", "Report or result"), Category("certificate", "Certificate")]
 
 
 @provides(INDUSTRY_SEEDER)

@@ -188,6 +188,12 @@ Until Lead Intel confirms these, templates can be created and approved in Lead I
 **Nothing was run against the real service. Live testing is required** (a Lead Intel sandbox account, a test number, the 24-hour
 window, a real template approval, the webhook with the real secret and signature).
 
+## The platform's own chat bot (platform level, not a business channel)
+
+Separate from everything above: the platform owner's own WhatsApp number for talking about Ziira itself is *not* a channel of any business. It uses the platform-level extension point `kernel.platform_chat_channel`
+(implemented by the `platform_scope` plugin `leadsintel_platform`, like the payment gateways), has no tenant, no templates, no opt-out list of a business and no staff replies. A business never sees or enables it; the per-business
+`leadsintel` plugin above is untouched. Design, limits, retention and the live-check: `docs/ai.md` section 15.
+
 ## Adding a provider
 
 Implement `NotificationChannel` for the channel (`send(message, secret, config) -> SendResult`; raise for a failure that may pass,

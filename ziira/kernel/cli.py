@@ -344,7 +344,7 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
 
         registration.repair_pending()
         print(f"Delivered {outbox.process_all()} event(s), ran {jobs.run_all()} job(s), "
-              f"made {site_hook.run_pending()} website rebuild call(s)")
+              f"made {site_hook.run_pending()} website rebuild call(s), {_run_chat()} chat job(s)")
         return
     import time
 
@@ -353,7 +353,7 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
     purged_at = 0.0
     recovered_at = 0.0
     while True:
-        busy = outbox.process_all() + jobs.run_all() + site_hook.run_pending()
+        busy = outbox.process_all() + jobs.run_all() + site_hook.run_pending() + _run_chat()
         if time.monotonic() - recovered_at > 60:
             recovered_at = time.monotonic()
             _recover_payments()
@@ -370,9 +370,34 @@ def cmd_worker(reg: Registry, a: argparse.Namespace) -> None:
             from ziira.kernel import throttle
 
             throttle.purge()
+            _purge_chat()
             _run_billing()
         if busy == 0:
             time.sleep(2.0)
+
+
+def _run_chat() -> int:
+    """Send the chat bot's late replies and hand-off notices (platform level; a failure is logged, never fatal)."""
+    import logging
+
+    try:
+        from ziira.kernel.platform import chat_inbound
+
+        return chat_inbound.run_pending()
+    except Exception:  # noqa: BLE001
+        logging.getLogger("ziira.chat").exception("The chat queue pass failed")
+        return 0
+
+
+def _purge_chat() -> None:
+    import logging
+
+    try:
+        from ziira.kernel.platform import chat_inbound
+
+        chat_inbound.purge()
+    except Exception:  # noqa: BLE001
+        logging.getLogger("ziira.chat").exception("The chat purge failed")
 
 
 def _repair_registrations() -> None:

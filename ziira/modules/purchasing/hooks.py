@@ -22,13 +22,36 @@ from ziira.modules.purchasing.intel_checks import (
     SupplierPriceRise,
 )
 from ziira.modules.purchasing.pulse import PurchasingPulse
-from ziira.sdk import IntegrityCheck, Session, provides
+from ziira.sdk import INDUSTRY_SEEDER, IndustrySeeder, IntegrityCheck, PackData, SeedReport, Session, provides
 
 for _check in (SupplierPriceRise, OrderAboveUsualPrice, MarginSqueeze, DuplicateSupplierBill, DuplicateSupplierPayment,
                SupplierBankChanged, PaidWithoutReceipt, OverdueSupplierBills, BillMismatchWaiting):
     provides(INTEL_CHECK)(_check)
 provides(INTEL_ACTION)(DraftPurchaseRequest)
 provides(INTEL_ACTION)(ProposePriceUpdate)
+
+
+@provides(INDUSTRY_SEEDER)
+class PurchasingSeeder(IndustrySeeder):
+    """Adds the supplier templates an industry pack suggests (`data/purchasing.toml`): names and payment terms only."""
+
+    name = "purchasing.suppliers"
+    unit = "purchasing"
+
+    def seed(self, session: Session, pack: PackData, company_id: UUID) -> SeedReport:
+        from ziira.modules.purchasing.services import seed_industry
+
+        return seed_industry.seed(session, pack, company_id)
+
+    def untouched(self, session: Session, item_type: str, item_id: UUID) -> bool:
+        from ziira.modules.purchasing.services import seed_industry
+
+        return item_type == "supplier" and seed_industry.untouched(session, item_id)
+
+    def remove(self, session: Session, item_type: str, item_id: UUID) -> None:
+        from ziira.modules.purchasing.services import seed_industry
+
+        seed_industry.hide(session, item_id)
 
 
 @provides("kernel.integrity_check")

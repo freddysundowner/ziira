@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from ziira.kernel import notifications  # noqa: F401 - registers the send job and the channel socket
 from ziira.kernel.api.addon_purchase_routes import router as addon_purchase_router
 from ziira.kernel.api.billing_routes import router as billing_router
+from ziira.kernel.api.chat_public_routes import router as chat_public_router
 from ziira.kernel.api.country_routes import router as country_router
 from ziira.kernel.api.custom_field_routes import router as custom_field_router
 from ziira.kernel.api.edition_routes import router as edition_router
@@ -28,6 +29,7 @@ from ziira.kernel.api.messaging_routes import router as messaging_router
 from ziira.kernel.api.notification_routes import router as notification_router
 from ziira.kernel.api.operator_admin_routes import router as operator_admin_router
 from ziira.kernel.api.operator_ai_routes import router as operator_ai_router
+from ziira.kernel.api.operator_chat_routes import router as operator_chat_router
 from ziira.kernel.api.operator_email_routes import router as operator_email_router
 from ziira.kernel.api.operator_payment_routes import router as operator_payment_router
 from ziira.kernel.api.operator_routes import router as operator_router
@@ -104,6 +106,8 @@ def create_app() -> FastAPI:
     app.include_router(operator_email_router)
     app.include_router(public_config_router)
     app.include_router(public_assistant_router)
+    app.include_router(chat_public_router)
+    app.include_router(operator_chat_router)
     app.include_router(operator_ai_router)
     app.include_router(operator_admin_router)
     app.include_router(site_router)

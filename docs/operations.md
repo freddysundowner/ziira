@@ -168,6 +168,12 @@ fixed and can be changed only by environment variables: `ZIIRA_SITE_ASSISTANT_PE
 start); the burst limit (3 in 5 seconds) is built in. Usage shows read-only in Platform > AI > Details. Behind a proxy keep `ZIIRA_TRUST_FORWARDED_FOR=true`, or every visitor looks like one address, and make the proxy pass
 streaming responses unbuffered (the API sends `X-Accel-Buffering: no`). See `docs/ai.md` section 14.
 
+### The platform's chat bot (WhatsApp, through Lead Intel)
+
+Needs `ziira worker` (late replies and hand-off emails: the loop also runs `chat_inbound.run_pending` and the hourly `purge`). The inbound address is built from the *Public API address* setting; it must be https and reachable from the internet, and the proxy must pass the
+request body through unchanged (the signature covers the exact bytes). Fixed limits, changed only by the environment: `ZIIRA_CHAT_PER_SENDER_PER_HOUR` (20), `ZIIRA_CHAT_REPLY_DEADLINE_SECONDS` (6), `ZIIRA_CHAT_INBOUND_MAX_BYTES` (65536); the spend ceiling is the website assistant's
+(`ZIIRA_SITE_ASSISTANT_MONTHLY_CAP_USD`). `ZIIRA_CHAT_FAKE=1` is development only and ignored in production. Details and the go-live steps: `docs/ai.md` section 15.
+
 ### The static site (what the Vite build serves)
 
 `npm --prefix frontend run build` produces `frontend/dist/`: an `index.html` with **one inline script** (the dark-mode

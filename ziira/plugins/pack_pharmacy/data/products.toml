@@ -1,0 +1,303 @@
+# What a pharmacy starts with. Everything here is an example the business edits or hides: names, strengths, pack sizes and
+# reorder levels differ by shop, and no price is given (a price is the business's own). No product claims, no dosing and no
+# medical advice appear anywhere in this file.
+
+[[category]]
+name = "Prescription-only medicines"
+
+[[category]]
+name = "Over-the-counter medicines"
+
+[[category]]
+name = "Supplements and vitamins"
+
+[[category]]
+name = "Baby and personal care"
+
+[[category]]
+name = "Medical devices and consumables"
+
+[[unit]]
+code = "TABLET"
+name = "Tablet"
+
+[[unit]]
+code = "CAPSULE"
+name = "Capsule"
+
+[[unit]]
+code = "STRIP"
+name = "Strip"
+
+[[unit]]
+code = "BOX"
+name = "Box"
+
+[[unit]]
+code = "BOTTLE"
+name = "Bottle"
+
+[[unit]]
+code = "SACHET"
+name = "Sachet"
+
+[[unit]]
+code = "TUBE"
+name = "Tube"
+
+[[unit]]
+code = "EACH"
+name = "Each"
+
+[[product]]
+sku = "PHX-001"
+name = "Paracetamol 500 mg tablets (example)"
+category = "Over-the-counter medicines"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 200
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 100}]
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Paracetamol", strength = "500 mg"}
+
+[[product]]
+sku = "PHX-002"
+name = "Ibuprofen 200 mg tablets (example)"
+category = "Over-the-counter medicines"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 100
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 100}]
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Ibuprofen", strength = "200 mg"}
+
+[[product]]
+sku = "PHX-003"
+name = "Cetirizine 10 mg tablets (example)"
+category = "Over-the-counter medicines"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 100
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 100}]
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Cetirizine", strength = "10 mg"}
+
+[[product]]
+sku = "PHX-004"
+name = "Oral rehydration salts sachet (example)"
+category = "Over-the-counter medicines"
+unit = "SACHET"
+batch_tracked = true
+reorder_level = 50
+pack_units = [{unit = "BOX", factor = 20}]
+fields = {dosage_form = "Sachet or powder", prescription_required = false, controlled = false, storage_condition = "Cool and dry", generic_name = "Oral rehydration salts"}
+
+[[product]]
+sku = "PHX-005"
+name = "Antacid chewable tablets (example)"
+category = "Over-the-counter medicines"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 100
+pack_units = [{unit = "STRIP", factor = 10}]
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Antacid"}
+
+[[product]]
+sku = "PHX-006"
+name = "Cough syrup 100 ml bottle (example)"
+category = "Over-the-counter medicines"
+unit = "BOTTLE"
+batch_tracked = true
+reorder_level = 12
+fields = {dosage_form = "Syrup or liquid", prescription_required = false, controlled = false, storage_condition = "Cool and dry", generic_name = "Cough syrup"}
+
+[[product]]
+sku = "PHX-020"
+name = "Amoxicillin 500 mg capsules (example)"
+category = "Prescription-only medicines"
+unit = "CAPSULE"
+batch_tracked = true
+reorder_level = 200
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 100}]
+fields = {dosage_form = "Capsule", prescription_required = true, controlled = false, storage_condition = "Room temperature", generic_name = "Amoxicillin", strength = "500 mg"}
+
+[[product]]
+sku = "PHX-021"
+name = "Metformin 500 mg tablets (example)"
+category = "Prescription-only medicines"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 200
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 100}]
+fields = {dosage_form = "Tablet", prescription_required = true, controlled = false, storage_condition = "Room temperature", generic_name = "Metformin", strength = "500 mg"}
+
+[[product]]
+sku = "PHX-022"
+name = "Amlodipine 5 mg tablets (example)"
+category = "Prescription-only medicines"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 100
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 30}]
+fields = {dosage_form = "Tablet", prescription_required = true, controlled = false, storage_condition = "Room temperature", generic_name = "Amlodipine", strength = "5 mg"}
+
+[[product]]
+sku = "PHX-023"
+name = "Salbutamol 100 mcg inhaler (example)"
+category = "Prescription-only medicines"
+unit = "EACH"
+batch_tracked = true
+reorder_level = 5
+fields = {dosage_form = "Inhaler", prescription_required = true, controlled = false, storage_condition = "Protect from light", generic_name = "Salbutamol", strength = "100 mcg"}
+
+[[product]]
+sku = "PHX-024"
+name = "Diazepam 5 mg tablets (example)"
+category = "Prescription-only medicines"
+unit = "TABLET"
+batch_tracked = true
+pack_units = [{unit = "STRIP", factor = 10}]
+fields = {dosage_form = "Tablet", prescription_required = true, controlled = true, storage_condition = "Room temperature", generic_name = "Diazepam", strength = "5 mg"}
+
+[[product]]
+sku = "PHX-025"
+name = "Tramadol 50 mg capsules (example)"
+category = "Prescription-only medicines"
+unit = "CAPSULE"
+batch_tracked = true
+pack_units = [{unit = "STRIP", factor = 10}]
+fields = {dosage_form = "Capsule", prescription_required = true, controlled = true, storage_condition = "Room temperature", generic_name = "Tramadol", strength = "50 mg"}
+
+[[product]]
+sku = "PHX-040"
+name = "Vitamin C 500 mg tablets (example)"
+category = "Supplements and vitamins"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 100
+pack_units = [{unit = "STRIP", factor = 10}, {unit = "BOX", factor = 100}]
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Vitamin C", strength = "500 mg"}
+
+[[product]]
+sku = "PHX-041"
+name = "Multivitamin tablets, bottle of 30 (example)"
+category = "Supplements and vitamins"
+unit = "BOTTLE"
+batch_tracked = true
+reorder_level = 6
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Multivitamin"}
+
+[[product]]
+sku = "PHX-042"
+name = "Zinc 20 mg tablets (example)"
+category = "Supplements and vitamins"
+unit = "TABLET"
+batch_tracked = true
+reorder_level = 100
+pack_units = [{unit = "STRIP", factor = 10}]
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Zinc", strength = "20 mg"}
+
+[[product]]
+sku = "PHX-043"
+name = "Calcium and vitamin D tablets, bottle of 60 (example)"
+category = "Supplements and vitamins"
+unit = "BOTTLE"
+batch_tracked = true
+reorder_level = 6
+fields = {dosage_form = "Tablet", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Calcium and vitamin D"}
+
+[[product]]
+sku = "PHX-060"
+name = "Baby wipes pack (example)"
+category = "Baby and personal care"
+unit = "EACH"
+batch_tracked = true
+reorder_level = 12
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-061"
+name = "Petroleum jelly 100 g tube (example)"
+category = "Baby and personal care"
+unit = "TUBE"
+batch_tracked = true
+reorder_level = 12
+fields = {dosage_form = "Cream or ointment", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Petroleum jelly"}
+
+[[product]]
+sku = "PHX-062"
+name = "Hand sanitiser 100 ml bottle (example)"
+category = "Baby and personal care"
+unit = "BOTTLE"
+batch_tracked = true
+reorder_level = 12
+fields = {dosage_form = "Syrup or liquid", prescription_required = false, controlled = false, storage_condition = "Room temperature", generic_name = "Hand sanitiser"}
+
+[[product]]
+sku = "PHX-063"
+name = "Toothpaste 100 g tube (example)"
+category = "Baby and personal care"
+unit = "TUBE"
+batch_tracked = true
+reorder_level = 12
+fields = {dosage_form = "Cream or ointment", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-064"
+name = "Sunscreen lotion 100 ml bottle (example)"
+category = "Baby and personal care"
+unit = "BOTTLE"
+batch_tracked = true
+reorder_level = 6
+fields = {dosage_form = "Cream or ointment", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-080"
+name = "Digital thermometer (example)"
+category = "Medical devices and consumables"
+unit = "EACH"
+batch_tracked = false
+reorder_level = 3
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-081"
+name = "Blood pressure monitor, upper arm (example)"
+category = "Medical devices and consumables"
+unit = "EACH"
+batch_tracked = false
+reorder_level = 2
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-082"
+name = "Blood glucose test strips, box of 50 (example)"
+category = "Medical devices and consumables"
+unit = "BOX"
+batch_tracked = true
+reorder_level = 5
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Cool and dry"}
+
+[[product]]
+sku = "PHX-083"
+name = "Adhesive plasters, box of 100 (example)"
+category = "Medical devices and consumables"
+unit = "BOX"
+batch_tracked = true
+reorder_level = 5
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-084"
+name = "Disposable gloves, box of 100 (example)"
+category = "Medical devices and consumables"
+unit = "BOX"
+batch_tracked = true
+reorder_level = 5
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Room temperature"}
+
+[[product]]
+sku = "PHX-085"
+name = "Face masks, box of 50 (example)"
+category = "Medical devices and consumables"
+unit = "BOX"
+batch_tracked = true
+reorder_level = 5
+fields = {dosage_form = "Device or consumable", prescription_required = false, controlled = false, storage_condition = "Room temperature"}

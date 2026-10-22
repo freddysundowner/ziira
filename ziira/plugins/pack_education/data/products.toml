@@ -1,0 +1,68 @@
+# Service items a tutor, school or training centre invoices as and books. No prices here: a fee is set on a fee plan, a
+# package or a class. Names are plain words the business can rename.
+
+[[service]]
+sku = "EDU-TERM-FEE"
+name = "Tuition fees"
+
+[[service]]
+sku = "EDU-REGISTRATION"
+name = "Registration fee"
+
+[[service]]
+sku = "EDU-MATERIALS"
+name = "Books and materials"
+
+[[service]]
+sku = "EDU-EXAM"
+name = "Exam or assessment fee"
+
+[[service]]
+sku = "EDU-LESSON"
+name = "One-to-one lesson"
+minutes = 60
+
+[[service]]
+sku = "EDU-MAKEUP"
+name = "Make-up session"
+minutes = 60
+
+[[service]]
+sku = "EDU-MATHS"
+name = "Mathematics class"
+minutes = 60
+
+[[service]]
+sku = "EDU-ENGLISH"
+name = "English class"
+minutes = 60
+
+[[service]]
+sku = "EDU-SCIENCE"
+name = "Science class"
+minutes = 60
+
+[[service]]
+sku = "EDU-LANGUAGE"
+name = "Language class"
+minutes = 60
+
+[[service]]
+sku = "EDU-COMPUTER"
+name = "Computer skills class"
+minutes = 90
+
+[[service]]
+sku = "EDU-ARTS"
+name = "Art and music class"
+minutes = 60
+
+[[service]]
+sku = "EDU-REVISION"
+name = "Exam revision class"
+minutes = 120
+
+[[service]]
+sku = "EDU-HOLIDAY"
+name = "Holiday programme"
+minutes = 180

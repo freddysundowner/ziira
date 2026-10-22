@@ -1,6 +1,6 @@
 import {
   Activity, Boxes, Brain, Building2, CreditCard, DatabaseBackup, FileText, Globe, Image, Inbox, KeyRound, LayoutDashboard, type LucideIcon, Mail, MailOpen,
-  Receipt, ScrollText, Settings, ShieldCheck, SlidersHorizontal, Tag, Ticket, UploadCloud, Users, Wallet,
+  MessageCircle, Receipt, ScrollText, Settings, ShieldCheck, SlidersHorizontal, Tag, Ticket, UploadCloud, Users, Wallet,
 } from "lucide-react";
 
 /**
@@ -66,6 +66,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: "units", to: `${OP}/units`, icon: Boxes, permission: "platform.view", keywords: "modules plugins install upgrade" },
       { id: "ai", to: `${OP}/ai`, icon: Brain, permission: "platform.ai", keywords: "api keys models spend cap provider" },
       { id: "email", to: `${OP}/email`, icon: Mail, permission: "platform.settings", keywords: "smtp sender test message" },
+      { id: "chatBot", to: `${OP}/chat-bot`, icon: MessageCircle, permission: "platform.settings", keywords: "whatsapp bot chat lead intel number assistant handoff" },
       { id: "settings", to: `${OP}/settings`, icon: Settings, permission: "platform.settings", keywords: "registration mode invite open closed addresses links" },
       { id: "operators", to: `${OP}/operators`, icon: ShieldCheck, permission: "platform.operators", keywords: "staff roles second factor" },
     ],

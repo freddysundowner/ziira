@@ -15,11 +15,12 @@ test("J17 quotation to order to invoice to payment", async ({ page }) => {
 
   // --- Sell is a section of the menu that always lists the sales documents (quotations and orders share one entry, payments and refunds another)
   const nav = page.getByRole("navigation", { name: "Main" });
+  await nav.getByRole("button", { name: "Sell", exact: true }).click();      // the section is folded until opened
   for (const name of ["Quotes and orders", "Invoices", "Customer payments"]) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
 
   // --- a quotation for 3 anvils at the list price: 3 x 50 = 150
   await page.goto("/pos/quotations");
-  await expect(page.getByRole("tab", { name: "Quotations" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("main").getByRole("link", { name: "Quotations" })).toHaveAttribute("aria-current", "page");
   await checkAccessibility(page, "quotations list");
   await page.getByRole("link", { name: "New quotation" }).click();
   await pick(page, page.getByRole("combobox", { name: /^Customer/ }), customer.name);
@@ -41,7 +42,7 @@ test("J17 quotation to order to invoice to payment", async ({ page }) => {
   await page.getByRole("button", { name: "Accept", exact: true }).click();
   await drawer(page).getByRole("button", { name: "Accept", exact: true }).click();
   await expect(page.getByText(/Accepted\. Sales order/)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sales orders" }).or(page.getByRole("tab", { name: "Sales orders" })).first()).toBeAttached();
+  await expect(page.getByRole("link", { name: "Sales orders" }).first()).toBeAttached();
   await expect(page.getByText("Made from")).toBeVisible();
   const order = (await page.getByRole("heading", { level: 1 }).innerText()).trim();
   expect(order).not.toBe(quote);
@@ -78,7 +79,7 @@ test("J17 quotation to order to invoice to payment", async ({ page }) => {
   await drawer(page).getByRole("button", { name: "Cancel" }).click();
 
   await page.goto("/pos/receipts");
-  await expect(page.getByRole("tab", { name: "Payments received" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("main").getByRole("link", { name: "Payments received" })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("cell", { name: customer.name })).toBeVisible();
   await page.getByRole("cell", { name: customer.name }).first().click();
   await expect(drawer(page).getByText("100.00").first()).toBeVisible();

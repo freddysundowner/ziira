@@ -4,6 +4,7 @@ Every check reads this unit's own tables (and CRM through its public.py for name
 look-back window, and only reports; it never writes. Findings are questions for a person, never accusations.
 """
 
+import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -473,6 +474,60 @@ class LateRecordedSales(IntelCheck):
                 period_end=r.saved_on, value=Decimal(r.late), amount=Decimal(r.total),
                 records=(Record("pos.sale", r.id, f"Sale {r.number}"),),
                 figures={"days_late": str(r.late), "offline": "yes" if r.synced_offline else "no"}))
+        return found
+
+
+class ReferenceMissing(IntelCheck):
+    """Items marked as needing a reference (a prescription or controlled item) sold without one typed at the till."""
+
+    code = "pos.reference_missing"
+
+    value_kind = "count"
+    title = "Items that need a reference were sold without one"
+    area = "controls"
+    description = ("A product marked as needing a reference note at the till was sold without one. Silent while the "
+                   "business has the reference prompt switched off.")
+    default_severity = "medium"
+    params: dict[str, Any] = {"days": 7, "high_after": 3}
+    auto_resolves = False
+
+    def run(self, session: Session, ctx: CheckContext) -> list[Candidate]:
+        """Posted sales in the window with a flagged product line and no reference. One finding per sale."""
+        from ziira.modules.pos.services.catalog import REFERENCE_FIELDS
+        from ziira.sdk import company_setting
+
+        if company_setting(session, ctx.company_id, "sale_reference_prompt") == "off":
+            return []
+        since = ctx.today - timedelta(days=int(ctx.params["days"]))
+        flagged = " or ".join(f"v.data @> cast(:f{n} as jsonb)" for n, _ in enumerate(REFERENCE_FIELDS))
+        args: dict[str, Any] = {"c": str(ctx.company_id), "since": since}
+        args.update({f"f{n}": json.dumps({key: True}) for n, key in enumerate(REFERENCE_FIELDS)})
+        rows = session.execute(text(
+            "select s.id, s.number, s.branch_id, s.business_date, u.full_name as cashier, "
+            "array_agg(distinct p.name order by p.name) as items, count(*) as n "
+            "from pos.sale s join pos.sale_line l on l.sale_id = s.id join products.product p on p.id = l.product_id "
+            "join kernel.custom_field_value v on v.entity_type = 'products.product' and v.entity_id = p.id "
+            "join kernel.app_user u on u.id = s.cashier_id "
+            f"where s.company_id = :c and s.status = 'posted' and s.business_date >= :since and ({flagged}) "
+            "and coalesce(trim(l.reference), '') = '' "
+            "group by s.id, s.number, s.branch_id, s.business_date, u.full_name"), args).all()
+        high_after = int(ctx.params["high_after"])
+        per_cashier: dict[str, int] = {}
+        for r in rows:
+            per_cashier[r.cashier] = per_cashier.get(r.cashier, 0) + 1
+        found = []
+        for r in rows:
+            items = ", ".join(r.items[:3]) + (" and more" if len(r.items) > 3 else "")
+            found.append(Candidate(
+                fingerprint=fingerprint(self.code, r.id), severity="high" if per_cashier[r.cashier] >= high_after
+                else "medium",
+                summary=(f"Sale {r.number} by {r.cashier} on {r.business_date} included {items}, which needs a "
+                         "reference, but none was recorded."),
+                recommended_action="Ask the cashier for the reference, and remind the team to enter it at the till.",
+                company_id=ctx.company_id, branch_id=r.branch_id, entity_type="pos.sale", entity_id=r.id,
+                period_start=r.business_date, period_end=r.business_date, value=Decimal(r.n),
+                records=(Record("pos.sale", r.id, f"Sale {r.number}"),),
+                figures={"items": str(len(r.items)), "cashier": r.cashier}))
         return found
 
 

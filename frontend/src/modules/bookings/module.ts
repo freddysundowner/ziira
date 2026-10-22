@@ -47,7 +47,13 @@ export default defineModule({
     { label: "bookings:settings.menu", to: "/booking/settings", under: "/booking/resources", permission: SETUP, order: 83, area: "services", icon: "settings", setup: true, keywords: "bookings:keywords.settings" },
   ],
   slots: {
-    "dashboard.widgets": [{ label: "bookings:widget.today", component: () => import("./slots/TodayWidget"), permission: VIEW, order: 30 }],
+    "dashboard.widgets": [
+      { label: "bookings:widget.today", component: () => import("./slots/TodayWidget"), permission: VIEW, order: 30 },
+      { label: "bookings:widget.freeNow", component: () => import("./slots/FreeNowWidget"), permission: VIEW, order: 30.1 },
+      { label: "bookings:widget.checkoutsWaiting", component: () => import("./slots/CheckoutsWaitingWidget"), permission: VIEW, order: 30.2 },
+      { label: "bookings:widget.dueAgain", component: () => import("./slots/DueAgainWidget"), permission: VIEW, order: 30.3 },
+      { label: "bookings:widget.classFill", component: () => import("./slots/ClassFillWidget"), permission: VIEW, order: 30.4 },
+    ],
   },
   translations: {
     en: { ...en, ...enDesk, ...enOps },

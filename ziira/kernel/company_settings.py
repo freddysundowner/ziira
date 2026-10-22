@@ -171,6 +171,12 @@ def _action_level(value: Any) -> int:
     return value
 
 
+def _reference_prompt(value: Any) -> str:
+    if value not in ("off", "ask", "require"):
+        raise ValidationFailed("Expected 'off', 'ask' or 'require'")
+    return str(value)
+
+
 def _token_budget(value: Any) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 2_000_000_000:
         raise ValidationFailed("Expected a whole number of tokens from 0 to 2,000,000,000")
@@ -208,6 +214,10 @@ SETTINGS: dict[str, Setting] = {s.key: s for s in (
             "The line printed at the bottom of till receipts and payment receipts"),
     Setting("invoice_footer", "", _footer,
             "The line printed at the bottom of invoices (bank details, payment terms)"),
+    Setting("sale_reference_prompt", "off", _reference_prompt,
+            "At the till, a product flagged as needing a reference (a prescription or controlled item) asks for a "
+            "short note: 'off' never asks, 'ask' asks and lets the cashier skip, 'require' will not add the item "
+            "without one"),
     Setting("timezone", "UTC", _timezone,
             "The company's time zone: the times of daily briefs and 'unusual hour' checks are read in it"),
     Setting("intel_alert_channel", "off", _alert_channel,

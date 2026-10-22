@@ -63,8 +63,12 @@
     "reason": "Reason",
     "chooseReason": "Choose a reason",
     "total": "Line total",
+    "reference": "Reference",
+    "referenceHint": "A short note such as a slip number. Do not type medical details.",
+    "referenceRequired": "Required: type a short reference before the item is sold.",
     "noPermission": "You may not change prices or give discounts. Ask a manager.",
     "problem": {
+      "reference": "Type a reference for this item.",
       "quantity": "Quantity must be more than zero.",
       "price": "Enter a price for this item.",
       "reason": "Choose a reason for the price change or discount.",

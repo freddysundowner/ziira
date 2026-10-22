@@ -64,11 +64,12 @@ def pay(client, shop, amount, day, *, age_hours=48, account=None, ref=None, **kw
     return r.json()
 
 
-def txn(shop, account, ref, amount, days_ago, status="unmatched", direction="in"):  # type: ignore[no-untyped-def]
+def txn(shop, account, ref, amount, days_ago, status="unmatched", direction="in", fixed_day=False):  # type: ignore[no-untyped-def]
     sql(shop, "insert into payments.external_transaction (tenant_id, payment_account_id, source, external_ref, "
               "txn_time, direction, amount, raw, match_status) values (:t, :a, 'daraja_c2b', :r, "
-              "now() - make_interval(days => :d), :dir, :amt, '{}', :s)",
-        a=account, r=ref, d=days_ago, amt=amount, s=status, dir=direction)
+              "coalesce(cast(:at as timestamptz), now()) - make_interval(days => :d), :dir, :amt, '{}', :s)",
+        a=account, r=ref, d=days_ago, amt=amount, s=status, dir=direction,
+        at=f"{TODAY.isoformat()} 12:00+00" if fixed_day else None)    # fixed_day: relative to the day checks run as of
 
 
 def intents(shop, account, status, n, branch=None, fixed_day=False):  # type: ignore[no-untyped-def]
@@ -215,9 +216,9 @@ def test_missing_close_flags_a_day_with_takings_and_no_close(client, shop) -> No
 def test_settlement_missing_short_or_more_than_received(client, shop) -> None:  # type: ignore[no-untyped-def]
     code = "payments.settlement_mismatch"
     acc = shop["juja_till"]
-    txn(shop, acc, "S1", "600.00", 10)
-    txn(shop, acc, "S2", "400.00", 8)
-    txn(shop, acc, "S3", "9000.00", 1)                           # inside the grace days: not counted yet
+    txn(shop, acc, "S1", "600.00", 10, fixed_day=True)
+    txn(shop, acc, "S2", "400.00", 8, fixed_day=True)
+    txn(shop, acc, "S3", "9000.00", 1, fixed_day=True)                           # inside the grace days: not counted yet
     run(shop, code)
     f = next(x for x in found(client, shop, code) if x["entity_id"] == acc)
     assert Dec(f["amount"]) == 1000 and "1,000.00" in f["summary"] and f["branch_id"] == str(shop["juja"])

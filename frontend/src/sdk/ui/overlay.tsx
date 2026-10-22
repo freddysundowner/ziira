@@ -51,7 +51,7 @@ export function Modal({ open, onClose, title, children, footer, size = "md" }: {
           <h2 className="min-w-0 text-base font-semibold [overflow-wrap:anywhere]">{title}</h2>
           <IconButton label="Close" onClick={onClose}><X className="h-4 w-4" /></IconButton>
         </div>
-        <div className="min-w-0 overflow-y-auto px-4 py-4 sm:px-5">{children}</div>
+        <div tabIndex={0} className="min-w-0 overflow-y-auto px-4 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand sm:px-5">{children}</div>
         {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>}
       </div>
     </div>,
@@ -69,7 +69,7 @@ export function Drawer({ open, onClose, title, children, footer }: { open: boole
           <h2 className="min-w-0 text-base font-semibold [overflow-wrap:anywhere]">{title}</h2>
           <IconButton label="Close" onClick={onClose}><X className="h-4 w-4" /></IconButton>
         </div>
-        <div className="min-w-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5">{children}</div>
+        <div tabIndex={0} className="min-w-0 flex-1 overflow-y-auto px-4 py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand sm:px-5">{children}</div>
         {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>}
       </div>
     </div>,

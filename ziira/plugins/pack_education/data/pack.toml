@@ -1,0 +1,4 @@
+[pack]
+# Units the pack feeds (each has a data/<unit>.toml; "custom_fields" is read by the kernel).
+units = ["products", "memberships", "bookings", "intel"]
+editions = ["services"]

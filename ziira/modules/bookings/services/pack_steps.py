@@ -26,6 +26,10 @@ CHECKS = {
                       "(select 1 from bookings.sample_record s where s.entity = 'appointment' "
                       "and s.entity_id = a.id))"),
     "first_checkout": ("select exists (select 1 from bookings.checkout where company_id = :c and status = 'done')"),
+    "first_attendance": ("select exists (select 1 from bookings.appointment_attendee t where t.status in "
+                         "('attended', 'no_show') and exists (select 1 from bookings.appointment a where "
+                         "a.id = t.appointment_id and a.company_id = :c and not exists (select 1 from "
+                         "bookings.sample_record s where s.entity = 'appointment' and s.entity_id = a.id)))"),
     "fee_item": ("select coalesce((select fee_product_id is not null or (late_cancel_fee_percent = 0 and "
                  "no_show_fee_percent = 0) from bookings.booking_settings where company_id = :c), true)"),
     "commission": "select exists (select 1 from bookings.commission_rule where company_id = :c and is_active)",

@@ -86,7 +86,7 @@ export default function AskFloating() {
         </div>
       )}
       <button ref={button} type="button" aria-label={title} aria-expanded={open} aria-controls="ask-ziira-panel" onClick={() => show(!open)}
-        className={cx("fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-12 items-center gap-2 rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-pop hover:opacity-90 sm:right-5",
+        className={cx("fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 inline-flex h-12 items-center gap-2 rounded-full btn-gradient px-4 text-sm font-semibold shadow-pop sm:right-5",
           open && "max-sm:hidden")}>
         <Sparkles className="h-5 w-5" /><span className="hidden sm:inline">{title}</span>
       </button>

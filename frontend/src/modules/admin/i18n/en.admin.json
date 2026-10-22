@@ -48,6 +48,7 @@
   "overtime_hours_per_month": "Normal hours in a month",
   "phone_country_code": "Phone calling code",
   "receipt_footer": "Receipt footer",
+  "sale_reference_prompt": "Ask for a reference at the till",
   "invoice_footer": "Invoice footer",
   "timezone": "Time zone",
   "intel_alert_channel": "Send urgent alerts",
@@ -79,6 +80,7 @@
   "overtime_hours_per_month": "Basic pay divided by this is the hourly rate for overtime.",
   "phone_country_code": "The calling code of your phone numbers, such as 44. National numbers are read with it.",
   "receipt_footer": "Printed at the bottom of till and payment receipts.",
+  "sale_reference_prompt": "For products marked as needing one (a prescription or controlled item), the till asks for a short note such as a slip number. Do not type medical details.",
   "invoice_footer": "Printed at the bottom of invoices, for example bank details or payment terms.",
   "timezone": "A name such as Europe/London or Africa/Nairobi. Business dates (what day a sale, receipt or entry belongs to) and daily briefs follow this zone.",
   "intel_alert_channel": "Message the right people when something serious comes up, or keep everything in the app.",
@@ -97,6 +99,11 @@
   "retention_file_access_days": "Who looked at a photo or file, and when. Older lines are removed. 0 keeps them."
  },
  "choice": {
+  "sale_reference_prompt": {
+   "off": "Do not ask",
+   "ask": "Ask, and let the cashier skip",
+   "require": "Ask, and do not add the item without one"
+  },
   "late_posting": {
    "redirect": "Post in the current period",
    "reject": "Refuse the document"

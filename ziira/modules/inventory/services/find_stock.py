@@ -1,13 +1,14 @@
 """Use cases: read stock balances, movements and costs."""
 
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
 from ziira.modules.inventory.domain.costing import round_value
 from ziira.modules.inventory.permissions import STOCK_COST, STOCK_VIEW
 from ziira.modules.inventory.repository import inventory_repo
-from ziira.modules.inventory.repository.models import Location, StockBalance, StockMovement
+from ziira.modules.inventory.repository.models import Batch, Location, StockBalance, StockMovement
 from ziira.modules.products.public import find_product, product_labels
 from ziira.sdk import NotFound, Session, current_context
 
@@ -33,6 +34,18 @@ def list_balances(session: Session, *, location_id: UUID | None = None, product_
         branch_id=branch_id, include_zero=include_zero, limit=min(limit, 500), offset=offset)
     labels = product_labels(session, {balance.product_id for balance, _ in rows})
     return [(balance, location, *labels.get(balance.product_id, (None, None))) for balance, location in rows]
+
+
+def expiring_stock(session: Session, *, days: int = 90,
+                   limit: int = 100) -> list[tuple[StockBalance, Location, Batch, str | None, str | None]]:
+    """Stock that expires within `days` days (or already has), earliest first, for the branches the user may see. Each
+    row has the balance, its location and batch, and the product's SKU and name."""
+    until = datetime.now(UTC).date() + timedelta(days=max(0, min(days, 3650)))
+    scopes = current_context().scopes_with(STOCK_VIEW)
+    rows = inventory_repo.expiring_balances(session, scopes, until, min(limit, 500))
+    labels = product_labels(session, {balance.product_id for balance, _, _ in rows})
+    return [(balance, location, batch, *labels.get(balance.product_id, (None, None)))
+            for balance, location, batch in rows]
 
 
 def list_movements(session: Session, *, location_id: UUID | None = None, product_id: UUID | None = None,

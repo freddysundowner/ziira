@@ -3631,6 +3631,373 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/chat/inbound/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chat Inbound Delivery
+         * @description A signed delivery from the chat provider. Never reveals why a delivery was refused.
+         */
+        post: operations["chat_inbound_delivery_api_v1_public_chat_inbound__token__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Chat
+         * @description Everything the page shows. Secrets only as set / not set; the inbound address with its token hidden.
+         */
+        get: operations["get_chat_api_v1_operator_chat_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Key */
+        put: operations["save_key_api_v1_operator_chat_key_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/key/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Key */
+        post: operations["test_key_api_v1_operator_chat_key_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/connect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect */
+        post: operations["connect_api_v1_operator_chat_connect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/connect/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Connect Status
+         * @description Ask the provider where connecting stands (also finishes the job once the number is active).
+         */
+        get: operations["connect_status_api_v1_operator_chat_connect_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/connect/code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect Code */
+        post: operations["connect_code_api_v1_operator_chat_connect_code_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/connect/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Connect Cancel */
+        post: operations["connect_cancel_api_v1_operator_chat_connect_cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Lookup
+         * @description Is this number already connected at the provider? Changes nothing.
+         */
+        post: operations["lookup_api_v1_operator_chat_lookup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/adopt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adopt
+         * @description Take over a connection found at the provider (it is pointed at this platform with a new secret).
+         */
+        post: operations["adopt_api_v1_operator_chat_adopt_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/rotate-secret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate */
+        post: operations["rotate_api_v1_operator_chat_rotate_secret_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/texts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Texts */
+        put: operations["save_texts_api_v1_operator_chat_texts_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/enabled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Enabled */
+        put: operations["set_enabled_api_v1_operator_chat_enabled_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/try": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Try It
+         * @description What the bot would say, exactly as it would be sent. Sends and stores nothing.
+         */
+        post: operations["try_it_api_v1_operator_chat_try_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/test-message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Message
+         * @description A real message to a number the owner types (only works inside the provider's 24-hour window).
+         */
+        post: operations["test_message_api_v1_operator_chat_test_message_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disconnect */
+        post: operations["disconnect_api_v1_operator_chat_disconnect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/handoffs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Handoffs */
+        get: operations["handoffs_api_v1_operator_chat_handoffs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/handoffs/{handoff_id}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Handoff Done */
+        post: operations["handoff_done_api_v1_operator_chat_handoffs__handoff_id__done_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/dev/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dev State
+         * @description Development only (`ZIIRA_CHAT_FAKE=1`): what the practice provider was asked to send.
+         */
+        get: operations["dev_state_api_v1_operator_chat_dev_state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/dev/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dev Simulate
+         * @description Development only: a signed delivery from a made-up sender through the real inbound path.
+         */
+        post: operations["dev_simulate_api_v1_operator_chat_dev_simulate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operator/ai": {
         parameters: {
             query?: never;
@@ -10648,6 +11015,26 @@ export interface paths {
          * @description Current stock per location, product and batch.
          */
         get: operations["get_balances_api_v1_inventory_balances_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inventory/expiring": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Expiring
+         * @description Batches with stock on hand that expire within `days` days (or already have), earliest first.
+         */
+        get: operations["get_expiring_api_v1_inventory_expiring_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -22023,6 +22410,13 @@ export interface components {
              * @default []
              */
             barcodes: string[];
+            /**
+             * Reference Prompt
+             * @description Whether the till asks for a reference note when this product is sold
+             * @default off
+             * @enum {string}
+             */
+            reference_prompt: "off" | "ask" | "require";
         };
         /** CellFix */
         CellFix: {
@@ -22127,6 +22521,395 @@ export interface components {
             label: string;
             /** Status */
             status: string;
+        };
+        /** ChatBotOut */
+        ChatBotOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Can Enable */
+            can_enable: boolean;
+            /**
+             * Not Ready Because
+             * @description key | test | connect | null
+             */
+            not_ready_because: string | null;
+            texts: components["schemas"]["ChatTextsOut"];
+        };
+        /** ChatButtonOut */
+        ChatButtonOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+        };
+        /** ChatCodeIn */
+        ChatCodeIn: {
+            /** Code */
+            code: string;
+        };
+        /** ChatConnectIn */
+        ChatConnectIn: {
+            /**
+             * Mode
+             * @description new | existing
+             * @default new
+             */
+            mode: string;
+            /** Country Code */
+            country_code: string;
+            /** Phone Number */
+            phone_number: string;
+            /**
+             * Business Name
+             * @default
+             */
+            business_name: string;
+            /**
+             * Display Name
+             * @default
+             */
+            display_name: string;
+        };
+        /** ChatConnectionOut */
+        ChatConnectionOut: {
+            /**
+             * State
+             * @description none | pending | awaiting_code | connected | failed | cancelled
+             */
+            state: string;
+            /** Mode */
+            mode: string | null;
+            /** Message */
+            message: string;
+            /** Code */
+            code: string;
+            /** Number */
+            number: string | null;
+            /** Display Phone */
+            display_phone: string | null;
+            /** Has Request */
+            has_request: boolean;
+            /** Active */
+            active: boolean;
+        };
+        /** ChatDevSentOut */
+        ChatDevSentOut: {
+            /** Sent */
+            sent: {
+                [key: string]: string;
+            }[];
+        };
+        /** ChatDevSimulateIn */
+        ChatDevSimulateIn: {
+            /** Sender */
+            sender: string;
+            /** Message */
+            message: string;
+            /** Button Id */
+            button_id?: string | null;
+        };
+        /** ChatDevSimulateOut */
+        ChatDevSimulateOut: {
+            /** Status */
+            status: number;
+            /** Reply */
+            reply: {
+                [key: string]: unknown;
+            } | null;
+            /** Sent */
+            sent: {
+                [key: string]: string;
+            }[];
+        };
+        /** ChatDisconnectIn */
+        ChatDisconnectIn: {
+            /**
+             * Confirm
+             * @description The connected number, typed
+             */
+            confirm: string;
+        };
+        /** ChatDisconnectOut */
+        ChatDisconnectOut: {
+            /** Disconnected */
+            disconnected: boolean;
+        };
+        /** ChatEnabledIn */
+        ChatEnabledIn: {
+            /** Enabled */
+            enabled: boolean;
+        };
+        /** ChatEnabledOut */
+        ChatEnabledOut: {
+            /** Enabled */
+            enabled: boolean;
+        };
+        /** ChatFieldOut */
+        ChatFieldOut: {
+            /** Name */
+            name: string;
+            /** Label */
+            label: string;
+            /** Secret */
+            secret: boolean;
+            /** Required */
+            required: boolean;
+            /** Help */
+            help: string;
+            /**
+             * Value
+             * @description Null for a secret: those are never shown
+             */
+            value: string | null;
+            /** Is Set */
+            is_set: boolean;
+        };
+        /** ChatHandoffOut */
+        ChatHandoffOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Sender Masked */
+            sender_masked: string;
+            /** Snippet */
+            snippet: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Done At */
+            done_at: string | null;
+            /** Done By */
+            done_by: string | null;
+        };
+        /** ChatInboundReply */
+        ChatInboundReply: {
+            /** Type */
+            type: string;
+            /** Text */
+            text?: string | null;
+            /** Body */
+            body?: string | null;
+        };
+        /** ChatKeyIn */
+        ChatKeyIn: {
+            /**
+             * Api Key
+             * @description Write-only
+             */
+            api_key: string;
+        };
+        /** ChatKeyOut */
+        ChatKeyOut: {
+            /** Is Set */
+            is_set: boolean;
+            /** Tested Ok */
+            tested_ok: boolean | null;
+            /** Tested At */
+            tested_at?: string | null;
+        };
+        /** ChatKeyTestOut */
+        ChatKeyTestOut: {
+            /** Ok */
+            ok: boolean;
+            /** Message */
+            message: string;
+        };
+        /** ChatLookupIn */
+        ChatLookupIn: {
+            /** Country Code */
+            country_code: string;
+            /** Phone Number */
+            phone_number: string;
+        };
+        /** ChatLookupOut */
+        ChatLookupOut: {
+            /** Found */
+            found: boolean;
+            /** Active */
+            active: boolean;
+            /** Status */
+            status: string | null;
+            /** Display Phone */
+            display_phone: string | null;
+        };
+        /** ChatOverviewOut */
+        ChatOverviewOut: {
+            provider: components["schemas"]["ChatProviderOut"] | null;
+            /** Fake */
+            fake: boolean;
+            key: components["schemas"]["ChatKeyOut"];
+            connection: components["schemas"]["ChatConnectionOut"];
+            webhook: components["schemas"]["ChatWebhookOut"];
+            bot: components["schemas"]["ChatBotOut"];
+            stats: components["schemas"]["ChatStatsOut"];
+            /** Updated At */
+            updated_at: string | null;
+            /** Updated By */
+            updated_by: string | null;
+        };
+        /** ChatProfileIn */
+        ChatProfileIn: {
+            /**
+             * About
+             * @default
+             */
+            about: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Website
+             * @default
+             */
+            website: string;
+        };
+        /** ChatProfileOut */
+        ChatProfileOut: {
+            /** About */
+            about: string;
+            /** Description */
+            description: string;
+            /** Website */
+            website: string;
+        };
+        /** ChatProviderOut */
+        ChatProviderOut: {
+            /** Name */
+            name: string;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Fields */
+            fields: components["schemas"]["ChatFieldOut"][];
+        };
+        /** ChatRotateOut */
+        ChatRotateOut: {
+            /** Rotated */
+            rotated: boolean;
+        };
+        /** ChatStatsOut */
+        ChatStatsOut: {
+            /** Last */
+            last: number;
+            /** Answered */
+            answered: number;
+            /** Unknown */
+            unknown: number;
+            /** Opted Out */
+            opted_out: number;
+            /** Failed */
+            failed: number;
+            /** Other */
+            other: number;
+            /** Open Handoffs */
+            open_handoffs: number;
+        };
+        /** ChatTestMessageIn */
+        ChatTestMessageIn: {
+            /** To */
+            to: string;
+        };
+        /** ChatTestMessageOut */
+        ChatTestMessageOut: {
+            /** Sent */
+            sent: boolean;
+            /** To */
+            to: string;
+        };
+        /** ChatTextsIn */
+        ChatTextsIn: {
+            /** Welcome */
+            welcome?: string | null;
+            /** Handoff */
+            handoff?: string | null;
+            /** Off Hours */
+            off_hours?: string | null;
+            /** Language */
+            language?: string | null;
+            /** Hours Start */
+            hours_start?: string | null;
+            /** Hours End */
+            hours_end?: string | null;
+            /** Hours Timezone */
+            hours_timezone?: string | null;
+            profile?: components["schemas"]["ChatProfileIn"] | null;
+        };
+        /** ChatTextsOut */
+        ChatTextsOut: {
+            /** Welcome */
+            welcome: string;
+            /** Handoff */
+            handoff: string;
+            /** Off Hours */
+            off_hours: string;
+            /** Language */
+            language: string;
+            /** Hours Start */
+            hours_start: string;
+            /** Hours End */
+            hours_end: string;
+            /** Hours Timezone */
+            hours_timezone: string;
+            profile: components["schemas"]["ChatProfileOut"];
+        };
+        /** ChatTextsSavedOut */
+        ChatTextsSavedOut: {
+            /** Welcome */
+            welcome: string;
+            /** Handoff */
+            handoff: string;
+            /** Off Hours */
+            off_hours: string;
+            /** Language */
+            language: string;
+            /** Hours Start */
+            hours_start: string;
+            /** Hours End */
+            hours_end: string;
+            /** Hours Timezone */
+            hours_timezone: string;
+            profile: components["schemas"]["ChatProfileOut"];
+            /** Profile Warning */
+            profile_warning: string | null;
+        };
+        /** ChatTryIn */
+        ChatTryIn: {
+            /** Message */
+            message: string;
+            /** Lang */
+            lang?: string | null;
+        };
+        /** ChatTryOut */
+        ChatTryOut: {
+            /** Text */
+            text: string;
+            /** Buttons */
+            buttons: components["schemas"]["ChatButtonOut"][];
+            /** Outcome */
+            outcome: string;
+            /** Lang */
+            lang: string;
+        };
+        /** ChatWebhookOut */
+        ChatWebhookOut: {
+            /**
+             * Url
+             * @description The address the provider calls, with its token hidden
+             */
+            url: string | null;
+            /** Problem */
+            problem: string | null;
+            /** Secret Set */
+            secret_set: boolean;
         };
         /** CheckLine */
         CheckLine: {
@@ -24932,6 +25715,8 @@ export interface components {
             receipt_footer?: string | null;
             /** Invoice Footer */
             invoice_footer?: string | null;
+            /** Sale Reference Prompt */
+            sale_reference_prompt?: ("off" | "ask" | "require") | null;
             /** Timezone */
             timezone?: string | null;
             /** Intel Alert Channel */
@@ -24998,6 +25783,11 @@ export interface components {
             receipt_footer: string;
             /** Invoice Footer */
             invoice_footer: string;
+            /**
+             * Sale Reference Prompt
+             * @enum {string}
+             */
+            sale_reference_prompt: "off" | "ask" | "require";
             /** Timezone */
             timezone: string;
             /** Intel Alert Channel */
@@ -27702,6 +28492,44 @@ export interface components {
             reference?: string | null;
             /** Category */
             category?: string | null;
+        };
+        /**
+         * ExpiringOut
+         * @description One batch with stock still on hand that expires soon (or already has).
+         */
+        ExpiringOut: {
+            /**
+             * Batch Id
+             * Format: uuid
+             */
+            batch_id: string;
+            /** Batch No */
+            batch_no: string;
+            /**
+             * Expiry Date
+             * Format: date
+             */
+            expiry_date: string;
+            /** Days Left */
+            days_left: number;
+            /**
+             * Location Id
+             * Format: uuid
+             */
+            location_id: string;
+            /** Location Code */
+            location_code: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Sku */
+            sku: string | null;
+            /** Product Name */
+            product_name: string | null;
+            /** Quantity */
+            quantity: string;
         };
         /** ExplainIn */
         ExplainIn: {
@@ -33067,6 +33895,11 @@ export interface components {
             renewals_next_7_days: number;
             /** Packages Expiring 30 Days */
             packages_expiring_30_days: number;
+            /**
+             * Ending 30 Days
+             * @default 0
+             */
+            ending_30_days: number;
             /** Failed Runs */
             failed_runs: number;
             /** Drafts Waiting */
@@ -38889,6 +39722,11 @@ export interface components {
             reason_code_id?: string | null;
             /** Batch Id */
             batch_id?: string | null;
+            /**
+             * Reference
+             * @description A short note typed at the till for a product that asks for one (see CatalogItemOut.reference_prompt); not a medical record
+             */
+            reference?: string | null;
         };
         /** SaleLineOut */
         SaleLineOut: {
@@ -38918,6 +39756,8 @@ export interface components {
             line_total: string;
             /** Cost Amount */
             cost_amount: string | null;
+            /** Reference */
+            reference?: string | null;
         };
         /** SaleOp */
         SaleOp: {
@@ -53761,6 +54601,695 @@ export interface operations {
                 content: {
                     "application/json": unknown;
                     "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_inbound_delivery_api_v1_public_chat_inbound__token__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatInboundReply"];
+                };
+            };
+            /** @description Answered later */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Nothing to say */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not accepted */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_chat_api_v1_operator_chat_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatOverviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_key_api_v1_operator_chat_key_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatKeyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatKeyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_key_api_v1_operator_chat_key_test_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatKeyTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    connect_api_v1_operator_chat_connect_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatConnectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    connect_status_api_v1_operator_chat_connect_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    connect_code_api_v1_operator_chat_connect_code_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatCodeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    connect_cancel_api_v1_operator_chat_connect_cancel_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_api_v1_operator_chat_lookup_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatLookupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatLookupOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    adopt_api_v1_operator_chat_adopt_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatLookupIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatConnectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rotate_api_v1_operator_chat_rotate_secret_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatRotateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_texts_api_v1_operator_chat_texts_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatTextsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatTextsSavedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_enabled_api_v1_operator_chat_enabled_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatEnabledIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatEnabledOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    try_it_api_v1_operator_chat_try_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatTryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatTryOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_message_api_v1_operator_chat_test_message_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatTestMessageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatTestMessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disconnect_api_v1_operator_chat_disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatDisconnectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatDisconnectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    handoffs_api_v1_operator_chat_handoffs_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHandoffOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    handoff_done_api_v1_operator_chat_handoffs__handoff_id__done_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHandoffOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dev_state_api_v1_operator_chat_dev_state_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatDevSentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dev_simulate_api_v1_operator_chat_dev_simulate_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatDevSimulateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatDevSimulateOut"];
                 };
             };
             /** @description Validation Error */
@@ -70637,6 +72166,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ziira__modules__inventory__api__schemas__BalanceOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_expiring_api_v1_inventory_expiring_get: {
+        parameters: {
+            query?: {
+                days?: number;
+                limit?: number;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpiringOut"][];
                 };
             };
             /** @description Validation Error */

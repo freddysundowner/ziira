@@ -81,6 +81,12 @@ class Settings(BaseSettings):
     site_assistant_monthly_cap_usd: Decimal = Decimal("25")
     site_assistant_max_output_tokens: int = 320
     site_assistant_max_parallel: int = 8
+    # The platform's chat bot (docs/ai.md section 15): fixed limits, changed only by the environment. `chat_fake` is
+    # development only (`ZIIRA_CHAT_FAKE=1`, ignored in production): a fake provider stands in for the real one.
+    chat_fake: bool = False
+    chat_per_sender_per_hour: int = 20
+    chat_reply_deadline_seconds: float = 6.0     # longer than this and the reply is sent afterwards (202 + the worker)
+    chat_inbound_max_bytes: int = 65536
 
     # Self-service registration (kernel/registration.py). Mode: "open" (anyone may register a business), "invite" (only
     # with an invitation code from `ziira invite create`) or "closed" (businesses are created by an operator only).

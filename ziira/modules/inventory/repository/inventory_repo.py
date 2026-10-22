@@ -158,6 +158,18 @@ def list_balances(session: Session, scopes: Scopes, *, location_id: UUID | None 
     return [(row[0], row[1]) for row in session.execute(query)]
 
 
+def expiring_balances(session: Session, scopes: Scopes, until: date,
+                      limit: int) -> list[tuple[StockBalance, Location, Batch]]:
+    """Batches with stock on hand whose expiry date is on or before `until` (already-expired ones first), for the
+    locations in scope."""
+    query = (select(StockBalance, Location, Batch).join(Location, Location.id == StockBalance.location_id)
+             .join(Batch, Batch.id == StockBalance.batch_id)
+             .where(_location_in_scope(scopes), StockBalance.quantity > 0, Batch.expiry_date.is_not(None),
+                    Batch.expiry_date <= until)
+             .order_by(Batch.expiry_date, Location.code, StockBalance.product_id).limit(limit))
+    return [(row[0], row[1], row[2]) for row in session.execute(query)]
+
+
 def list_movements(session: Session, scopes: Scopes, *, location_id: UUID | None = None, product_id: UUID | None = None,
                    source_id: UUID | None = None, limit: int = 100, offset: int = 0) -> list[StockMovement]:
     query = (select(StockMovement).join(Location, Location.id == StockMovement.location_id)

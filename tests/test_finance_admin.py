@@ -288,7 +288,7 @@ def test_a_healthy_set_of_books_has_no_problems(shop) -> None:  # type: ignore[n
     from ziira.kernel.checks import run_integrity_checks
 
     results = run_integrity_checks(shop["tenant_id"])
-    assert {r.check for r in results} == {"stock ledger", "books"}
+    assert {r.check for r in results} == {"stock ledger", "books", "files"}
     assert [p for r in results for p in r.problems] == []
 
 

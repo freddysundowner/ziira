@@ -11,7 +11,8 @@ from ziira.kernel.registry import discover, install_order
 # Reference data shared by every business, kept by the platform (specification Appendix A): no tenant_id.
 PLATFORM_TABLES = {"people.statutory_rate_table", "intel.check_definition"}
 
-UNITS = sorted(name for name, m in discover().items() if not m.core)
+UNITS = sorted(name for name, m in discover().items()
+               if not m.core and not m.platform_scope)      # platform-scope plugins are never switched on by a business
 
 
 def schemas(tenant_id) -> set[str]:  # type: ignore[no-untyped-def]

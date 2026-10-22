@@ -105,6 +105,19 @@ from ziira.kernel.phone import check_calling_code, normalise_phone
 from ziira.kernel.platform import ai as platform_ai
 from ziira.kernel.platform import entitlements
 from ziira.kernel.platform.ai import AI_PLATFORM, AiPlatformHooks
+from ziira.kernel.platform.chat_channel import (
+    PLATFORM_CHAT_CHANNEL,
+    ChatButton,
+    ChatConnectionInfo,
+    ChatConnectRequest,
+    ChatConnectState,
+    ChatContext,
+    ChatDelivery,
+    ChatError,
+    ChatMessageIn,
+    ChatReply,
+    PlatformChatProvider,
+)
 from ziira.kernel.platform.gateways import (
     PAYMENT_GATEWAY,
     AttemptInfo,
@@ -163,6 +176,8 @@ __all__ = [
     "claim_booking_slug", "client_ip", "rate_limit", "release_booking_slug", "resolve_booking_slug",
     "AI_PLATFORM", "AiPlatformHooks", "ai_active_secrets", "ai_cap_reached", "ai_record_usage", "ai_runtime",
     "SITE_ASSISTANT_LLM", "SiteAssistantFailed", "SiteAssistantLlm", "SiteReply",
+    "PLATFORM_CHAT_CHANNEL", "ChatButton", "ChatConnectionInfo", "ChatConnectRequest", "ChatConnectState",
+    "ChatContext", "ChatDelivery", "ChatError", "ChatMessageIn", "ChatReply", "PlatformChatProvider",
 ]
 
 

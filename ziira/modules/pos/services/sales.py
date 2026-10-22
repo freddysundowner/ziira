@@ -51,6 +51,7 @@ class LineIn:
     discount: Decimal = Decimal(0)             # money off the whole line
     reason_code_id: UUID | None = None         # why the price or discount differs from the list
     batch_id: UUID | None = None
+    reference: str | None = None               # a note typed at the till for a product that asks for one
 
 
 @dataclass(frozen=True)
@@ -199,7 +200,7 @@ def post_sale(session: Session, *, till_session_id: UUID, lines: list[LineIn], p
             batch_id=line.batch_id, quantity=line.quantity, list_price=list_price if list_price is not None else unit,
             unit_price=unit, discount_amount=line.discount, price_reason_code_id=line.reason_code_id,
             tax_code_id=product.tax_code_id, tax_amount=amount.tax, line_total=amount.gross,
-            sale_id=UUID(int=0)))
+            reference=(line.reference or "").strip()[:120] or None, sale_id=UUID(int=0)))
     subtotal = sum((a.before_discount for a in amounts), Decimal(0))
     discount_total = sum((a.discount for a in amounts), Decimal(0))
     total = sum((a.gross for a in amounts), Decimal(0))

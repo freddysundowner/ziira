@@ -32,7 +32,8 @@
    "audit": "Audit trail",
    "mailLog": "Mail log",
    "attempts": "Payment attempts",
-   "setup": "Setup checklist"
+   "setup": "Setup checklist",
+   "chatBot": "WhatsApp bot"
   }
  },
  "shell": {

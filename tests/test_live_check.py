@@ -116,3 +116,13 @@ def test_ai_dry_run_sends_the_documented_headers_and_a_tool_round_trip_without_t
 def test_ai_dry_run_can_skip_the_tool_step() -> None:
     report = lc.ai_check(dry_run=True, tool_step=False, echo=False, env={"ZIIRA_LIVE_AI_API_KEY": "k-0123456789"})
     assert report.passed and len(report.exchanges) == 1
+
+
+def test_chat_dry_run_reads_only_hides_the_key_and_checks_the_signature() -> None:
+    key = "li-live-key-0123456789"
+    report = lc.chat_check(dry_run=True, lookup="+254712345678", echo=False, env={"ZIIRA_LIVE_LEADSINTEL_KEY": key})
+    assert report.passed, report.lines
+    assert [(e.method, e.url.rsplit("/", 1)[-1]) for e in report.exchanges] == [("GET", "ziira-key-check"), ("POST", "lookup")]
+    assert all(e.headers["authorization"] == lc.HIDDEN for e in report.exchanges)
+    assert key not in json.dumps([vars(e) for e in report.exchanges]) and key not in " ".join(report.lines)
+    assert "tampered body refused" in report.lines

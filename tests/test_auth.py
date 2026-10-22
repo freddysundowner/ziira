@@ -139,16 +139,13 @@ def test_production_refuses_development_shortcuts() -> None:
     from ziira.kernel.config import Settings
 
     with pytest.raises(RuntimeError, match="DEV_TENANT_HEADER"):
-        Settings(env="production").check_safe_for_production()
+        Settings(env="production", operator_mfa_off_acknowledged=True).check_safe_for_production()
     with pytest.raises(RuntimeError, match="SECRET_KEY"):
-        Settings(env="production", dev_tenant_header=False).check_safe_for_production()
+        Settings(env="production", operator_mfa_off_acknowledged=True, dev_tenant_header=False).check_safe_for_production()
     with pytest.raises(RuntimeError, match="CREDENTIALS_KEY"):
-        Settings(env="production", dev_tenant_header=False, secret_key="x" * 40).check_safe_for_production()
-    with pytest.raises(RuntimeError, match="PLATFORM_EMAIL"):  # open registration needs a way to send the link
-        Settings(env="production", dev_tenant_header=False, secret_key="x" * 40, credentials_key="y" * 40,
-                 mfa_default_policy="privileged").check_safe_for_production()
+        Settings(env="production", operator_mfa_off_acknowledged=True, dev_tenant_header=False, secret_key="x" * 40).check_safe_for_production()
     with pytest.raises(RuntimeError, match="MFA_DEFAULT_POLICY"):           # owners and finance must use a second factor
-        Settings(env="production", dev_tenant_header=False, secret_key="x" * 40, credentials_key="y" * 40,
+        Settings(env="production", operator_mfa_off_acknowledged=True, dev_tenant_header=False, secret_key="x" * 40, credentials_key="y" * 40,
                  registration_mode="closed").check_safe_for_production()
-    Settings(env="production", dev_tenant_header=False, secret_key="x" * 40, credentials_key="y" * 40,
+    Settings(env="production", operator_mfa_off_acknowledged=True, dev_tenant_header=False, secret_key="x" * 40, credentials_key="y" * 40,
              registration_mode="closed", mfa_default_policy="privileged").check_safe_for_production()

@@ -68,14 +68,14 @@ export default function SettingsHomePage() {
           {groups.map(({ head, title, blurb }) => {
             const Icon = iconFor(head.icon);
             return (
-              <li key={head.to}>
-                <Link to={head.to} className="group flex h-full flex-col gap-2 rounded-xl border border-line bg-surface p-4 transition-colors hover:border-brand hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                  <span className="flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand-strong"><Icon className="h-4 w-4" aria-hidden /></span>
-                    <span className="text-sm font-semibold text-ink">{title}</span>
-                    <ArrowRight aria-hidden className="ml-auto h-4 w-4 text-muted transition-transform group-hover:translate-x-0.5" />
+              <li key={head.to} className="min-w-0">
+                <Link to={head.to} className="group flex h-full min-w-0 flex-col gap-2 rounded-xl border border-line bg-surface p-4 transition-colors hover:border-brand hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong"><Icon className="h-4 w-4" aria-hidden /></span>
+                    <span className="min-w-0 text-sm font-semibold text-ink [overflow-wrap:anywhere]">{title}</span>
+                    <ArrowRight aria-hidden className="ml-auto h-4 w-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" />
                   </span>
-                  <span className="text-sm text-muted">{blurb}</span>
+                  <span className="text-sm text-muted [overflow-wrap:anywhere]">{blurb}</span>
                 </Link>
               </li>
             );

@@ -1,8 +1,9 @@
 import { Api, unique } from "../lib/api";
 import { checkAccessibility, expect, signIn, signOut, test } from "../lib/test";
 
-// J1: a new owner registers through the two-step form, follows the verification link, signs out and back in,
-// meets the wrong-password message, and resets a forgotten password.
+// J1: a new owner registers through the three-step form (need, business, account), lands signed in on Home with the
+// "confirm your email" banner, confirms the address with the emailed link, signs out and back in, meets the wrong-password
+// message, and resets a forgotten password.
 test("J1 register, sign in, wrong password, forgot password", async ({ page }) => {
   const tag = unique("j1");
   const account = { email: `owner@${tag}.test`, password: "first-pass-123", name: "Jo Founder" };
@@ -12,30 +13,37 @@ test("J1 register, sign in, wrong password, forgot password", async ({ page }) =
   await checkAccessibility(page, "register step 1");
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await page.getByLabel(/Your full name/).fill(account.name);
-  await page.getByLabel(/Work email/).fill(account.email);
+  // step 2: the business (country starts on the platform's default; pick another to check the form follows it)
+  await page.getByLabel(/Business name/).fill(`J1 ${tag} Stores`);
+  await page.getByRole("combobox", { name: /country/i }).click();
+  await page.getByRole("textbox", { name: "Search", exact: true }).fill("United Kingdom");
+  await page.getByRole("option", { name: /United Kingdom/ }).first().click();
+  await expect(page.getByRole("combobox", { name: /country/i })).toContainText("United Kingdom");
   await page.getByRole("button", { name: "Continue" }).click();
 
+  // step 3: the account (the owner's name is taken from the email address)
+  await page.getByLabel(/Work email/).fill(account.email);
   await page.getByLabel(/^Password/).fill(account.password);
   await page.getByLabel(/Type the password again/).fill(account.password);
-  await expect(page.getByRole("button", { name: "Continue" })).toBeEnabled();      // after the server's password check
-  await page.getByRole("button", { name: "Continue" }).click();
-
-  await page.getByLabel(/Business name/).fill(`J1 ${tag} Stores`);
-  await page.getByRole("combobox", { name: /Country/ }).click();
-  await page.getByRole("button", { name: "United Kingdom" }).click();
-  await expect(page.getByLabel(/^Currency/)).toHaveValue("GBP");
-  await expect(page.getByLabel(/Phone calling code/)).toHaveValue("44");
-  await page.getByRole("button", { name: "Continue" }).click();
-
   await page.getByRole("checkbox").check();
+  const registered = page.waitForResponse((r) => r.url().endsWith("/api/v1/register") && r.request().method() === "POST");
+  await expect(page.getByRole("button", { name: "Create my business" })).toBeEnabled();      // after the server's password check
   await page.getByRole("button", { name: "Create my business" }).click();
+  const confirmToken = ((await (await registered).json()) as { dev_confirm_token?: string }).dev_confirm_token;
+  expect(confirmToken, "the development confirmation token").toBeTruthy();
 
-  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
-  await page.getByRole("link", { name: "Open the verification link" }).click();
-  await expect(page.getByRole("button", { name: "Account" })).toBeVisible();   // landed signed in
+  // instant entry: signed in on Home with the "confirm your email" banner, no "check your email" page
+  await expect(page.getByRole("button", { name: "Account" })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(`J1 ${tag} Stores`).first()).toBeVisible();
+  await expect(page.getByText(/Please confirm your email address/)).toBeVisible();
   await checkAccessibility(page, "home after registration");
+
+  // the emailed link confirms the address (it works signed in or not) and the banner goes away
+  await page.goto(`/confirm-email?token=${encodeURIComponent(confirmToken!)}`);
+  await expect(page.getByRole("heading", { name: "Your email address is confirmed" })).toBeVisible();
+  await page.getByRole("link", { name: "Continue to Ziira" }).click();
+  await expect(page.getByRole("button", { name: "Account" })).toBeVisible();
+  await expect(page.getByText(/Please confirm your email address/)).toBeHidden();
 
   await signOut(page);
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();

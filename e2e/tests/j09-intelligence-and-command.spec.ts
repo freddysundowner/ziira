@@ -30,8 +30,12 @@ test("J9 intelligence: things to look at and Today", async ({ page }) => {
   expect(all.filter((f) => /Olive Owner was given the role/.test(f.summary))).toEqual([]);
 
   // --- the finding
+  // (the shared business has had other tills close short in earlier journeys, and the list groups them: open this journey's finding by its own id)
+  const mine = (await api.get<any[]>("/intel/findings?limit=200")).find((f) => /closed USD 10.00 short: USD 40.00 counted against USD 50.00 expected/.test(f.summary));
+  expect(mine, "the check found this journey's till").toBeTruthy();
   await page.goto("/intelligence/things");
-  await page.getByRole("link", { name: "A till is out by more than usual" }).first().click();
+  await expect(page.getByRole("link", { name: "A till is out by more than usual" }).first()).toBeVisible();
+  await page.goto(`/intelligence/things/${mine.id}`);
   await expect(page.getByText(/closed USD 10.00 short: USD 40.00 counted against USD 50.00 expected/).first()).toBeVisible();
   await page.getByRole("button", { name: "I'm on it" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "I'm on it" }).click();
@@ -55,7 +59,7 @@ test("J9 intelligence: things to look at and Today", async ({ page }) => {
 
   // --- a brief preview
   await page.goto("/intelligence/summary");
-  await page.getByRole("button", { name: "Show preview" }).click();
+  await page.getByRole("button", { name: "See today's note" }).click();
   await expect(page.getByText(/sales|Sales/).first()).toBeVisible();
   await checkAccessibility(page, "briefs");
 });

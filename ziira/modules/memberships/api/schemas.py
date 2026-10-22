@@ -594,6 +594,7 @@ class MembershipSummaryOut(BaseModel):
     renewals_this_month: int
     renewals_next_7_days: int
     packages_expiring_30_days: int
+    ending_30_days: int = 0
     failed_runs: int
     drafts_waiting: int
     members_late: int = 0

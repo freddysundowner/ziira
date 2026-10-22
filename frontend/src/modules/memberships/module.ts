@@ -30,6 +30,11 @@ export default defineModule({
     { label: "memberships:extrasMenu", to: "/memberships/extras", under: "/memberships", permission: "memberships.view", order: 56, area: "services", icon: "boxes", keywords: "memberships:extrasKeywords" },
   ],
   slots: {
+    "dashboard.widgets": [
+      { label: "memberships:widget.checkinsTitle", component: () => import("./slots/CheckinsTodayWidget"), permission: "memberships.view", order: 36 },
+      { label: "memberships:widget.expiringTitle", component: () => import("./slots/ExpiringWidget"), permission: "memberships.view", order: 36.1 },
+      { label: "memberships:widget.lateTitle", component: () => import("./slots/PaymentsLateWidget"), permission: "memberships.view", order: 36.2 },
+    ],
     "crm.customer.tabs": [
       { label: "memberships:customerTab", component: () => import("./slots/CustomerMembership"), permission: "memberships.view", order: 40 },
     ],

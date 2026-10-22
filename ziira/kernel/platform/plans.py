@@ -611,8 +611,13 @@ def public_plans(*, at: datetime | None = None, use_cache: bool = True) -> dict[
                 "prices": [_public_price(x) for x in prices],
             }
         )
+    from ziira.kernel.platform import behaviour
+
+    show_units = behaviour.show_unit_addons()
     addons = []
     for a in addon_rows:
+        if a.kind == "unit" and not show_units:
+            continue                        # one-time unit sales are listed only when the Super Admin chooses
         stamps.append(a.updated_at)
         addons.append(
             {

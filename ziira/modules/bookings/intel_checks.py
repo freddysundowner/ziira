@@ -4,6 +4,7 @@ long idle gaps, and finished appointments never invoiced. Read only; every figur
 from datetime import datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
@@ -349,5 +350,89 @@ class DepositsUnpaid(IntelCheck):
         return found
 
 
+@provides(INTEL_CHECK)
+class ClassUnderfilled(IntelCheck):
+    """A group session coming up with few places taken (a class, a lesson, a workshop)."""
+
+    code = "bookings.class_underfilled"
+    value_kind = "percent"
+    title = "Classes with few places taken"
+    area = "customers"
+    description = ("A group session in the next few days where the places taken are below a share of its capacity. "
+                   "Silent for sessions with fewer places than the minimum.")
+    default_severity = "low"
+    params: dict[str, Any] = {"look_ahead_days": 3, "fill_percent": "40.0", "min_capacity": 4, "max_sessions": 20}
+    auto_resolves = True
+
+    def run(self, session: Session, ctx: CheckContext) -> list[Candidate]:
+        zone = ZoneInfo(ctx.timezone)
+        start = datetime.combine(ctx.today, time(0, 0), tzinfo=zone)
+        end = start + timedelta(days=int(ctx.number("look_ahead_days")) + 1)
+        found: list[Candidate] = []
+        for r in session.execute(text(
+                "select a.id, a.branch_id, a.starts_at, a.capacity, o.name, "
+                "  (select count(*) from bookings.appointment_attendee t where t.appointment_id = a.id "
+                "   and t.status in ('booked', 'attended')) as taken "
+                "from bookings.appointment a join bookings.service_offer o on o.id = a.offer_id "
+                "where a.company_id = :c and a.kind = 'class' and a.status = 'confirmed' and a.capacity >= :cap "
+                "and a.starts_at >= :s and a.starts_at < :e order by a.starts_at limit 500"),
+                {"c": str(ctx.company_id), "s": start, "e": end, "cap": int(ctx.number("min_capacity"))}):
+            percent = Decimal(r.taken) * 100 / Decimal(r.capacity)
+            if percent >= ctx.number("fill_percent"):
+                continue
+            when = r.starts_at.astimezone(zone)
+            found.append(Candidate(
+                fingerprint=fingerprint(self.code, r.id), severity="low",
+                summary=(f"{r.name} on {when:%d %b} at {when:%H:%M} has {r.taken} of {r.capacity} places taken "
+                         f"({percent:.0f}%)."),
+                recommended_action="Remind the families of the session, merge it with another, or call it off early "
+                                   "so nobody travels for nothing.",
+                company_id=ctx.company_id, branch_id=r.branch_id, entity_type="bookings.appointment", entity_id=r.id,
+                period_start=when.date(), value=percent.quantize(Decimal("0.1")),
+                expected_value=ctx.number("fill_percent"),
+                records=(Record("bookings.appointment", r.id, f"{r.name} {when:%d %b %H:%M}"),),
+                figures={"taken": str(r.taken), "capacity": str(r.capacity), "percent": f"{percent:.1f}"}))
+            if len(found) >= int(ctx.number("max_sessions")):
+                break
+        return found
+
+
+@provides(INTEL_CHECK)
+class ClassAbsences(IntelCheck):
+    """A person who keeps missing group sessions they were booked on."""
+
+    code = "bookings.class_absences"
+    value_kind = "count"
+    title = "People often absent from classes"
+    area = "customers"
+    description = "A person marked absent from several group sessions in the last weeks."
+    default_severity = "low"
+    params: dict[str, Any] = {"lookback_days": 28, "absences": 3, "high_count": 6, "max_people": 50}
+    auto_resolves = True
+
+    def run(self, session: Session, ctx: CheckContext) -> list[Candidate]:
+        found: list[Candidate] = []
+        for r in session.execute(text(
+                "select t.customer_id, min(t.name) as name, count(*) as missed, min(a.branch_id::text) as branch "
+                "from bookings.appointment_attendee t join bookings.appointment a on a.id = t.appointment_id "
+                "where a.company_id = :c and a.kind = 'class' and t.status = 'no_show' "
+                "and a.starts_at >= :since and a.starts_at < :until "
+                "group by coalesce(t.customer_id::text, lower(t.name)), t.customer_id "
+                "having count(*) >= :n order by count(*) desc, min(t.name) limit :m"),
+                {"c": str(ctx.company_id), "since": _since(ctx, "lookback_days"), "until": _until(ctx),
+                 "n": int(ctx.number("absences")), "m": int(ctx.number("max_people"))}):
+            days = int(ctx.number("lookback_days"))
+            found.append(Candidate(
+                fingerprint=fingerprint(self.code, r.customer_id or r.name),
+                severity="medium" if r.missed >= int(ctx.number("high_count")) else "low",
+                summary=f"{r.name} was absent from {r.missed} sessions in the last {days} days.",
+                recommended_action="Call the family to find out whether something is wrong, and offer a make-up "
+                                   "session.",
+                company_id=ctx.company_id, branch_id=UUID(r.branch) if r.branch else None,
+                value=Decimal(r.missed), expected_value=ctx.number("absences"),
+                figures={"absences": str(r.missed), "days": str(days)}))
+        return found
+
+
 ALL_CHECKS = (NoShowRate, LateCancellations, LowUtilisation, DoubleBookingRefused, LongIdleGaps, CompletedNotInvoiced,
-              TipsHeldTooLong, DepositsUnpaid)
+              TipsHeldTooLong, DepositsUnpaid, ClassUnderfilled, ClassAbsences)

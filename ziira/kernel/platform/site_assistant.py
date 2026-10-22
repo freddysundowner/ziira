@@ -203,6 +203,12 @@ def _hit(key: str, window: int) -> tuple[int, int]:
     return int(row.failures), max(int(row.wait) + 1, 1)
 
 
+def count_use(kind: str, subject: str, window: int) -> tuple[int, int]:
+    """Count one use by anyone (the chat bot's senders): `(uses so far in this window, seconds until it restarts)`. The
+    subject is hashed here, so no number or address is kept in the clear."""
+    return _hit(f"wa-{kind}:" + _hash(kind, subject), window)
+
+
 def visitor_check(ip_address: str | None) -> int | None:
     """Count one question from this address. None when it may go on; else the seconds to wait (it is over a limit).
     An address that cannot be told is treated as one shared visitor (strict, never a way round the limits)."""

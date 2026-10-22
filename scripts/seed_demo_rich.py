@@ -1217,9 +1217,16 @@ class Seeder:
                     self.mirror[(b, sku)] -= 2
                     dp.sales.sort(key=lambda x: x.at)
         if 7 in cfg["stories"] and d == story_days["writeoff"]:
-            dp.special["writeoff"] = {"branch": 0, "sku": "TMB-2X2" if "TMB-2X2" in self.products else "SND-50KG"}
-            sku = dp.special["writeoff"]["sku"]
-            self.mirror[(0, sku)] -= 8
+            def needed(code: str) -> int:
+                return math.ceil(Decimal("1060") / Decimal(self.products[code].cost))      # as write_off() computes it
+
+            # a product with enough on hand (after the day's plan) to write off just over the limit
+            options = [c for c in ("TMB-2X2", "SND-50KG") if c in self.products]
+            options += [c for c in self.products if c not in options and self.products[c].cost > 0]
+            sku = next((c for c in options if self.mirror[(0, c)] >= needed(c)),
+                       max(options, key=lambda c: self.mirror[(0, c)] - needed(c)))
+            dp.special["writeoff"] = {"branch": 0, "sku": sku}
+            self.mirror[(0, sku)] -= needed(sku)
         if 6 in cfg["stories"] and d == story_days["dup_bill"]:
             dp.special["dup_bill"] = {"supplier": 5 if 5 in self.suppliers else next(iter(self.suppliers))}
         if self.story_product and d == self.today - timedelta(days=2):

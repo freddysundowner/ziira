@@ -47,7 +47,9 @@ export function StepBusiness({ form, countries, country, onCountry, industries =
             {industries.find((i) => i.id === v.kind)?.summary && <p className="text-xs text-muted">{industries.find((i) => i.id === v.kind)?.summary}</p>}
           </div>
         ) : (
-          <ChoiceGroup name="kind" legend={`${t("signup.field.kind")} (${t("signup.optional")})`} clearable value={v.kind} onChange={(x) => form.set("kind", x)} options={KINDS.map((x) => ({ value: x, label: t(`signup.kind.${x}`) }))} />
+          // the usual four kinds, plus the packs recommended for this edition (a pharmacy for the shop editions)
+          <ChoiceGroup name="kind" legend={`${t("signup.field.kind")} (${t("signup.optional")})`} clearable value={v.kind} onChange={(x) => form.set("kind", x)}
+            options={[...KINDS.map((x) => ({ value: x, label: t(`signup.kind.${x}`) })), ...industries.map((i) => ({ value: i.id, label: i.title }))]} />
         )}
       </div>
     </div>

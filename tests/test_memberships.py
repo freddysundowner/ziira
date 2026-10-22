@@ -6,6 +6,7 @@ from decimal import Decimal as D  # noqa: N817
 from uuid import UUID, uuid4
 
 import pytest
+from sqlalchemy import text
 
 from tests.memberships_helpers import (
     M,
@@ -516,3 +517,34 @@ def test_the_overview_counts_what_needs_attention(client, shop) -> None:  # type
     assert r.status_code == 200 and set(r.json()) >= {"active_members", "failed_runs", "drafts_waiting"}
     assert r.json()["active_members"] >= 5
     assert client.get(f"{M}/invoicing", headers=shop["owner"]).json() == {"available": True}
+
+
+def test_the_overview_counts_memberships_ending_within_30_days_and_only_those(client, shop) -> None:  # type: ignore[no-untyped-def]
+    """Home's 'Expiring memberships' box: a scheduled end (or a fixed end date) in the next 30 days, never a renewal."""
+    from datetime import timedelta
+
+    def ending() -> int:
+        r = client.get(f"{M}/summary", headers=shop["owner"])
+        assert r.status_code == 200
+        return int(r.json()["ending_30_days"])
+
+    before = ending()
+    soon = sign_up(client, shop, customer(client, shop, "Ends Soon Esther")).json()
+    far = sign_up(client, shop, customer(client, shop, "Ends Later Leo")).json()
+    assert ending() == before                                     # renewing is not ending
+    with system(shop) as s:
+        s.execute(text("update memberships.member set cancel_at = :d where id = :i"),
+                  {"d": date.today() + timedelta(days=10), "i": soon["id"]})
+        s.execute(text("update memberships.member set cancel_at = :d where id = :i"),
+                  {"d": date.today() + timedelta(days=90), "i": far["id"]})
+    assert ending() == before + 1
+    assert client.get(f"{M}/summary").status_code in (401, 403)       # nobody signed in sees nothing
+
+
+def test_a_recurring_invoice_line_may_omit_its_quantity_when_edited(client, shop) -> None:  # type: ignore[no-untyped-def]
+    cust = customer(client, shop, "Edit Lines Ltd")
+    s = schedule(client, shop, cust, name="Editable").json()
+    line = {"product_id": shop["delivery"], "unit_price": "300.00"}               # quantity defaults to 1
+    r = client.patch(f"{M}/recurring-invoices/{s['id']}", headers=shop.get("acct", shop["owner"]), json={"lines": [line]})
+    assert r.status_code == 200, r.text
+    assert D(r.json()["total"]) == D("300.00")

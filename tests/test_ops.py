@@ -300,6 +300,7 @@ def test_production_refuses_a_wildcard_cors_origin(settings) -> None:  # type: i
     settings.env, settings.cors_origins = "production", "*"
     settings.dev_tenant_header, settings.secret_key, settings.credentials_key = False, "s" * 40, "c" * 40
     settings.platform_email_provider = "smtp"
+    settings.operator_mfa_off_acknowledged = True           # the operator sign-in rule is checked first; not under test here
     with pytest.raises(RuntimeError, match="never"):
         settings.check_safe_for_production()
 

@@ -176,12 +176,32 @@ def post_stock_out(session: Session, request: MovementRequest) -> list[StockMove
         # The last batch used takes the shortage; post_movement then applies the negative stock policy.
         last = picks[-1]
         picks[-1] = Pick(last.batch_id, last.quantity + shortage)
-    return [post_movement(session, MovementRequest(
+    moved = [post_movement(session, MovementRequest(
         company_id=request.company_id, location_id=request.location_id, product_id=request.product_id,
         quantity=-pick.quantity, movement_type=request.movement_type, source_type=request.source_type,
         source_id=request.source_id, source_line_id=request.source_line_id, batch_id=pick.batch_id,
         unit_cost=request.unit_cost, reason_code_id=request.reason_code_id, business_date=request.business_date,
         approved_by=request.approved_by, allow_negative=request.allow_negative)) for pick in picks]
+    if request.movement_type == "sale":
+        _flag_expired_sale(session, request, product, stock, picks)
+    return moved
+
+
+def _flag_expired_sale(session: Session, request: MovementRequest, product: ProductView, stock: list[BatchStock],
+                       picks: list[Pick]) -> None:
+    """A sale that drew from a batch already past its expiry date is accepted (it has happened) and flagged for a
+    person to look at: the stock was still on the books, and the batch is likely overdue to come off the shelf."""
+    day = request.business_date or company_today(session, request.company_id)
+    expiry = {b.batch_id: b.expiry_date for b in stock}
+    location = inventory_repo.get_location(session, request.location_id)
+    for pick in picks:
+        expired_on = expiry.get(pick.batch_id)
+        if pick.quantity > 0 and expired_on is not None and expired_on < day:
+            flag_for_review(session, unit="inventory", kind="expired_stock_sold", severity="high",
+                            company_id=request.company_id, branch_id=location.branch_id if location else None,
+                            ref_type="stock_movement", ref_id=request.source_id,
+                            dedupe_key=f"expired_stock_sold:{request.source_id}:{pick.batch_id}",
+                            message=f"{product.sku} was sold from a batch that expired on {expired_on.isoformat()}")
 
 
 def get_or_create_batch(session: Session, product: ProductView, batch_no: str, expiry_date: date | None) -> Batch:

@@ -1,5 +1,6 @@
 """HTTP endpoints of the Inventory module. Routes only convert HTTP to service calls."""
 
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
@@ -17,6 +18,7 @@ from ziira.modules.inventory.api.schemas import (
     CountStartIn,
     CountSubmitIn,
     CountSummaryOut,
+    ExpiringOut,
     LocationIn,
     LocationOut,
     MovementOut,
@@ -56,6 +58,7 @@ from ziira.modules.inventory.services.counts import (
 )
 from ziira.modules.inventory.services.find_stock import (
     can_see_cost,
+    expiring_stock,
     list_balances,
     list_movements,
     product_stock,
@@ -237,6 +240,21 @@ def get_balances(location_id: UUID | None = None, product_id: UUID | None = None
             for b, loc, sku, name in list_balances(session, location_id=location_id, product_id=product_id,
                                                    branch_id=branch_id, include_zero=include_zero, limit=limit,
                                                    offset=offset)]
+
+
+@router.get("/expiring", response_model=list[ExpiringOut], dependencies=VIEW)
+def get_expiring(days: int = Query(default=90, ge=0, le=3650), limit: int = Query(default=100, ge=1, le=500),
+                 session: Session = DB_SESSION) -> object:
+    """Batches with stock on hand that expire within `days` days (or already have), earliest first."""
+    today = datetime.now(UTC).date()
+    out = []
+    for bal, loc, b, sku, name in expiring_stock(session, days=days, limit=limit):
+        if b.expiry_date is None:
+            continue
+        out.append(ExpiringOut(batch_id=b.id, batch_no=b.batch_no, expiry_date=b.expiry_date,
+                               days_left=(b.expiry_date - today).days, location_id=loc.id, location_code=loc.code,
+                               product_id=bal.product_id, sku=sku, product_name=name, quantity=bal.quantity))
+    return out
 
 
 @router.get("/movements", response_model=list[MovementOut], dependencies=VIEW)

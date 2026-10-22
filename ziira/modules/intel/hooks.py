@@ -1,6 +1,8 @@
 """Sockets the Ziira Intelligence module offers (declared in manifest.toml): checks, baseline metrics, AI providers and
 the tools Ask Ziira may call. It also plugs its own ask tools and the fake AI provider (development and tests) in."""
 
+from uuid import UUID
+
 from ziira.modules.intel import kernel_checks  # noqa: F401 - registers Intelligence's own checks
 from ziira.modules.intel.action_providers import NudgeExceptionsReviewers
 from ziira.modules.intel.ask_tools import FindingDetail, ListFindings
@@ -18,7 +20,16 @@ from ziira.modules.intel.public import (
     IntelCheck,
     LlmProvider,
 )
-from ziira.sdk import INBOUND_COMMAND, define_extension_point, provides
+from ziira.sdk import (
+    INBOUND_COMMAND,
+    INDUSTRY_SEEDER,
+    IndustrySeeder,
+    PackData,
+    SeedReport,
+    Session,
+    define_extension_point,
+    provides,
+)
 
 define_extension_point(INTEL_CHECK, IntelCheck, "A check over a unit's data that raises findings")
 define_extension_point(INTEL_BASELINE_METRIC, BaselineMetric, "Observations of a metric, to learn what is normal")
@@ -34,6 +45,27 @@ provides(INTEL_ACTION)(NudgeExceptionsReviewers)
 provides(INTEL_ASK_TOOL)(ListFindings)
 provides(INTEL_ASK_TOOL)(FindingDetail)
 provides(INBOUND_COMMAND)(ProposalReplies)
+
+
+@provides(INDUSTRY_SEEDER)
+class IntelCheckLimitsSeeder(IndustrySeeder):
+    """Sets the limits an industry pack suggests for checks (`data/intel.toml`, one `[check."code"]` table of limits
+    per check). A check the business has already tuned is left exactly as it is; unknown checks and limits are
+    ignored."""
+
+    name = "intel.check_limits"
+    unit = "intel"
+
+    def seed(self, session: Session, pack: PackData, company_id: UUID) -> SeedReport:
+        from ziira.modules.intel.public import apply_check_defaults
+
+        report = SeedReport()
+        wanted = {code: dict(limits) for code, limits in pack.unit_data(self.unit).get("check", {}).items()}
+        done = apply_check_defaults(session, wanted) if wanted else []
+        report.skipped = len(wanted) - len(done)
+        if done:
+            report.notes.append("limits set for: " + ", ".join(sorted(done)))
+        return report
 
 from ziira.modules.intel import privacy as _privacy  # noqa: E402, F401, I001 - registers the personal-data provider
 

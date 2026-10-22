@@ -34,6 +34,15 @@
     "cancelled": "Cancelled",
     "written_off": "Written off"
   },
+  "widget": {
+    "title": "Claims waiting",
+    "nothing": "No claim is waiting on an answer.",
+    "toAnswer": "{{count}} offers to answer; {{withPayer}} with the payer",
+    "withPayer": "{{count}} with the payer",
+    "answerNeeded": "answer needed",
+    "payerSilent": "with the payer",
+    "open": "Open the claims"
+  },
   "waiting": {
     "payer": "Waiting for the payer",
     "us": "Waiting for us",

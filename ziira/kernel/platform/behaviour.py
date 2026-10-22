@@ -94,6 +94,7 @@ KEYS: dict[str, Callable[[Any], Any]] = {
     "registration.trial_days": _trial,
     "registration.default_country": _country,
     "access.all_units_free": _on_off,
+    "public.show_unit_addons": _on_off,
     "public.web_url": _url("The public web address"),
     "public.api_url": _url("The public API address"),
     "public.terms_url": _url("The terms link"),
@@ -139,6 +140,10 @@ def set_value(key: str, value: Any, by: str | None) -> Any:
             "on conflict (key) do update set value = excluded.value, updated_at = now(), "
             "updated_by = excluded.updated_by"), {"k": key, "v": json.dumps(clean), "b": by})
     invalidate()
+    if key == "public.show_unit_addons":
+        from ziira.kernel.platform import plans
+
+        plans.invalidate_public_cache()     # the price list changes with it
     if key.startswith("access."):
         from ziira.kernel.platform import entitlements
 
@@ -174,6 +179,11 @@ def all_units_free() -> bool:
     """True (the default) when every business may use every add-on whatever its plan lists. The Super Admin switches it
     off (Platform > Settings) when add-ons should be sold through the plans again."""
     return str(get("access.all_units_free") or "").strip().lower() != "off"
+
+
+def show_unit_addons() -> bool:
+    """False (the default): the public price list shows plans and users/branches add-ons only, not single units."""
+    return str(get("public.show_unit_addons") or "").strip().lower() == "on"
 
 
 def default_edition() -> str:

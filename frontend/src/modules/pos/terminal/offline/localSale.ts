@@ -96,6 +96,7 @@ export function toOfflineOp(input: OfflineSaleInput): SaleOp {
       unit_price: l.price,
       discount: l.discount || "0",
       ...(l.reasonId ? { reason_code_id: l.reasonId } : {}),
+      ...((l.reference ?? "").trim() ? { reference: (l.reference ?? "").trim() } : {}),
     })),
     payments: input.legs.filter((l) => num(l.amount) > 0).map((l) => ({
       method: l.method,

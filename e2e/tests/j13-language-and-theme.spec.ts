@@ -31,6 +31,8 @@ async function headingOf(page: Page): Promise<string> {
   return (await h1.count()) ? (await h1.innerText()).trim() : "";
 }
 
+/** A menu entry's words without the small count badge ("Waiting for you 4") that comes and goes with the business's open items. */
+const label = (text: string) => text.replace(/\s*\n?\s*\d+$/, "").trim();
 const menuLinks = (page: Page) => page.getByRole("navigation", { name: "Main" }).getByRole("link");
 /** The section headings and the single links (Home, Settings): what is translated at the top level. */
 const menuEntries = (page: Page) => page.getByRole("navigation", { name: "Main" }).locator("h2, :scope > a");
@@ -39,15 +41,23 @@ async function chooseFromAccountMenu(page: Page, item: string) {
   await page.getByRole("menuitem", { name: item }).click();
 }
 
+/** The sidebar keeps most sections folded (the person's choice is remembered); open them all so every link is listed. */
+async function openAllSections(page: Page) {
+  const folded = page.getByRole("navigation", { name: "Main" }).locator('h2 button[aria-expanded="false"]');
+  while (await folded.count()) await folded.first().click();
+}
+
 test("J13 language and theme", async ({ page }) => {
+  test.setTimeout(480_000);      // every page of the menu is visited in English, Swahili and dark mode
   const s = shared();
   await signIn(page, s.owner);
+  await openAllSections(page);
 
   // --- the English menu and headings, to compare with
   const sections = await menuEntries(page).count();
   expect(sections).toBeGreaterThanOrEqual(5);
-  const englishLabels = (await menuEntries(page).allInnerTexts()).map((x) => x.trim());
-  // the pages: every sidebar link (all sections are listed), plus the tab bars and Settings' own list found by opening each area's first page
+  const englishLabels = (await menuEntries(page).allInnerTexts()).map(label);
+  // the pages: every sidebar link (every section opened above), plus the tab bars and Settings' own list found by opening each area's first page
   const hrefs = new Set<string>(await menuLinks(page).evaluateAll((els) => els.map((a) => a.getAttribute("href")!)));
   for (const h of [...hrefs]) {
     await page.goto(h);
@@ -64,7 +74,7 @@ test("J13 language and theme", async ({ page }) => {
   // --- Swahili
   await chooseFromAccountMenu(page, "Kiswahili");
   await expect(page.locator("html")).toHaveAttribute("lang", "sw");
-  const swahiliLabels = (await menuEntries(page).allInnerTexts()).map((x) => x.trim());
+  const swahiliLabels = (await menuEntries(page).allInnerTexts()).map(label);
   const unchanged = swahiliLabels.filter((label, i) => label === englishLabels[i]);
   // a few names are the same in both languages (a word borrowed from English, a product name); most of the menu is not
   expect(unchanged.length, `menu entries still in English: ${unchanged.join(", ")}`).toBeLessThan(englishLabels.length / 4);
@@ -84,7 +94,7 @@ test("J13 language and theme", async ({ page }) => {
   // --- it is still Swahili after a reload
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "sw");
-  expect((await menuEntries(page).allInnerTexts()).map((x) => x.trim())).toEqual(swahiliLabels);
+  expect((await menuEntries(page).allInnerTexts()).map(label)).toEqual(swahiliLabels);
 
   // --- back to English, then dark mode
   await chooseFromAccountMenu(page, "English");

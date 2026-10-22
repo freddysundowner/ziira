@@ -73,6 +73,21 @@ class BalanceOut(BaseModel):
     quantity: Decimal
 
 
+class ExpiringOut(BaseModel):
+    """One batch with stock still on hand that expires soon (or already has)."""
+
+    batch_id: UUID
+    batch_no: str
+    expiry_date: date
+    days_left: int
+    location_id: UUID
+    location_code: str
+    product_id: UUID
+    sku: str | None
+    product_name: str | None
+    quantity: Decimal
+
+
 class ProductStockOut(BaseModel):
     """A product's stock across the company's locations, with its cost (if the user may see costs)."""
 

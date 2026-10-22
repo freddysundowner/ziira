@@ -6,6 +6,7 @@
     python scripts/live_check.py sms      --to 2547XXXXXXXX [--message TEXT] [--dry-run]
     python scripts/live_check.py email    --provider smtp|brevo|resend|sendgrid --to a@b.c [--dry-run]
     python scripts/live_check.py ai       [--dry-run] [--no-tool] [--provider NAME --model ID --quality quick|full]
+    python scripts/live_check.py chat     [--dry-run] [--lookup +2547XXXXXXXX]
 
 Credentials come from the environment (see docs/live-checks.md) and are never written anywhere. Every check uses the
 app's own provider classes (`ziira.plugins.mpesa.daraja`, `ziira.plugins.messaging.providers`), so a PASS means
@@ -35,6 +36,8 @@ from ziira.modules.payments.public import StkQuery, StkRequest
 from ziira.plugins.ai_anthropic.provider import AnthropicMessages
 from ziira.plugins.ai_gemini.provider import GeminiGenerateContent
 from ziira.plugins.ai_openai.provider import OpenAIResponses
+from ziira.plugins.leadsintel_platform import common as chat_common
+from ziira.plugins.leadsintel_platform.provider import LeadIntelPlatformChat
 from ziira.plugins.messaging.providers import (
     BlessedTextsSms,
     BrevoEmail,
@@ -44,7 +47,7 @@ from ziira.plugins.messaging.providers import (
 )
 from ziira.plugins.mpesa import formats as mpesa
 from ziira.plugins.mpesa.daraja import DarajaProvider
-from ziira.sdk import NotificationChannel, Outgoing, sign_value
+from ziira.sdk import ChatContext, ChatError, NotificationChannel, Outgoing, sign_value
 
 SECRET_HEADERS = {"authorization", "api-key", "apikey", "x-api-key", "x-goog-api-key"}
 SECRET_FIELDS = {"password", "api_key", "apikey", "passkey", "access_token", "consumer_secret", "consumer_key"}
@@ -164,6 +167,8 @@ def made_up_reply(request: httpx.Request) -> httpx.Response:
                 else {"type": "message", "content": [{"type": "output_text", "text": "OK"}]})
         return httpx.Response(200, json={"status": "completed", "model": sent.get("model", "dry-run"), "output": [item],
                                          "usage": {"input_tokens": 12, "output_tokens": 3}})
+    if "leadsintel" in request.url.host:
+        return httpx.Response(404, json={"error": "not_found"})        # nothing there by that id: the key was accepted
     if "blessedtexts" in request.url.host:
         return httpx.Response(200, json=[{"status_code": "1000", "status_desc": "Message Sent", "message_id": "dry"}])
     if "brevo" in request.url.host:
@@ -501,6 +506,60 @@ def explain_ai_failure(message: str) -> str:
     return "Read the provider's own words above, fix what they name, and run again."
 
 
+# --------------------------------------------------------------------------- the platform chat bot (Lead Intel)
+def chat_check(*, dry_run: bool, lookup: str | None, echo: bool = True, env: dict[str, str] | None = None) -> Report:
+    """Read-only checks of the platform chat bot's Lead Intel code: does the key work (a harmless read of a request
+    that does not exist), can a number be looked up (optional), and does the signature check accept a delivery signed
+    the documented way. It never connects, changes or sends anything. The key is read from the environment and never
+    written anywhere."""
+    report = Report("chat (Lead Intel key, lookup and signature)")
+    if env is None:
+        env = {"ZIIRA_LIVE_LEADSINTEL_KEY": "dry-run-key"} if dry_run else need_env(["ZIIRA_LIVE_LEADSINTEL_KEY"])
+    key = env["ZIIRA_LIVE_LEADSINTEL_KEY"]
+    factory = tapped([key], report.exchanges, dry_run, echo)
+    ctx = ChatContext(config={}, secrets={"api_key": key}, http=factory())
+    provider = LeadIntelPlatformChat()
+    print("Step 1: the key (GET of a request that cannot exist; 404 means the key was accepted).")
+    try:
+        verdict = provider.test_key(ctx)
+    except ChatError as exc:
+        return report.finish(False, explain_chat_failure(exc.code))
+    report.lines.append(f"key accepted={verdict.ok}: {verdict.message}")
+    if not verdict.ok:
+        return report.finish(False, "Copy the platform key again from Lead Intel (Settings > Developers).")
+    if lookup:
+        print("Step 2: look the number up (read only).")
+        digits = "".join(c for c in lookup if c.isdigit())
+        try:
+            found = provider.find_connection(ctx, digits[:3], digits[3:])
+        except ChatError as exc:
+            return report.finish(False, explain_chat_failure(exc.code))
+        report.lines.append("no connection found for that number" if found is None else
+                            f"connection found: active={found.active} status={found.status}")
+    print("Step 3: a delivery signed the documented way is accepted, a tampered one is refused (no network).")
+    secret, stamp = "live-check-secret", str(int(time.time() * 1000))
+    raw = json.dumps({"metadata": {"phone_number_id": "1"}, "messages": [
+        {"id": "wamid.check", "from": "10000000000", "type": "text", "text": {"body": "hello"}}]}).encode()
+    headers = {"x-leadintel-event-id": "check-1", "x-leadintel-timestamp": stamp,
+               "x-leadintel-signature": chat_common.signature_of(secret, stamp, raw)}
+    delivery = chat_common.read_delivery(headers, raw, secret, "1")
+    report.lines.append(f"signed delivery read: {len(delivery.messages)} message(s)")
+    try:
+        chat_common.read_delivery(headers, raw + b" ", secret, "1")
+        return report.finish(False, "A tampered body was accepted: do not go live.")
+    except Exception:  # noqa: BLE001 - the refusal is the point
+        report.lines.append("tampered body refused")
+    return report.finish(True, "Now follow docs/ai.md section 15 (Going live): connect a number you can lose, send it "
+                               "a message, and check the reply arrives. Nothing was changed here.")
+
+
+def explain_chat_failure(code: str) -> str:
+    return {"key_rejected": "Lead Intel refused the key. Copy it again from your Lead Intel account.",
+            "rate_limited": "Lead Intel is rate limiting. Wait a minute and run again.",
+            "unavailable": "Lead Intel could not be reached. Check your connection and try again."}.get(
+        code, "Read Lead Intel's own words above, fix what they name, and run again.")
+
+
 # --------------------------------------------------------------------------- command line
 def parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -537,6 +596,9 @@ def parser() -> argparse.ArgumentParser:
     a.add_argument("--provider", default="anthropic", choices=sorted(AI_PROVIDERS))
     a.add_argument("--model", help="a model id (default: the plugin's recommended Ask model)")
     a.add_argument("--quality", choices=["quick", "full"], help="then run the scored quality check (real spend)")
+    ch = sub.add_parser("chat", help="the platform chat bot through Lead Intel: key, lookup and signature (read only)")
+    common(ch)
+    ch.add_argument("--lookup", help="also look this number up, in international form (+2547...), read only")
     return p
 
 
@@ -554,6 +616,8 @@ def main(argv: list[str] | None = None) -> int:
     elif args.check == "ai":
         report = ai_check(dry_run=args.dry_run, tool_step=not args.no_tool, provider_name=args.provider,
                           model=args.model, quality=args.quality)
+    elif args.check == "chat":
+        report = chat_check(dry_run=args.dry_run, lookup=args.lookup)
     elif args.check == "sms":
         report = sms_check(to=args.to, text=args.message, dry_run=args.dry_run)
     else:

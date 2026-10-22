@@ -1,0 +1,207 @@
+{
+ "chat": {
+  "title": "Boti ya WhatsApp",
+  "intro": "Unganisha namba moja ya WhatsApp, kupitia Lead Intel, na boti inayojibu maswali kuhusu Ziira: ni nini, mipango na bei na jinsi ya kujisajili. Inatoa majibu yaliyohakikiwa sawa na gumzo la tovuti.",
+  "readOnly": "Unaweza kuangalia ukurasa huu lakini ni msimamizi mkuu tu anayeweza kuubadilisha.",
+  "loadFailed": "Ukurasa wa boti ya WhatsApp haukuweza kusomwa",
+  "practice": "Hali ya mazoezi: hakuna huduma halisi inayoitwa. Mtoa huduma wa mazoezi anaigiza hatua zote ili ujaribu kila hatua. Hakuna kinachotumwa kwa mtu yeyote.",
+  "steps": {
+   "title": "Hatua",
+   "key": "1. Ufunguo",
+   "number": "2. Namba",
+   "say": "3. Maneno",
+   "try": "4. Jaribu",
+   "on": "5. Washa"
+  },
+  "bot": {
+   "switch": "Boti ijibu ujumbe",
+   "on": "Imewashwa",
+   "off": "Imezimwa",
+   "nowOn": "Boti sasa inajibu ujumbe.",
+   "nowOff": "Boti imezimwa. Haitajibu.",
+   "notReady": {
+    "key": "Bandika na ujaribu ufunguo wa Lead Intel kwanza.",
+    "test": "Jaribu ufunguo kwanza.",
+    "connect": "Unganisha namba kwanza."
+   }
+  },
+  "key": {
+   "title": "Ufunguo wa Lead Intel",
+   "intro": "Bandika ufunguo wa jukwaa kutoka akaunti yako ya Lead Intel. Unahifadhiwa kwa usiri na haonyeshwi tena.",
+   "notSet": "Haujawekwa",
+   "saved": "Umehifadhiwa",
+   "savedOk": "Umehifadhiwa na unafanya kazi",
+   "savedBad": "Umehifadhiwa lakini umekataliwa",
+   "label": "Ufunguo wa jukwaa wa Lead Intel",
+   "hint": "Haonyeshwi baada ya kuhifadhi. Bandika mpya wakati wowote kuubadilisha.",
+   "keep": "Umehifadhiwa. Bandika ufunguo mpya kuubadilisha",
+   "paste": "Bandika ufunguo hapa",
+   "saveAndTest": "Hifadhi na ujaribu",
+   "accepted": "Lead Intel imekubali ufunguo."
+  },
+  "connect": {
+   "title": "Unganisha namba yako",
+   "intro": "Hii ndiyo namba ya WhatsApp ambayo watu wataandikia.",
+   "states": {
+    "none": "Haijaunganishwa",
+    "pending": "Inaunganishwa",
+    "awaiting_code": "Inasubiri msimbo",
+    "connected": "Imeunganishwa",
+    "failed": "Imeshindwa",
+    "cancelled": "Imesitishwa"
+   },
+   "number": "Namba iliyounganishwa:",
+   "disconnect": "Tenganisha",
+   "disconnected": "Namba imetenganishwa.",
+   "progress": {
+    "pending": "Lead Intel inaandaa namba. Ukurasa huu hukagua kila sekunde chache.",
+    "awaiting_code": "Inasubiri msimbo wa uthibitisho."
+   },
+   "codeLabel": "Msimbo uliotumwa kwenye namba",
+   "codeHint": "Msimbo wa tarakimu 6 uliofika kwenye namba hiyo.",
+   "sendCode": "Tuma msimbo",
+   "cancel": "Sitisha",
+   "failedFallback": "Lead Intel haikuweza kuunganisha namba.",
+   "cancelled": "Ombi limesitishwa. Unaweza kuanza tena.",
+   "modes": {
+    "new": "Namba mpya",
+    "existing": "Namba tayari iko Lead Intel"
+   },
+   "modeHints": {
+    "new": "Kwa namba ambayo bado haiko Lead Intel. Namba iliyowasilishwa awali haiwezi kuwasilishwa tena, na jina watakaloliona watu lazima lifuate sheria za Meta kwa majina yaliyothibitishwa.",
+    "existing": "Kwa namba ambayo tayari iko Lead Intel. Wanatuma msimbo kwenye namba hiyo nawe unauandika hapa."
+   },
+   "country": "Msimbo wa nchi",
+   "countryHint": "Tarakimu tu, bila alama ya kujumlisha",
+   "phone": "Namba ya simu",
+   "phoneHint": "Bila msimbo wa nchi",
+   "business": "Jina la biashara",
+   "businessHint": "Jina la kisheria au la biashara",
+   "display": "Jina la wasifu wa WhatsApp",
+   "displayHint": "Jina watakaloliona watu. Meta inaweka mipaka.",
+   "metaNote": "Meta hukagua jina la wasifu. Likikataliwa utaona sababu ya Lead Intel hapa.",
+   "needKey": "Hifadhi na ujaribu ufunguo katika hatua ya 1 kwanza.",
+   "start": {
+    "new": "Unganisha namba",
+    "existing": "Nitumie msimbo"
+   },
+   "disconnectTitle": "Tenganisha namba",
+   "disconnectText": "Hii inaondoa {{number}} kutoka Lead Intel na kuzima boti. Watakaoiandikia hawatapata jibu.",
+   "typeNumber": "Andika namba kuthibitisha"
+  },
+  "find": {
+   "open": "Tafuta muunganisho uliopo",
+   "title": "Tafuta muunganisho uliopo",
+   "intro": "Tumia hii kama namba tayari imeunganishwa kwenye Lead Intel (kwa mfano baada ya usanidi uliokatizwa). Itaelekezwa tena kwenye jukwaa hili.",
+   "look": "Itafute",
+   "adopt": "Tumia muunganisho huu",
+   "adopted": "Muunganisho umechukuliwa.",
+   "foundActive": "Muunganisho hai umepatikana kwa {{number}}.",
+   "foundInactive": "Muunganisho upo lakini si hai.",
+   "notFound": "Hakuna muunganisho uliopatikana kwa namba hiyo."
+  },
+  "webhook": {
+   "title": "Mahali Lead Intel inapotuma ujumbe",
+   "intro": "Lead Intel huita anwani hii kwa kila ujumbe. Anwani na siri ya kusaini hutengenezwa na kutumwa kwa Lead Intel na seva.",
+   "secretSet": "Siri imewekwa",
+   "secretNotSet": "Bado hakuna siri",
+   "address": "Anwani",
+   "noAddress": "Bado haipatikani",
+   "hidden": "Sehemu ya siri ya anwani imefichwa. Huhitaji kuinakili.",
+   "problems": {
+    "empty": "Anwani ya umma ya API ya jukwaa ni tupu. Iweke kwenye Mipangilio ya jukwaa kwanza.",
+    "notHttps": "Anwani ya umma ya API lazima ianze na https:// ili Lead Intel iweze kuiita."
+   },
+   "rotate": "Badilisha siri",
+   "rotated": "Siri mpya na anwani mpya zimetumwa kwa Lead Intel.",
+   "rotateTitle": "Kubadilisha siri?",
+   "rotateText": "Anwani mpya na siri mpya hutengenezwa na kupewa Lead Intel. Za zamani zinaacha kufanya kazi mara moja."
+  },
+  "say": {
+   "title": "Boti inasema nini",
+   "intro": "Acha maandishi tupu kutumia maneno yaliyojengwa ndani (Kiingereza au Kiswahili, kulingana na mtu).",
+   "welcome": "Ujumbe wa karibu",
+   "welcomeHint": "Unaonyeshwa na vitufe vitatu: Angalia bei, Jinsi ya kujisajili, Ongea na mtu.",
+   "handoff": "Mtu anapoomba kuzungumza na mtu",
+   "handoffHint": "Hutumwa baada ya ombi kurekodiwa.",
+   "offHours": "Nje ya saa za kazi (hiari)",
+   "offHoursHint": "Hutumika badala ya maandishi ya kushoto wakati ni nje ya saa zilizo hapa chini.",
+   "language": "Lugha",
+   "languageHint": "Otomatiki hufuata lugha anayoandikia mtu.",
+   "languages": {
+    "auto": "Otomatiki",
+    "en": "Kiingereza",
+    "sw": "Kiswahili"
+   },
+   "hoursStart": "Hufunguka",
+   "hoursEnd": "Hufungwa",
+   "hoursZone": "Saa za eneo",
+   "hoursHint": "Jumatatu hadi Ijumaa. Acha saa tupu kama mtu yupo kila wakati.",
+   "profile": "Wasifu wa umma wa namba",
+   "about": "Mstari wa kuhusu",
+   "aboutHint": "Hadi herufi 139",
+   "description": "Maelezo",
+   "website": "Tovuti",
+   "save": "Hifadhi",
+   "saved": "Imehifadhiwa.",
+   "profileWarning": "Imehifadhiwa hapa, lakini Lead Intel haikupokea wasifu: {{reason}}"
+  },
+  "try": {
+   "title": "Jaribu",
+   "intro": "Ona boti ingesema nini, kama inavyofika kwenye simu. Hakuna kinachotumwa.",
+   "question": "Swali",
+   "placeholder": "Inagharimu kiasi gani?",
+   "ask": "Onyesha jibu",
+   "preview": "Mwonekano wa jibu",
+   "notSent": "Haijatumwa kwa mtu yeyote.",
+   "outcomes": {
+    "answered": "Imejibu",
+    "answered_checked": "Imejibu (takwimu moja iliondolewa)",
+    "unknown": "Haikujua",
+    "smalltalk": "Mazungumzo mafupi",
+    "welcome": "Karibu",
+    "handoff": "Kukabidhi kwa mtu",
+    "failed": "Haikuweza kujibu",
+    "off": "Msaidizi amezimwa",
+    "budget": "Kikomo cha matumizi",
+    "busy": "Shughuli nyingi",
+    "unsupported": "Si maandishi",
+    "opted_out": "Ameacha",
+    "limited": "Ujumbe mwingi"
+   },
+   "testTitle": "Tuma ujumbe wa majaribio",
+   "testHint": "Hutuma ujumbe mmoja halisi. WhatsApp inaruhusu tu kama namba hiyo iliiandikia boti ndani ya saa 24 zilizopita.",
+   "to": "Tuma kwa",
+   "send": "Tuma ujumbe wa majaribio",
+   "sent": "Imetumwa kwa {{to}}.",
+   "sentToast": "Ujumbe wa majaribio umetumwa."
+  },
+  "waiting": {
+   "title": "Wanaosubiri mtu",
+   "intro": "Watu waliobonyeza Ongea na mtu. Namba zimefichwa kwa sehemu. Wajibu kwenye kikasha cha Lead Intel.",
+   "count_one": "{{count}} anasubiri",
+   "count_other": "{{count}} wanasubiri",
+   "empty": "Hakuna anayesubiri",
+   "emptyHint": "Maombi ya kuzungumza na mtu yanaonekana hapa.",
+   "noSnippet": "(ujumbe uliondolewa)",
+   "markDone": "Weka imekamilika",
+   "doneToast": "Imewekwa kukamilika.",
+   "lastConversations": "Matokeo ya mazungumzo {{count}} ya mwisho (hesabu tu)",
+   "outcomes": {
+    "answered": "Imejibu",
+    "unknown": "Haikujua",
+    "opted_out": "Wameacha",
+    "failed": "Imeshindwa"
+   }
+  },
+  "dev": {
+   "title": "Mazoezi: tuma ujumbe kwa boti",
+   "intro": "Hali ya mazoezi tu. Hii hutuma ujumbe uliosainiwa kutoka kwa mtumaji wa kubuni kupitia njia halisi ya kupokea.",
+   "sender": "Namba ya mtumaji",
+   "message": "Ujumbe",
+   "needConnection": "Unganisha namba ya mazoezi kwanza.",
+   "send": "Tuma ujumbe",
+   "answered": "Boti ilijibu kwa hali {{status}}."
+  }
+ }
+}

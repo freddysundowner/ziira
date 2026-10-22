@@ -22,7 +22,7 @@ def verify(shop, *, fix: bool = False) -> list[str]:  # type: ignore[no-untyped-
     from ziira.kernel.checks import run_integrity_checks
 
     problems = []
-    for result in run_integrity_checks(shop["tenant_id"], fix=fix):
+    for result in run_integrity_checks(shop["tenant_id"], fix=fix, unit="inventory"):
         assert result.unit == "inventory" and result.check == "stock ledger"
         problems += result.problems
     return problems
@@ -84,4 +84,4 @@ def test_tenants_without_inventory_are_skipped(registry) -> None:  # type: ignor
     from ziira.kernel.checks import run_integrity_checks
 
     plain = make_tenant("Plain Verify")
-    assert run_integrity_checks(plain["tenant_id"]) == []
+    assert run_integrity_checks(plain["tenant_id"], unit="inventory") == []      # (the kernel's own files check always runs)

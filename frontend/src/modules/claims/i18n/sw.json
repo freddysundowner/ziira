@@ -34,6 +34,15 @@
     "cancelled": "Imeghairiwa",
     "written_off": "Imefutwa kama hasara"
   },
+  "widget": {
+    "title": "Madai yanayosubiri",
+    "nothing": "Hakuna dai linalosubiri jibu.",
+    "toAnswer": "ofa {{count}} za kujibu; {{withPayer}} kwa mlipaji",
+    "withPayer": "{{count}} kwa mlipaji",
+    "answerNeeded": "jibu linahitajika",
+    "payerSilent": "kwa mlipaji",
+    "open": "Fungua madai"
+  },
   "waiting": {
     "payer": "Inasubiri anayelipa",
     "us": "Inatusubiri sisi",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { changedSales, emptySale, explicitUnits, groupOf, isOffered, neededBy, planCounts, saleCurrencies, saleProblem, saleProblems, salesToForm, searchUnits, sellableUnits, toggleUnit, toSaleIn, type UnitInfo, withRequired } from "./planUnits";
+import { changedSales, emptySale, explicitUnits, groupOf, isOffered, neededBy, offerAll, planCounts, saleCurrencies, saleProblem, saleProblems, salesToForm, searchUnits, sellableUnits, stopSellingAll, toggleUnit, toSaleIn, type UnitInfo, withRequired } from "./planUnits";
 
 const u = (name: string, requires: string[] = [], kind = "module", title = name.toUpperCase()): UnitInfo => ({ name, title, description: `${name} does things`, kind, requires });
 const UNITS = [u("kernel", [], "kernel"), u("products", ["kernel"]), u("inventory", ["products"]), u("jobs", ["inventory"], "module", "Jobs"), u("pack_x", [], "plugin")];
@@ -72,5 +72,23 @@ describe("selling an unticked unit", () => {
   });
   it("offers the platform's currencies, those already priced and added ones", () => {
     expect(saleCurrencies(["KES"], { a: sale(true, { USD: "1" }) }, ["EUR"])).toEqual(["EUR", "KES", "USD"]);
+  });
+  it("stops selling everything in one go, keeping prices", () => {
+    const units = [{ name: "a", title: "A", description: "", kind: "module", requires: [] }, { name: "b", title: "B", description: "", kind: "plugin", requires: [] }, { name: "c", title: "C", description: "", kind: "plugin", requires: [] }];
+    const sales = { a: sale(true, { KES: "10" }), b: sale(true, { KES: "20" }), c: sale(false, {}) };
+    const out = stopSellingAll(sales, ["b"], units);          // b is in the plan: not counted
+    expect(out.count).toBe(1);
+    expect(out.sales.a).toEqual(sale(false, { KES: "10" }));
+    expect(out.sales.b.offered).toBe(true);
+  });
+  it("offers every unticked, unoffered unit at one price and leaves the rest", () => {
+    const units = [{ name: "a", title: "A", description: "", kind: "module", requires: [] }, { name: "b", title: "B", description: "", kind: "plugin", requires: [] }, { name: "c", title: "C", description: "", kind: "plugin", requires: [] }];
+    const sales = { a: sale(true, { KES: "10" }), b: sale(false, { KES: "5" }) };
+    const out = offerAll(sales, ["c"], units, { KES: " 99 ", USD: "" });
+    expect(out.count).toBe(1);
+    expect(out.sales.b).toEqual(sale(true, { KES: "99" }));
+    expect(out.sales.a).toEqual(sale(true, { KES: "10" }));
+    expect(out.sales.c).toBeUndefined();
+    expect(offerAll(sales, [], units, { KES: "" }).count).toBe(0);
   });
 });

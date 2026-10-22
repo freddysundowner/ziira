@@ -49,10 +49,13 @@ Each unit's seeder reads its own file. Units add their part when they are built;
 |---|---|---|
 | `products` | `data/products.toml` | `uom` and `tax_code` (optional codes to use), `[[service]]` tables: `sku`, `name`, `minutes` (usual duration, 1 to 1440). Creates `service` products without a price; if the business has no unit of measure or tax code yet nothing is added (and the report says so). A SKU the business already has is skipped. Switching the pack off can hide the untouched ones. |
 | kernel | `data/custom_fields.toml` | `[[field]]` tables: `entity_type`, `key`, `label`, `kind` (`text`, `number`, `date`, `bool`, `choice`), and optionally `choices`, `required`, `searchable`. A field for a record type whose unit is off is skipped until `ziira apply-packs` runs with it on. A key the business already has is left alone. |
-| `memberships` | `data/memberships.toml` | `[settings]` (policies, written only if the company never saved any), `[waiver]` (terms, only if none), `[[plan]]` (fee is an example, marked `is_example`; `service_sku` links the service item), `[[package]]`, `[intel."check.code"]` (limits). A code the business has is skipped. Example: `ziira/plugins/pack_fitness`. |
+| `products` (catalogue) | `data/products.toml` | `[[category]]` (`name`), `[[unit]]` (`code`, `name`; a unit the business has is left alone), `[[product]]` (`sku`, `name`, `category`, `unit` = base unit code, `batch_tracked`, `reorder_level`, `pack_units = [{unit, factor}]`, `fields = {custom field values}`): example stock products without prices (see `seed_catalogue.py`). Example: `ziira/plugins/pack_pharmacy`. |
+| `purchasing` | `data/purchasing.toml` | `[[supplier]]` templates: `code`, `name`, `payment_terms_days`. Switching the pack off puts untouched ones on hold. |
+| `intel` | `data/intel.toml` | `[check."code"]` tables of limits for checks the business has not tuned. |
+| kernel | `data/checklist.toml` | `[[step]]` tables (`id`, `title`, `hint`, `to`, optional `unit`): first steps shown on Home after the edition's own (ids are prefixed with the pack's name). |
+| `memberships` | `data/memberships.toml` | `[settings]` (policies, written only if the company never saved any), `[waiver]` (terms, only if none), `[[plan]]` (fee is an example, marked `is_example`; `service_sku` links the service item), `[[package]]`, `[intel."check.code"]` (limits). A code the business has is skipped. Example: `ziira/plugins/pack_fitness` (gym) and `pack_education` (term fee plans). |
 | `bookings` | `data/bookings.toml` | `[settings]` (applied once), `[[resource]]` templates with hours, `[[service]]` offers (linked to the Products items by `sku`, prices are examples), `[[variant]]` prices by staff level, `[[commission]]` rules, `[[step]]` first-run checklist, `[intel."code"]` check limits; see the header of `ziira/modules/bookings/services/seed_industry.py` and `docs/pack_salon.md` |
 | `jobs` *(planned)* | `data/jobs.toml` | status workflow rows (statuses and allowed moves), intake checklists |
-| `intel` *(planned)* | `data/intel.toml` | check settings (`params`) |
 | others | | A unit that wants pack data implements `kernel.industry_seeder` (below) and documents its file here. |
 
 ## Writing a seeder (for a unit)
@@ -95,7 +98,8 @@ A failure is logged and does not stop the switch-on; `ziira apply-packs` runs it
 
 ## Registration
 
-With the `services` edition the sign-up wizard asks "What kind of service business are you?"; the choices are the installed industry packs (`GET /api/v1/industries`)
+A pack recommended for the shop editions (`editions = ["retail"]`, e.g. `pack_pharmacy`) is offered after the usual four kinds in the sign-up's business step for Retail and
+Distribution. With the `services` edition the sign-up wizard asks "What kind of service business are you?"; the choices are the installed industry packs (`GET /api/v1/industries`)
 plus "Something else", and the chosen pack is switched on after the business is created (`docs/registration.md`).
 
 ## Not done yet

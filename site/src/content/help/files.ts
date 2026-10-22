@@ -1,0 +1,70 @@
+import type { HelpGuide } from "./types";
+
+export const files: HelpGuide[] = [
+  {
+    slug: "attach-a-photo-or-document", journey: "files", minutes: 3,
+    title: "Attach a Photo or Document to a Record",
+    description: "Add a photo from your phone camera, or a picture or PDF from your computer, to a job, a member, a claim, a project, an expense or a client card.",
+    h1: "Attach a photo or document",
+    who: "Anyone who can edit the record", time: "About 3 minutes",
+    keywords: ["photo", "attachment", "upload", "pdf", "receipt", "camera", "document", "picture"],
+    need: ["A record that accepts files, such as a job, a member's profile, a claim, a client card, a project or an expense."],
+    steps: [
+      { do: "Open the record and find **Photos and files**. On a job it is the **Photos** tab. On a member it is the **Profile** tab. On a claim it is the **Photos and files** tab." },
+      { do: "On a phone, click **Take photo**. On a computer, click **Add files** and choose one or more files.", note: "Ziira accepts JPEG, PNG, WebP pictures and PDF files." },
+      { do: "Choose the **Kind of photo** if the list offers kinds, and type a **Caption** saying what it shows.", result: "The file appears in the grid with a small preview." },
+      { do: "Click a photo to see it full size. Use **Previous** and **Next** to move through them, or **Download** to save a copy." },
+      { do: "If a photo shows a customer, type who agreed in **Customer agreed to be photographed**, for example `Jane, in person, today`.", note: "This box appears only on records where your business photographs customers." },
+    ],
+    problems: [
+      { p: "A file is refused", fix: "Only pictures (JPEG, PNG, WebP) and PDFs are accepted. A photo in HEIC format cannot be read, so take it again or choose a JPEG." },
+      { p: "It says the file is too big", fix: "The limit is shown in the message. Take the photo at a lower resolution." },
+      { p: "I have no signal", fix: "The upload waits and is sent again by itself. You can also click **Try again**." },
+    ],
+    tips: [],
+    next: ["who-can-see-a-photo", "delete-a-photo-or-file"],
+  },
+  {
+    slug: "who-can-see-a-photo", journey: "files", minutes: 3,
+    title: "Who Can See a Photo: Staff Only or Shareable",
+    description: "Choose whether a photo stays inside your business or may be shown to a customer or insurer on the page you send them, and see who opened a file.",
+    h1: "Choose who can see a photo",
+    who: "Anyone who can edit the record", time: "About 3 minutes",
+    keywords: ["shareable", "staff only", "privacy", "customer link", "insurer link", "access", "location removed"],
+    need: ["A photo already attached."],
+    steps: [
+      { do: "Open the record and click the photo.", result: "The viewer shows **Added by** with the person and date, and the settings under the picture." },
+      { do: "Under **Who can be shown this**, switch **Can be shared** on or off.", result: "**Staff only** means only people in your business see it. **Can be shared** shows it on the customer or insurer page when you send one." },
+      { do: "To stop a photo being shown again, switch **Can be shared** off. Links already given for it stop working at once." },
+    ],
+    problems: [
+      { p: "The customer does not see my photo", fix: "Only photos marked **Can be shared** appear on their page. Staff only photos never do." },
+      { p: "Can people see where a photo was taken", fix: "No. Ziira removes the location from pictures, and the viewer says **location removed**." },
+      { p: "I want to know who opened a file", fix: "Opening a full-size picture or a PDF is recorded. The owner can read that list." },
+    ],
+    tips: [],
+    next: ["delete-a-photo-or-file", "photos-on-a-job"],
+  },
+  {
+    slug: "delete-a-photo-or-file", journey: "files", minutes: 2,
+    title: "Delete a Photo or File and Give a Reason",
+    description: "Remove a photo or document you added by mistake. Ziira asks why and keeps a record of who removed it and when, but the file itself is gone for good.",
+    h1: "Delete a photo or file",
+    who: "Anyone who can edit the record", time: "About 2 minutes",
+    keywords: ["delete photo", "remove file", "reason", "mistake", "privacy"],
+    need: ["A photo or file attached to a record."],
+    steps: [
+      { do: "Open the record and click the photo or file." },
+      { do: "Click **Delete**.", result: "**Delete this file?** The file is removed for good and its links stop working. The removal and your reason are kept on record." },
+      { do: "Type why in **Why is it removed?**, for example `Wrong job`. The **Delete** button stays off until you type a few letters." },
+      { do: "Click **Delete** to confirm.", result: "**File deleted.**" },
+    ],
+    problems: [
+      { p: "I deleted the wrong photo", fix: "It cannot be brought back. Take or add the photo again." },
+      { p: "I cannot see Delete", fix: "Your role may only view files on this record. Ask a manager." },
+      { p: "I want to remove everything about a person", fix: "Photos of a person are removed when you handle a privacy request. Ask the owner." },
+    ],
+    tips: [],
+    next: ["attach-a-photo-or-document", "who-can-see-a-photo"],
+  },
+];

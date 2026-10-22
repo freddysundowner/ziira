@@ -132,6 +132,7 @@ class SaleLine(TenantColumns, Base):
     tax_amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     line_total: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     cost_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    reference: Mapped[str | None]
 
 
 class SalePayment(TenantColumns, Base):

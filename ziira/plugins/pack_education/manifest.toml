@@ -1,0 +1,15 @@
+[unit]
+name = "pack_education"
+title = "Tutor, school or training centre"
+description = "Classes with a roster and capacity, term fee plans with instalments, learner profile fields, reminders and check limits for a tutor, school or training centre."
+category = "industry"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+publisher = "Ziira"
+homepage = ""
+requires = ["products", "memberships", "bookings"]
+optional = ["intel", "crm", "pos"]
+
+[extends]
+implements = []

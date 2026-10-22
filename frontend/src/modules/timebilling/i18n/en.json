@@ -684,6 +684,12 @@
     "workDays": "Working days"
   },
   "widget": {
+    "deadlinesTitle": "Deadlines",
+    "noDeadlines": "No work is due this week.",
+    "deadlinesHint": "Due in the next 7 days",
+    "deadlinesLate": "{{count}} already late",
+    "late": "late",
+    "openWork": "Open the work list",
     "title": "Time and billing",
     "unbilled": "Work not yet invoiced",
     "waiting": "{{count}} waiting",

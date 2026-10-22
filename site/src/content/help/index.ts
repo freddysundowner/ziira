@@ -9,5 +9,11 @@ import { people } from "./people";
 import { intelligence } from "./intelligence";
 import { settings } from "./settings";
 import { support } from "./support";
+import { firstWeek } from "./first-week";
+import { bookings } from "./bookings";
+import { jobs } from "./jobs";
+import { timeProjects } from "./time-projects";
+import { memberships } from "./memberships";
+import { files } from "./files";
 
-export const allGuides: HelpGuide[] = [...getStarted, ...sell, ...stock, ...buy, ...customers, ...money, ...people, ...intelligence, ...settings, ...support];
+export const allGuides: HelpGuide[] = [...getStarted, ...firstWeek, ...sell, ...stock, ...buy, ...customers, ...money, ...people, ...bookings, ...jobs, ...timeProjects, ...memberships, ...files, ...intelligence, ...settings, ...support];

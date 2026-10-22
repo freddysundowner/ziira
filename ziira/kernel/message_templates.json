@@ -313,6 +313,39 @@
       }
     },
     {
+      "code": "school_fees_due",
+      "category": "utility",
+      "variables": ["customer", "learner", "amount", "business", "date"],
+      "examples": ["Mrs Wanjiru", "Amina", "KES 12,000.00", "Bright Tutors", "5 Jan 2027"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "School fees due", "body": "Dear {customer}, the fees for {learner} at {business} ({amount}) are due on {date}. Please pay on or before that date, or speak to us if you need to agree another date. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ada ya shule inakaribia", "body": "Mpendwa {customer}, ada ya {learner} katika {business} ({amount}) inapaswa kulipwa tarehe {date}. Tafadhali lipa kabla ya tarehe hiyo, au zungumza nasi ukihitaji kukubaliana tarehe nyingine. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "school_absent",
+      "category": "utility",
+      "variables": ["customer", "learner", "service", "business", "when"],
+      "examples": ["Mrs Wanjiru", "Amina", "Mathematics class", "Bright Tutors", "20 Oct 2026 16:00"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Absent from class", "body": "Dear {customer}, {learner} was marked absent from {service} at {business} on {when}. Please let us know if something is wrong; we can arrange a make-up session. Reply STOP to stop these messages."},
+        "sw": {"subject": "Hakuhudhuria darasa", "body": "Mpendwa {customer}, {learner} alikosa {service} katika {business} tarehe {when}. Tafadhali tujulishe kama kuna tatizo; tunaweza kupanga kipindi cha kufidia. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "school_term_end",
+      "category": "utility",
+      "variables": ["customer", "learner", "business", "date"],
+      "examples": ["Mrs Wanjiru", "Amina", "Bright Tutors", "4 Dec 2026"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "End of term", "body": "Dear {customer}, the term for {learner} at {business} ends on {date}. Please check that all fees are paid, and tell us if {learner} will continue next term. Reply STOP to stop these messages."},
+        "sw": {"subject": "Mwisho wa muhula", "body": "Mpendwa {customer}, muhula wa {learner} katika {business} unaisha tarehe {date}. Tafadhali hakikisha ada zote zimelipwa, na utujulishe kama {learner} ataendelea muhula ujao. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
       "code": "appointment_recall",
       "category": "utility",
       "variables": ["customer", "service", "business"],
@@ -431,6 +464,28 @@
       "text": {
         "en": {"subject": "How was your trial?", "body": "Hello {customer}, thank you for trying {business}. If you would like to join, ask at the front desk and we will set you up today. Reply STOP to stop these messages."},
         "sw": {"subject": "Majaribio yalikuwaje?", "body": "Habari {customer}, asante kwa kujaribu {business}. Ukipenda kujiunga, uliza mapokezini na tutakusajili leo. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "refill_reminder",
+      "category": "utility",
+      "variables": ["customer", "business"],
+      "examples": ["Amina", "Green Pharmacy"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Time to restock?", "body": "Hello {customer}, this is a reminder from {business}: your usual purchase may be due for a refill. Call or visit us when you need it. You asked for these reminders. Reply STOP to stop these messages."},
+        "sw": {"subject": "Ni wakati wa kuongeza?", "body": "Habari {customer}, huu ni ukumbusho kutoka {business}: ununuzi wako wa kawaida unaweza kuwa unahitaji kuongezwa. Tupigie au tembelea unapohitaji. Uliomba ukumbusho huu. Jibu ACHA kuacha ujumbe huu."}
+      }
+    },
+    {
+      "code": "order_ready",
+      "category": "utility",
+      "variables": ["customer", "business"],
+      "examples": ["Amina", "Green Pharmacy"],
+      "buttons": {},
+      "text": {
+        "en": {"subject": "Your order is ready", "body": "Hello {customer}, your order is ready for collection at {business}. Reply STOP to stop these messages."},
+        "sw": {"subject": "Oda yako iko tayari", "body": "Habari {customer}, oda yako iko tayari kuchukuliwa katika {business}. Jibu ACHA kuacha ujumbe huu."}
       }
     }
   ]

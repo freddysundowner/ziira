@@ -11,8 +11,8 @@ const keys = allGuides.flatMap((g) => g.steps.flatMap((s) => (s.shot ? [{ g: g.s
 const specByKey = new Map<string, { marks: unknown[] }>(shots.map((s: { key: string; marks: unknown[] }) => [s.key, s]));
 
 describe("help guides", () => {
-  it("has the ten journeys, each with guides", () => {
-    expect(journeys.map((j) => j.id)).toEqual(["get-started", "sell", "stock", "buy", "customers", "money", "people", "intelligence", "settings", "support"]);
+  it("has the sixteen journeys, each with guides", () => {
+    expect(journeys.map((j) => j.id)).toEqual(["get-started", "first-week", "sell", "stock", "buy", "customers", "money", "people", "bookings", "jobs", "time-projects", "memberships", "files", "intelligence", "settings", "support"]);
     for (const j of journeys) expect(allGuides.filter((g) => g.journey === j.id).length, j.id).toBeGreaterThan(0);
   });
   it("has unique slugs, titles and descriptions of the right length", () => {

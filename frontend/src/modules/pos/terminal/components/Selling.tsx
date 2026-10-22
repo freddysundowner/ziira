@@ -65,7 +65,17 @@ export function Selling({ till, device, branch, cacheState }: {
   const editingLine = lines.find((l) => l.key === editing);
 
   const setLines = useCallback((change: (lines: CartLine[]) => CartLine[]) => edit((s) => ({ ...s, lines: change(s.lines) })), [edit]);
-  const add = (item: CatalogItem) => setLines((l) => addItem(l, item));
+  // A product that asks for a reference opens its line straight away, so the note is typed before moving on.
+  const askFor = useRef<string | null>(null);
+  const add = (item: CatalogItem) => {
+    setLines((l) => addItem(l, item));
+    if ((item.reference_prompt ?? "off") !== "off") askFor.current = item.product_id;
+  };
+  useEffect(() => {
+    if (!askFor.current) return;
+    const line = lines.find((l) => l.productId === askFor.current && (l.refMode ?? "off") !== "off" && !(l.reference ?? "").trim());
+    if (line) { setEditing(line.key); askFor.current = null; }
+  }, [lines]);
 
   // Keep the sale on this device to be sent later. The same id as an online try would have used, so a sale whose
   // answer was lost on the way is still recorded once.

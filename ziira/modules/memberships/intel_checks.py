@@ -293,6 +293,55 @@ class MembershipPaymentLate(IntelCheck):
         return found
 
 
+# --------------------------------------------------------------------------- a term or contract ending with fees unpaid
+@provides(INTEL_CHECK)
+class TermEndingUnpaid(IntelCheck):
+    """A fixed term (a school term, a course, a contract) that ends soon while fees on it are still unpaid."""
+
+    code = "memberships.term_ending_unpaid"
+
+    value_kind = "money"
+    title = "Terms ending with unpaid fees"
+    area = "customers"
+    description = ("Memberships and recurring invoices with an end date in the next few days that still have an "
+                   "unpaid invoice, per branch.")
+    default_severity = "medium"
+    params: dict[str, Any] = {"look_ahead_days": 14, "min_amount": "0.00"}
+    auto_resolves = True
+
+    def run(self, session: Session, ctx: CheckContext) -> list[Candidate]:
+        currency = currency_of(session, ctx.company_id)
+        horizon = ctx.today + timedelta(days=int(ctx.number("look_ahead_days")))
+        rows = session.execute(text(
+            "select r.branch_id, count(distinct r.customer_id) as payers, sum(r.outstanding) as owed, "
+            "  min(e.ends_on) as first_end from memberships.invoice_run r join ("
+            "    select 'member' as owner_type, id, end_date as ends_on from memberships.member "
+            "      where company_id = :c and status = 'active' and end_date between :t and :h "
+            "    union all select 'schedule', id, end_date from memberships.schedule "
+            "      where company_id = :c and status in ('active', 'paused') and end_date between :t and :h"
+            "  ) e on e.owner_type = r.owner_type and e.id = r.owner_id "
+            "where r.company_id = :c and r.status = 'issued' and r.settle_state = 'open' and r.outstanding > 0 "
+            "and r.invoice_id is not null group by r.branch_id"),
+            {"c": str(ctx.company_id), "t": ctx.today, "h": horizon}).all()
+        found: list[Candidate] = []
+        for r in rows:
+            owed = Decimal(r.owed).quantize(Decimal("0.01"))
+            if owed < ctx.number("min_amount"):
+                continue
+            days = (r.first_end - ctx.today).days
+            found.append(Candidate(
+                fingerprint=fingerprint(self.code, r.branch_id), severity="medium",
+                summary=(f"{r.payers} payers still owe {money(currency, owed)} on terms that end within "
+                         f"{int(ctx.number('look_ahead_days'))} days (the first in {days} days)."),
+                recommended_action="Collect the fees before the term ends: once it is over, families are harder to "
+                                   "reach and the money is usually lost.",
+                company_id=ctx.company_id, branch_id=r.branch_id, entity_type="memberships.invoice_run",
+                period_start=ctx.today, period_end=r.first_end, value=Decimal(days),
+                expected_value=ctx.number("look_ahead_days"), amount=owed,
+                figures={"payers": str(r.payers), "owed": str(owed), "days_left": str(days)}))
+        return found
+
+
 # --------------------------------------------------------------------------- staff who let refused people in
 @provides(INTEL_CHECK)
 class EntryOverrides(IntelCheck):

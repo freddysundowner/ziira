@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  addItem, cartProblem, cartTotal, fingerprint, EMPTY_CART, isPriceOverride, newLeg, parseCart, parseHeld, patchLine, payProblem, paySummary,
+  addItem, cartProblem, cartTotal, fingerprint, EMPTY_CART, isPriceOverride, lineProblem, newLeg, parseCart, parseHeld, patchLine, payProblem, paySummary,
   stepQuantity, toSaleLines, toSalePayments, type CartState, type CatalogItem,
 } from "./cart";
 
 const item = (over: Partial<CatalogItem> = {}): CatalogItem => ({
-  product_id: "p1", sku: "NAIL", name: "Nails 2in", product_type: "stock", vat_rate: "16", is_batch_tracked: false, uom_id: "u", price: "120.50", stock: "10", barcodes: [], ...over,
+  product_id: "p1", sku: "NAIL", name: "Nails 2in", product_type: "stock", vat_rate: "16", is_batch_tracked: false, uom_id: "u", price: "120.50", stock: "10", barcodes: [], reference_prompt: "off", ...over,
 });
 
 describe("cart lines", () => {
@@ -107,5 +107,19 @@ describe("saved carts", () => {
     const b: CartState = { ...a, lines: addItem(a.lines, item()) };
     expect(fingerprint(a)).toBe(fingerprint({ ...a }));
     expect(fingerprint(a)).not.toBe(fingerprint(b));
+  });
+
+  it("asks for a reference only where the business set it, and sends it with the line", () => {
+    expect(lineProblem(addItem([], item())[0])).toBeNull();
+    const ask = addItem([], item({ reference_prompt: "ask" }))[0];
+    expect(ask.refMode).toBe("ask");
+    expect(lineProblem(ask)).toBeNull();
+    expect(toSaleLines([ask])[0]).not.toHaveProperty("reference");
+    const need = addItem([], item({ reference_prompt: "require" }))[0];
+    expect(lineProblem(need)).toBe("reference");
+    const typed = { ...need, reference: " RX-1042 " };
+    expect(lineProblem(typed)).toBeNull();
+    expect(toSaleLines([typed])[0]).toMatchObject({ reference: "RX-1042" });
+    expect(parseCart(JSON.parse(JSON.stringify({ ...EMPTY_CART, lines: [typed] }))).lines[0]).toMatchObject({ refMode: "require", reference: " RX-1042 " });
   });
 });

@@ -4,7 +4,7 @@ import { findByCode, searchLocal, withReserved } from "./catalogSearch";
 import type { CatalogItem } from "./types";
 
 const item = (over: Partial<CatalogItem>): CatalogItem => ({
-  product_id: "p", sku: "X", name: "X", product_type: "stock", vat_rate: "16", is_batch_tracked: false, uom_id: "u", price: "10.00", stock: "5", barcodes: [], ...over,
+  product_id: "p", sku: "X", name: "X", product_type: "stock", vat_rate: "16", is_batch_tracked: false, uom_id: "u", price: "10.00", stock: "5", barcodes: [], reference_prompt: "off", ...over,
 });
 const items = [
   item({ product_id: "1", sku: "CEM", name: "Cement 50kg", barcodes: ["6001234567890", "CEM-ALT"] }),

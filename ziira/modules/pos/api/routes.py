@@ -220,7 +220,8 @@ def _sale_out(view: sales.SaleView) -> sc.SaleOut:
 
 
 def _line(x: sc.SaleLineIn) -> sales.LineIn:
-    return sales.LineIn(x.product_id, x.quantity, x.unit_price, x.discount, x.reason_code_id, x.batch_id)
+    return sales.LineIn(x.product_id, x.quantity, x.unit_price, x.discount, x.reason_code_id, x.batch_id,
+                         x.reference)
 
 
 def _payment(x: sc.SalePaymentIn) -> sales.PaymentIn:

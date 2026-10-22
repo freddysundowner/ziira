@@ -109,9 +109,11 @@ def calls_log(client, shop) -> list[dict[str, Any]]:  # type: ignore[no-untyped-
 
 
 def finding_id(shop, summary: str) -> UUID:  # type: ignore[no-untyped-def]
+    from ziira.sdk import humanise_dates
+
     with system(shop) as s:
         return s.execute(text("select id from intel.finding where summary = :s order by first_seen_at desc limit 1"),
-                         {"s": summary}).scalar_one()
+                         {"s": humanise_dates(summary)}).scalar_one()      # the engine writes dates in words
 
 
 def detect(shop, *plans: Any) -> None:  # type: ignore[no-untyped-def]

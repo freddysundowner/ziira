@@ -72,7 +72,7 @@ function PayAccountDrawer({ companyId, method, onClose, onCreated }: { companyId
   const [name, setName] = useState("");
   const [masked, setMasked] = useState("");
   const create = useMutation({
-    mutationFn: () => unwrap(api.POST("/api/v1/payments/accounts", { body: { company_id: companyId, kind, provider: "daraja", environment: "sandbox", name: name.trim(), bank_account_masked: kind === "bank" && masked.trim() ? masked.trim() : null } })),
+    mutationFn: () => unwrap(api.POST("/api/v1/payments/accounts", { body: { company_id: companyId, kind, provider: null, environment: "sandbox", name: name.trim(), bank_account_masked: kind === "bank" && masked.trim() ? masked.trim() : null } })),
     onSuccess: async (a) => {
       await qc.invalidateQueries({ queryKey: ["purchasing", "pay-accounts"] });
       toast(t("payAccountAdded", { name: a.name }), "ok");

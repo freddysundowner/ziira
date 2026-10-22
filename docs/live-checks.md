@@ -125,6 +125,20 @@ final text after the `tool_result`. **On a failure** read the provider's own wor
 id (default `claude-sonnet-5-5`; set `ZIIRA_LIVE_AI_MODEL`), a 400 about a field means the request shape needs a change in
 `build_request`. Then see `docs/ai.md` section 11 for what else is unverified.
 
+## 4b. The platform's WhatsApp bot (Lead Intel)
+
+`ziira/plugins/leadsintel_platform/provider.py` was written from the public page https://leadsintel.net/developers.html and has not been run against the real service (what is not confirmed by the page is marked `# UNVERIFIED` and listed in `docs/ai.md` section 15).
+The check is read only: it tests your platform key with a harmless read, optionally looks a number up, and proves the signature code accepts a delivery signed the documented way and refuses a tampered one. It never connects, changes or sends anything, and the key is read from the environment only.
+
+```bash
+.venv/bin/python scripts/live_check.py chat --dry-run                 # prints the requests (key hidden); no key needed
+export ZIIRA_LIVE_LEADSINTEL_KEY=...                                  # your Lead Intel platform key
+.venv/bin/python scripts/live_check.py chat [--lookup +2547XXXXXXXX]
+```
+
+**A pass**: step 1 shows the key accepted (a 404 for the request that cannot exist is the expected answer); the lookup (if given) says what Lead Intel knows; step 3 reads one signed message and refuses the tampered one. **On a failure**: a 401 is the key; anything else, read Lead Intel's own words.
+The rest (connecting a number, receiving and answering a message, the 24-hour window) is done by hand in Super Admin > WhatsApp bot following "Going live" in `docs/ai.md` section 15.
+
 ## 5. Go-live gate
 
 Tick these in `docs/go-live-checklist.md`, with the date and who did it, only when the real result is in front of you:

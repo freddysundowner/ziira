@@ -16,8 +16,21 @@ export const shared = (): Shared => JSON.parse(readFileSync(".state/shared.json"
 /** Console errors and server failures are test failures: every journey also checks "nothing broke quietly". */
 const IGNORED_CONSOLE = [/Failed to load resource/];   // 4xx answers are expected in places (wrong password); 5xx are caught below
 
+/** The app redraws its page once when the company's clock becomes known (`<main key={timeZone}>` in shell/Layout.tsx), which
+ *  throws away a drawer or a half-typed form opened in the first moments. A person cannot click that fast; the robot can, so
+ *  every navigation waits until the first requests have settled. */
+function settleAfterGoto(page: Page) {
+  const goto = page.goto.bind(page);
+  page.goto = (async (url: string, options?: Parameters<Page["goto"]>[1]) => {
+    const response = await goto(url, options);
+    await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => undefined);      // a screen that polls never goes quiet
+    return response;
+  }) as Page["goto"];
+}
+
 /** Watch a page for the things every journey must not see. Returns the live list (and the refused 4xx answers, for the failure report). */
 export function guard(page: Page, problems: string[], refused: string[]) {
+  settleAfterGoto(page);
   page.on("pageerror", (e) => problems.push(`uncaught: ${e.message}`));
   page.on("console", (m) => {
     if (m.type() === "error" && !IGNORED_CONSOLE.some((r) => r.test(m.text()))) problems.push(`console.error: ${m.text()} @ ${page.url()}`);
@@ -83,7 +96,9 @@ export const signedInApi = (account: Account) => new Api(account).signIn();
  *  test unless the rule is on the known list (rules still to fix). */
 const KNOWN_A11Y: string[] = [];
 export async function checkAccessibility(page: Page, label: string) {
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => undefined);      // a page that polls (or whose print frame is still open) never goes quiet: scan anyway
+  // a drawer or dialog still fading in is semi-transparent and fails the contrast rule for a moment: let finite animations finish first
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((a) => a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => undefined)))).catch(() => undefined);
   const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   const bad = result.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   mkdirSync("test-results", { recursive: true });

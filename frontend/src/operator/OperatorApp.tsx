@@ -39,6 +39,7 @@ const HealthPage = lazy(() => import("./pages/HealthPage"));
 const OperatorsPage = lazy(() => import("./pages/OperatorsPage"));
 const WebsitePage = lazy(() => import("./pages/WebsitePage"));
 const EmailPage = lazy(() => import("./pages/EmailPage"));
+const ChatBotPage = lazy(() => import("./pages/ChatBotPage"));
 const PlatformSettingsPage = lazy(() => import("./pages/PlatformSettingsPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const SetupPage = lazy(() => import("./pages/SetupPage"));
@@ -109,6 +110,7 @@ function Console() {
           <Route path="operators" element={<OperatorsPage />} />
           <Route path="website" element={<WebsitePage />} />
           <Route path="email" element={<EmailPage />} />
+          <Route path="chat-bot" element={<ChatBotPage />} />
           <Route path="settings" element={<PlatformSettingsPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="*" element={<ErrorState title="404" message="This page is not in the console." />} />

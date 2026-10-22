@@ -102,6 +102,12 @@ describe("step 2 with the Services edition: what kind of service business", () =
     show("services", []);
     expect(screen.getByRole("radio", { name: "Wholesale" })).toBeTruthy();
   });
+  it("adds the packs recommended for a shop edition (a pharmacy) to the usual choices", () => {
+    show("retail", [{ id: "pack_pharmacy", title: "Pharmacy or chemist", summary: "" }]);
+    expect(screen.getByRole("radio", { name: "Wholesale" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("radio", { name: "Pharmacy or chemist" }));
+    expect(screen.getByTestId("kind").textContent).toBe("pack_pharmacy");
+  });
 });
 
 describe("step 3: your account", () => {

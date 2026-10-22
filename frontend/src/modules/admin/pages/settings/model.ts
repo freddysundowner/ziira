@@ -56,6 +56,7 @@ export const GROUPS: { id: string; fields: SettingField[] }[] = [
     { key: "phone_country_code", kind: "text" },
     { key: "receipt_footer", kind: "text" },
     { key: "invoice_footer", kind: "text" },
+    { key: "sale_reference_prompt", kind: "choice", choices: ["off", "ask", "require"] },
   ] },
 ];
 

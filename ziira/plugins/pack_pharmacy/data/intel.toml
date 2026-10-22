@@ -1,0 +1,30 @@
+# Limits that suit a pharmacy. A check the business has already tuned is left exactly as it is.
+
+# Stock about to expire: warn three months ahead (a returns window with the supplier needs time), urgent in the last month.
+[check."inventory.batch_expiring"]
+days_ahead = 90
+urgent_days = 30
+
+# Expired stock still on the books.
+[check."inventory.batch_expired"]
+days_back = 365
+
+# Slow movers: nothing out for a quarter.
+[check."inventory.slow_stock"]
+days = 90
+min_value = "1000"
+
+# Supplier price changes: what you pay for the same product went up.
+[check."purchasing.supplier_price_rise"]
+days = 90
+rise_percent = "5.0"
+
+[check."purchasing.margin_squeeze"]
+days = 60
+cost_rise_percent = "5.0"
+min_margin_percent = "15.0"
+
+# Items that need a reference note sold without one.
+[check."pos.reference_missing"]
+days = 7
+high_after = 3

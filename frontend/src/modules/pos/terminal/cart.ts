@@ -23,6 +23,10 @@ export interface CartLine {
   stock: string;
   /** The tax rate (percent) inside the price: a receipt printed without a connection needs it. */
   vatRate: string;
+  /** Whether the till asks for a reference note for this product (set by the business; absent on old carts: off). */
+  refMode?: "off" | "ask" | "require";
+  /** The short reference note typed at the till (a slip number); never medical details. */
+  reference?: string;
 }
 
 export interface PayLeg {
@@ -90,12 +94,13 @@ export function isPriceOverride(l: CartLine): boolean {
 }
 export const needsReason = (l: CartLine): boolean => isPriceOverride(l) || num(l.discount) > 0;
 
-export type LineProblem = "price" | "quantity" | "reason" | "discount";
+export type LineProblem = "price" | "quantity" | "reason" | "discount" | "reference";
 export function lineProblem(l: CartLine): LineProblem | null {
   if (num(l.quantity) <= 0) return "quantity";
   if (l.price.trim() === "") return "price";
   if (num(l.discount) > lineGross(l)) return "discount";
   if (needsReason(l) && !l.reasonId) return "reason";
+  if (l.refMode === "require" && !(l.reference ?? "").trim()) return "reference";
   return null;
 }
 export const cartProblem = (lines: CartLine[]): LineProblem | null => lines.map(lineProblem).find((p) => p !== null) ?? null;
@@ -105,6 +110,7 @@ export function lineFromItem(item: CatalogItem): CartLine {
   return {
     key: crypto.randomUUID(), productId: item.product_id, sku: item.sku, name: item.name, listPrice: price, price, quantity: "1",
     discount: "0", reasonId: "", stock: item.stock === null || item.stock === undefined ? "" : String(item.stock), vatRate: String(item.vat_rate),
+    refMode: item.reference_prompt ?? "off", reference: "",
   };
 }
 
@@ -135,6 +141,7 @@ export function toSaleLines(lines: CartLine[]): Schemas["SaleLineIn"][] {
     ...(isPriceOverride(l) ? { unit_price: l.price } : {}),
     discount: l.discount || "0",
     ...(needsReason(l) && l.reasonId ? { reason_code_id: l.reasonId } : {}),
+    ...((l.reference ?? "").trim() ? { reference: (l.reference ?? "").trim() } : {}),
   }));
 }
 
@@ -205,6 +212,7 @@ function parseLine(v: unknown): CartLine | null {
     key: str(v.key) || crypto.randomUUID(), productId: str(v.productId), sku: str(v.sku), name: str(v.name), listPrice: str(v.listPrice),
     price: str(v.price), quantity: str(v.quantity) || "1", discount: str(v.discount) || "0", reasonId: str(v.reasonId), stock: str(v.stock),
     vatRate: str(v.vatRate) || "0",
+    refMode: str(v.refMode) === "ask" || str(v.refMode) === "require" ? (str(v.refMode) as "ask" | "require") : "off", reference: str(v.reference),
   };
 }
 function parseLeg(v: unknown): PayLeg | null {

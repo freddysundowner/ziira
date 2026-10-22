@@ -149,7 +149,30 @@
   "noMatchHint": "Change or clear the filters."
  },
  "subscriber": {
-  "addons": {"title": "Add-ons", "hint": "Modules and plugins this business bought (one payment each) or was given, on top of its plan. They stay when the plan changes.", "unit": "Add-on", "how": "Paid", "when": "Since", "none": "No add-ons bought or given yet.", "give": "Give an add-on", "giveTitle": "Give an add-on", "giveMessage": "The business gets it free of charge and keeps it through plan changes. Say why: it is written to the audit trail.", "choose": "Choose a module or plugin", "given": "Given free", "given_done": "The add-on was given.", "revoke": "Take back", "revokeTitle": "Take back {{name}}", "revokeMessage": "The business loses access to it and it is switched off; its data is kept. Nothing is refunded here: reverse the payment on the invoice if one is due.", "revoked": "The add-on was taken back.", "statuses": {"active": "Active", "pending": "Waiting for payment", "revoked": "Taken back", "void": "Cancelled"}},
+  "addons": {
+   "title": "Add-ons",
+   "hint": "Modules and plugins this business bought (one payment each) or was given, on top of its plan. They stay when the plan changes.",
+   "unit": "Add-on",
+   "how": "Paid",
+   "when": "Since",
+   "none": "No add-ons bought or given yet.",
+   "give": "Give an add-on",
+   "giveTitle": "Give an add-on",
+   "giveMessage": "The business gets it free of charge and keeps it through plan changes. Say why: it is written to the audit trail.",
+   "choose": "Choose a module or plugin",
+   "given": "Given free",
+   "given_done": "The add-on was given.",
+   "revoke": "Take back",
+   "revokeTitle": "Take back {{name}}",
+   "revokeMessage": "The business loses access to it and it is switched off; its data is kept. Nothing is refunded here: reverse the payment on the invoice if one is due.",
+   "revoked": "The add-on was taken back.",
+   "statuses": {
+    "active": "Active",
+    "pending": "Waiting for payment",
+    "revoked": "Taken back",
+    "void": "Cancelled"
+   }
+  },
   "back": "All subscribers",
   "loadFailed": "This subscriber could not be loaded",
   "moreActions": "Actions",
@@ -424,6 +447,14 @@
    "rowIncluded": "Included",
    "neededBy": "Included, needed by {{names}}",
    "soldFor": "Sold separately for {{price}} once",
+   "bulk": {
+    "stop": "Stop selling all add-ons",
+    "offer": "Offer all unticked add-ons for sale at one price",
+    "stopConfirm": "Stop selling {{count}}",
+    "stopBody": "{{count}} add-ons will no longer be offered for sale. Their prices are kept. Nothing is saved until you save the plan.",
+    "offerConfirm": "Offer {{count}} for sale",
+    "offerBody": "{{count}} add-ons that are not in this plan and not yet for sale will be offered at the price you type for each currency. Nothing is saved until you save the plan."
+   },
    "notForSale": "Not for sale",
    "change": "Change",
    "offer": "Offer for sale",
@@ -1129,7 +1160,14 @@
   }
  },
  "psettings": {
-  "plans": { "title": "Plans and add-ons", "free": "All add-ons are free for everyone", "freeOn": "On: every business can switch on any add-on, whatever its plan lists. Plans still set the user, branch and company limits and the price.", "freeOff": "Off: a business can only use the add-ons its plan includes; other add-ons show not in your plan." },
+  "plans": {
+   "title": "Plans and add-ons",
+   "free": "All add-ons are free for everyone",
+   "freeOn": "On: every business can switch on any add-on, whatever its plan lists. Plans still set the user, branch and company limits and the price.",
+   "freeOff": "Off: a business can only use the add-ons its plan includes; other add-ons show not in your plan.",
+   "showAddons": "Show add-ons on the pricing page",
+   "showAddonsHint": "Off: the pricing page lists plans and their users and branches add-ons only. On: single add-ons sold on their own are listed too."
+  },
   "title": "Platform settings",
   "intro": "How the platform behaves for visitors: who may register, the defaults for new businesses, and the public addresses and links.",
   "loadFailed": "Could not load the settings",
@@ -1154,16 +1192,21 @@
   },
   "public": {
    "title": "Public addresses and links",
-   "webUrl": "Public web address",
-   "webUrlHint": "Used in the links in emails",
-   "apiUrl": "Public API address",
-   "apiUrlHint": "Used for payment and other callbacks",
+   "webUrl": "Business app address",
+   "webUrlHint": "Where your customers sign in, e.g. app.example.com. Used in links in emails.",
+   "apiUrl": "API address",
+   "apiUrlHint": "Usually the same as the business app address.",
    "terms": "Terms link",
    "privacy": "Privacy link",
    "help": "Help link",
-   "site": "Website address",
+   "site": "Marketing website address",
    "support": "Support email",
-   "hint": "Shown in the sign-up wizard; an empty value falls back to the environment."
+   "hint": "Shown in the sign-up wizard; an empty value falls back to the environment.",
+   "siteHint": "Where your public website lives, e.g. example.com. Lets the website chat reach your API.",
+   "addresses": "Addresses",
+   "links": "Links and contact",
+   "sameWarn": "The business app address and the marketing website address are the same. That is almost always a mistake: the website and the app live at different addresses.",
+   "siteEmptyWarn": "The website chat and some links need it."
   }
  }
 }

@@ -283,3 +283,13 @@ def test_a_members_details_are_found_exported_and_erased(client, shop) -> None: 
     assert p["emergency_name"] is None and p["card_number"] is None
     assert client.get(f"{M}/customers/{cust['id']}/measurements", headers=shop["rep"]).json() == []
     assert p["number"]                                                                # the member number stays
+
+
+@pytest.mark.parametrize("name", ["start", "end"])
+def test_the_owner_report_refuses_extreme_dates(client, shop, name) -> None:  # type: ignore[no-untyped-def]
+    co = str(shop["company_id"])
+    for day in ("9999-12-31", "0001-01-01"):
+        r = client.get(f"{M}/reports/overview", headers=shop["owner"], params={"company_id": co, name: day})
+        assert r.status_code == 422, (name, day, r.status_code)
+    ok = client.get(f"{M}/reports/overview", headers=shop["owner"], params={"company_id": co, name: "2026-06-01"})
+    assert ok.status_code == 200

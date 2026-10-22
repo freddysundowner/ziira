@@ -1,4 +1,11 @@
 {
+  "bankToMatch": {
+    "title": "Bank to match",
+    "nothing": "Everything the bank reported is matched.",
+    "hint": "Reported, no payment matched yet",
+    "suggested": "{{count}} suggested matches to confirm",
+    "open": "Open matching"
+  },
   "menu": "Payments",
   "requests": "Payment requests",
   "reconciliation": "Reconciliation",

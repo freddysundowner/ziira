@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { Badge, Button, Card, Checkbox, ErrorState, type Edition, Input, money, Select, Skeleton, useTranslation } from "@/sdk";
+import { Badge, Button, Card, Checkbox, ErrorState, type Edition, Input, Modal, money, NumberInput, Select, Skeleton, useTranslation } from "@/sdk";
 
-import { groupOf, isOffered, neededBy, planCounts, searchUnits, type UnitGroup, type UnitInfo, type UnitSaleForm, withRequired } from "../../helpers/planUnits";
+import { groupOf, isOffered, neededBy, offerAll, offeredUnits, planCounts, searchUnits, stopSellingAll, unofferedUnits, type UnitGroup, type UnitInfo, type UnitSaleForm, withRequired } from "../../helpers/planUnits";
 import { SaleEditor } from "./SaleEditor";
 
 interface Props {
@@ -19,6 +19,7 @@ interface Props {
   disabled: boolean;
   onToggle: (name: string) => void;
   onSale: (name: string, next: UnitSaleForm) => void;
+  onBulkSales: (next: Record<string, UnitSaleForm>) => void;
   onCurrency: (code: string) => void;
   onEdition: (edition: Edition) => void;
 }
@@ -46,6 +47,7 @@ export function UnitsCard(p: Props) {
             <div className="w-full sm:w-72"><Input aria-label={t("plans.editor.searchUnits")} placeholder={t("plans.editor.searchUnits")} value={query} onChange={(e) => setQuery(e.target.value)} /></div>
             <p className="text-sm font-medium" role="status" aria-live="polite">{t("plans.editor.counts", { included: counts.included, forSale: counts.forSale })}</p>
           </div>
+          {!p.disabled && <BulkSales units={all} effective={effective} sales={p.sales} currencies={p.currencies} onApply={p.onBulkSales} />}
           {shown.length === 0 && <p className="text-sm text-muted">{t("plans.editor.noUnitMatch")}</p>}
           {GROUPS.map((g) => {
             const rows = shown.filter((u) => groupOf(u) === g.id);
@@ -134,5 +136,46 @@ function Advanced({ editions, disabled, onEdition }: { editions: readonly Editio
         </div>
       </div>
     </details>
+  );
+}
+
+/** Two quiet bulk actions. They change the form only (like every sale edit); the plan's Save bar writes them. */
+function BulkSales({ units, effective, sales, currencies, onApply }: {
+  units: UnitInfo[]; effective: string[]; sales: Record<string, UnitSaleForm>; currencies: string[]; onApply: (next: Record<string, UnitSaleForm>) => void;
+}) {
+  const { t } = useTranslation("operator");
+  const [dialog, setDialog] = useState<"stop" | "offer" | null>(null);
+  const [prices, setPrices] = useState<Record<string, string>>({});
+  const stopCount = offeredUnits(sales, effective, units).length;
+  const offerCount = unofferedUnits(sales, effective, units).length;
+  const typed = Object.values(prices).some((a) => a.trim() !== "");
+  const close = () => { setDialog(null); setPrices({}); };
+  return (
+    <div className="flex flex-wrap gap-2" data-testid="bulk-sales">
+      <Button type="button" size="sm" variant="ghost" disabled={stopCount === 0} onClick={() => setDialog("stop")}>{t("plans.editor.bulk.stop")}</Button>
+      <Button type="button" size="sm" variant="ghost" disabled={offerCount === 0 || currencies.length === 0} onClick={() => setDialog("offer")}>{t("plans.editor.bulk.offer")}</Button>
+      {dialog === "stop" && (
+        <Modal open onClose={close} title={t("plans.editor.bulk.stop")} size="sm"
+          footer={<><Button variant="secondary" onClick={close}>{t("cancel")}</Button><Button variant="danger" onClick={() => { onApply(stopSellingAll(sales, effective, units).sales); close(); }}>{t("plans.editor.bulk.stopConfirm", { count: stopCount })}</Button></>}>
+          <p className="text-sm text-muted">{t("plans.editor.bulk.stopBody", { count: stopCount })}</p>
+        </Modal>
+      )}
+      {dialog === "offer" && (
+        <Modal open onClose={close} title={t("plans.editor.bulk.offer")} size="sm"
+          footer={<><Button variant="secondary" onClick={close}>{t("cancel")}</Button><Button disabled={!typed} onClick={() => { onApply(offerAll(sales, effective, units, prices).sales); close(); }}>{t("plans.editor.bulk.offerConfirm", { count: offerCount })}</Button></>}>
+          <div className="space-y-3">
+            <p className="text-sm text-muted">{t("plans.editor.bulk.offerBody", { count: offerCount })}</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {currencies.map((c) => (
+                <label key={c} className="block text-sm">
+                  <span className="mb-1 block text-xs text-muted">{t("plans.editor.priceIn", { currency: c })}</span>
+                  <NumberInput value={prices[c] ?? ""} inputMode="decimal" aria-label={`${t("plans.editor.bulk.offer")} ${c}`} onChange={(v) => setPrices((m) => ({ ...m, [c]: v }))} />
+                </label>
+              ))}
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
   );
 }

@@ -32,6 +32,8 @@ def summary(session: Session, company_id: UUID | None = None) -> dict[str, int]:
         f"(select count(*) from memberships.member where {where} and {renewing} :w) as renewals_next_7_days, "
         f"(select count(*) from memberships.sold_package where {where} and status = 'active' "
         "   and expires_on between :t and :m30) as packages_expiring_30_days, "
+        f"(select count(*) from memberships.member where {where} and status in ('active', 'paused', 'frozen') "
+        "   and coalesce(cancel_at, end_date) between :t and :m30) as ending_30_days, "
         f"(select count(*) from memberships.invoice_run where {where} and status = 'failed') as failed_runs, "
         f"(select count(*) from memberships.invoice_run where {where} and status = 'pending_review') as drafts_waiting",
         c=company_id, t=today, me=month_end, w=today + timedelta(days=7), m30=today + timedelta(days=30), **params)

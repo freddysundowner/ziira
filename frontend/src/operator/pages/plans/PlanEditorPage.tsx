@@ -116,6 +116,7 @@ function PlanForm({ initial, creating, detail, world }: { initial: PlanFormValue
           <UnitsCard units={world.units} loading={false} error={null} onRetry={() => undefined} chosen={values.units} missing={values.units.filter((n) => !known.has(n))}
             sales={sales} currencies={saleCurrencies(world.currencies, sales, added)} problems={showErrors ? saleErrors : {}} editions={editions.data ?? []} disabled={!canEdit}
             onToggle={(name) => set("units", toggleUnit(values.units, name))} onSale={(name, next) => { setSales((m) => ({ ...m, [name]: next })); setProblem(null); }}
+            onBulkSales={(next) => { setSales(next); setProblem(null); }}
             onCurrency={(code) => setAdded((a) => [...new Set([...a, code])])} onEdition={applyEdition} />
           {err("units") && <Alert tone="bad">{err("units")}</Alert>}
 

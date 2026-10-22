@@ -1,0 +1,57 @@
+# Fields a learner can carry. A learner is a customer with a member profile; the person who pays (a parent or guardian) is
+# the billing contact. Date of birth, emergency contact and notes are already on the profile (all optional).
+# Not for health information: only what the office and the teacher need to look after the learner.
+[[field]]
+entity_type = "memberships.profile"
+key = "grade"
+label = "Grade, year or class"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.profile"
+key = "previous_school"
+label = "School (if the learner also attends one)"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.profile"
+key = "guardian_name"
+label = "Parent or guardian"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.profile"
+key = "guardian_phone"
+label = "Parent or guardian phone"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.profile"
+key = "guardian_relation"
+label = "Relation to the learner"
+kind = "choice"
+choices = ["Mother", "Father", "Guardian", "Other family", "Self (adult learner)"]
+
+[[field]]
+entity_type = "memberships.profile"
+key = "collected_by"
+label = "Who may collect the learner"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.profile"
+key = "learning_goal"
+label = "What the learner wants to achieve"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.member"
+key = "class_group"
+label = "Class or group"
+kind = "text"
+
+[[field]]
+entity_type = "memberships.member"
+key = "main_tutor"
+label = "Main teacher or tutor"
+kind = "text"

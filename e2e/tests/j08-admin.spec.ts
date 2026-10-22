@@ -33,7 +33,8 @@ test("J8 admin: users and roles, settings, API keys", async ({ page, second }) =
   // --- what she sees: the till, not the books, payroll or administration
   const cathy = await second(cashier);
   const nav = cathy.getByRole("navigation", { name: "Main" });
-  await expect(nav.getByRole("link", { name: "Point of sale" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Sell", exact: true })).toHaveAttribute("href", "/pos/terminal");      // a cashier's Sell entry is the till itself
+  await expect(cathy.getByRole("link", { name: "Point of sale" })).toBeVisible();                              // and Home offers it as a shortcut
   for (const hidden of ["Journal", "Payroll", "Users", "Settings", "Suppliers"]) {
     await expect(nav.getByRole("link", { name: hidden })).toHaveCount(0);
   }
@@ -48,7 +49,7 @@ test("J8 admin: users and roles, settings, API keys", async ({ page, second }) =
   const tolerance = page.getByLabel("Supplier bill price tolerance (%)", { exact: true }).last();
   await tolerance.fill("7");
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByText(/saved/i).first()).toBeVisible();
+  await expect(page.getByText("Settings saved.")).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Supplier bill price tolerance (%)", { exact: true }).last()).toHaveValue("7");
   await checkAccessibility(page, "settings");
@@ -57,13 +58,13 @@ test("J8 admin: users and roles, settings, API keys", async ({ page, second }) =
   await page.goto("/admin/api-keys");
   await page.getByRole("button", { name: "New key" }).first().click();
   await drawer(page).getByLabel(lbl("Name")).fill(`Reports ${tag}`);
-  await drawer(page).getByRole("checkbox").first().check();
+  await drawer(page).getByRole("checkbox", { name: "reports.view" }).check();          // the first box is "Read-only" (on by default), so pick a right by name
   await drawer(page).getByRole("button", { name: /^Create key/ }).click();
   const secret = page.getByRole("dialog");
   const shown = await secret.getByLabel("Secret key").inputValue();
   expect(shown.length).toBeGreaterThan(20);
   await secret.getByRole("button", { name: "I have saved it" }).click();
-  await expect(page.getByRole("cell", { name: `Reports ${tag}` })).toBeVisible();
+  await expect(page.getByRole("cell", { name: `Reports ${tag}`, exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByText(shown)).toHaveCount(0);        // never shown again
   expect(await page.content()).not.toContain(shown);

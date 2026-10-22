@@ -116,6 +116,36 @@ export function toSaleIn(now: UnitSaleForm, before: UnitSaleForm | undefined) {
   return { offered: now.offered, prices, tax_inclusive: now.tax_inclusive };
 }
 
+/** Units that are switched on for sale (a unit in the plan is not sold, so it is left out). */
+export function offeredUnits(sales: Record<string, UnitSaleForm>, effective: readonly string[], units: readonly UnitInfo[]): string[] {
+  const on = new Set(effective);
+  return units.filter((u) => !on.has(u.name) && sales[u.name]?.offered).map((u) => u.name);
+}
+
+/** Bulk: stop selling every unit on its own. Prices are kept (as the single switch does), only "offered" goes off. */
+export function stopSellingAll(sales: Record<string, UnitSaleForm>, effective: readonly string[], units: readonly UnitInfo[]): { sales: Record<string, UnitSaleForm>; count: number } {
+  const names = offeredUnits(sales, effective, units);
+  const next = { ...sales };
+  for (const n of names) next[n] = { ...(sales[n] as UnitSaleForm), offered: false };
+  return { sales: next, count: names.length };
+}
+
+/** Units that could be offered in bulk: not in the plan and not offered yet. */
+export const unofferedUnits = (sales: Record<string, UnitSaleForm>, effective: readonly string[], units: readonly UnitInfo[]): string[] => {
+  const on = new Set(effective);
+  return units.filter((u) => !on.has(u.name) && !sales[u.name]?.offered).map((u) => u.name);
+};
+
+/** Bulk: offer every unticked, not yet offered unit at one price per currency (amounts typed; empty ones are skipped). */
+export function offerAll(sales: Record<string, UnitSaleForm>, effective: readonly string[], units: readonly UnitInfo[], prices: Record<string, string>): { sales: Record<string, UnitSaleForm>; count: number } {
+  const typed = Object.fromEntries(Object.entries(prices).filter(([, a]) => a.trim() !== "").map(([c, a]) => [c, a.trim()]));
+  if (Object.keys(typed).length === 0) return { sales, count: 0 };
+  const names = unofferedUnits(sales, effective, units);
+  const next = { ...sales };
+  for (const n of names) next[n] = { offered: true, prices: { ...(sales[n]?.prices ?? {}), ...typed }, tax_inclusive: sales[n]?.tax_inclusive ?? false };
+  return { sales: next, count: names.length };
+}
+
 /** The currencies the sale prices can be typed in: the platform's, any already priced, and ones just added. */
 export function saleCurrencies(platform: readonly string[], sales: Record<string, UnitSaleForm>, added: readonly string[]): string[] {
   const set = new Set<string>([...platform, ...added]);

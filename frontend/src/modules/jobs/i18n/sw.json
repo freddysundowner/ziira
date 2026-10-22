@@ -497,6 +497,22 @@
     "saved": "Mipangilio imehifadhiwa"
   },
   "widget": {
+    "approvalTitle": "Makadirio yanayosubiri idhini",
+    "partsTitle": "Zinasubiri vipuri",
+    "insurerTitle": "Zinasubiri bima",
+    "nothing": {
+      "approval": "Hakuna makadirio yanayosubiri mteja.",
+      "parts": "Hakuna kazi inayosubiri vipuri.",
+      "insurer": "Hakuna kazi inayosubiri kampuni ya bima."
+    },
+    "hint": {
+      "approval": "Yametumwa, hayajajibiwa",
+      "parts": "Vipuri bado havijafika",
+      "insurer": "Bima haijajibu"
+    },
+    "lateOnes": "{{count}} zimepita tarehe iliyoahidiwa",
+    "days": "siku {{count}}",
+    "today": "leo",
     "title": "Kazi",
     "open": "Zinaendelea",
     "ready": "Za kuchukuliwa",

@@ -508,3 +508,10 @@ def test_catalogue_changes_need_the_settings_permission(client, shop) -> None:  
                        ("/bays", {"company_id": co, "branch_id": str(shop["branch_id"]), "name": "X"})):
         assert client.post(f"{JOBS}{path}", headers=shop["tech"], json=body).status_code == 403
         assert client.get(f"{JOBS}{path}", headers=shop["tech"], params={"company_id": co}).status_code == 200
+
+
+@pytest.mark.parametrize("day", ["9999-12-31", "0001-01-01"])
+def test_the_bay_board_refuses_extreme_dates(client, shop, day) -> None:  # type: ignore[no-untyped-def]
+    params = {"company_id": str(shop["company_id"]), "branch_id": str(shop["branch_id"])}
+    assert client.get(f"{JOBS}/bay-board", headers=shop["owner"], params={**params, "day": day}).status_code == 422
+    assert client.get(f"{JOBS}/bay-board", headers=shop["owner"], params={**params, "day": "2026-06-01"}).status_code == 200

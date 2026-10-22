@@ -1,0 +1,15 @@
+[unit]
+name = "leadsintel_platform"
+title = "The platform's chat bot through Lead Intel"
+description = "Lets the platform owner connect one WhatsApp number, through Lead Intel, to a bot that answers questions about Ziira itself."
+category = "messaging"
+kind = "plugin"
+version = "1.0.0"
+sdk = ">=1.0,<2.0"
+requires = []
+platform_scope = true
+
+[provides]
+
+[extends]
+implements = ["kernel.platform_chat_channel"]

@@ -50,7 +50,7 @@ test("J18 return against an invoice and a refund of an advance", async ({ page }
   // --- the customer pays 50 in advance (held on account); give 20 back, then reverse that refund
   await api.post("/pos/receipts", { customer_id: customer.id, amount: "50.00", method: "cash", branch_id: cat.branchId, hold_balance: true });
   await page.goto("/pos/refunds");
-  await expect(page.getByRole("tab", { name: "Refunds" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("main").getByRole("link", { name: "Refunds" })).toHaveAttribute("aria-current", "page");
   await page.getByRole("button", { name: "New refund" }).click();
   await pick(page, drawer(page).getByRole("combobox"), customer.name);
   await drawer(page).getByRole("button", { name: "Give back" }).click();

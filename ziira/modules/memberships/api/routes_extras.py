@@ -169,7 +169,7 @@ def post_trainer_paid(trainer_ref: UUID, company_id: UUID, body: xs.TrainerPaidI
 
 # --------------------------------------------------------------------------- reports and exports
 @router.get("/reports/overview", response_model=xs.MembershipOwnerReportOut, dependencies=REPORT)
-def get_report(company_id: UUID, start: date | None = None, end: date | None = None, branch_id: UUID | None = None,
+def get_report(company_id: UUID, start: xs.Day | None = None, end: xs.Day | None = None, branch_id: UUID | None = None,
                session: Session = DB_SESSION) -> object:
     """Active members, new and ended, monthly income, income at risk, retention, busy hours, money owed, holds,
     trials."""

@@ -63,8 +63,12 @@
     "reason": "Sababu",
     "chooseReason": "Chagua sababu",
     "total": "Jumla ya mstari",
+    "reference": "Kumbukumbu",
+    "referenceHint": "Maelezo mafupi kama nambari ya karatasi. Usiandike maelezo ya matibabu.",
+    "referenceRequired": "Inahitajika: andika kumbukumbu fupi kabla bidhaa kuuzwa.",
     "noPermission": "Huna ruhusa ya kubadilisha bei au kutoa punguzo. Mwombe meneja.",
     "problem": {
+      "reference": "Andika kumbukumbu ya bidhaa hii.",
       "quantity": "Kiasi lazima kiwe zaidi ya sifuri.",
       "price": "Weka bei ya kitu hiki.",
       "reason": "Chagua sababu ya kubadilisha bei au punguzo.",

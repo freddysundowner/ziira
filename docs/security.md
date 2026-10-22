@@ -262,3 +262,14 @@ and credit reporters who wish. Put the real contact in the web app's footer and 
   refused. Core permissions still decide: a reply can never do more than the person could in the app.
 * **STOP always works**, from any sender, on every channel.
 
+
+## The chat bot's public inbound address and its secrets (`docs/ai.md` section 15)
+
+* **Same order as the business webhook, with one address for the whole platform.** `POST /api/v1/public/chat/inbound/{token}`: body limit (64 KB); the token is looked up by its SHA-256 hash (the token is random, 256 bits, made by the server, stored only as that hash); the provider checks
+  the timestamp (five minutes) and `HMAC-SHA256(secret, "<timestamp>.<raw body>")` in constant time; only then is the event id recorded (a repeat does nothing) and the body read. An unknown token, a bad or stale signature, an oversize body and a bot that is not set up all return the same `401 Not accepted`
+  and cost the caller one count against its address only (never against the token, so a stranger who learns the address cannot lock the provider out). A body that is genuine but unreadable gets `204`, never a `500`.
+* **Secrets.** The provider key and the webhook secret are one Fernet token in `master.chat_bot.secrets_encrypted`: write-only, never returned by an API (the page sees "set / not set"), never logged, never in the operator trail, the queue or an error message (a provider's reason is stripped of them first).
+  `tests/test_chat_bot.py` scans every reply, the log, the trail, the stored row and the queue for the key, the secret and the token. The token also appears in the *path* the provider calls, so it shows in a reverse proxy's access log: keep access logs private, and use "Rotate the secret" if one leaks.
+* **No SSRF.** The only address the bot ever calls is the provider's fixed base address (`https://app.leadsintel.net/api`, changeable only by the environment variable `ZIIRA_LEADSINTEL_PLATFORM_BASE_URL`, for tests); nothing in a delivery or a setting makes the server call another host, and redirects are not followed.
+* **No personal data at rest beyond what is needed.** Senders are keyed hashes plus a masked display; their words (scrubbed of emails and long numbers) live at most 7 days; the number is in the queue only encrypted and only until the job ends; logs hold the outcome and a short hash, never a word. A person's STOP is honoured at once.
+* **Prompt injection** is handled as for the website assistant: the system rules come last, the person's words and history are quoted as untrusted text, the bot has no tools and no data of any business, and every sentence with a figure, address or email that is not in the knowledge is replaced before it is sent.

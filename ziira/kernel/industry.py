@@ -37,7 +37,8 @@ log = logging.getLogger("ziira.industry")
 INDUSTRY_SEEDER = "kernel.industry_seeder"
 CATEGORY = "industry"
 PACK_FILE = "pack.toml"
-KERNEL_DATA_FILES = ("custom_fields",)         # data files the kernel itself reads (the others are named after units)
+# data files the kernel itself reads (the others are named after units)
+KERNEL_DATA_FILES = ("custom_fields", "checklist")
 
 
 def is_industry(m: Manifest) -> bool:
@@ -162,6 +163,23 @@ def validate_pack(m: Manifest, known_units: set[str], known_editions: set[str]) 
             problems.append(f"{m.name}: data/{file.name} is not valid TOML ({exc})")
         if file.stem not in units and file.stem not in KERNEL_DATA_FILES:
             problems.append(f"{m.name}: data/{file.name} feeds '{file.stem}', which is not in [pack] units")
+    problems += _checklist_problems(m, data / "checklist.toml")
+    return problems
+
+
+def _checklist_problems(m: Manifest, path: Path) -> list[str]:
+    """`data/checklist.toml`: `[[step]]` tables with id, title and `to` (the page that does the step)."""
+    if not path.exists():
+        return []
+    try:
+        steps = tomllib.loads(path.read_text(encoding="utf-8")).get("step", [])
+    except tomllib.TOMLDecodeError:
+        return []                                              # reported above as invalid TOML
+    problems = [f"{m.name}: a checklist step needs an id, a title and a page (to)" for s in steps
+                if not all(isinstance(s.get(k), str) and s.get(k) for k in ("id", "title", "to"))]
+    ids = [s.get("id") for s in steps]
+    if len(set(ids)) != len(ids):
+        problems.append(f"{m.name}: checklist step ids repeat")
     return problems
 
 
@@ -329,3 +347,16 @@ class CustomFieldSeeder(IndustrySeeder):
 
     def remove(self, session: Session, item_type: str, item_id: UUID) -> None:
         session.execute(text("delete from kernel.custom_field_def where id = :i"), {"i": str(item_id)})
+
+
+# --------------------------------------------------------------------------- the first steps a pack adds to Home
+def pack_steps(session: Session, registry: "Registry") -> list[tuple[str, str, str, str, str]]:
+    """The first steps of the industry packs switched on for the business (`data/checklist.toml`, `[[step]]` tables
+    with id, title, hint, to and optionally unit), as (id, title, hint, to, unit). Step ids start with the pack's
+    name so they cannot clash with the edition's own."""
+    steps: list[tuple[str, str, str, str, str]] = []
+    for pack in enabled_packs(session, registry):
+        for s in pack.unit_data("checklist").get("step", []):
+            steps.append((f"{pack.name}_{s['id']}", str(s["title"]), str(s.get("hint", "")), str(s["to"]),
+                          str(s.get("unit", ""))))
+    return steps
