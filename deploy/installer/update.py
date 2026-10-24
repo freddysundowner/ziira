@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import signal
 import sys
 import time
 from dataclasses import fields
@@ -103,7 +104,7 @@ def add_new_settings(ctx: Ctx) -> list[str]:
     return sorted(missing)
 
 
-def run_update(ctx: Ctx, *, skip_backup: bool = False, keep: int = release.KEEP_RELEASES) -> int:
+def run_update(ctx: Ctx, *, skip_backup: bool = False, skip_site: bool = False, keep: int = release.KEEP_RELEASES) -> int:
     cfg, sysm, ui = ctx.cfg, ctx.sys, ctx.ui
     ctx.need_root()
     old = sysm.readlink(cfg.current)
@@ -161,7 +162,7 @@ def run_update(ctx: Ctx, *, skip_backup: bool = False, keep: int = release.KEEP_
     webbuild.build_frontend(ctx, path, rel_id)          # built and published only now that the API is healthy
     step_services(ctx)
     step_nginx_tls(ctx)
-    if ctx.rebuild_enabled and not cfg.no_services:
+    if ctx.rebuild_enabled and not cfg.no_services and not skip_site:
         sysm.run(["/usr/bin/python3", "-m", "installer.sitebuild", "build"], user=cfg.service_user,
                  env={"PYTHONPATH": f"{path}/deploy", "ZIIRA_REBUILD_ENV": ctx.rebuild_env_path}, cwd=cfg.state_dir,
                  check=False, timeout=3600, desc="rebuild the website")
@@ -179,9 +180,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--prebuilt", action="store_true")
     p.add_argument("--skip-backup", action="store_true")
     p.add_argument("--rollback", action="store_true", help="go back to the previous release")
+    p.add_argument("--skip-site", action="store_true", help="do not rebuild the marketing website (only the app changed)")
     p.add_argument("--keep", type=int, default=release.KEEP_RELEASES)
     p.add_argument("--dry-run", action="store_true")
     ns = p.parse_args(argv)
+    if not ns.dry_run:
+        signal.signal(signal.SIGHUP, signal.SIG_IGN)    # a dropped SSH connection must not stop an update half way (children inherit this)
     ui = UI(interactive=False)
     sysm = System(dry_run=ns.dry_run, say=ui.plan)
     try:
@@ -199,7 +203,7 @@ def main(argv: list[str] | None = None) -> int:
         ctx = Ctx(cfg=cfg, sys=sysm, ui=ui, facts={k: v for k, v in facts.items()})
         if ns.rollback:
             return 0 if rollback(ctx) else 1
-        return run_update(ctx, skip_backup=ns.skip_backup, keep=ns.keep)
+        return run_update(ctx, skip_backup=ns.skip_backup, skip_site=ns.skip_site, keep=ns.keep)
     except StepFailed as error:
         ui.fail(error.message, error.hint)
         return 1

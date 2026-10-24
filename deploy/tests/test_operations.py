@@ -53,6 +53,29 @@ def test_update_builds_a_new_release_backs_up_migrates_switches_and_keeps_the_ol
     assert "PGPASSWORD" not in " ".join(" ".join(c) for c in m.calls)
 
 
+def test_a_second_update_does_not_install_the_web_app_packages_again_when_the_lock_file_is_unchanged() -> None:
+    from installer import webbuild
+
+    m = installed_machine()
+    ctx = ctx_for(m)
+    ctx.cfg.prebuilt = False
+    work = f"{ctx.cfg.state_dir}/build/app"
+    m.files[f"{work}/package-lock.json"] = '{"lockfileVersion": 3}'
+    m.files[f"{work}/node_modules/.keep"] = ""
+
+    def installs() -> int:
+        return sum(1 for c in m.calls if "npm" in " ".join(c) and " ci" in " ".join(c))
+
+    webbuild.build_frontend(ctx, "/opt/ziira/current", "r1")
+    first = installs()
+    assert first == 1
+    webbuild.build_frontend(ctx, "/opt/ziira/current", "r2")
+    assert installs() == first                                # same lock file: the installed packages are reused
+    m.files[f"{work}/package-lock.json"] = '{"lockfileVersion": 3, "changed": true}'
+    webbuild.build_frontend(ctx, "/opt/ziira/current", "r3")
+    assert installs() == first + 1                            # a changed lock file installs again
+
+
 def test_update_with_a_failing_health_check_rolls_the_code_back_and_says_so(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     m = installed_machine()
     ctx = ctx_for(m)

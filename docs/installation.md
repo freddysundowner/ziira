@@ -111,6 +111,8 @@ The superuser connection is the local `postgres` OS user (no superuser password 
 ```bash
 sudo ziira-update --from-dir /path/to/new/checkout     # or --repo URL --branch main, --tarball FILE
 sudo ziira-update --rollback
+sudo ziira-update --from-dir /path/to/new/checkout --skip-site    # only the app changed: do not rebuild the website
+
 sudo ziira-doctor                                      # exit 0 ok, 1 warnings, 2 failures (--json available)
 sudo bash deploy/backup-now.sh
 sudo bash deploy/uninstall.sh [--purge-data]           # typed confirmation; databases are kept unless --purge-data (asked twice)
@@ -118,6 +120,7 @@ sudo bash deploy/uninstall.sh [--purge-data]           # typed confirmation; dat
 Update builds a new release beside the live one, checks the configuration with the new code, dumps the master database, runs
 migrations with the new code while the old keeps serving, switches, waits for `/readyz`, then publishes the web app and rebuilds the
 site. If the new release is not ready, the symlink and services go back. Migrations are never reversed automatically.
+The web app's installed packages are kept between updates and installed again only when `frontend/package-lock.json` changes, so later updates are much faster than the first. An update ignores a dropped SSH connection (it keeps running; run it inside `tmux` to watch it afterwards).
 
 ## What to back up
 `/etc/ziira/ziira.env` and above all **`ZIIRA_CREDENTIALS_KEY`** (losing it locks out every business; keep it offline, not with the

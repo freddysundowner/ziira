@@ -29,12 +29,20 @@ class Report:
     notes: list[str] = field(default_factory=list)       # lines for the summary
 
 
+def _print_line(text: str) -> None:
+    """Print to the terminal; if the terminal is gone (a dropped SSH session) carry on silently."""
+    try:
+        print(text, flush=True)
+    except OSError:
+        pass
+
+
 class UI:
     def __init__(self, *, color: bool | None = None, interactive: bool = True, out: Callable[[str], None] | None = None,
                  reader: Callable[[str], str] | None = None, secret_reader: Callable[[str], str] | None = None) -> None:
         self.color = sys.stdout.isatty() and os.environ.get("NO_COLOR") is None if color is None else color
         self.interactive = interactive
-        self._out = out or (lambda s: print(s, flush=True))
+        self._out = out or _print_line
         self._reader = reader or input
         self._secret_reader = secret_reader or getpass.getpass
         self.report = Report()

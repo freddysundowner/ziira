@@ -79,8 +79,15 @@ def build_frontend(ctx: Ctx, release_path: str, rel_id: str) -> str | None:
         sysm.run(["rsync", "-a", "--delete", "--exclude", "node_modules", "--exclude", "dist", f"{src}/", f"{work}/"],
                  user=user, desc=f"copy frontend/ to the build workspace {work}")
         env = build_env(ctx, {"VITE_HELP_URL": f"https://{cfg.root_domain}/help"})
-        sysm.run(util.niced(["npm", "ci", "--no-audit", "--no-fund"]), user=user, cwd=work, env=env, timeout=1800,
-                 desc="npm ci (web app)")
+        # node_modules stays in the workspace between updates (rsync above leaves it alone): install again only when the lock file changed.
+        digest = hashlib.sha256((sysm.read_text(f"{work}/package-lock.json") or "").encode()).hexdigest()
+        stamp = f"{work}/node_modules/.ziira-lock-hash"
+        if sysm.exists(f"{work}/node_modules") and sysm.read_text(stamp) == digest:
+            ui.already("web app packages unchanged (npm ci skipped)")
+        else:
+            sysm.run(util.niced(["npm", "ci", "--no-audit", "--no-fund"]), user=user, cwd=work, env=env, timeout=1800,
+                     desc="npm ci (web app)")
+            sysm.write_text(stamp, digest, owner=user, group=user)
         sysm.run(util.niced(["npm", "run", "build"]), user=user, cwd=work, env=env, timeout=1800, desc="npm run build (web app)")
         dist = f"{work}/dist"
     out = publish_dir(ctx, dist, "app", rel_id)
