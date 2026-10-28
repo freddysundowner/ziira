@@ -26,8 +26,9 @@ const hl = (text: string, phrase: string) => { const i = text.indexOf(phrase); r
 const [aH1, aH2, aH3] = hl(h.appsH2, "in one place");
 const [oH1, oH2, oH3] = hl(h.onePlace.h2, "one platform");
 const [pH1, pH2, pH3] = hl(h.pricingTeaser.h2, "what you need");
-const nodes = appTiles.filter((a) => ["core-pos", "core-inventory", "core-purchasing", "core-customers", "core-payments", "core-accounting", "core-people", "ai"].includes(a.id)).map((a, n) => {
-  const ang = (-90 + n * 45) * Math.PI / 180;
+const ringLabels = ["Sales", "Stock", "Purchasing", "Customers", "Payments", "Accounting", "People and payroll", "Bookings", "Jobs and repairs", "Ziira AI"];
+const nodes = ringLabels.map((l) => appTiles.find((a) => a.label === l)!).map((a, n) => {
+  const ang = (-90 + n * 36) * Math.PI / 180;
   const x = 300 + 235 * Math.cos(ang), y = 210 + 150 * Math.sin(ang);
   return { ...a, x: Math.round(x), y: Math.round(y), ly: Math.round(y + (Math.sin(ang) < -0.3 ? -42 : 50)) };
 });
@@ -143,6 +144,29 @@ const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
   </div>
 </section>
 
+<section class="section tint" aria-labelledby="packs-h">
+  <div class="container">
+    <div class="section-head center"><span class="eyebrow">Industry packs</span><h2 id="packs-h">{h.packsH2}</h2><p>{h.packsLead}</p></div>
+    <ul class="apps">
+      {h.packs.map((p) => (
+        <li><a class={`app c${p.color}`} href={urlFor(p.link, lang)}><span class="app-ico"><Icon name={p.icon} /></span><b>{p.t}</b><span class="app-d">{p.d}</span><span class="app-d">{p.items.join(" · ")}</span></a></li>
+      ))}
+    </ul>
+    <p class="note center" style="margin-top:28px;max-width:60ch">{h.packsNote}</p>
+  </div>
+</section>
+
+<section class="section white" aria-labelledby="connects-h">
+  <div class="container">
+    <div class="section-head center"><span class="eyebrow">Plug-ins</span><h2 id="connects-h">{h.connectsH2}</h2><p>{h.connectsLead}</p></div>
+    <ul class="apps">
+      {h.connects.map((c) => (
+        <li><a class={`app c${c.color}`} href={urlFor(c.page, lang)}><span class="app-ico"><Icon name={c.icon} /></span><b>{c.t}</b><span class="app-d">{c.d}</span></a></li>
+      ))}
+    </ul>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="scn-h">
   <div class="container">
     <div class="section-head"><h2 id="scn-h">{h.scenariosH2}</h2><p>{h.scenariosLead}</p></div>
@@ -189,6 +213,16 @@ const tick = '<path d="m5 12.5 4.5 4.5L19 7.5"/>';
               <div class="mini-card"><b>Supplier order</b><span class="pill warn">Waiting for approval</span></div>
               <div class="mini-card"><b>Discount above the limit</b><span class="pill bad">Reason needed</span></div>
               <div class="mini-card"><b>Stock correction</b><span class="pill ok">Approved by a manager</span></div>
+            </>)}
+            {s.visual === "diary" && (<>
+              <div class="mini-card"><b>Thu 10:30, Amina, braids</b><span class="pill ok">Deposit paid</span></div>
+              <div class="mini-card"><span>Work order 214: brake pads and labour</span><span class="pill warn">Awaiting approval</span></div>
+              <div class="mini-card"><span>Invoice ready, stock used, commission set</span><span class="pill ok">Done</span></div>
+            </>)}
+            {s.visual === "claim" && (<>
+              <div class="mini-card"><b>Estimate sent to the insurer</b><span class="pill warn">Waiting 6 days</span></div>
+              <div class="mini-card"><span>Insurer agreed 5 of 6 lines</span><span class="pill ok">Answered</span></div>
+              <div class="mini-card"><span>Invoice split: insurer and customer</span><span class="pill bad">Insurer still owes</span></div>
             </>)}
             {s.visual === "daily" && (<>
               <div class="bubble"><b>Ziira: daily summary</b>A cashier cancelled 14 sales after 9pm.</div>
