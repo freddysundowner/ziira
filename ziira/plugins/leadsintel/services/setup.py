@@ -270,6 +270,10 @@ def disconnect(session: Session, company_id: UUID) -> dict[str, Any]:
 
 
 # --------------------------------------------------------------------------- a number already on Lead Intel
+# What Lead Intel answers when a number cannot be claimed with an SMS code.
+CLAIM_REFUSED = ("phone_number_already_connected", "number_not_claimable")
+
+
 def check_existing(session: Session, company_id: UUID, country_code: str, phone_number: str) -> dict[str, Any]:
     """Is this number on Lead Intel under the platform, and can it be claimed?"""
     _settings(session, company_id)
@@ -301,6 +305,13 @@ def start_claim(session: Session, company_id: UUID, country_code: str, phone_num
     try:
         reply = client.start_claim(body)
     except LeadIntelError as error:
+        if error.code in CLAIM_REFUSED:
+            # Lead Intel will not hand this number over by an SMS code (it is in use elsewhere). Ask for it the other
+            # documented way: set it up as a new number, where Meta sends the verification code.
+            name = repo.company_name(session, company_id) or "WhatsApp"
+            request_number(session, company_id, country_code=country_code, phone_number=phone_number,
+                           business_name=name, display_name=name)
+            return state(session, company_id)
         raise _error(error) from None
     repo.insert_connection(session, company_id=company_id, kind="whatsapp", external_id=external_id,
                            token_hash=hash_secret(token), status="code_sent",

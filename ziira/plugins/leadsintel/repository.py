@@ -17,6 +17,12 @@ def credential(session: Session, company_id: UUID, channel: str) -> Row[Any] | N
         {"c": str(company_id), "ch": channel}).first()
 
 
+def company_name(session: Session, company_id: UUID) -> str:
+    """The business's name, used as its WhatsApp business and display name when a number is set up for it."""
+    row = session.execute(text("select name from kernel.company where id = :c"), {"c": str(company_id)}).first()
+    return str(row[0]) if row is not None else ""
+
+
 def insert_connection(session: Session, *, company_id: UUID, kind: str, external_id: str, token_hash: str,
                       status: str, request_id: str | None = None, claim_id: str | None = None) -> UUID:
     row = session.execute(text(

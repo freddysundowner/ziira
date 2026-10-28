@@ -368,6 +368,17 @@ def test_a_number_already_on_lead_intel_is_claimed_with_the_code_it_receives(cli
         assert "whatsapp" in messaging.configured_channels(s, shop["company_id"])
 
 
+def test_a_number_that_cannot_be_claimed_by_code_is_asked_for_through_meta_instead(client, shop, li) -> None:  # type: ignore[no-untyped-def]
+    co = str(shop["company_id"])
+    li.script[("POST", "/whatsapp/existing-numbers/claims")] = [httpx.Response(409, json={"error": "phone_number_already_connected"})]
+    number = {"company_id": co, "country_code": "254", "phone_number": "722000888"}
+    started = client.post(f"{LI}/whatsapp/claim", headers=shop["owner"], json=number)
+    assert started.status_code == 202, started.text
+    assert started.json()["whatsapp"]["status"] == "requested"
+    [body] = li.bodies("/assisted-requests")
+    assert body["countryCode"] == "254" and body["phoneNumber"] == "722000888" and body["displayName"]
+
+
 def test_a_lead_intel_outage_during_setup_keeps_the_last_known_state(client, shop, li) -> None:  # type: ignore[no-untyped-def]
     co = str(shop["company_id"])
     li.script[("POST", "/whatsapp/existing-numbers/lookup")] = [httpx.Response(503, json={"error": "down"})]
