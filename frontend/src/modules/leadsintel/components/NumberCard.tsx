@@ -72,18 +72,13 @@ function ExistingNumber({ companyId }: { companyId: string }) {
   const qc = useQueryClient();
   const f = useFormState({ country_code: "", phone_number: "" });
   const body = { company_id: companyId, country_code: digits(f.values.country_code), phone_number: digits(f.values.phone_number) };
-  const check = useMutation({
-    meta: { silent: true },
-    mutationFn: () => unwrap(api.POST("/api/v1/plugins/leadsintel/whatsapp/existing", { body })),
-    onError: (e) => toast(e.message, "bad"),
-  });
+  // No pre-check: asking to claim is the check. Lead Intel sends the code by SMS, or says in its own words why it will not.
   const claim = useMutation({
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/plugins/leadsintel/whatsapp/claim", { body })),
     onSuccess: () => { void qc.invalidateQueries({ queryKey: ["leadsintel-state"] }); toast(t("codeSent"), "ok"); },
     onError: (e) => toast(e.message, "bad"),
   });
-  const found = check.data;
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">{t("existingHint")}</p>
@@ -91,10 +86,8 @@ function ExistingNumber({ companyId }: { companyId: string }) {
         <Field label={t("countryCode")} hint={t("countryCodeHint")}><Input inputMode="numeric" {...f.bind("country_code")} /></Field>
         <Field label={t("phone")} hint={t("phoneHint")}><Input type="tel" inputMode="numeric" {...f.bind("phone_number")} /></Field>
       </FormGrid>
-      <Button variant="secondary" loading={check.isPending} disabled={!digits(f.values.country_code) || digits(f.values.phone_number).length < 5} onClick={() => check.mutate()}>{t("checkNumber")}</Button>
-      {found && (found.claimable
-        ? <Alert tone="ok"><span className="mr-3">{t("claimable")}</span><Button size="sm" loading={claim.isPending} onClick={() => claim.mutate()}>{t("sendCode")}</Button></Alert>
-        : <Alert tone="warn">{t(`notClaimable.${found.reason ?? "other"}`, { defaultValue: t("notClaimable.other") })}</Alert>)}
+      <Button loading={claim.isPending} disabled={!digits(f.values.country_code) || digits(f.values.phone_number).length < 5} onClick={() => claim.mutate()}>{t("sendCode")}</Button>
+      {claim.error && <Alert tone="warn">{claim.error.message}</Alert>}
     </div>
   );
 }

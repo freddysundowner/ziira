@@ -52,8 +52,8 @@ def _error(error: LeadIntelError) -> ValidationFailed:
         return ValidationFailed("Lead Intel asked us to slow down. Try again in a minute")
     if error.status >= 500:
         return ValidationFailed("Lead Intel had a problem. Try again in a minute")
-    hints = {"phone_number_already_connected": "That number is already connected. If it is on Lead Intel under your "
-                                               "account, use 'I already have this number on Lead Intel'",
+    hints = {"phone_number_already_connected": "Lead Intel will not connect this number: it is already connected "
+                                               "there and cannot be claimed with a code. Use another number",
              "number_not_connected": "That number is not on Lead Intel yet. Connect it as a new number",
              "invalid_code": "That code is not right" + (f" ({error.extra['attemptsLeft']} tries left)"
                                                          if "attemptsLeft" in error.extra else ""),
