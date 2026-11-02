@@ -36,7 +36,8 @@ def _issue(session: Session, run: repo.Row, *, raise_on_error: bool = False) -> 
             invoice = invoicing.issue(
                 session, company_id=run["company_id"], branch_id=run["branch_id"], customer_id=run["customer_id"],
                 lines=run["lines"], run_id=run["id"], due_days=run["due_days"], memo=run["memo"],
-                issue_date=common.today(session, run["company_id"]))
+                issue_date=common.today(session, run["company_id"]),
+                enforce_credit_limit=run["owner_type"] == "schedule")      # members and buyers: overdue rules instead
     except Exception as error:  # noqa: BLE001 - recorded and flagged below, or raised for a person at the screen
         if raise_on_error:
             raise

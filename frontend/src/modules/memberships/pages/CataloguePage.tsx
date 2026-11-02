@@ -11,6 +11,7 @@ import { PlanForm } from "../components/PlanForm";
 import { PriceChangesDrawer } from "../components/PriceChangesDrawer";
 import { TermsEditor } from "../components/TermsEditor";
 import { PoliciesCard } from "../components/PoliciesCard";
+import { QuickStartCard } from "../components/QuickStartCard";
 import { usePlans } from "../hooks";
 import type { PackageItem, Plan } from "../hooks";
 import { credits } from "../logic";
@@ -42,6 +43,7 @@ export default function CataloguePage() {
         actions={canEdit && (tab === "plans" || tab === "packages") && (
           <Button onClick={() => (tab === "plans" ? setPlan("new") : setItem("new"))}><Plus className="h-4 w-4" />{tab === "plans" ? t("newPlan") : t("newPackage")}</Button>)} />
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "plans", label: t("tabs.plans"), count: plans.data?.length }, { id: "packages", label: t("tabs.catalogue"), count: packages.data?.length }, { id: "policies", label: t("tabs.policies") }, { id: "terms", label: t("tabs.terms") }]} />
+      {tab === "plans" && canEdit && plans.data?.length === 0 && <QuickStartCard />}
       {tab === "plans" && (
         <DataTable rows={plans.data} loading={plans.isLoading} error={plans.error?.message} onRetry={() => void plans.refetch()} rowKey={(p) => p.id}
           empty={{ title: t("noPlans"), hint: t("noPlansHint"), action: canEdit ? <Button onClick={() => setPlan("new")}>{t("newPlan")}</Button> : undefined }}

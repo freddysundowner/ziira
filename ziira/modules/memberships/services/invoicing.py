@@ -35,8 +35,10 @@ def available(session: Session) -> bool:
 
 
 def issue(session: Session, *, company_id: UUID, branch_id: UUID, customer_id: UUID, lines: list[dict[str, str]],
-          run_id: UUID, due_days: int | None, memo: str | None, issue_date: date | None = None) -> IssuedInvoice:
-    """Issue an invoice for the lines (each: product_id, description, quantity, unit_price, discount), once per run."""
+          run_id: UUID, due_days: int | None, memo: str | None, issue_date: date | None = None,
+          enforce_credit_limit: bool = True) -> IssuedInvoice:
+    """Issue an invoice for the lines (each: product_id, description, quantity, unit_price, discount), once per run. A
+    membership fee is chased by the overdue rules, so its caller passes `enforce_credit_limit` False."""
     if not available(session):
         raise InvoicingUnavailable("Invoices cannot be issued: switch on Point of Sale and Invoices first")
     import ziira.modules.pos.public as sales
@@ -46,5 +48,6 @@ def issue(session: Session, *, company_id: UUID, branch_id: UUID, customer_id: U
         lines=[sales.InvoiceLineIn(product_id=UUID(str(x["product_id"])), description=x.get("description") or "",
                                    quantity=Decimal(x["quantity"]), unit_price=Decimal(x["unit_price"]),
                                    discount=Decimal(x.get("discount") or 0)) for x in lines],
-        source_type=SOURCE_TYPE, source_id=run_id, due_days=due_days, memo=memo, issue_date=issue_date)
+        source_type=SOURCE_TYPE, source_id=run_id, due_days=due_days, memo=memo, issue_date=issue_date,
+        enforce_credit_limit=enforce_credit_limit)
     return IssuedInvoice(made.id, made.number, made.total, made.due_date)

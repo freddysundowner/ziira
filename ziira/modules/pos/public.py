@@ -124,13 +124,14 @@ def issue_invoice_from_lines(session: Session, *, company_id: UUID, branch_id: U
                              lines: list[InvoiceLineIn], source_type: str, source_id: UUID,
                              due_days: int | None = None, memo: str | None = None,
                              issue_date: date | None = None, location_id: UUID | None = None,
-                             settled_now: Decimal = Decimal(0)) -> InvoiceRef:
+                             settled_now: Decimal = Decimal(0), enforce_credit_limit: bool = True) -> InvoiceRef:
     """Issue a customer invoice for plain lines (services, time, a membership period) with the normal invoice service:
     numbering, tax, credit limit, `sale.posted` / `invoice.issued` events, posting rules and audit all apply, and the
     caller needs 'invoices.manage' at the branch. Idempotent by (`source_type`, `source_id`): asking again returns the
     first invoice and creates nothing (after it is cancelled, asking again issues a new one). Lines are at the agreed
     price (no price-override permission needed). `settled_now` is what the caller pays or settles in the same
-    transaction (it does not count against the customer's credit limit). `location_id` names the stock location goods
+    transaction (it does not count against the customer's credit limit). `enforce_credit_limit` False skips the limit
+    (a customer on hold is still refused). `location_id` names the stock location goods
     on the lines leave from (needed only when a line is a stocked product: a retail item sold with a service). Raises
     `ValidationFailed` for a bad line or a customer of another company, and the whole call rolls back with the
     caller's transaction."""
@@ -157,6 +158,7 @@ def issue_invoice_from_lines(session: Session, *, company_id: UUID, branch_id: U
     view = invoices.issue_invoice(
         session, customer_id=customer_id, branch_id=branch_id, issue_date=issue_date, terms_days=due_days,
         notes=memo, agreed_prices=True, location_id=location_id, settled_now=settled_now,
+        enforce_credit_limit=enforce_credit_limit,
         lines=[invoices.InvoiceLineIn(product_id=x.product_id, quantity=x.quantity, unit_price=x.unit_price,
                                       discount=x.discount, description=x.description) for x in lines])
     view.invoice.source_type, view.invoice.source_id = source_type.strip(), source_id

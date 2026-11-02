@@ -477,7 +477,11 @@
     "freezeMaxHint": "Acha wazi kwa bila kikomo, 0 kuzuia kabisa.",
     "freezeFee": "Ada ya kusimamisha",
     "freezeFeeHint": "Hutozwa mwanachama anapoomba kusimamisha. 0 kwa hakuna.",
-    "passNoHolds": "Kibali hakiwezi kusimamishwa."
+    "passNoHolds": "Kibali hakiwezi kusimamishwa.",
+    "autoItem": "\"{{name}}\" litatumika kama jina kwenye ankara. Hakuna kingine cha kuweka.",
+    "thisPlan": "Mpango huu",
+    "moreOptions": "Chaguo zaidi",
+    "fewerOptions": "Chaguo chache"
   },
   "priceChange": {
     "button": "Mabadiliko ya bei",
@@ -571,7 +575,8 @@
         "title": "Jaribu dawati la kuingia",
         "hint": "Muingize mtu uone mlango ukifanya kazi."
       }
-    }
+    },
+    "optional": "Si lazima, ukiwa tayari:"
   },
   "arrears": {
     "hint": "Kila mwenye ankara iliyopita tarehe ya malipo, wa zamani zaidi kwanza.",
@@ -796,3 +801,18 @@
     "noEarningsHint": "Mapato huonekana mkufunzi anapomaliza kipindi."
   }
 }
+  },
+  "codeHintAuto": "Acha wazi: msimbo utatengenezwa kutoka kwa jina",
+  "moreTools": {
+    "label": "Onyesha zana zaidi (ripoti, ankara zinazojirudia, ziada)"
+  },
+  "quick": {
+    "title": "Tengeneza mpango wako wa kwanza",
+    "hint": "Jina na bei tu. Unaweza kubadilisha chochote baadaye.",
+    "defaultName": "Uanachama wa kila mwezi",
+    "name": "Jina la mpango",
+    "fee": "Bei kwa mwezi ({{currency}})",
+    "joining": "Ada ya kujiunga, mara moja ({{currency}})",
+    "joiningHint": "Acha wazi kama hakuna",
+    "create": "Tengeneza mpango",
+    "note": "Jina la ankara na msimbo vinatengenezwa kwa ajili yako. Muda wa taarifa, kusitisha, wageni na sheria nyingine ziko chini ya Chaguo zaidi kwenye mpango."

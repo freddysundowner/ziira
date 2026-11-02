@@ -178,6 +178,35 @@ def set_selling_price(session: Session, company_id: UUID, product_id: UUID, pric
     return item.id
 
 
+def ensure_service_item(session: Session, company_id: UUID, name: str) -> UUID:
+    """The id of the company's active service item with this name, made (no price, the business's first unit and its
+    zero-rate or first tax code) when there is none. For units that bill something they are told the name of, such as a
+    membership plan. Needs 'products.manage' when it has to make one."""
+    import re
+
+    from ziira.modules.products.repository.models import Product
+    from ziira.modules.products.services.create_product import create_product
+    from ziira.modules.products.services.seed_industry import _uom_and_tax
+    from ziira.sdk import ValidationFailed
+
+    wanted = " ".join(name.split())
+    for found in service_items(session, company_id, wanted):
+        if found.name.casefold() == wanted.casefold():
+            return found.id
+    uom_id, tax_id = _uom_and_tax(session, {})
+    if uom_id is None or tax_id is None:
+        raise ValidationFailed("Set up a unit of measure and a tax code in Products first")
+    base = re.sub(r"[^A-Z0-9]+", "-", wanted.upper()).strip("-")[:30] or "SERVICE"
+    sku, n = base, 1
+    while products_repo.sku_exists(session, company_id, sku):
+        n += 1
+        sku = f"{base[:26]}-{n}"
+    product = create_product(session, company_id=company_id, sku=sku, name=wanted, base_uom_id=uom_id,
+                             tax_code_id=tax_id, product_type="service")
+    assert isinstance(product, Product)
+    return product.id
+
+
 def service_items(session: Session, company_id: UUID, search: str | None = None, limit: int = 200) -> list[ProductView]:
     """The company's active service items (`product_type = service`: no stock moves), by name, for units that sell
     time or work, such as Bookings."""

@@ -7,6 +7,7 @@ import {
 } from "@/sdk";
 
 import { SetupCard } from "../components/SetupCard";
+import { setMoreTools, useMoreTools } from "../moreTools";
 import { MemberForm } from "../components/MemberForm";
 import { PackageDrawer } from "../components/PackageDrawer";
 import { SellPackageForm } from "../components/SellPackageForm";
@@ -43,6 +44,7 @@ export default function MembersPage() {
   const [pkgStatus, setPkgStatus] = useState("active");
   const [openPackage, setOpenPackage] = useState<SoldPackage | null>(null);
   const plans = usePlans(company?.id);
+  const more = useMoreTools();
   const summary = useQuery({ queryKey: ["memberships", "summary"], queryFn: () => unwrap(api.GET("/api/v1/memberships/summary", { params: { query: {} } })) });
   const s = summary.data;
 
@@ -71,6 +73,7 @@ export default function MembersPage() {
           hint={attention > 0 ? t("stats.attentionHint") : t("stats.allClear")} />
       </div>
       {summary.error && <Alert tone="warn" className="mb-4">{summary.error.message}</Alert>}
+      <div className="mb-4 flex justify-end"><Switch checked={more} onChange={setMoreTools} label={t("moreTools.label")} /></div>
       <SetupCard companyId={company?.id ?? ""} onSignUp={() => setSigning(true)} />
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "members", label: t("tabs.members") }, { id: "packages", label: t("tabs.packages") }]} />
       {tab === "members" && (

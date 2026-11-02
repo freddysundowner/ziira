@@ -33948,8 +33948,11 @@ export interface components {
              * Format: uuid
              */
             company_id: string;
-            /** Code */
-            code: string;
+            /**
+             * Code
+             * @description Left out: made from the name
+             */
+            code?: string | null;
             /** Name */
             name: string;
             /** Fee */
@@ -33985,6 +33988,12 @@ export interface components {
              * @description The service item the fee is invoiced as
              */
             service_product_id?: string | null;
+            /**
+             * Invoice As Plan Name
+             * @description No item given: find or make one named like the plan
+             * @default false
+             */
+            invoice_as_plan_name: boolean;
             /** Terms */
             terms?: string | null;
             /** Kind */

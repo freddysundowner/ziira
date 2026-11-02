@@ -97,10 +97,19 @@ def test_signing_up_invoices_the_first_period_and_grants_the_credits(client, sho
 
 
 def test_a_failed_first_invoice_signs_nobody_up(client, shop) -> None:  # type: ignore[no-untyped-def]
+    held = customer(client, shop, "On Hold", limit="100000")
+    assert client.patch(f"/api/v1/crm/customers/{held['id']}", headers=shop["owner"],
+                        json={"status": "on_hold"}).status_code == 200            # a customer on hold cannot be invoiced
+    r = sign_up(client, shop, held, date(2026, 6, 1))
+    assert r.status_code in (400, 409, 422), r.text
+    assert client.get(f"{M}/members", headers=shop["owner"], params={"customer_id": held["id"]}).json() == []
+
+
+def test_a_member_over_the_credit_limit_is_still_signed_up(client, shop) -> None:  # type: ignore[no-untyped-def]
+    """A gym's membership fee is chased by the overdue rules, so the customer's credit limit does not stop a sign-up."""
     poor = customer(client, shop, "Over The Limit", limit="50")                   # fee 100.00, limit 50.00
     r = sign_up(client, shop, poor, date(2026, 6, 1))
-    assert r.status_code in (400, 409, 422), r.text
-    assert client.get(f"{M}/members", headers=shop["owner"], params={"customer_id": poor["id"]}).json() == []
+    assert r.status_code == 201, r.text
 
 
 def test_the_plan_s_price_at_sign_up_is_kept_when_the_plan_changes(client, shop) -> None:  # type: ignore[no-untyped-def]
@@ -169,9 +178,11 @@ def test_missed_periods_are_caught_up_within_the_limit_and_the_rest_are_flagged(
 
 
 def test_a_renewal_that_cannot_be_invoiced_waits_and_is_flagged_then_goes_through_once(client, shop) -> None:  # type: ignore[no-untyped-def]
-    cust = customer(client, shop, "Limit Larry", limit="150")                       # room for one 100.00 invoice
+    cust = customer(client, shop, "Limit Larry", limit="100000")
     m = sign_up(client, shop, cust, date(2026, 2, 1)).json()
-    run_billing(shop, date(2026, 3, 2))                                              # a second invoice breaks the limit
+    assert client.patch(f"/api/v1/crm/customers/{cust['id']}", headers=shop["owner"],
+                        json={"status": "on_hold"}).status_code == 200               # an account on hold cannot be invoiced
+    run_billing(shop, date(2026, 3, 2))
     waiting = member(client, shop, m["id"])
     assert waiting["next_renewal_date"] == "2026-03-01" and D(waiting["balance"]) == 4         # not renewed
     runs = client.get(f"{M}/invoice-runs", headers=shop["owner"], params={"owner_id": m["id"], "status": "failed"}).json()
@@ -181,8 +192,8 @@ def test_a_renewal_that_cannot_be_invoiced_waits_and_is_flagged_then_goes_throug
     run_billing(shop, date(2026, 3, 2))                                              # tried again, flagged only once
     assert len(rows(shop, "select 1 from kernel.exception_item where kind = 'recurring_invoice_failed' "
                           "and ref_id = :r", r=runs[0]["id"])) == 1
-    client.post(f"/api/v1/crm/customers/{cust['id']}/credit", headers=shop["fm"], json={
-        "credit_limit": "100000", "payment_terms_days": 14, "reason": "Raised"})
+    assert client.patch(f"/api/v1/crm/customers/{cust['id']}", headers=shop["owner"],
+                        json={"status": "active"}).status_code == 200
     run_billing(shop, date(2026, 3, 3))
     done = member(client, shop, m["id"])
     assert done["next_renewal_date"] == "2026-04-01"

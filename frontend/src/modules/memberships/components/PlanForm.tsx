@@ -35,6 +35,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
   };
   const f = useFormState(initial);
   const [section, setSection] = useState<Section>("basics");
+  const [more, setMore] = useState(false);            // the simple form asks for a name and a price; the rest is behind "More options"
   const [rollover, setRollover] = useState(plan?.rollover ?? false);
   const [trial, setTrial] = useState(plan?.is_trial ?? false);
   const [gym, setGym] = useState(plan?.gym_access ?? true);
@@ -45,7 +46,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
   const { reset } = f;
   useEffect(() => {
     if (!open) return;
-    reset(); setSection("basics"); setRollover(plan?.rollover ?? false); setTrial(plan?.is_trial ?? false); setGym(plan?.gym_access ?? true);
+    reset(); setSection("basics"); setMore(false); setRollover(plan?.rollover ?? false); setTrial(plan?.is_trial ?? false); setGym(plan?.gym_access ?? true);
     setProduct(plan?.service_product_id ?? ""); setJoiningProduct(plan?.joining_fee_product_id ?? ""); setWindows(readWindows(plan?.access_rules)); setBranchIds(plan?.branch_ids ?? []);
   }, [open, plan?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -71,7 +72,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
       };
       return plan
         ? unwrap(api.PATCH("/api/v1/memberships/plans/{plan_id}", { params: { path: { plan_id: plan.id } }, body: { ...common, name: v.name.trim(), status: v.status as "active" } }))
-        : unwrap(api.POST("/api/v1/memberships/plans", { body: { ...common, company_id: company?.id ?? "", code: v.code.trim(), name: v.name.trim(), billing_interval: (isPass ? "month" : v.billing_interval) as "month" } }));
+        : unwrap(api.POST("/api/v1/memberships/plans", { body: { ...common, company_id: company?.id ?? "", code: v.code.trim() || null, invoice_as_plan_name: !product, name: v.name.trim(), billing_interval: (isPass ? "month" : v.billing_interval) as "month" } }));
     },
     onSuccess: (p) => {
       void qc.invalidateQueries({ queryKey: ["memberships-plans"] });
@@ -88,13 +89,13 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
     <Drawer open={open} onClose={onClose} title={editing ? t("editPlan") : t("newPlan")}
       footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button type="submit" form="plan-form" loading={save.isPending}>{t("save")}</Button></>}>
       <form id="plan-form" onSubmit={submit} className="space-y-4">
-        <Tabs value={section} onChange={setSection} tabs={SECTIONS.map((id) => ({ id, label: t(`planx.sections.${id}`) }))} />
+        {more && <Tabs value={section} onChange={setSection} tabs={SECTIONS.map((id) => ({ id, label: t(`planx.sections.${id}`) }))} />}
         {plan?.is_example && <Alert tone="warn">{t("planx.exampleNote")}</Alert>}
 
         <div className="space-y-4" hidden={section !== "basics"}>
           <FormGrid>
             <Field label={t("name")} required error={f.error("name")}><Input {...f.bind("name")} required autoFocus maxLength={200} /></Field>
-            <Field label={t("code")} hint={editing ? t("codeFixed") : t("codeHint")} error={f.error("code")}><Input {...f.bind("code")} required disabled={editing} maxLength={30} /></Field>
+            {more && <Field label={t("code")} hint={editing ? t("codeFixed") : t("codeHintAuto")} error={f.error("code")}><Input {...f.bind("code")} required={editing} disabled={editing} maxLength={30} /></Field>}
           </FormGrid>
           <Field label={t("planx.kind")} hint={t(`planx.kindHint.${kind}`)}>
             <Select {...f.bind("kind")}>{(["recurring", "fixed_term", "pass"] as const).map((k) => <option key={k} value={k}>{t(`planx.kinds.${k}`)}</option>)}</Select>
@@ -109,16 +110,17 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
                 </Field>)}
           </FormGrid>
           {isPass && <Switch checked={trial} onChange={setTrial} label={t("planx.isTrial")} />}
-          <Field label={t("planx.description")} hint={t("planx.descriptionHint")} error={f.error("description")}><Textarea rows={2} maxLength={1000} {...f.bind("description")} /></Field>
-          {hasProducts && <ServicePicker value={product} onChange={setProduct} label={t("invoicedAs")} hint={t("invoicedAsHint")} clearable />}
-          {editing && (
+          {more && <Field label={t("planx.description")} hint={t("planx.descriptionHint")} error={f.error("description")}><Textarea rows={2} maxLength={1000} {...f.bind("description")} /></Field>}
+          {more && hasProducts && <ServicePicker value={product} onChange={setProduct} label={t("invoicedAs")} hint={t("invoicedAsHint")} clearable />}
+          {!more && !product && hasProducts && !editing && <p className="text-sm text-muted">{t("planx.autoItem", { name: f.values.name.trim() || t("planx.thisPlan") })}</p>}
+          {more && editing && (
             <Field label={t("status")} hint={t("retireHint")}>
               <Select {...f.bind("status")}>{(["active", "retired"] as const).map((s) => <option key={s} value={s}>{t(`catalogueStatus.${s}`)}</option>)}</Select>
             </Field>
           )}
         </div>
 
-        <div className="space-y-4" hidden={section !== "contract"}>
+        <div className="space-y-4" hidden={!more || section !== "contract"}>
           {isPass && <Alert tone="info">{t("planx.passNoContract")}</Alert>}
           {kind === "fixed_term" && (
             <Field label={t("planx.termPeriods")} hint={t("planx.termPeriodsHint")} error={f.error("term_periods")}><NumberInput value={f.values.term_periods} onChange={(v) => f.set("term_periods", whole(v))} /></Field>
@@ -141,7 +143,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
           <Field label={t("terms")} hint={t("termsHint")} error={f.error("terms")}><Textarea rows={3} maxLength={4000} {...f.bind("terms")} /></Field>
         </div>
 
-        <div className="space-y-4" hidden={section !== "access"}>
+        <div className="space-y-4" hidden={!more || section !== "access"}>
           <Switch checked={gym} onChange={setGym} label={t("planx.gymAccess")} />
           <div>
             <p className="mb-1 text-sm font-semibold">{t("planx.windows")}</p>
@@ -162,7 +164,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
           <Field label={t("planx.guests")} hint={t("planx.guestsHint")}><NumberInput value={f.values.guests} onChange={(v) => f.set("guests", whole(v))} /></Field>
         </div>
 
-        <div className="space-y-4" hidden={section !== "holds"}>
+        <div className="space-y-4" hidden={!more || section !== "holds"}>
           {isPass ? <Alert tone="info">{t("planx.passNoHolds")}</Alert> : (
             <>
               <Field label={t("planx.freezeMax")} hint={t("planx.freezeMaxHint")} error={f.error("freeze_max_days")}><NumberInput value={f.values.freeze_max_days} onChange={(v) => f.set("freeze_max_days", whole(v))} /></Field>
@@ -171,7 +173,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
           )}
         </div>
 
-        <div className="space-y-4" hidden={section !== "extras"}>
+        <div className="space-y-4" hidden={!more || section !== "extras"}>
           <FormGrid>
             <Field label={t("creditsPerPeriod")} hint={t("creditsPerPeriodHint")} error={f.error("credits_per_period")}><NumberInput value={f.values.credits_per_period} onChange={(v) => f.set("credits_per_period", v)} /></Field>
             <Field label={t("discountPercent")} hint={t("discountPercentHint")} error={f.error("discount_percent")}><NumberInput value={f.values.discount_percent} onChange={(v) => f.set("discount_percent", v)} /></Field>
@@ -179,6 +181,7 @@ export function PlanForm({ open, onClose, plan }: { open: boolean; onClose: () =
           <Field label={t("coveredServices")} hint={t("coveredServicesHint")} error={f.error("covered_services")}><Input {...f.bind("covered")} placeholder={t("coveredPlaceholder")} /></Field>
           <Switch checked={rollover} onChange={setRollover} label={t("rollover")} />
         </div>
+        <Button type="button" variant="ghost" onClick={() => { setMore(!more); setSection("basics"); }}>{more ? t("planx.fewerOptions") : t("planx.moreOptions")}</Button>
       </form>
     </Drawer>
   );

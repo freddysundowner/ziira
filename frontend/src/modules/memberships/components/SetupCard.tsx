@@ -8,7 +8,8 @@ import { checkinPath, cataloguePath } from "../public";
 const LINKS: Record<string, string> = {
   plans: cataloguePath, services: cataloguePath, terms: `${cataloguePath}?tab=terms`, policies: `${cataloguePath}?tab=policies`, checkin: checkinPath,
 };
-const ORDER = ["plans", "services", "terms", "policies", "members", "checkin"];
+const ORDER = ["plans", "services", "members", "checkin"];
+const OPTIONAL = ["terms", "policies"];
 
 /** The first-run checklist: only the steps still to do, each leading to the right page. Gone once everything is done. */
 export function SetupCard({ companyId, onSignUp }: { companyId: string; onSignUp: () => void }) {
@@ -19,10 +20,12 @@ export function SetupCard({ companyId, onSignUp }: { companyId: string; onSignUp
     queryFn: () => unwrap(api.GET("/api/v1/memberships/setup-steps", { params: { query: { company_id: companyId } } })),
   });
   const todo = ORDER.map((id) => q.data?.find((s) => s.id === id)).filter((s): s is NonNullable<typeof s> => !!s && !s.done);
+  const optional = OPTIONAL.map((id) => q.data?.find((s) => s.id === id)).filter((s): s is NonNullable<typeof s> => !!s && !s.done);
   if (!q.data || todo.length === 0) return null;
-  const done = q.data.length - todo.length;
+  const required = q.data.filter((s) => ORDER.includes(s.id));
+  const done = required.length - todo.length;
   return (
-    <Card title={t("setup.title")} description={t("setup.progress", { done, total: q.data.length })} className="mb-4">
+    <Card title={t("setup.title")} description={t("setup.progress", { done, total: required.length })} className="mb-4">
       <ul className="divide-y divide-line">
         {todo.map((s) => (
           <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
@@ -35,6 +38,14 @@ export function SetupCard({ companyId, onSignUp }: { companyId: string; onSignUp
           </li>
         ))}
       </ul>
+      {optional.length > 0 && (
+        <p className="mt-3 border-t border-line pt-3 text-sm text-muted">
+          {t("setup.optional")}{" "}
+          {optional.map((s, i) => (
+            <span key={s.id}>{i > 0 && " · "}<Link className="font-medium text-brand-strong hover:underline" to={LINKS[s.id] ?? ""}>{t(`setup.steps.${s.id}.title`)}</Link></span>
+          ))}
+        </p>
+      )}
     </Card>
   );
 }

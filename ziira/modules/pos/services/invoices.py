@@ -137,12 +137,13 @@ def issue_credit_sale_invoice(session: Session, sale: Sale, customer: CustomerVi
 def issue_invoice(session: Session, *, customer_id: UUID, lines: list[InvoiceLineIn], branch_id: UUID | None = None,
                   location_id: UUID | None = None, issue_date: date | None = None, terms_days: int | None = None,
                   sales_order_id: UUID | None = None, notes: str | None = None,
-                  agreed_prices: bool = False, settled_now: Decimal = Decimal(0)) -> InvoiceView:
+                  agreed_prices: bool = False, settled_now: Decimal = Decimal(0),
+                  enforce_credit_limit: bool = True) -> InvoiceView:
     """Invoice a customer and deliver the goods. Prices include VAT; the customer's group price list applies. The credit
     check applies as for a credit sale. Needs 'invoices.manage' at the branch (that of the stock location when one is
     named). `agreed_prices` (a confirmed sales order) takes the prices and discounts as agreed with the customer.
     `settled_now` is the part the caller will pay or settle in the same transaction (a checkout paid at the desk): it
-    does not count against the customer's credit limit."""
+    does not count against the customer's credit limit. `enforce_credit_limit` False skips the limit (not the hold)."""
     ctx = current_context()
     if not unit_enabled(session, "crm"):
         raise ValidationFailed("Enable CRM to invoice customers")
@@ -201,7 +202,8 @@ def issue_invoice(session: Session, *, customer_id: UUID, lines: list[InvoiceLin
     tax_total = sum((a.tax for a in amounts), Decimal(0))
     if total <= 0:
         raise ValidationFailed("An invoice must be worth more than nothing")
-    credit.check_credit(session, customer, max(total - settled_now, Decimal(0)), offline=False)
+    credit.check_credit(session, customer, max(total - settled_now, Decimal(0)), offline=False,
+                        enforce_limit=enforce_credit_limit)
     terms = customer.payment_terms_days if terms_days is None else terms_days
     if terms < 0 or terms > 365:
         raise ValidationFailed("Payment terms are between 0 and 365 days")

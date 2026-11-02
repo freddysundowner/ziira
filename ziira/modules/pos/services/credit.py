@@ -37,9 +37,11 @@ def due_date(day: date, customer: CustomerView) -> date:
     return day + timedelta(days=customer.payment_terms_days)
 
 
-def check_credit(session: Session, customer: CustomerView, amount: Decimal, *, offline: bool) -> list[str]:
+def check_credit(session: Session, customer: CustomerView, amount: Decimal, *, offline: bool,
+                 enforce_limit: bool = True) -> list[str]:
     """Can the customer take `amount` more on account? Online it raises when not; offline it returns what is wrong, as
-    warnings, because the goods have already gone."""
+    warnings, because the goods have already gone. With `enforce_limit` False the limit is not looked at (a gym's
+    membership fees are chased by its own overdue rules); a customer on hold is still refused."""
     # one customer's credit decisions happen one at a time, so two sales cannot both fit under the same limit
     pos_repo.lock_key(session, f"pos.credit:{customer.id}")
     problems: list[tuple[str, str]] = []
@@ -47,7 +49,7 @@ def check_credit(session: Session, customer: CustomerView, amount: Decimal, *, o
         problems.append((f"customer_on_hold:{customer.code}",
                          f"{customer.name} is {customer.status.replace('_', ' ')}"))
     already = owed(session, customer.id)
-    if already + amount > customer.credit_limit:
+    if enforce_limit and already + amount > customer.credit_limit:
         problems.append((f"over_credit_limit:{customer.code}:{already + amount}:{customer.credit_limit}",
                          f"{customer.name} owes {already} and this sale adds {amount}, over their credit limit of "
                          f"{customer.credit_limit}"))

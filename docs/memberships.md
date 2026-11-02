@@ -133,6 +133,23 @@ A pack ships `data/memberships.toml` (`[settings]`, `[waiver]`, `[[plan]]`, `[[p
 (`memberships.catalogue`). Plans and packages are marked `is_example`; a code the business already has is never touched (only a missing service-item link is
 topped up); policies are written only if the company never saved any; the terms only if there are none. See `docs/industry-packs.md` and `docs/pack_fitness.md`.
 
+## The simple start (gyms)
+
+A new gym needs a name and a price, nothing more:
+
+- **Quick start.** On Plans, with no plan yet, a card asks the plan name, the monthly price and an optional joining fee, and makes the plan.
+- **A plan needs a name, a kind and a price.** `POST /plans` with no `code` makes one from the name (`MONTHLY-GYM`, then `MONTHLY-GYM-2`), and with
+  `invoice_as_plan_name` and no `service_product_id` finds or makes a service item with the plan's name (`products.public.ensure_service_item`: the
+  business's first unit and its zero-rate or first tax code, no price). Everything else (code, invoice item, notice, joining-fee item, access times,
+  holds, guest passes, credits) is under **More options** on the plan form.
+- **No credit limit needed for members.** Membership and package invoices are issued with `enforce_credit_limit=False`
+  (`pos.public.issue_invoice_from_lines`); a customer on hold is still refused, and late fees are handled by the overdue rules (policies). Plain
+  recurring invoices (schedules) keep the limit.
+- **Fewer steps to start.** The first-run list asks for plans, an invoice item (only if a plan lacks one), a first member and a first check-in. Terms
+  and rules are offered as optional links; they have working defaults (terms are not required to check in).
+- **Fewer menu entries.** Recurring invoices, Reports and Extras are listed in the sidebar only after the owner turns on "Show more tools" on the
+  Members page (a per-device choice; the pages still open from links).
+
 ## Gyms and studios
 
 Everything below is part of this unit; the **fitness pack** (`docs/pack_fitness.md`) only supplies starting data. Nothing names a country.

@@ -477,7 +477,11 @@
     "freezeMaxHint": "Leave empty for no limit, 0 to allow none.",
     "freezeFee": "Fee for a hold",
     "freezeFeeHint": "Charged when a member asks for a hold. 0 for none.",
-    "passNoHolds": "A pass cannot be put on hold."
+    "passNoHolds": "A pass cannot be put on hold.",
+    "autoItem": "\"{{name}}\" will be used as the name on the invoice. Nothing else to set up.",
+    "thisPlan": "This plan",
+    "moreOptions": "More options",
+    "fewerOptions": "Fewer options"
   },
   "priceChange": {
     "button": "Price changes",
@@ -571,7 +575,8 @@
         "title": "Try the check-in desk",
         "hint": "Check someone in to see the door work."
       }
-    }
+    },
+    "optional": "Optional, when you are ready:"
   },
   "arrears": {
     "hint": "Everyone who has an invoice past its due date, oldest first.",
@@ -796,3 +801,18 @@
     "noEarningsHint": "Earnings appear when a trainer completes a session."
   }
 }
+  },
+  "codeHintAuto": "Leave empty: a code is made from the name",
+  "moreTools": {
+    "label": "Show more tools (reports, recurring invoices, extras)"
+  },
+  "quick": {
+    "title": "Make your first plan",
+    "hint": "Just a name and a price. You can change anything later.",
+    "defaultName": "Monthly membership",
+    "name": "Plan name",
+    "fee": "Price per month ({{currency}})",
+    "joining": "Joining fee, once ({{currency}})",
+    "joiningHint": "Leave empty if there is none",
+    "create": "Create plan",
+    "note": "The invoice name and code are made for you. Notice periods, holds, guest passes and other rules are under More options on the plan."

@@ -23,13 +23,14 @@ export default defineModule({
   menu: [
     { label: "memberships:menu", to: "/memberships", permission: "memberships.view", order: 50, area: "services", icon: "customers", keywords: "memberships:keywords" },
     { label: "memberships:catalogueMenu", to: "/memberships/plans", under: "/memberships", permission: "memberships.view", order: 52, area: "services", icon: "boxes", keywords: "memberships:catalogueKeywords" },
-    { label: "memberships:recurringMenu", to: "/memberships/recurring", under: "/memberships", permission: "memberships.view", order: 54, area: "services", icon: "receipt", keywords: "memberships:recurringKeywords" },
+    { label: "memberships:recurringMenu", to: "/memberships/recurring", under: "/memberships", permission: "memberships.view", order: 54, area: "services", icon: "receipt", keywords: "memberships:recurringKeywords", when: "memberships.more" },
     { label: "memberships:checkinMenu", to: "/memberships/checkin", under: "/memberships", permission: "memberships.checkin", order: 51, area: "services", icon: "customers", keywords: "memberships:checkinKeywords" },
     { label: "memberships:arrearsMenu", to: "/memberships/arrears", under: "/memberships", permission: "memberships.view", order: 53, area: "services", icon: "cash", keywords: "memberships:arrearsKeywords" },
-    { label: "memberships:reportsMenu", to: "/memberships/reports", under: "/memberships", permission: "memberships.reports", order: 55, area: "services", icon: "reports", keywords: "memberships:reportsKeywords" },
-    { label: "memberships:extrasMenu", to: "/memberships/extras", under: "/memberships", permission: "memberships.view", order: 56, area: "services", icon: "boxes", keywords: "memberships:extrasKeywords" },
+    { label: "memberships:reportsMenu", to: "/memberships/reports", under: "/memberships", permission: "memberships.reports", order: 55, area: "services", icon: "reports", keywords: "memberships:reportsKeywords", when: "memberships.more" },
+    { label: "memberships:extrasMenu", to: "/memberships/extras", under: "/memberships", permission: "memberships.view", order: 56, area: "services", icon: "boxes", keywords: "memberships:extrasKeywords", when: "memberships.more" },
   ],
   slots: {
+    "shell.background": [{ component: () => import("./slots/MoreToolsFlag") }],
     "dashboard.widgets": [
       { label: "memberships:widget.checkinsTitle", component: () => import("./slots/CheckinsTodayWidget"), permission: "memberships.view", order: 36 },
       { label: "memberships:widget.expiringTitle", component: () => import("./slots/ExpiringWidget"), permission: "memberships.view", order: 36.1 },

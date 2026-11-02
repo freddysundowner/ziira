@@ -64,14 +64,35 @@ def _check_kind(kind: str, valid_days: object, term_periods: object) -> None:
         raise ValidationFailed("A fixed-term plan says how many periods the contract runs")
 
 
-def create_plan(session: Session, *, company_id: UUID, code: str, name: str, fee: Decimal, billing_interval: str,
+def _code_from_name(session: Session, company_id: UUID, name: str) -> str:
+    """A plan code made from its name ("Monthly gym" -> MONTHLY-GYM), made unique with a number when needed."""
+    import re
+
+    base = re.sub(r"[^A-Z0-9]+", "-", name.upper()).strip("-")[:26] or "PLAN"
+    code, n = base, 1
+    while repo.one(session, "select 1 as x from memberships.plan where company_id = :c and code = :k",
+                   c=company_id, k=code) is not None:
+        n += 1
+        code = f"{base}-{n}"
+    return code
+
+
+def create_plan(session: Session, *, company_id: UUID, code: str | None = None, name: str, fee: Decimal,
+                billing_interval: str,
                 credits_per_period: Decimal = Decimal(0), discount_percent: Decimal = Decimal(0),
                 covered_services: list[str] | None = None, rollover: bool = False,
-                service_product_id: UUID | None = None, terms: str | None = None, **extra: object) -> repo.Row:
-    """Add a plan. `service_product_id` is the service item the fee is invoiced as. Needs 'memberships.plans'."""
+                service_product_id: UUID | None = None, terms: str | None = None,
+                invoice_as_plan_name: bool = False, **extra: object) -> repo.Row:
+    """Add a plan. `service_product_id` is the service item the fee is invoiced as; with `invoice_as_plan_name` and no
+    item given, one named like the plan is found or made. A plan without a code gets one made from its name. Needs
+    'memberships.plans'."""
     common.require(PLANS, company_id)
     check_company(session, company_id)
-    cleaned = rules.clean_code(code)
+    cleaned = rules.clean_code(code) if code else _code_from_name(session, company_id, rules.clean_name(name))
+    if service_product_id is None and invoice_as_plan_name and common.unit_enabled(session, "products"):
+        from ziira.modules.products.public import ensure_service_item
+
+        service_product_id = ensure_service_item(session, company_id, rules.clean_name(name))
     if repo.one(session, "select 1 as x from memberships.plan where company_id = :c and code = :k",
                 c=company_id, k=cleaned) is not None:
         raise Conflict(f"There is already a plan with code {cleaned}")

@@ -85,7 +85,7 @@ class MembershipSettingsOut(Out):
 # --------------------------------------------------------------------------- plans and packages
 class MembershipPlanIn(BaseModel):
     company_id: UUID
-    code: str = Field(min_length=1, max_length=30)
+    code: str | None = Field(default=None, min_length=1, max_length=30, description="Left out: made from the name")
     name: str = Field(min_length=1, max_length=200)
     fee: Money
     billing_interval: Interval = "month"
@@ -94,6 +94,7 @@ class MembershipPlanIn(BaseModel):
     covered_services: Services = []
     rollover: bool = False
     service_product_id: UUID | None = Field(default=None, description="The service item the fee is invoiced as")
+    invoice_as_plan_name: bool = Field(default=False, description="No item given: find or make one named like the plan")
     terms: str | None = Field(default=None, max_length=4000)
     kind: Literal["recurring", "fixed_term", "pass"] | None = None
     valid_days: int | None = Field(default=None, ge=1, le=3660, description="A pass: days it is valid")
