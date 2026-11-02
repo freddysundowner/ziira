@@ -15,7 +15,8 @@ export function TakePaymentDialog({ open, onClose, memberId, companyId, owed }: 
   const [method, setMethod] = useState<(typeof METHODS)[number]>("cash");
   const [reference, setReference] = useState("");
   const [receipt, setReceipt] = useState<string | null>(null);
-  useEffect(() => { if (open) { setAmount(owed); setMethod("cash"); setReference(""); setReceipt(null); } }, [open, owed]);
+  // reset only when the dialog opens: taking the payment changes `owed`, which must not wipe the receipt that is showing
+  useEffect(() => { if (open) { setAmount(owed); setMethod("cash"); setReference(""); setReceipt(null); } }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const pay = useMutation({
     meta: { silent: true },
     mutationFn: () => unwrap(api.POST("/api/v1/memberships/members/{member_id}/payments", { params: { path: { member_id: memberId } }, body: { amount, method, reference: reference.trim() || null } })),

@@ -552,8 +552,8 @@
     "go": "Do it",
     "steps": {
       "plans": {
-        "title": "Set your prices",
-        "hint": "The plans you start with show example prices. Set your own."
+        "title": "Make your first plan",
+        "hint": "A name and a price is enough."
       },
       "services": {
         "title": "Link plans to service items",

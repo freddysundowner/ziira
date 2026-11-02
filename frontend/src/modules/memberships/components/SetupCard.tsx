@@ -19,10 +19,13 @@ export function SetupCard({ companyId, onSignUp }: { companyId: string; onSignUp
     enabled: !!companyId, retry: false, queryKey: ["memberships", "setup-steps", companyId],
     queryFn: () => unwrap(api.GET("/api/v1/memberships/setup-steps", { params: { query: { company_id: companyId } } })),
   });
-  const todo = ORDER.map((id) => q.data?.find((s) => s.id === id)).filter((s): s is NonNullable<typeof s> => !!s && !s.done);
+  const hasPlan = q.data?.find((s) => s.id === "plans")?.done ?? false;
+  const missingItem = hasPlan && q.data?.find((s) => s.id === "services")?.done === false;   // only a problem once a plan exists without an invoice item
+  const steps = ORDER.filter((id) => id !== "services" || missingItem);
+  const todo = steps.map((id) => q.data?.find((s) => s.id === id)).filter((s): s is NonNullable<typeof s> => !!s && !s.done);
   const optional = OPTIONAL.map((id) => q.data?.find((s) => s.id === id)).filter((s): s is NonNullable<typeof s> => !!s && !s.done);
   if (!q.data || todo.length === 0) return null;
-  const required = q.data.filter((s) => ORDER.includes(s.id));
+  const required = q.data.filter((s) => steps.includes(s.id));
   const done = required.length - todo.length;
   return (
     <Card title={t("setup.title")} description={t("setup.progress", { done, total: required.length })} className="mb-4">
