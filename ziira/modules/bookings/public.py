@@ -49,8 +49,8 @@ from ziira.sdk import Session
 
 __all__ = [
     "CHECKOUT_TENDER", "AppointmentView", "AttendeeView", "BookResult", "CheckoutTender", "SessionView",
-    "TenderBalance", "TenderUse", "WaitlistView", "book_attendee", "cancel_attendee", "cancel_session",
-    "commission_figure",
+    "TenderBalance", "TenderUse", "WaitlistView", "appointments_between", "book_attendee", "cancel_attendee",
+    "cancel_session", "commission_figure",
     "confirm_waitlist_offer", "create_session", "create_weekly_sessions", "customer_appointments", "find_appointment",
     "get_session_view", "leave_waitlist", "list_sessions", "mark_attendee", "session_roster", "session_waitlist",
     "set_session_capacity", "substitute_session_resource"]
@@ -71,11 +71,22 @@ class AppointmentView:
     ends_at: datetime
     minutes_worked: int | None
     invoice_id: UUID | None
+    client_name: str | None = None
 
 
 def _view(a: Any) -> AppointmentView:
     return AppointmentView(a.id, a.company_id, a.branch_id, a.number, a.offer_id, a.customer_id, a.status, a.starts_at,
-                           a.ends_at, a.minutes_worked, a.invoice_id)
+                           a.ends_at, a.minutes_worked, a.invoice_id, a.client_name)
+
+
+def appointments_between(session: Session, branch_id: UUID, start: datetime, end: datetime, *,
+                         statuses: list[str] | None = None) -> list[AppointmentView]:
+    """A branch's appointments that overlap the period, earliest first (for a day list on another unit's screen)."""
+    from ziira.modules.bookings.services.access import view_scopes
+
+    rows = repo.list_appointments(session, view_scopes(), branch_id=branch_id, status=statuses, start=start, end=end,
+                                  limit=200)
+    return sorted((_view(a) for a in rows), key=lambda v: v.starts_at)
 
 
 def find_appointment(session: Session, appointment_id: UUID) -> AppointmentView | None:

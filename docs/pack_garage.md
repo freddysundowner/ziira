@@ -23,6 +23,7 @@ its own. Switching it on (at sign-up, or in Add-ons) copies the data below into 
 | Messages | `job_ready`, `job_estimate`, `job_extra_work`, `job_service_due`, `job_pickup_reminder` in English and Swahili (shipped with the platform) |
 | Intelligence | limits for stuck jobs, unanswered estimates and ready-not-collected suited to a workshop; the unit adds checks for late parts and overdue courtesy cars |
 | First-run steps | seven steps on Job settings > Getting started and a banner on Jobs: choose the three items, set the labour rate, check the standard times, switch on service reminders, take a first vehicle, send a first estimate, add insurers |
+| Health check | the usual vehicle health-check list (built in; the pack adds nothing to it) |
 | Sample week | six jobs: a finished service nobody collected, a clutch waiting for a part on order, an estimate waiting for the customer, an insurer repair with its claim (and payer), a phone screen, a tailoring alteration. Load and remove it in Getting started |
 
 ## What to edit first

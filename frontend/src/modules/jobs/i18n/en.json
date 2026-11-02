@@ -100,6 +100,7 @@
       "parts": "Parts and labour",
       "estimates": "Estimates",
       "timeline": "Timeline",
+      "health": "Health check",
       "photos": "Photos",
       "workshop": "Workshop"
     }
@@ -360,6 +361,7 @@
       "imei": "IMEI",
       "size": "size",
       "address": "address",
+      "vin": "VIN",
       "colour": "colour"
     }
   },

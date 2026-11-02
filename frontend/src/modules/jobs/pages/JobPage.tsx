@@ -6,6 +6,8 @@ import { customerPath } from "@/modules/crm/public";
 import { Alert, api, Badge, Button, ErrorState, formatDate, PageHeader, Skeleton, Tabs, unwrap, useCan, useTranslation } from "@/sdk";
 
 import { ClaimWork } from "../components/ClaimWork";
+import { ClockCard } from "../components/ClockCard";
+import { HealthCheckTab } from "../components/HealthCheckTab";
 import { EstimatesTab } from "../components/EstimatesTab";
 import { JobAlerts } from "../components/JobAlerts";
 import { JobActions } from "../components/JobActions";
@@ -20,7 +22,7 @@ import { useJob, useJobAction, useJobsCompany, useUnit, useWorkflow } from "../h
 import { assetHref } from "../public";
 import type { Job } from "../types";
 
-type Tab = "overview" | "parts" | "estimates" | "photos" | "workshop" | "timeline";
+type Tab = "overview" | "parts" | "estimates" | "health" | "photos" | "workshop" | "timeline";
 
 /** One work order: where it is, what is wrong, what was used, the estimates and the story so far. */
 export default function JobPage() {
@@ -41,6 +43,7 @@ export default function JobPage() {
     { id: "overview", label: t("job.tabs.overview") },
     { id: "parts", label: t("job.tabs.parts"), count: j.parts.filter((p) => !p.voided).length + j.labour.filter((l) => !l.voided).length || undefined },
     { id: "estimates", label: t("job.tabs.estimates"), count: j.estimates.length || undefined },
+    { id: "health", label: t("job.tabs.health"), count: (j.inspection_counts.red ?? 0) + (j.inspection_counts.amber ?? 0) || undefined },
     { id: "photos", label: t("job.tabs.photos"), count: j.photo_count || undefined },
     { id: "workshop", label: t("job.tabs.workshop") },
     { id: "timeline", label: t("job.tabs.timeline") },
@@ -57,6 +60,7 @@ export default function JobPage() {
           {tab === "overview" && <OverviewTab job={j} editable={editable} />}
           {tab === "parts" && <PartsTab job={j} currency={currency} editable={editable} />}
           {tab === "estimates" && <EstimatesTab job={j} currency={currency} editable={editable} />}
+          {tab === "health" && <HealthCheckTab job={j} editable={editable} />}
           {tab === "photos" && <PhotosTab job={j} />}
           {tab === "workshop" && <WorkshopTab job={j} currency={currency} editable={editable} />}
           {tab === "timeline" && <TimelineTab job={j} />}
@@ -65,6 +69,7 @@ export default function JobPage() {
           {hasClaims && !j.customer_id && !j.claim && !j.locked && <NeedCustomerRecord job={j} />}
           {hasClaims && <ClaimPanel sourceType="job" sourceId={j.id} companyId={j.company_id} branchId={j.branch_id} customerId={j.customer_id} subject={j.asset?.label ?? j.title} />}
           <ClaimWork job={j} currency={currency} />
+          <ClockCard job={j} />
           <SummaryCard job={j} currency={currency} />
         </aside>
       </div>

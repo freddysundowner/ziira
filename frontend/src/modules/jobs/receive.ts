@@ -71,3 +71,13 @@ export function buildJobBody(companyId: string, form: ReceiveForm): Schemas["Job
     acknowledged_by_name: text(form.signedBy),
   };
 }
+
+/** The same form for a booked appointment: the business, branch and customer come from the booking. */
+export function buildAppointmentBody(form: ReceiveForm): Schemas["AppointmentJobIn"] {
+  const body = buildJobBody("", form);
+  return {
+    title: body.title, asset_id: body.asset_id, new_asset: body.new_asset, description: body.description, condition_notes: body.condition_notes,
+    assignee_id: body.assignee_id, promised_at: body.promised_at, checklist_items: body.checklist_items, job_type_code: body.job_type_code,
+    odometer_in: body.odometer_in, fuel_level: body.fuel_level, key_tag: body.key_tag, belongings: body.belongings, acknowledged_by_name: body.acknowledged_by_name,
+  };
+}

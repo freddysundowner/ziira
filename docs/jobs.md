@@ -103,12 +103,25 @@ See `docs/pack_garage.md` for the data a garage starts with. Everything below is
   while one has not arrived) and the **customer's own part** (listed, never invoiced). `return` puts some of a part back (stock goes back at the cost it
   left at).
 - **Charges.** Towing, courtesy car, storage and other fees (`job_charge`) are invoiced under the Fees item (else the Labour item). **Storage**: a
-  per-day fee after free days from the ready date, added as a charge on request or automatically at invoicing; it can be waived.
-- **Deposit.** `POST /jobs/{id}/deposit` records a customer payment on account through Payments and keeps the total on the job (a tailor's advance).
+  per-day fee after free days from the ready date, added as a charge on request or automatically at invoicing; it can be waived. Storage that runs on
+  **after** the invoice (the car is collected later) is billed once on a small second invoice when the item is collected (`storage_invoice_id`,
+  source `job_storage`); a job billed through a claim leaves it to Claims.
+- **Deposit.** `POST /jobs/{id}/deposit` takes an **advance** on the customer's account through Point of Sale (`pos.public.take_payment`: cash goes through the cashier's open till; without POS it is a plain payment through Payments) and keeps the total on the job (a tailor's advance). When the job is invoiced the advance is **set against the invoice** (`deposit_applied`; no money moves), with a customer paying the rest in the same step when `pay_method` is given. A deposit larger than the invoice leaves the rest on the account. A person who may not apply customer credit leaves it on account, with a timeline note.
 - **Release on payment.** Setting `release_unpaid` = off, warn (collect needs `acknowledge_unpaid`, noted on the timeline) or block. A customer on
   credit terms is released without a warning. For an insurer job the customer's share (excess) is what must be settled.
 - **Bays.** `bay` and `bay_booking` (a database exclusion rule: a bay holds one job at a time); `GET /bay-board`.
 - **Courtesy cars.** An item of kind `courtesy-car` is lent on a `loan` (out and in dates, readings, fuel); one loan at a time per car.
+- **Mechanic clocks.** `POST /jobs/{id}/timer/start` and `/timer/stop` (and `GET /me/timer`). One clock per person; stopping it puts the elapsed time
+  (two places, at least 0.01 h) on the job as a labour line with source `timer`, so it counts as booked hours. A clock left running for more than a day
+  is refused (stop it with `discard`, then add the real hours by hand). Clocks are shown on the job screen (Clock card).
+- **Vehicle health check** (multi-point inspection). `GET/POST /jobs/{id}/inspection[...]`: a usual list of about 30 things to look at (brakes, tyres,
+  lights, fluids, battery, steering, exhaust, body) copied to the job, each marked green, amber, red or not applicable with a note; lines can be added
+  and removed per job. The estimate page the customer opens shows only the amber and red lines (worst first) with the notes.
+- **Reading a VIN.** `GET /vin/{vin}` (and a hint under a `vin` identifier on the intake form): the make from the maker code, the model year from the
+  10th character and whether the check digit adds up. No outside lookup is used, so the model and trim are not filled in; makers outside America
+  often do not use the check digit, so a failed check is a warning only.
+- **Booked appointments.** `GET /appointments/waiting?branch_id=` lists today's appointments (from Bookings) that have no job yet, shown on the
+  Workshop screen; `POST /appointments/{id}/job` takes the vehicle in with the customer from the booking (one job per appointment, `appointment_id`).
 - **Technician and floor views.** `waiting_on` (parts, approval, insurer) on lists and the board; the Workshop screen has my jobs, bay board,
   technicians, service due and cars out. Waiting on the insurer comes from Claims.
 - **Photos.** A job and an item accept photos through the files service (`docs/files.md`; entity types `jobs.job` and `jobs.asset`). The kinds
@@ -198,9 +211,11 @@ Checks (all in `intel_checks.py`, limits are parameters a business changes; plai
 
 ## What is not done / untested
 
-- No technician timers on the job screen (Time and Billing adds time through `add_labour_line`; a `timer` line counts as booked).
-- A deposit is a payment on the customer's account; it is not allocated to the invoice by Jobs (release-on-payment treats a covering advance as paid).
-- Storage that accrues after invoicing and before collection is not added to the invoice.
+- The health check uses a fixed usual list that is edited per job; a business cannot yet keep its own list as a template.
+- A VIN gives the make and year only; the model and trim are typed.
+- An online booking is taken in with one click on the Workshop screen; it does not become a job by itself.
+- Storage after invoicing is billed once, at collection; a second wave after that is not billed.
 - The customer's approval page is a web page at `/job-approval/<secret>`; the link is built from `ZIIRA_PUBLIC_BASE_URL`.
 - WhatsApp-style channels need template approval before the first message (the notification layer falls back to SMS or email).
+- There is no connection to insurer portals: answers received outside the response link are written down by staff.
 - Nothing was run against a real message channel, insurer or purchasing flow other than in the tests and a local browser walk.

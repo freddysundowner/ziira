@@ -66,6 +66,35 @@ def _memo(job: Job) -> str:
     return memo[:480]
 
 
+def _deposit_to_use(session: Session, job: Job, customer_id: UUID) -> Decimal:
+    """How much of the deposit still sits on the customer's account and belongs to this job."""
+    if not job.deposit_amount:
+        return Decimal(0)
+    from ziira.modules.pos.public import customer_credit
+
+    return max(min(job.deposit_amount - job.deposit_applied, customer_credit(session, customer_id)), Decimal(0))
+
+
+def _apply_deposit(session: Session, job: Job, customer_id: UUID, invoice: Issued, available: Decimal) -> Decimal:
+    """Set the deposit against the new invoice (no money moves; the invoice is simply paid by that much). Returns what
+    was applied. A person who may not apply customer credit leaves the deposit on account, with a note saying so."""
+    amount = min(available, invoice.total)
+    if amount <= 0:
+        return Decimal(0)
+    from ziira.modules.pos.public import apply_account_credit
+    from ziira.sdk import Forbidden
+
+    try:
+        done = apply_account_credit(session, customer_id, [(invoice.id, amount)])
+    except Forbidden:
+        add_event(session, job, "deposit", f"The deposit of {amount:,.2f} is still on the customer's account: "
+                  "someone who may take payments must set it against the invoice")
+        return Decimal(0)
+    job.deposit_applied += done
+    add_event(session, job, "deposit", f"Deposit of {done:,.2f} set against invoice {invoice.number}")
+    return done
+
+
 def build_lines(session: Session, job: Job) -> list[InvoiceLine]:
     """The invoice lines for a job's live parts, labour and charges, or ValidationFailed saying what is missing. A part
     the customer brought is not invoiced. A fixed-price task is one line at its price."""
@@ -166,12 +195,14 @@ def invoice_job(session: Session, job_id: UUID, *, pay_method: str | None = None
     lines = build_lines(session, job)
     customer_id = invoice_customer(session, job)
     expected_total = totals.job_totals(session, job).grand.total
-    issued = _issue(session, job, customer_id, lines, expected_total if pay_method else Decimal(0))
-    if pay_method:
+    deposit = _deposit_to_use(session, job, customer_id)
+    issued = _issue(session, job, customer_id, lines, expected_total if pay_method else min(deposit, expected_total))
+    applied = _apply_deposit(session, job, customer_id, issued, deposit)
+    if pay_method and issued.total - applied > 0:
         from ziira.modules.pos.public import receive_invoice_payment
 
-        receive_invoice_payment(session, customer_id=customer_id, amount=issued.total, method=pay_method,
-                                allocations=[(issued.id, issued.total)], reference=pay_reference,
+        receive_invoice_payment(session, customer_id=customer_id, amount=issued.total - applied, method=pay_method,
+                                allocations=[(issued.id, issued.total - applied)], reference=pay_reference,
                                 branch_id=job.branch_id)
     job.invoice_id, job.invoice_number, job.invoiced_at = issued.id, issued.number, datetime.now(UTC)
     job.updated_by = current_context().user_id
@@ -188,3 +219,37 @@ def invoice_job(session: Session, job_id: UUID, *, pay_method: str | None = None
         "company_id": job.company_id, "branch_id": job.branch_id, "number": job.number,
         "invoice_id": issued.id, "invoice_number": issued.number, "total": issued.total}))
     return job
+
+
+def bill_late_storage(session: Session, job: Job) -> Issued | None:
+    """Storage that ran after the main invoice was made (the car stayed on after the invoice, until it was collected) is
+    billed on one small second invoice when the item is collected. None when nothing is owed or it was already billed.
+    A job billed through a claim is left to Claims."""
+    if job.invoice_id is None or job.storage_invoice_id is not None or job.claim_id is not None:
+        return None
+    days = charges.storage_days(session, job)
+    already = sum((c.quantity for c in repo.charges(session, job.id, include_voided=False) if c.kind == "storage"),
+                  Decimal(0))
+    owed_days = Decimal(days) - already
+    if owed_days <= 0:
+        return None
+    settings = job_settings.get_settings(session, job.company_id)
+    item = settings.fees_product_id or settings.labour_product_id
+    if item is None:
+        add_event(session, job, "charge", f"Storage of {int(owed_days)} days after the invoice was not billed: choose "
+                  "the 'Fees' item in the job settings")
+        return None
+    from ziira.modules.pos.public import InvoiceLineIn, issue_invoice_from_lines
+
+    customer_id = invoice_customer(session, job)
+    made = issue_invoice_from_lines(
+        session, company_id=job.company_id, branch_id=job.branch_id, customer_id=customer_id,
+        lines=[InvoiceLineIn(product_id=item, description=f"Storage ({int(owed_days)} days) for job {job.number}",
+                             quantity=owed_days, unit_price=settings.storage_fee_per_day)],
+        source_type="job_storage", source_id=job.id, memo=f"Storage after invoice, job {job.number}"[:480],
+        settled_now=Decimal(0))
+    job.storage_invoice_id, job.storage_invoice_number = made.id, made.number
+    session.flush()
+    add_event(session, job, "invoice", f"Storage of {int(owed_days)} days billed on invoice {made.number}")
+    audit_record(session, "invoice_storage", "jobs.job", job.id, {"invoice": made.number, "total": str(made.total)})
+    return Issued(made.id, made.number, made.total)

@@ -420,6 +420,10 @@ def collect_job(session: Session, job_id: UUID, *, collected_by_name: str | None
     if odometer_out is not None:
         job.odometer_out = _reading(odometer_out, "The odometer")
     _apply_status(session, job, current, target, note, collected_by_name)
+    if job.invoiced_at is not None:                    # storage that ran on after the invoice goes on a second invoice
+        from ziira.modules.jobs.services import invoicing
+
+        invoicing.bill_late_storage(session, job)
     return job
 
 

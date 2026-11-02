@@ -3941,6 +3941,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/operator/chat/handoffs/{handoff_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Handoff Thread */
+        get: operations["handoff_thread_api_v1_operator_chat_handoffs__handoff_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/operator/chat/handoffs/{handoff_id}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Handoff Reply
+         * @description Answer a person who asked for a human, on WhatsApp. The words are not put in the operator trail.
+         */
+        post: operations["handoff_reply_api_v1_operator_chat_handoffs__handoff_id__reply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/operator/chat/handoffs/{handoff_id}/done": {
         parameters: {
             query?: never;
@@ -8940,7 +8977,8 @@ export interface paths {
         get: operations["get_lead_api_v1_crm_leads__lead_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Lead */
+        delete: operations["delete_lead_api_v1_crm_leads__lead_id__delete"];
         options?: never;
         head?: never;
         /** Patch Lead */
@@ -11723,6 +11761,202 @@ export interface paths {
          * @description Take money in advance (a deposit on an order).
          */
         post: operations["post_deposit_api_v1_jobs_jobs__job_id__deposit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/jobs/{job_id}/timer/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Timer Start
+         * @description Start your clock on this job. You can have one clock running at a time.
+         */
+        post: operations["post_timer_start_api_v1_jobs_jobs__job_id__timer_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/jobs/{job_id}/timer/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Timer Stop
+         * @description Stop your clock: the time worked goes on the job as a labour line (or is thrown away with `discard`).
+         */
+        post: operations["post_timer_stop_api_v1_jobs_jobs__job_id__timer_stop_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/me/timer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get My Timer
+         * @description The clock you have running, and the job it is on.
+         */
+        get: operations["get_my_timer_api_v1_jobs_me_timer_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/jobs/{job_id}/inspection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Inspection */
+        get: operations["get_inspection_api_v1_jobs_jobs__job_id__inspection_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/jobs/{job_id}/inspection/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Inspection Start
+         * @description Begin the health check with the usual list of things to look at.
+         */
+        post: operations["post_inspection_start_api_v1_jobs_jobs__job_id__inspection_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/jobs/{job_id}/inspection/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Inspection Item */
+        post: operations["post_inspection_item_api_v1_jobs_jobs__job_id__inspection_items_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/jobs/{job_id}/inspection/items/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Inspection Item */
+        delete: operations["delete_inspection_item_api_v1_jobs_jobs__job_id__inspection_items__item_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch Inspection Item */
+        patch: operations["patch_inspection_item_api_v1_jobs_jobs__job_id__inspection_items__item_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/jobs/vin/{vin}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Vin
+         * @description What a VIN says by itself: the make, the model year and whether the check digit adds up.
+         */
+        get: operations["get_vin_api_v1_jobs_vin__vin__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/appointments/waiting": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Waiting Appointments
+         * @description Today's booked appointments at the branch that have not been taken in as a job yet.
+         */
+        get: operations["get_waiting_appointments_api_v1_jobs_appointments_waiting_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/appointments/{appointment_id}/job": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Job Of Appointment
+         * @description The job made from this appointment, if there is one.
+         */
+        get: operations["get_job_of_appointment_api_v1_jobs_appointments__appointment_id__job_get"];
+        put?: never;
+        /**
+         * Post Job From Appointment
+         * @description The customer has arrived for a booked appointment: take the vehicle in, with the customer already filled in.
+         */
+        post: operations["post_job_from_appointment_api_v1_jobs_appointments__appointment_id__job_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -16243,6 +16477,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/pos/quotations/{document_id}/print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Print Quotation */
+        get: operations["print_quotation_api_v1_pos_quotations__document_id__print_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/pos/receipts/{receipt_id}/print": {
         parameters: {
             query?: never;
@@ -20166,6 +20417,36 @@ export interface components {
             /** Copay Amount */
             copay_amount?: number | string | null;
         };
+        /** AppointmentJobIn */
+        AppointmentJobIn: {
+            /** Title */
+            title?: string | null;
+            /** Asset Id */
+            asset_id?: string | null;
+            new_asset?: components["schemas"]["NewAssetIn"] | null;
+            /** Description */
+            description?: string | null;
+            /** Condition Notes */
+            condition_notes?: string | null;
+            /** Job Type Code */
+            job_type_code?: string | null;
+            /** Odometer In */
+            odometer_in?: number | string | null;
+            /** Fuel Level */
+            fuel_level?: string | null;
+            /** Key Tag */
+            key_tag?: string | null;
+            /** Belongings */
+            belongings?: string | null;
+            /** Acknowledged By Name */
+            acknowledged_by_name?: string | null;
+            /** Assignee Id */
+            assignee_id?: string | null;
+            /** Promised At */
+            promised_at?: string | null;
+            /** Checklist Items */
+            checklist_items?: string[] | null;
+        };
         /** AppointmentOut */
         AppointmentOut: {
             /**
@@ -21714,6 +21995,30 @@ export interface components {
              */
             resource_ids: string[];
         };
+        /**
+         * BookedVisitOut
+         * @description A booked appointment waiting to be taken in as a job.
+         */
+        BookedVisitOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Number */
+            number: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /** Status */
+            status: string;
+            /** Customer Id */
+            customer_id?: string | null;
+            /** Customer Name */
+            customer_name?: string | null;
+        };
         /** BookingCancelIn */
         BookingCancelIn: {
             /**
@@ -22664,6 +22969,25 @@ export interface components {
             /** Is Set */
             is_set: boolean;
         };
+        /** ChatHandoffMessageOut */
+        ChatHandoffMessageOut: {
+            /** Id */
+            id: number;
+            /**
+             * Direction
+             * @description in (from the person) | out (from an operator)
+             */
+            direction: string;
+            /** Body */
+            body: string;
+            /** Sent By */
+            sent_by: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** ChatHandoffOut */
         ChatHandoffOut: {
             /**
@@ -22686,6 +23010,74 @@ export interface components {
             done_at: string | null;
             /** Done By */
             done_by: string | null;
+            /**
+             * Unread
+             * @description Their messages nobody has answered yet
+             */
+            unread: number;
+            /** Last Inbound At */
+            last_inbound_at: string | null;
+            /** Can Reply */
+            can_reply: boolean;
+            /**
+             * Cannot Reply Because
+             * @description closed | no_number | window | null
+             */
+            cannot_reply_because: string | null;
+            /**
+             * Window Ends At
+             * @description Until when a free-form reply is allowed
+             */
+            window_ends_at: string | null;
+        };
+        /** ChatHandoffReplyIn */
+        ChatHandoffReplyIn: {
+            /** Text */
+            text: string;
+        };
+        /** ChatHandoffThreadOut */
+        ChatHandoffThreadOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Sender Masked */
+            sender_masked: string;
+            /** Snippet */
+            snippet: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Done At */
+            done_at: string | null;
+            /** Done By */
+            done_by: string | null;
+            /**
+             * Unread
+             * @description Their messages nobody has answered yet
+             */
+            unread: number;
+            /** Last Inbound At */
+            last_inbound_at: string | null;
+            /** Can Reply */
+            can_reply: boolean;
+            /**
+             * Cannot Reply Because
+             * @description closed | no_number | window | null
+             */
+            cannot_reply_because: string | null;
+            /**
+             * Window Ends At
+             * @description Until when a free-form reply is allowed
+             */
+            window_ends_at: string | null;
+            /** Messages */
+            messages: components["schemas"]["ChatHandoffMessageOut"][];
         };
         /** ChatInboundReply */
         ChatInboundReply: {
@@ -23099,9 +23491,7 @@ export interface components {
              * Classes Today
              * @default []
              */
-            classes_today: {
-                [key: string]: unknown;
-            }[];
+            classes_today: components["schemas"]["MembershipsCheckinClassOut"][];
         };
         /** CheckinRowOut */
         CheckinRowOut: {
@@ -27577,6 +27967,11 @@ export interface components {
              * Format: uuid
              */
             product_id: string;
+            /**
+             * Description
+             * @description The line's own wording, e.g. a service's details
+             */
+            description?: string | null;
             /** Quantity */
             quantity: number | string;
             /**
@@ -27609,6 +28004,8 @@ export interface components {
              * Format: uuid
              */
             product_id: string;
+            /** Description */
+            description: string | null;
             /** Quantity */
             quantity: string;
             /** Unit Price */
@@ -29706,6 +30103,70 @@ export interface components {
              */
             untouched: boolean;
         };
+        /** InspectionItemIn */
+        InspectionItemIn: {
+            /** Section */
+            section: string;
+            /** Label */
+            label: string;
+        };
+        /** InspectionItemOut */
+        InspectionItemOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Section */
+            section: string;
+            /** Label */
+            label: string;
+            /**
+             * Rating
+             * @enum {string}
+             */
+            rating: "pending" | "green" | "amber" | "red" | "na";
+            /** Note */
+            note?: string | null;
+            /** Position */
+            position: number;
+        };
+        /** InspectionItemUpdate */
+        InspectionItemUpdate: {
+            /** Rating */
+            rating?: ("pending" | "green" | "amber" | "red" | "na") | null;
+            /** Note */
+            note?: string | null;
+            /** Label */
+            label?: string | null;
+        };
+        /** InspectionOut */
+        InspectionOut: {
+            /** Started */
+            started: boolean;
+            /** Items */
+            items: components["schemas"]["InspectionItemOut"][];
+            /**
+             * Green
+             * @default 0
+             */
+            green: number;
+            /**
+             * Amber
+             * @default 0
+             */
+            amber: number;
+            /**
+             * Red
+             * @default 0
+             */
+            red: number;
+            /**
+             * Pending
+             * @default 0
+             */
+            pending: number;
+        };
         /** IntentIn */
         IntentIn: {
             /**
@@ -29927,6 +30388,11 @@ export interface components {
             batch_id?: string | null;
             /** Order Line Id */
             order_line_id?: string | null;
+            /**
+             * Description
+             * @description The line's own wording
+             */
+            description?: string | null;
         };
         /** InvoiceLineOut */
         InvoiceLineOut: {
@@ -30791,6 +31257,21 @@ export interface components {
             deposit_at: string | null;
             /** Deposit Note */
             deposit_note: string | null;
+            /**
+             * Deposit Applied
+             * @default 0
+             */
+            deposit_applied: string;
+            /** Storage Invoice Number */
+            storage_invoice_number: string | null;
+            /** Appointment Id */
+            appointment_id: string | null;
+            /** Timers */
+            timers: components["schemas"]["JobTimerOut"][];
+            /** Inspection Counts */
+            inspection_counts: {
+                [key: string]: number;
+            };
             /** Claim Id */
             claim_id: string | null;
             /**
@@ -31386,6 +31867,50 @@ export interface components {
             items: string[];
             /** Is Active */
             is_active: boolean;
+        };
+        /** JobTimerOut */
+        JobTimerOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name?: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Stopped At */
+            stopped_at?: string | null;
+            /** Note */
+            note?: string | null;
+            /**
+             * Mine
+             * @default false
+             */
+            mine: boolean;
+        };
+        /** JobTimerStartIn */
+        JobTimerStartIn: {
+            /** Note */
+            note?: string | null;
+        };
+        /** JobTimerStopIn */
+        JobTimerStopIn: {
+            /** Description */
+            description?: string | null;
+            /**
+             * Discard
+             * @default false
+             */
+            discard: boolean;
         };
         /** JobTypeIn */
         JobTypeIn: {
@@ -33936,6 +34461,28 @@ export interface components {
              */
             clear_billing_customer: boolean;
         };
+        /** MembershipsCheckinClassOut */
+        MembershipsCheckinClassOut: {
+            /**
+             * Session Id
+             * Format: uuid
+             */
+            session_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Status */
+            status: string;
+        };
         /** MfaBackupCodesOut */
         MfaBackupCodesOut: {
             /**
@@ -34432,6 +34979,19 @@ export interface components {
         MyStatus: {
             /** @description Shown to owners only; null when all is well */
             banner: components["schemas"]["Banner"] | null;
+        };
+        /**
+         * MyTimerOut
+         * @description The signed-in person's running clock, if any.
+         */
+        MyTimerOut: {
+            timer?: components["schemas"]["JobTimerOut"] | null;
+            /** Job Id */
+            job_id?: string | null;
+            /** Job Number */
+            job_number?: string | null;
+            /** Job Title */
+            job_title?: string | null;
         };
         /** NamedOut */
         NamedOut: {
@@ -37581,6 +38141,23 @@ export interface components {
             /** Deposit Note */
             deposit_note?: string | null;
         };
+        /**
+         * PublicCheckOut
+         * @description A line of the vehicle health check the customer is shown: only what needs attention.
+         */
+        PublicCheckOut: {
+            /** Section */
+            section: string;
+            /** Label */
+            label: string;
+            /**
+             * Rating
+             * @enum {string}
+             */
+            rating: "amber" | "red";
+            /** Note */
+            note?: string | null;
+        };
         /** PublicConfig */
         PublicConfig: {
             /** Registration */
@@ -37602,6 +38179,8 @@ export interface components {
         PublicEstimateOut: {
             /** Photos */
             photos: components["schemas"]["PublicPhotoOut"][];
+            /** Health Check */
+            health_check: components["schemas"]["PublicCheckOut"][];
             /** Business */
             business: string;
             /** Currency */
@@ -44738,6 +45317,21 @@ export interface components {
             /** Note */
             note?: string | null;
         };
+        /** VinOut */
+        VinOut: {
+            /** Vin */
+            vin: string;
+            /** Valid Shape */
+            valid_shape: boolean;
+            /** Make */
+            make?: string | null;
+            /** Year */
+            year?: number | null;
+            /** Check Digit Ok */
+            check_digit_ok?: boolean | null;
+            /** Problem */
+            problem?: string | null;
+        };
         /** VisitIn */
         VisitIn: {
             /** Items */
@@ -49176,6 +49770,7 @@ export interface operations {
                 "x-tenant-id"?: string | null;
             };
             path: {
+                /** @description A channel the business has */
                 channel: string;
             };
             cookie?: never;
@@ -49220,6 +49815,7 @@ export interface operations {
                 "x-tenant-id"?: string | null;
             };
             path: {
+                /** @description A channel the business has */
                 channel: string;
             };
             cookie?: never;
@@ -55191,6 +55787,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatHandoffOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    handoff_thread_api_v1_operator_chat_handoffs__handoff_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHandoffThreadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    handoff_reply_api_v1_operator_chat_handoffs__handoff_id__reply_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                handoff_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatHandoffReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatHandoffThreadOut"];
                 };
             };
             /** @description Validation Error */
@@ -65204,6 +65870,7 @@ export interface operations {
         parameters: {
             query?: {
                 kind?: "daily" | "weekly";
+                /** @description in_app, or a channel the business has */
                 channel?: string;
                 company_id?: string | null;
             };
@@ -67139,6 +67806,42 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LeadOut"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_lead_api_v1_crm_leads__lead_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                lead_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -74005,6 +74708,483 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_timer_start_api_v1_jobs_jobs__job_id__timer_start_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobTimerStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_timer_stop_api_v1_jobs_jobs__job_id__timer_stop_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobTimerStopIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_timer_api_v1_jobs_me_timer_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyTimerOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_inspection_api_v1_jobs_jobs__job_id__inspection_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_inspection_start_api_v1_jobs_jobs__job_id__inspection_start_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_inspection_item_api_v1_jobs_jobs__job_id__inspection_items_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InspectionItemIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_inspection_item_api_v1_jobs_jobs__job_id__inspection_items__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_inspection_item_api_v1_jobs_jobs__job_id__inspection_items__item_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                job_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InspectionItemUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_vin_api_v1_jobs_vin__vin__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                vin: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VinOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_waiting_appointments_api_v1_jobs_appointments_waiting_get: {
+        parameters: {
+            query: {
+                branch_id: string;
+                day?: string | null;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookedVisitOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_job_of_appointment_api_v1_jobs_appointments__appointment_id__job_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                appointment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobSummaryOut"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_job_from_appointment_api_v1_jobs_appointments__appointment_id__job_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                appointment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppointmentJobIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -86114,6 +87294,50 @@ export interface operations {
             };
             path: {
                 invoice_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    print_quotation_api_v1_pos_quotations__document_id__print_get: {
+        parameters: {
+            query?: {
+                /** @description json, text (thermal printer) or html */
+                format?: string;
+                /** @description Characters across for text: 32, 40 or 48 */
+                width?: number;
+                copy?: boolean;
+            };
+            header?: {
+                /** @description Bearer <access token> */
+                authorization?: string | null;
+                /** @description API key for server-to-server integrations */
+                "x-api-key"?: string | null;
+                /** @description Development only: act as this tenant */
+                "x-tenant-id"?: string | null;
+            };
+            path: {
+                document_id: string;
             };
             cookie?: never;
         };

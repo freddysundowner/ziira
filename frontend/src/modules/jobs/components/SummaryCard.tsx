@@ -30,6 +30,14 @@ export function SummaryCard({ job, currency }: { job: Job; currency: string | un
           {showsCost(job) && row(t("totals.cost"), money(job.totals.cost, currency))}
         </dl>
         <p className="mt-2 text-xs text-muted">{t("totals.taxIncluded")}</p>
+        {job.deposit_amount && Number(job.deposit_amount) > 0 && (
+          <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-sm">
+            {row(t("floor.deposit.taken"), money(job.deposit_amount, currency))}
+            {job.invoiced && row(t("floor.deposit.applied"), money(job.deposit_applied, currency))}
+            {job.invoiced && Number(job.deposit_amount) > Number(job.deposit_applied) && <p className="text-xs text-muted">{t("floor.deposit.left", { amount: money(String(Number(job.deposit_amount) - Number(job.deposit_applied)), currency) })}</p>}
+          </dl>
+        )}
+        {job.storage_invoice_number && <p className="mt-3 text-sm text-muted">{t("floor.storageInvoice", { number: job.storage_invoice_number })}</p>}
         <div className="mt-3 text-sm">
           {job.invoiced ? (
             hasPos && job.invoice_id ? <Link className="font-medium text-brand-strong hover:underline" to={invoiceHref(job.invoice_id)}>{t("summary.invoice", { number: job.invoice_number ?? "" })}</Link> : <span>{t("summary.invoice", { number: job.invoice_number ?? "" })}</span>

@@ -13,6 +13,7 @@ from ziira.modules.jobs.repository.models import (
     ChecklistTemplate,
     Estimate,
     EstimateLine,
+    InspectionItem,
     Job,
     JobCharge,
     JobChecklistItem,
@@ -199,6 +200,11 @@ def jobs_of_asset(session: Session, asset_id: UUID) -> list[Job]:
 def events(session: Session, job_id: UUID) -> list[JobEvent]:
     return list(session.scalars(select(JobEvent).where(JobEvent.job_id == job_id)
                                 .order_by(JobEvent.created_at, JobEvent.id)))
+
+
+def inspection_items(session: Session, job_id: UUID) -> list[InspectionItem]:
+    return list(session.scalars(select(InspectionItem).where(InspectionItem.job_id == job_id)
+                                .order_by(InspectionItem.position, InspectionItem.created_at)))
 
 
 def checklist(session: Session, job_id: UUID) -> list[JobChecklistItem]:

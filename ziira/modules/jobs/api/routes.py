@@ -7,12 +7,13 @@ from datetime import date, timedelta
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, Response, status
+from fastapi import APIRouter, Depends, Path, Query, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import text
 
 from ziira.modules.jobs.api import present
 from ziira.modules.jobs.api import schemas as sc
+from ziira.modules.jobs.domain import vin as vin_domain
 from ziira.modules.jobs.permissions import (
     ALL,
     JOBS_ESTIMATE,
@@ -24,6 +25,7 @@ from ziira.modules.jobs.permissions import (
 from ziira.modules.jobs.repository import jobs_repo as repo
 from ziira.modules.jobs.repository.models import Job
 from ziira.modules.jobs.services import (
+    access,
     assets,
     bays,
     catalog,
@@ -31,6 +33,8 @@ from ziira.modules.jobs.services import (
     claims_link,
     deposit,
     estimates,
+    from_appointment,
+    inspection,
     invoicing,
     jobs,
     loans,
@@ -42,6 +46,7 @@ from ziira.modules.jobs.services import (
     sample_data,
     service_due,
     statuses,
+    timers,
 )
 from ziira.modules.jobs.services import settings as job_settings
 from ziira.modules.jobs.services.common import load_job
@@ -52,6 +57,7 @@ from ziira.sdk import (
     RequestContext,
     Session,
     client_ip,
+    current_context,
     idempotency_key_header,
     idempotent,
     page_limit,
@@ -423,6 +429,100 @@ def post_deposit(job_id: UUID, body: sc.JobDepositIn, session: Session = DB_SESS
     """Take money in advance (a deposit on an order)."""
     deposit.take_deposit(session, job_id, **body.model_dump())
     return _job(session, job_id)
+
+
+# --- the mechanic's clock
+@router.post("/jobs/{job_id}/timer/start", response_model=sc.JobOut, status_code=CREATED, dependencies=MANAGE)
+def post_timer_start(job_id: UUID, body: sc.JobTimerStartIn, session: Session = DB_SESSION) -> object:
+    """Start your clock on this job. You can have one clock running at a time."""
+    timers.start(session, job_id, note=body.note)
+    return _job(session, job_id)
+
+
+@router.post("/jobs/{job_id}/timer/stop", response_model=sc.JobOut, dependencies=MANAGE)
+def post_timer_stop(job_id: UUID, body: sc.JobTimerStopIn, session: Session = DB_SESSION) -> object:
+    """Stop your clock: the time worked goes on the job as a labour line (or is thrown away with `discard`)."""
+    timers.stop(session, job_id, description=body.description, discard=body.discard)
+    return _job(session, job_id)
+
+
+@router.get("/me/timer", response_model=sc.MyTimerOut, dependencies=VIEW)
+def get_my_timer(session: Session = DB_SESSION) -> object:
+    """The clock you have running, and the job it is on."""
+    user = current_context().user_id
+    row = timers.running_for(session, user) if user else None
+    if row is None:
+        return sc.MyTimerOut()
+    job = load_job(session, row.job_id)
+    return sc.MyTimerOut(timer=sc.JobTimerOut(id=row.id, user_id=row.user_id, started_at=row.started_at, note=row.note,
+                                              mine=True),
+                         job_id=job.id, job_number=job.number, job_title=job.title)
+
+
+# --- the vehicle health check
+@router.get("/jobs/{job_id}/inspection", response_model=sc.InspectionOut, dependencies=VIEW)
+def get_inspection(job_id: UUID, session: Session = DB_SESSION) -> object:
+    return present.inspection_out(session, load_job(session, job_id))
+
+
+@router.post("/jobs/{job_id}/inspection/start", response_model=sc.InspectionOut, status_code=CREATED,
+             dependencies=MANAGE)
+def post_inspection_start(job_id: UUID, session: Session = DB_SESSION) -> object:
+    """Begin the health check with the usual list of things to look at."""
+    inspection.start(session, job_id)
+    return present.inspection_out(session, load_job(session, job_id))
+
+
+@router.post("/jobs/{job_id}/inspection/items", response_model=sc.InspectionOut, status_code=CREATED,
+             dependencies=MANAGE)
+def post_inspection_item(job_id: UUID, body: sc.InspectionItemIn, session: Session = DB_SESSION) -> object:
+    inspection.add_item(session, job_id, section=body.section, label=body.label)
+    return present.inspection_out(session, load_job(session, job_id))
+
+
+@router.patch("/jobs/{job_id}/inspection/items/{item_id}", response_model=sc.InspectionOut, dependencies=MANAGE)
+def patch_inspection_item(job_id: UUID, item_id: UUID, body: sc.InspectionItemUpdate,
+                          session: Session = DB_SESSION) -> object:
+    inspection.rate(session, job_id, item_id, **body.model_dump(exclude_unset=True))
+    return present.inspection_out(session, load_job(session, job_id))
+
+
+@router.delete("/jobs/{job_id}/inspection/items/{item_id}", response_model=sc.InspectionOut, dependencies=MANAGE)
+def delete_inspection_item(job_id: UUID, item_id: UUID, session: Session = DB_SESSION) -> object:
+    inspection.remove_item(session, job_id, item_id)
+    return present.inspection_out(session, load_job(session, job_id))
+
+
+# --- reading a VIN, and taking a booked appointment in
+@router.get("/vin/{vin}", response_model=sc.VinOut, dependencies=VIEW)
+def get_vin(vin: str = Path(max_length=40)) -> object:
+    """What a VIN says by itself: the make, the model year and whether the check digit adds up."""
+    return vin_domain.read(vin).__dict__
+
+
+@router.get("/appointments/waiting", response_model=list[sc.BookedVisitOut], dependencies=VIEW)
+def get_waiting_appointments(branch_id: UUID, day: date | None = None, session: Session = DB_SESSION) -> object:
+    """Today's booked appointments at the branch that have not been taken in as a job yet."""
+    return from_appointment.waiting(session, branch_id, day)
+
+
+@router.post("/appointments/{appointment_id}/job", response_model=sc.JobOut, status_code=CREATED, dependencies=MANAGE)
+def post_job_from_appointment(appointment_id: UUID, body: sc.AppointmentJobIn, session: Session = DB_SESSION) -> object:
+    """The customer has arrived for a booked appointment: take the vehicle in, with the customer already filled in."""
+    data = body.model_dump(exclude={"new_asset"})
+    new_asset = jobs.NewAsset(**body.new_asset.model_dump()) if body.new_asset else None
+    job = from_appointment.receive_from_appointment(
+        session, appointment_id, from_appointment.AppointmentIntake(new_asset=new_asset, **data))
+    return present.detail(session, job)
+
+
+@router.get("/appointments/{appointment_id}/job", response_model=sc.JobSummaryOut | None, dependencies=VIEW)
+def get_job_of_appointment(appointment_id: UUID, session: Session = DB_SESSION) -> object:
+    """The job made from this appointment, if there is one."""
+    job = from_appointment.job_for(session, appointment_id)
+    if job is None or not access.can_view(job.company_id, job.branch_id):
+        return None
+    return present.summaries(session, [job])[0]
 
 
 # --- the insurer (or fleet) claim of a job

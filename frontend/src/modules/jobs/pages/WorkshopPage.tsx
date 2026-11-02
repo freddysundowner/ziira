@@ -7,7 +7,8 @@ import { CarsOut } from "../components/CarsOut";
 import { MyWork } from "../components/MyWork";
 import { ServiceDue } from "../components/ServiceDue";
 import { Technicians } from "../components/Technicians";
-import { useJobsCompany } from "../hooks";
+import { BookedVisits } from "../components/BookedVisits";
+import { useBranchChoice, useJobsCompany } from "../hooks";
 
 type Tab = "mine" | "bays" | "technicians" | "due" | "cars";
 const TABS: Tab[] = ["mine", "bays", "technicians", "due", "cars"];
@@ -16,6 +17,7 @@ const TABS: Tab[] = ["mine", "bays", "technicians", "due", "cars"];
 export default function WorkshopPage() {
   const { t } = useTranslation("jobs");
   const { companyId, branches, isLoading } = useJobsCompany();
+  const { branchId } = useBranchChoice(branches);
   const [tab, setTab] = useState<Tab>("mine");
   return (
     <>
@@ -23,6 +25,7 @@ export default function WorkshopPage() {
       <Tabs tabs={TABS.map((id) => ({ id, label: t(`garage.workshop.tabs.${id}`) }))} value={tab} onChange={setTab} />
       {isLoading || !companyId ? <Skeleton className="h-64" /> : (
         <div className="mt-4">
+          {tab === "mine" && <BookedVisits branchId={branchId} />}
           {tab === "mine" && <MyWork companyId={companyId} />}
           {tab === "bays" && <BayBoard companyId={companyId} branches={branches} />}
           {tab === "technicians" && <Technicians companyId={companyId} />}

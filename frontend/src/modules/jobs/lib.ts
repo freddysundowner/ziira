@@ -71,3 +71,21 @@ export const identifierText = (identifiers: Record<string, unknown>): string =>
 
 /** Kinds of item offered as suggestions; anything else may be typed. */
 export const ITEM_KINDS = ["vehicle", "phone", "appliance", "garment", "property", "other"] as const;
+
+/** A running clock as h:mm:ss. */
+export function clockText(milliseconds: number): string {
+  const total = Math.max(Math.floor(milliseconds / 1000), 0);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${Math.floor(total / 3600)}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+}
+
+/** The health-check lines gathered under their part of the car, in the order they were listed. */
+export function inspectionSections<T extends { section: string }>(items: readonly T[]): { section: string; items: T[] }[] {
+  const out: { section: string; items: T[] }[] = [];
+  for (const item of items) {
+    const last = out.find((g) => g.section === item.section);
+    if (last) last.items.push(item);
+    else out.push({ section: item.section, items: [item] });
+  }
+  return out;
+}

@@ -16,10 +16,12 @@ from ziira.modules.jobs.services import (
     approval,
     charges,
     claims_link,
+    inspection,
     invoicing,
     photos,
     release,
     service_due,
+    timers,
     totals,
 )
 from ziira.modules.jobs.services.common import names_of
@@ -87,6 +89,24 @@ def estimate_out(session: Session, estimate: Estimate) -> sc.EstimateOut:
         decision_note=estimate.decision_note, lines=lines)
 
 
+def _timers(session: Session, job: Job) -> list[sc.JobTimerOut]:
+    running = timers.on_job(session, job.id, only_running=True)
+    names = names_of(session, {t.user_id for t in running})
+    me = current_context().user_id
+    return [sc.JobTimerOut(id=t.id, user_id=t.user_id, user_name=names.get(t.user_id), started_at=t.started_at,
+                           stopped_at=t.stopped_at, note=t.note, mine=t.user_id == me) for t in running]
+
+
+def inspection_out(session: Session, job: Job) -> sc.InspectionOut:
+    rows = inspection.items(session, job.id)
+    counts = inspection.summary(rows)
+    return sc.InspectionOut(
+        started=bool(rows), green=counts["green"], amber=counts["amber"], red=counts["red"], pending=counts["pending"],
+        items=[sc.InspectionItemOut(id=r.id, section=r.section, label=r.label, rating=r.rating,  # type: ignore[arg-type]
+                                    note=r.note,
+                                    position=r.position) for r in rows])
+
+
 def detail(session: Session, job: Job) -> sc.JobOut:
     """Everything on one job: timeline, checklist, tasks, parts, labour, estimates, totals and what can happen next."""
     ctx = current_context()
@@ -141,6 +161,9 @@ def detail(session: Session, job: Job) -> sc.JobOut:
         fuel_level=job.fuel_level, key_tag=job.key_tag, belongings=job.belongings,
         acknowledged_by_name=job.acknowledged_by_name, acknowledged_at=job.acknowledged_at,
         deposit_amount=job.deposit_amount, deposit_at=job.deposit_at, deposit_note=job.deposit_note,
+        deposit_applied=job.deposit_applied, storage_invoice_number=job.storage_invoice_number,
+        appointment_id=job.appointment_id, timers=_timers(session, job),
+        inspection_counts=inspection.summary(repo.inspection_items(session, job.id)),
         claim_id=job.claim_id, storage_days=charges.storage_days(session, job),
         storage_fee=charges.storage_fee(session, job), storage_fee_waived=job.storage_fee_waived,
         asset_detail=asset_out(session, asset) if asset else None,

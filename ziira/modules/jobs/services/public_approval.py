@@ -12,7 +12,7 @@ from sqlalchemy import text
 
 from ziira.modules.jobs.repository import jobs_repo as repo
 from ziira.modules.jobs.repository.models import Estimate, Job
-from ziira.modules.jobs.services import estimates, notify
+from ziira.modules.jobs.services import estimates, inspection, notify
 from ziira.sdk import (
     NotFound,
     Session,
@@ -67,6 +67,8 @@ def view(token: str, ip_address: str | None) -> dict[str, Any]:
                  for f in files.public_links(session, "jobs.job", job.id, label=f"approval {job.number}")]
         return {
             "photos": shown,
+            "health_check": [{"section": x.section, "label": x.label, "rating": x.rating, "note": x.note}
+                             for x in inspection.for_customer(repo.inspection_items(session, job.id))],
             "business": notify.business_name(session, job.company_id), "currency": currency, "job_number": job.number,
             "item": notify.item_name(session, job), "title": job.title, "version": estimate.version,
             "kind": estimate.kind,

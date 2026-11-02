@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canMove, cleanIdentifiers, groupByStage, identifierRows, isCollect, latestEstimate, liveLines, nextStages, showsCost } from "./lib";
+import { canMove, cleanIdentifiers, groupByStage, identifierRows, isCollect, latestEstimate, liveLines, nextStages, showsCost, clockText, inspectionSections } from "./lib";
 import type { Estimate, JobSummary, Stage, StageRef } from "./types";
 
 const stage = (id: string, role: string | null = null, moves: string[] = []): Stage =>
@@ -56,5 +56,23 @@ describe("job figures", () => {
   it("finds the newest estimate version", () => {
     expect(latestEstimate([{ version: 1 }, { version: 3 }, { version: 2 }] as Estimate[])?.version).toBe(3);
     expect(latestEstimate([])).toBeUndefined();
+  });
+});
+
+describe("clockText", () => {
+  it("shows hours, minutes and seconds", () => {
+    expect(clockText(0)).toBe("0:00:00");
+    expect(clockText(65_000)).toBe("0:01:05");
+    expect(clockText(3_725_000)).toBe("1:02:05");
+  });
+  it("never goes below zero", () => {
+    expect(clockText(-5000)).toBe("0:00:00");
+  });
+});
+
+describe("inspectionSections", () => {
+  it("groups lines under their part of the car, keeping the order", () => {
+    const rows = [{ section: "Brakes", n: 1 }, { section: "Tyres", n: 2 }, { section: "Brakes", n: 3 }];
+    expect(inspectionSections(rows).map((g) => [g.section, g.items.map((i) => i.n)])).toEqual([["Brakes", [1, 3]], ["Tyres", [2]]]);
   });
 });

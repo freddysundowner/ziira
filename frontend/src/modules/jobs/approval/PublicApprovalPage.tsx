@@ -65,6 +65,19 @@ export default function PublicApprovalPage() {
                 ))}
               </section>
             )}
+            {e.health_check.length > 0 && (
+              <section aria-label={t("floor.health.publicTitle")} className="mb-3 rounded-xl border border-line bg-surface shadow-card">
+                <h2 className="border-b border-line px-3 py-2 text-sm font-semibold">{t("floor.health.publicTitle")}</h2>
+                <ul className="divide-y divide-line">
+                  {e.health_check.map((c, i) => (
+                    <li key={i} className="flex items-start gap-3 p-3 text-sm">
+                      <span className={`mt-0.5 inline-block h-3 w-3 shrink-0 rounded-full ${c.rating === "red" ? "bg-bad" : "bg-warn"}`} aria-hidden />
+                      <span className="min-w-0"><span className="block font-medium">{c.section}: {c.label} <span className="font-normal text-muted">({t(`floor.health.rating.${c.rating}`)})</span></span>{c.note && <span className="block text-xs text-muted">{c.note}</span>}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <section aria-label={t("approval.lines")} className="rounded-xl border border-line bg-surface shadow-card">
               <ul className="divide-y divide-line">
                 {e.lines.map((l, i) => (

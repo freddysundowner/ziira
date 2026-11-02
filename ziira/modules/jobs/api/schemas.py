@@ -507,6 +507,100 @@ class LabourOut(BaseModel):
     flat_price: Decimal | None = None
 
 
+class JobTimerOut(BaseModel):
+    id: UUID
+    user_id: UUID
+    user_name: str | None = None
+    started_at: datetime
+    stopped_at: datetime | None = None
+    note: str | None = None
+    mine: bool = False
+
+
+class MyTimerOut(BaseModel):
+    """The signed-in person's running clock, if any."""
+
+    timer: JobTimerOut | None = None
+    job_id: UUID | None = None
+    job_number: str | None = None
+    job_title: str | None = None
+
+
+class JobTimerStartIn(BaseModel):
+    note: str | None = Field(default=None, max_length=300)
+
+
+class JobTimerStopIn(BaseModel):
+    description: str | None = Field(default=None, max_length=300)
+    discard: bool = False
+
+
+class InspectionItemOut(BaseModel):
+    id: UUID
+    section: str
+    label: str
+    rating: Literal["pending", "green", "amber", "red", "na"]
+    note: str | None = None
+    position: int
+
+
+class InspectionOut(BaseModel):
+    started: bool
+    items: list[InspectionItemOut]
+    green: int = 0
+    amber: int = 0
+    red: int = 0
+    pending: int = 0
+
+
+class InspectionItemIn(BaseModel):
+    section: str = Field(min_length=1, max_length=80)
+    label: str = Field(min_length=1, max_length=160)
+
+
+class InspectionItemUpdate(BaseModel):
+    rating: Literal["pending", "green", "amber", "red", "na"] | None = None
+    note: str | None = Field(default=None, max_length=500)
+    label: str | None = Field(default=None, min_length=1, max_length=160)
+
+
+class VinOut(BaseModel):
+    vin: str
+    valid_shape: bool
+    make: str | None = None
+    year: int | None = None
+    check_digit_ok: bool | None = None
+    problem: str | None = None
+
+
+class BookedVisitOut(BaseModel):
+    """A booked appointment waiting to be taken in as a job."""
+
+    id: UUID
+    number: str
+    starts_at: datetime
+    status: str
+    customer_id: UUID | None = None
+    customer_name: str | None = None
+
+
+class AppointmentJobIn(BaseModel):
+    title: str | None = Field(default=None, max_length=200)
+    asset_id: UUID | None = None
+    new_asset: NewAssetIn | None = None
+    description: str | None = Field(default=None, max_length=4000)
+    condition_notes: str | None = Field(default=None, max_length=4000)
+    job_type_code: str | None = Field(default=None, max_length=40)
+    odometer_in: Annotated[Decimal, Field(ge=0, le=99999999, max_digits=12, decimal_places=1)] | None = None
+    fuel_level: str | None = Field(default=None, max_length=40)
+    key_tag: str | None = Field(default=None, max_length=40)
+    belongings: str | None = Field(default=None, max_length=1000)
+    acknowledged_by_name: str | None = Field(default=None, max_length=160)
+    assignee_id: UUID | None = None
+    promised_at: date | None = None
+    checklist_items: list[str] | None = Field(default=None, max_length=60)
+
+
 class JobChargeOut(BaseModel):
     id: UUID
     kind: str
@@ -757,6 +851,11 @@ class JobOut(JobSummaryOut):
     deposit_amount: Decimal | None = None
     deposit_at: datetime | None = None
     deposit_note: str | None = None
+    deposit_applied: Decimal = Decimal(0)
+    storage_invoice_number: str | None = None
+    appointment_id: UUID | None = None
+    timers: list[JobTimerOut] = Field(default_factory=list)
+    inspection_counts: dict[str, int] = Field(default_factory=dict)
     claim_id: UUID | None = None
     storage_days: int = 0
     storage_fee: Decimal = Decimal(0)
@@ -819,9 +918,19 @@ class PublicPhotoOut(BaseModel):
     original_path: str
 
 
+class PublicCheckOut(BaseModel):
+    """A line of the vehicle health check the customer is shown: only what needs attention."""
+
+    section: str
+    label: str
+    rating: Literal["amber", "red"]
+    note: str | None = None
+
+
 class PublicEstimateOut(BaseModel):
     model_config = ConfigDict(json_schema_serialization_defaults_required=True)
     photos: list[PublicPhotoOut] = Field(default_factory=list)
+    health_check: list[PublicCheckOut] = Field(default_factory=list)
     business: str
     currency: str
     job_number: str

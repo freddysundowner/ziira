@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
-  api, Button, Card, CustomFieldsForm, Field, Input, PageHeader, Select, Skeleton, Textarea, toPayload, unwrap, useCustomFieldDefs,
+  Alert, api, Button, Card, CustomFieldsForm, Field, Input, PageHeader, Select, Skeleton, Textarea, toPayload, unwrap, useCustomFieldDefs,
   useMutation, useTranslation, validateCustomValues, saveCustomValues, toast, type CustomFieldProblem, type CustomValues,
 } from "@/sdk";
 
@@ -14,7 +14,7 @@ import { ReceiveIntake } from "../components/ReceiveIntake";
 import { ReceiveItem } from "../components/ReceiveItem";
 import { useAsset, useBranchChoice, useJobsCompany, useRefreshJobs } from "../hooks";
 import { jobHref } from "../public";
-import { buildJobBody, emptyReceive, receiveProblems, type ReceiveForm } from "../receive";
+import { buildAppointmentBody, buildJobBody, emptyReceive, receiveProblems, type ReceiveForm } from "../receive";
 
 /** The counter form: take an item in. Kept short, one column on a phone, big touch targets. */
 export default function ReceivePage() {
@@ -29,6 +29,7 @@ export default function ReceivePage() {
   const [tried, setTried] = useState(false);
   const [key] = useState(() => crypto.randomUUID());       // one per time the form opens: a retry never makes a second job
   const fields = useCustomFieldDefs("jobs.work_order", companyId, !!companyId);
+  const appointmentId = params.get("appointment");
   const chosen = useAsset(params.get("asset"));
   const update = (patch: Partial<ReceiveForm>) => setForm((f) => ({ ...f, ...patch }));
   const current: ReceiveForm = { ...form, branchId: form.branchId || branchId };
@@ -45,7 +46,9 @@ export default function ReceivePage() {
   const save = useMutation({
     meta: { silent: true },
     mutationFn: async () => {
-      const job = await unwrap(api.POST("/api/v1/jobs/jobs", { params: { header: { "Idempotency-Key": key } }, body: buildJobBody(companyId, current) }));
+      const job = appointmentId
+        ? await unwrap(api.POST("/api/v1/jobs/appointments/{appointment_id}/job", { params: { path: { appointment_id: appointmentId } }, body: buildAppointmentBody(current) }))
+        : await unwrap(api.POST("/api/v1/jobs/jobs", { params: { header: { "Idempotency-Key": key } }, body: buildJobBody(companyId, current) }));
       const extra = toPayload(fields.data ?? [], values, {});
       if (Object.keys(extra).length > 0) await saveCustomValues("jobs.work_order", job.id, extra).catch(() => toast(t("receive.customFailed"), "bad"));
       return job;
@@ -64,6 +67,7 @@ export default function ReceivePage() {
     <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="mx-auto max-w-2xl">
       <PageHeader title={t("menu.receive")} description={t("receive.hint")} back={{ to: "/jobs", label: t("menu.jobs") }} />
       <div className="space-y-4">
+        {appointmentId && <Alert tone="info">{t("floor.booked.banner")}</Alert>}
         <Card title={t("receive.what")}>
           <div className="space-y-4">
             <Field label={t("receive.title")} hint={t("receive.titleHint")} required error={tried && problems.includes("title") ? t("receive.titleNeeded") : null}>

@@ -177,7 +177,7 @@ class PaymentTaken:
 
 def take_payment(session: Session, *, customer_id: UUID, branch_id: UUID, amount: Decimal, method: str,
                  allocations: list[tuple[UUID, Decimal]] | None = None, external_ref: str | None = None,
-                 use_open_till: bool = True) -> PaymentTaken:
+                 use_open_till: bool = True, payment_account_id: UUID | None = None) -> PaymentTaken:
     """Record money a customer pays: against the named invoices (`allocations`: invoice id and amount), or, with
     no allocations, as an **advance** kept on their account (a deposit; any part not allocated is also kept). Cash goes
     through the caller's open till at the branch when they have one (`use_open_till`), so the drawer count includes
@@ -196,7 +196,7 @@ def take_payment(session: Session, *, customer_id: UUID, branch_id: UUID, amount
     view = customer_receipts.receive_payment(
         session, customer_id=customer_id, amount=amount, method=method, branch_id=branch_id,
         external_ref=external_ref, allocations=list(allocations or []), till_session_id=till_id,
-        hold_balance=True)
+        payment_account_id=payment_account_id, hold_balance=True)
     r = view.receipt
     return PaymentTaken(r.id, r.number, r.amount, r.method)
 

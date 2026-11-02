@@ -431,5 +431,62 @@
       "order": "Kipuri kinaagizwa kwa msambazaji kwa kazi hii. Hisa huchukuliwa kinapofika.",
       "customer": "Mteja alileta kipuri. Kinaorodheshwa kwenye kazi lakini hakiwekwi kwenye ankara; kazi tu ndiyo."
     }
+  },
+  "floor": {
+    "clock": {
+      "title": "Saa",
+      "start": "Anza saa",
+      "stop": "Simamisha na uweke kwenye kazi",
+      "discard": "Tupa muda",
+      "started": "Saa imeanza",
+      "stopped": "Muda umewekwa kwenye kazi",
+      "note": "Unafanya kazi gani",
+      "notePlaceholder": "Unafanya kazi gani? (si lazima)",
+      "stopHint": "Muda uliofanya kazi unawekwa kwenye kazi kama leba, kwa bei ya leba.",
+      "other": "{{name}} ana saa inayoendelea tangu {{since}}."
+    },
+    "health": {
+      "empty": "Bado hakuna ukaguzi wa afya ya gari",
+      "emptyHint": "Kagua gari na uweke kila sehemu kijani, njano au nyekundu. Mteja huona zile za njano na nyekundu kwenye makadirio.",
+      "start": "Anza ukaguzi wa afya",
+      "counts": "Jumla za ukaguzi",
+      "red_one": "1 inahitaji uangalizi sasa",
+      "red_other": "{{count}} zinahitaji uangalizi sasa",
+      "amber_one": "1 inahitaji uangalizi hivi karibuni",
+      "amber_other": "{{count}} zinahitaji uangalizi hivi karibuni",
+      "green_one": "1 iko vizuri",
+      "green_other": "{{count}} ziko vizuri",
+      "pending_one": "1 haijakaguliwa bado",
+      "pending_other": "{{count}} hazijakaguliwa bado",
+      "rating": {
+        "green": "Nzuri",
+        "amber": "Karibuni",
+        "red": "Sasa",
+        "na": "Haihusu"
+      },
+      "note": "Maelezo",
+      "notePlaceholder": "Umeona nini?",
+      "remove": "Ondoa mstari huu",
+      "section": "Sehemu ya gari",
+      "line": "Cha kukagua",
+      "customerSees": "Kwenye ukurasa wa makadirio, mteja huona tu mistari ya njano na nyekundu, pamoja na maelezo yako.",
+      "publicTitle": "Tulichokiona tulipokagua gari lako"
+    },
+    "booked": {
+      "title": "Waliopanga leo",
+      "takeIn": "Pokea",
+      "banner": "Unapokea miadi iliyopangwa. Mteja amejazwa kutoka kwenye miadi."
+    },
+    "deposit": {
+      "taken": "Amana iliyopokelewa",
+      "applied": "Imewekwa kwenye ankara",
+      "left": "{{amount}} ya amana bado iko kwenye akaunti ya mteja."
+    },
+    "storageInvoice": "Hifadhi baada ya ankara ilitozwa kwenye ankara {{number}}.",
+    "vin": {
+      "reads": "VIN hii inasomeka: {{what}}.",
+      "unknownMake": "VIN ina umbo sahihi, lakini mtengenezaji hayuko kwenye orodha yetu fupi.",
+      "checkFailed": "Tarakimu ya ukaguzi haijumlishi sawa: angalia namba tena."
+    }
   }
 }

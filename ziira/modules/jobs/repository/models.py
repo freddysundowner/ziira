@@ -152,6 +152,10 @@ class Job(Audited, Base):
     deposit_note: Mapped[str | None]
     claim_id: Mapped[UUID | None]
     storage_fee_waived: Mapped[bool] = mapped_column(server_default=text("false"))
+    deposit_applied: Mapped[Decimal] = mapped_column(Numeric(18, 2), server_default=text("0"))
+    storage_invoice_id: Mapped[UUID | None]
+    storage_invoice_number: Mapped[str | None]
+    appointment_id: Mapped[UUID | None]
 
 
 class JobChecklistItem(TenantColumns, Base):
@@ -405,3 +409,28 @@ class Loan(TenantColumns, Base):
     fuel_out: Mapped[str | None]
     fuel_in: Mapped[str | None]
     note: Mapped[str | None]
+
+
+class JobTimer(TenantColumns, Base):
+    __tablename__ = "job_timer"
+    __table_args__ = _schema()
+
+    created_by: Mapped[UUID | None]
+    job_id: Mapped[UUID]
+    user_id: Mapped[UUID]
+    started_at: Mapped[datetime] = mapped_column(server_default=text("now()"))
+    stopped_at: Mapped[datetime | None]
+    labour_id: Mapped[UUID | None]
+    note: Mapped[str | None]
+
+
+class InspectionItem(Audited, Base):
+    __tablename__ = "job_inspection_item"
+    __table_args__ = _schema()
+
+    job_id: Mapped[UUID]
+    section: Mapped[str]
+    label: Mapped[str]
+    rating: Mapped[str] = mapped_column(server_default=text("'pending'"))
+    note: Mapped[str | None]
+    position: Mapped[int] = mapped_column(server_default=text("0"))

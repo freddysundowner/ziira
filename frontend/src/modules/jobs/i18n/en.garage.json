@@ -431,5 +431,62 @@
       "order": "The part is ordered from a supplier for this job. Stock is taken when it arrives.",
       "customer": "The customer brought the part. It is listed on the job but not invoiced; only the work is."
     }
+  },
+  "floor": {
+    "clock": {
+      "title": "Clock",
+      "start": "Start clock",
+      "stop": "Stop and add to job",
+      "discard": "Throw away",
+      "started": "Clock started",
+      "stopped": "Time added to the job",
+      "note": "What are you working on",
+      "notePlaceholder": "What are you working on? (optional)",
+      "stopHint": "The time you worked goes on the job as labour, at the labour rate.",
+      "other": "{{name}} has a clock running since {{since}}."
+    },
+    "health": {
+      "empty": "No health check yet",
+      "emptyHint": "Look the car over and mark each part green, amber or red. The customer sees the amber and red ones on the estimate.",
+      "start": "Start the health check",
+      "counts": "Health check totals",
+      "red_one": "1 needs attention now",
+      "red_other": "{{count}} need attention now",
+      "amber_one": "1 needs attention soon",
+      "amber_other": "{{count}} need attention soon",
+      "green_one": "1 is good",
+      "green_other": "{{count}} are good",
+      "pending_one": "1 not checked yet",
+      "pending_other": "{{count}} not checked yet",
+      "rating": {
+        "green": "Good",
+        "amber": "Soon",
+        "red": "Now",
+        "na": "N/A"
+      },
+      "note": "Note",
+      "notePlaceholder": "What did you find?",
+      "remove": "Remove this line",
+      "section": "Part of the car",
+      "line": "What to look at",
+      "customerSees": "On the estimate page, the customer sees only the amber and red lines, with your notes.",
+      "publicTitle": "What we found when we checked your vehicle"
+    },
+    "booked": {
+      "title": "Booked for today",
+      "takeIn": "Take in",
+      "banner": "You are taking in a booked appointment. The customer is filled in from the booking."
+    },
+    "deposit": {
+      "taken": "Deposit taken",
+      "applied": "Set against the invoice",
+      "left": "{{amount}} of the deposit is still on the customer's account."
+    },
+    "storageInvoice": "Storage after the invoice was billed on invoice {{number}}.",
+    "vin": {
+      "reads": "This VIN reads as: {{what}}.",
+      "unknownMake": "The VIN is the right shape, but the maker is not in our short list.",
+      "checkFailed": "The check digit does not add up: look at the number again."
+    }
   }
 }
