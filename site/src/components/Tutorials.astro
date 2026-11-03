@@ -1,0 +1,119 @@
+---
+import type { Lang } from "../content/types";
+import { tutorialSections } from "../content/tutorials";
+import { urlFor } from "../lib/registry";
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+const live = tutorialSections.filter((s) => s.videos.length > 0);
+---
+<section class="section tutorials">
+  <div class="container">
+    <nav class="tut-tabs" aria-label="Choose your kind of business">
+      {tutorialSections.map((s) => (
+        <a href={`#${s.key}`} class="tut-tab" data-tab={s.key}>{s.label}{s.videos.length === 0 && <span class="tut-soon">Soon</span>}</a>
+      ))}
+    </nav>
+
+    {tutorialSections.map((s) => (
+      <section class="tut-section" id={s.key} data-section={s.key} aria-labelledby={`h-${s.key}`}>
+        <h2 id={`h-${s.key}`}>{s.label}</h2>
+        <p class="tut-blurb">{s.blurb} <a href={urlFor(s.page, lang)}>About Ziira for {s.label.toLowerCase()} &rarr;</a></p>
+        {s.videos.length > 0 ? (
+          <>
+            <div class="tut-player">
+              <video controls preload="none" playsinline poster={`/tutorials/${s.key}/${s.videos[0].file}.jpg`} data-player width="1360" height="860">
+                <source src={`/tutorials/${s.key}/${s.videos[0].file}.mp4`} type="video/mp4" />
+              </video>
+              <div class="tut-now" aria-live="polite">
+                <h3 data-now-title>{s.videos[0].title}</h3>
+                <p data-now-text>{s.videos[0].text}</p>
+                <ul data-now-points>{s.videos[0].points.map((p) => <li>{p}</li>)}</ul>
+              </div>
+            </div>
+            <ol class="tut-list">
+              {s.videos.map((v, i) => (
+                <li>
+                  <button type="button" class="tut-item" data-file={`/tutorials/${s.key}/${v.file}`} data-title={v.title} data-text={v.text} data-points={JSON.stringify(v.points)} aria-current={i === 0 ? "true" : undefined}>
+                    <img src={`/tutorials/${s.key}/${v.file}.jpg`} alt="" width="160" height="101" loading="lazy" />
+                    <span class="tut-meta"><span class="tut-n">{i + 1}</span><strong>{v.title}</strong><span class="tut-len">{clock(v.seconds)}</span></span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </>
+        ) : (
+          <div class="card tut-empty">
+            <h3>Tutorials for {s.label.toLowerCase()} are coming</h3>
+            <p>We make each set the same way: a real business built on screen from nothing, with a voice-over you can follow. Want to be told when yours is ready?</p>
+            <p><a class="btn btn-primary" href={urlFor("get-started", lang)}>Get notified</a></p>
+          </div>
+        )}
+      </section>
+    ))}
+    <p class="tut-foot">{live.length} of {tutorialSections.length} kinds of business have tutorials today. Each video was recorded from the live app, and every step on screen is real.</p>
+  </div>
+</section>
+
+<style>
+  .tutorials { padding-top: 28px; }
+  .tut-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .tut-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 18px; border: 1px solid rgb(var(--line)); border-radius: 999px; background: rgb(var(--surface)); color: rgb(var(--ink)); text-decoration: none; font-weight: 600; }
+  .tut-tab:hover { background: rgb(var(--brand-soft)); color: rgb(var(--ink)); }
+  .tut-tab[aria-current="true"] { background: rgb(var(--brand-strong)); border-color: transparent; color: rgb(var(--brand-ink)); }
+  .tut-soon { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; background: rgb(var(--sunken)); color: rgb(var(--muted)); }
+  .tut-tab[aria-current="true"] .tut-soon { background: rgb(var(--brand-ink) / .2); color: inherit; }
+  .tut-section { margin-bottom: 56px; scroll-margin-top: 96px; }
+  .tut-blurb { max-width: 68ch; color: rgb(var(--muted)); }
+  .tut-player { display: grid; gap: 18px; margin-block: 20px; }
+  @media (min-width: 1000px) { .tut-player { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; } }
+  .tut-player video { width: 100%; aspect-ratio: 1360 / 860; background: rgb(var(--abyss)); border-radius: var(--radius); display: block; }
+  .tut-now h3 { margin-bottom: .3em; }
+  .tut-now p { color: rgb(var(--muted)); }
+  .tut-now ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .tut-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+  .tut-item { all: unset; box-sizing: border-box; display: grid; width: 100%; cursor: pointer; border: 1px solid rgb(var(--line)); border-radius: var(--radius); background: rgb(var(--surface)); overflow: hidden; }
+  .tut-item:hover { border-color: rgb(var(--brand)); }
+  .tut-item:focus-visible { outline: 3px solid rgb(var(--brand)); outline-offset: 2px; }
+  .tut-item[aria-current="true"] { border-color: rgb(var(--brand-strong)); box-shadow: 0 0 0 2px rgb(var(--brand-strong)); }
+  .tut-item img { width: 100%; height: auto; aspect-ratio: 1360 / 860; object-fit: cover; background: rgb(var(--abyss)); }
+  .tut-meta { display: grid; grid-template-columns: 1.6rem 1fr auto; gap: 8px; align-items: baseline; padding: 10px 12px 12px; }
+  .tut-n { font-family: var(--display); font-weight: 800; color: rgb(var(--muted)); }
+  .tut-len { color: rgb(var(--muted)); font-variant-numeric: tabular-nums; font-size: .9rem; }
+  .tut-empty { max-width: 640px; }
+  .tut-foot { color: rgb(var(--muted)); font-size: .95rem; max-width: 68ch; }
+  /* with scripting on, one business shows at a time; without it, every section is listed */
+  .js .tut-section[hidden] { display: none; }
+</style>
+
+<script is:inline>
+  (function () {
+    document.documentElement.classList.add("js");
+    var sections = Array.prototype.slice.call(document.querySelectorAll(".tut-section"));
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".tut-tab"));
+    function show(key) {
+      if (!sections.some(function (s) { return s.dataset.section === key; })) key = sections[0].dataset.section;
+      sections.forEach(function (s) { s.hidden = s.dataset.section !== key; });
+      tabs.forEach(function (t) { if (t.dataset.tab === key) t.setAttribute("aria-current", "true"); else t.removeAttribute("aria-current"); });
+    }
+    function fromHash() { show((location.hash || "").replace("#", "")); }
+    window.addEventListener("hashchange", fromHash);
+    tabs.forEach(function (t) { t.addEventListener("click", function (e) { e.preventDefault(); history.replaceState(null, "", "#" + t.dataset.tab); show(t.dataset.tab); }); });
+    fromHash();
+    sections.forEach(function (sec) {
+      var v = sec.querySelector("[data-player]"); if (!v) return;
+      var items = Array.prototype.slice.call(sec.querySelectorAll(".tut-item")), cur = 0;
+      var title = sec.querySelector("[data-now-title]"), text = sec.querySelector("[data-now-text]"), pts = sec.querySelector("[data-now-points]");
+      function play(i, go) {
+        cur = i; var b = items[i];
+        v.poster = b.dataset.file + ".jpg"; v.src = b.dataset.file + ".mp4"; v.load();
+        title.textContent = b.dataset.title; text.textContent = b.dataset.text; pts.innerHTML = "";
+        JSON.parse(b.dataset.points).forEach(function (p) { var li = document.createElement("li"); li.textContent = p; pts.appendChild(li); });
+        items.forEach(function (x, k) { if (k === i) x.setAttribute("aria-current", "true"); else x.removeAttribute("aria-current"); });
+        if (go) { var r = v.play(); if (r && r.catch) r.catch(function () {}); v.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+      }
+      items.forEach(function (b, i) { b.addEventListener("click", function () { play(i, true); }); });
+      v.addEventListener("ended", function () { if (cur < items.length - 1) play(cur + 1, true); });
+    });
+  })();
+</script>

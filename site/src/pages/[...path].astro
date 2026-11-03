@@ -29,6 +29,7 @@ import PricingPlans from "../components/PricingPlans.astro";
 import ContactDetails from "../components/ContactDetails.astro";
 import Icon from "../components/Icon.astro";
 import Home from "../components/Home.astro";
+import Tutorials from "../components/Tutorials.astro";
 import { does, safety, aiCta } from "../content/ai";
 import { catalog, totals } from "../lib/catalog";
 import { presentation, availability, soonKeys, type AvailKey } from "../content/availability";
@@ -254,6 +255,14 @@ const fmt = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("en-GB"
         </div>
       </section>
       {faq.length > 0 && <section class="section tint"><div class="container"><div class="faq-split"><div class="faq-intro"><h2 id="faq-h">{t.faq}</h2></div><Faq lang={lang} items={faq} bare /></div></div></section>}
+      <Cta lang={lang} variant={def.cta ?? "general"} />
+    </>
+  )}
+
+  {kind === "tutorials" && (
+    <>
+      <PageHead lang={lang} crumbs={crumbs} eyebrow={def.eyebrow} h1={def.h1} leadHtml={i(def.lead)} />
+      <Tutorials lang={lang} />
       <Cta lang={lang} variant={def.cta ?? "general"} />
     </>
   )}

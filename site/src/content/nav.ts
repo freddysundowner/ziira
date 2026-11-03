@@ -76,6 +76,7 @@ export const navGroups: NavGroup[] = [
       { id: "get-started", label: "1. Create your business", desc: "Sign up, choose what you need", icon: "bolt" },
       { id: "intelligence-existing", label: "2. Bring in your data", desc: "Start fresh, or connect what you use", icon: "plug", color: 2 },
       { id: "intelligence-how", label: "3. Get your daily check", desc: "Alerts and a short summary each day", icon: "bell" },
+      { id: "tutorials", label: "Watch video tutorials", desc: "Short videos for your kind of business", icon: "book", color: 7 },
     ] }],
     foot: { id: "help", label: "Questions? Visit the Help centre →" },
   },

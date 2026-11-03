@@ -87,7 +87,7 @@ export const solutionsMore: PageDef[] = [
       { h2: "What a gym gets", ul: ["Membership plans: monthly, annual, contract with a minimum term, off-peak, day and week passes, and a free trial.", "Visit and class packs that expire, personal-training sessions, and credits that carry over if you choose.", "Freezes, a joining fee, guest passes and recurring invoices made for you.", "Classes with a diary and booking, and starter data you can edit with example prices marked as examples."] },
       { h2: "What the AI watches", ul: ["Members who stopped coming.", "Members who have not paid, and recurring invoices that failed.", "Memberships ending soon, and packs about to expire with credits left.", "How much membership income is at risk."] },
     ],
-    related: ["solutions-every-business", "ai", "get-started"],
+    related: ["solutions-every-business", "ai", "tutorials", "get-started"],
   },
   {
     id: "solutions-professional", slug: "solutions/consultants-and-agencies", parent: "solutions", kind: "page", cta: "general",

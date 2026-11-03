@@ -55,6 +55,15 @@ export const miscEn: PageDef[] = [
     related: ["solutions-retail", "solutions-distribution", "guide-choose-pos-multi-branch"],
   },
   {
+    id: "tutorials", slug: "tutorials", kind: "tutorials", cta: "general",
+    title: "Video Tutorials: Learn Ziira for Your Kind of Business",
+    description: "Short narrated videos, recorded from the live app, that build a real business from nothing. Start with gyms and studios; more kinds of business are coming.",
+    h1: "Watch how Ziira works for your kind of business", eyebrow: "Tutorials", short: "Tutorials",
+    lead: "Pick your kind of business and watch short videos with a voice-over. Each one starts with an empty account and builds on screen, step by step, with no sample data.",
+    blocks: [],
+    related: ["get-started", "solutions", "help"],
+  },
+  {
     id: "integrations", slug: "integrations", kind: "integrations", cta: "general",
     title: "Ziira Integrations: Messaging, Payments, Your Systems",
     description: "See what Ziira connects to: WhatsApp alerts, M-Pesa payments, your ERP or accounting package, bank statements, files, and an API with webhooks.",
