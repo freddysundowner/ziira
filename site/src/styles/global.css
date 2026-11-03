@@ -476,8 +476,8 @@ tbody th { font-weight: 650; }
 .site-footer a { color: rgb(var(--on-night)); text-decoration: none; }
 .site-footer a:hover { color: #fff; text-decoration: underline; }
 .foot-grid { display: grid; gap: 32px 20px; grid-template-columns: repeat(2, 1fr); }
-@media (min-width: 720px) { .foot-grid { grid-template-columns: repeat(3, 1fr); gap: 40px 32px; } }
-@media (min-width: 1040px) { .foot-grid { grid-template-columns: 1.5fr repeat(5, 1fr); } }
+@media (min-width: 720px) { .foot-grid { grid-template-columns: repeat(4, 1fr); gap: 40px 32px; } }
+@media (min-width: 1040px) { .foot-grid { grid-template-columns: 1.6fr repeat(4, 1fr); } }
 .site-footer .logo { color: #fff; }
 .site-footer h2 { font-family: var(--font); font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; color: rgb(var(--accent-on-night)); margin-bottom: 14px; font-weight: 750; }
 .site-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
